@@ -1,0 +1,11 @@
+version: '3.6'
+
+services:
+  postgresql:
+    image: 'bitnami/postgresql:latest'
+    environment:
+      - POSTGRESQL_USERNAME=root
+      - POSTGRESQL_PASSWORD=postgres
+      - POSTGRESQL_DATABASE=top_leader
+    ports:
+      - '5432:5432'
