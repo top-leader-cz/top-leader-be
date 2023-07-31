@@ -11,6 +11,7 @@ import java.security.Principal;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -29,13 +30,13 @@ public class UserInfoController {
     private final UserInfoService userInfoService;
 
     @GetMapping
-    public UserInfoDto getUserInfo(@AuthenticationPrincipal Principal principal) {
-        return UserInfoDto.from(userInfoService.find(principal.getName()));
+    public UserInfoDto getUserInfo(@AuthenticationPrincipal UserDetails user) {
+        return UserInfoDto.from(userInfoService.find(user.getUsername()));
     }
 
     @PostMapping("/strengths")
-    public UserInfoDto setStrengths(@AuthenticationPrincipal Principal principal, @RequestBody @Valid SetDataRequestDto request) {
-        return UserInfoDto.from(userInfoService.setStrengths(principal.getName(), request.data()));
+    public UserInfoDto setStrengths(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetDataRequestDto request) {
+        return UserInfoDto.from(userInfoService.setStrengths(user.getUsername(), request.data()));
     }
 
     public record UserInfoDto(
