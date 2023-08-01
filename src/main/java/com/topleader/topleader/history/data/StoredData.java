@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.experimental.Accessors;
 
 import static com.topleader.topleader.history.data.StoredData.STRENGTH_TYPE;
+import static com.topleader.topleader.history.data.StoredData.VALUES_TYPE;
 
 
 /**
@@ -20,9 +21,12 @@ import static com.topleader.topleader.history.data.StoredData.STRENGTH_TYPE;
 )
 @JsonSubTypes({
     @JsonSubTypes.Type(value = StrengthStoredData.class, name = STRENGTH_TYPE),
+    @JsonSubTypes.Type(value = ValuesStoredData.class, name = VALUES_TYPE),
 })
 @Data
 @Accessors(chain = true)
-public class StoredData {
+public abstract class StoredData {
+
     public static final String STRENGTH_TYPE = "STRENGTH_TYPE";
+    public static final String VALUES_TYPE = "VALUES_TYPE";
 }

@@ -14,6 +14,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -31,6 +32,10 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @Testcontainers
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@TestExecutionListeners(mergeMode =
+    TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS,
+    listeners = {ResetDatabaseAfterTestMethodListener.class}
+)
 public abstract class IntegrationTest implements ApplicationContextAware {
 
 
@@ -44,7 +49,6 @@ public abstract class IntegrationTest implements ApplicationContextAware {
         mvc = MockMvcBuilders.webAppContextSetup((WebApplicationContext) applicationContext)
             .apply(springSecurity())
             .build();
-        //SecurityContextHolder.getContext().setAuthentication(new UsernamePasswordAuthenticationToken("user", "pass"));
 
     }
 

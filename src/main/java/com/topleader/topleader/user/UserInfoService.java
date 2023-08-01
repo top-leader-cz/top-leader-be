@@ -6,6 +6,8 @@ package com.topleader.topleader.user;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.DataHistoryRepository;
+import com.topleader.topleader.history.data.ValuesStoredData;
+import java.time.LocalDateTime;
 import java.util.Set;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
@@ -33,10 +35,26 @@ public class UserInfoService {
                 .setUsername(user)
                 .setType(DataHistory.Type.STRENGTHS)
                 .setData(new StrengthStoredData().setStrengths(strengths))
+                .setCreatedAt(LocalDateTime.now())
             ))
             .andThen(DataHistory::getUsername)
             .andThen(this::find)
             .andThen(info -> info.setStrengths(strengths))
+            .andThen(userInfoRepository::save)
+            .apply(username);
+    }
+
+    public UserInfo setValues(String username, Set<String> values) {
+        return Function.<String>identity()
+            .andThen(user -> dataHistoryRepository.save(new DataHistory()
+                .setUsername(user)
+                .setType(DataHistory.Type.VALUES)
+                .setData(new ValuesStoredData().setValues(values))
+                .setCreatedAt(LocalDateTime.now())
+            ))
+            .andThen(DataHistory::getUsername)
+            .andThen(this::find)
+            .andThen(info -> info.setValues(values))
             .andThen(userInfoRepository::save)
             .apply(username);
     }

@@ -36,6 +36,11 @@ public class UserInfoController {
         return UserInfoDto.from(userInfoService.setStrengths(user.getUsername(), request.data()));
     }
 
+    @PostMapping("/values")
+    public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetDataRequestDto request) {
+        return UserInfoDto.from(userInfoService.setValues(user.getUsername(), request.data()));
+    }
+
     public record UserInfoDto(
         String username,
         Set<String> strengths,
