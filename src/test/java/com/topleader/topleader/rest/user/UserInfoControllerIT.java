@@ -25,9 +25,7 @@ class UserInfoControllerIT extends IntegrationTest {
 
 
 
-        mvc.perform(get("/api/latest/user-info")
-                //.with(httpBasic("user","pass"))
-            )
+        mvc.perform(get("/api/latest/user-info"))
             .andExpect(status().isOk());
     }
 }

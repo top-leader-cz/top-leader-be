@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.entity.user;
+package com.topleader.topleader.user;
 
-import com.topleader.topleader.entity.converter.SetConverter;
+import com.topleader.topleader.util.converter.SetConverter;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -1,9 +1,9 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.repository.history;
+package com.topleader.topleader.history;
 
-import com.topleader.topleader.entity.history.DataHistory;
+import com.topleader.topleader.history.DataHistory;
 import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 

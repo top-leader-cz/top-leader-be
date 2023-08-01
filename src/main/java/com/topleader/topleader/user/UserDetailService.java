@@ -1,6 +1,4 @@
-package com.topleader.topleader.service.user;
-
-import com.topleader.topleader.repository.user.UserRepository;
+package com.topleader.topleader.user;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;

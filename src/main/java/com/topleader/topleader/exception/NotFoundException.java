@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.rest.exception;
+package com.topleader.topleader.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

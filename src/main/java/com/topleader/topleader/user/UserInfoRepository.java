@@ -1,9 +1,8 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.repository.user;
+package com.topleader.topleader.user;
 
-import com.topleader.topleader.entity.user.UserInfo;
 import org.springframework.data.repository.CrudRepository;
 
 

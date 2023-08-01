@@ -1,11 +1,11 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.entity.converter;
+package com.topleader.topleader.history;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.topleader.topleader.entity.history.data.StoredData;
+import com.topleader.topleader.history.data.StoredData;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 

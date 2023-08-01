@@ -1,6 +1,4 @@
-package com.topleader.topleader.repository.user;
-
-import com.topleader.topleader.entity.user.User;
+package com.topleader.topleader.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

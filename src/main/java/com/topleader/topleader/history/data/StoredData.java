@@ -1,14 +1,14 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.entity.history.data;
+package com.topleader.topleader.history.data;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import static com.topleader.topleader.entity.history.data.StoredData.STRENGTH_TYPE;
+import static com.topleader.topleader.history.data.StoredData.STRENGTH_TYPE;
 
 
 /**

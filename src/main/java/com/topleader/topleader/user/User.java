@@ -1,4 +1,4 @@
-package com.topleader.topleader.entity.user;
+package com.topleader.topleader.user;
 
 
 import jakarta.persistence.Entity;

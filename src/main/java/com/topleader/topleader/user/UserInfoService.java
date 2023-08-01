@@ -1,13 +1,11 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.service.user;
+package com.topleader.topleader.user;
 
-import com.topleader.topleader.entity.history.DataHistory;
-import com.topleader.topleader.entity.history.data.StrengthStoredData;
-import com.topleader.topleader.entity.user.UserInfo;
-import com.topleader.topleader.repository.history.DataHistoryRepository;
-import com.topleader.topleader.repository.user.UserInfoRepository;
+import com.topleader.topleader.history.DataHistory;
+import com.topleader.topleader.history.data.StrengthStoredData;
+import com.topleader.topleader.history.DataHistoryRepository;
 import java.util.Set;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;

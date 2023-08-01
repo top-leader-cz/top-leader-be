@@ -1,10 +1,9 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.entity.history;
+package com.topleader.topleader.history;
 
-import com.topleader.topleader.entity.converter.HistoryDataConverter;
-import com.topleader.topleader.entity.history.data.StoredData;
+import com.topleader.topleader.history.data.StoredData;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

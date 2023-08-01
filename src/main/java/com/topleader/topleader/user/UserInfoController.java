@@ -1,13 +1,10 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.rest.user;
+package com.topleader.topleader.user;
 
-import com.topleader.topleader.entity.user.UserInfo;
-import com.topleader.topleader.service.user.UserInfoService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
-import java.security.Principal;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
