@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader;
 
+import com.topleader.topleader.configuration.EnablePostgresTestContainerContextCustomizerFactory;
 import java.security.Principal;
 import java.util.Set;
 import org.jetbrains.annotations.NotNull;
@@ -36,12 +37,12 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
     TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS,
     listeners = {ResetDatabaseAfterTestMethodListener.class}
 )
+@EnablePostgresTestContainerContextCustomizerFactory.EnabledPostgresTestContainer
 public abstract class IntegrationTest implements ApplicationContextAware {
 
-
-    @Container
-    @ServiceConnection
-    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
+//    @Container
+//    @ServiceConnection
+//    public static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15-alpine");
 
     protected MockMvc mvc;
 
