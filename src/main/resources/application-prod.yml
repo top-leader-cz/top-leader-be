@@ -1,2 +1,14 @@
 server:
   port: {PORT}
+
+spring:
+  datasource:
+    url: jdbc:postgresql:///top_leader
+    username: top-leader
+    hikari:
+      data-source-properties:
+        socketFactory: com.google.cloud.sql.postgres.SocketFactory
+        cloudSqlInstance: topleader-394306:europe-west3:top-leader-db
+        enableIamAuth: false
+        sslmode: disable
+
