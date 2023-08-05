@@ -24,4 +24,9 @@ public class TopLeaderApplication {
         return "App ok";
     }
 
+    @GetMapping("/_ah/start")
+    public String legacyHealthCheck() {
+        return "App ok";
+    }
+
 }
