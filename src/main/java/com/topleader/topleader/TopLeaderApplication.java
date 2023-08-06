@@ -18,12 +18,6 @@ public class TopLeaderApplication {
         SpringApplication.run(TopLeaderApplication.class, args);
     }
 
-
-    @GetMapping("/api/public/test")
-    public String test() {
-        return "App ok";
-    }
-
     @GetMapping("/_ah/start")
     public String legacyHealthCheck() {
         return "App ok";

@@ -5,7 +5,6 @@ spring:
   datasource:
     url: jdbc:postgresql:///top_leader
     username: top-leader
-    password: {DB_PASS}
     hikari:
       data-source-properties:
         socketFactory: com.google.cloud.sql.postgres.SocketFactory
