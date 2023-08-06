@@ -20,7 +20,8 @@ public class UserDetailService implements UserDetailsService {
 
         return User.withUsername(user.getUsername())
                    .password(user.getPassword())
-                   .authorities("USER").build();
+                   .authorities(user.getAuthorities().stream().map(Enum::name).toArray(String[]::new))
+            .build();
 
     }
 }
