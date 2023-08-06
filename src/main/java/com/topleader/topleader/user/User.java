@@ -1,9 +1,11 @@
 package com.topleader.topleader.user;
 
 
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.util.Set;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -20,4 +22,11 @@ public class User {
 
     private boolean enabled;
 
+    @Convert(converter = RoleConverter.class)
+    private Set<Authority> authorities;
+
+    public enum Authority {
+        USER,
+        COACH
+    }
 }

@@ -1,0 +1,19 @@
+{
+  "publicProfile": true,
+  "firstName": "firstName",
+  "lastName": "lastName",
+  "email": "cool@email.cz",
+  "photo": null,
+  "bio": "some bio",
+  "timeZone": "UTC",
+  "languages": [
+    "cz",
+    "aj"
+  ],
+  "fields": [
+    "field1",
+    "field2"
+  ],
+  "experienceSince": "2023-08-06",
+  "rate": "$$$"
+}
