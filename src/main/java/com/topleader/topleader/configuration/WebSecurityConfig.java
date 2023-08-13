@@ -29,6 +29,7 @@ public class WebSecurityConfig {
             )
             .httpBasic(withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
+            .cors(AbstractHttpConfigurer::disable)
         ;
         return http.build();
     }
