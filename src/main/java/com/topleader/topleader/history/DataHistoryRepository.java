@@ -3,7 +3,6 @@
  */
 package com.topleader.topleader.history;
 
-import com.topleader.topleader.history.DataHistory;
 import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 

@@ -5,7 +5,7 @@ package com.topleader.topleader.history.data;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.Set;
+import java.util.List;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -21,5 +21,5 @@ import lombok.experimental.Accessors;
 @JsonTypeName(StoredData.STRENGTH_TYPE)
 public class StrengthStoredData extends StoredData {
 
-    private Set<String> strengths;
+    private List<String> strengths;
 }
