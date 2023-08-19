@@ -4,11 +4,11 @@
 package com.topleader.topleader.user;
 
 import com.topleader.topleader.history.DataHistory;
-import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.DataHistoryRepository;
+import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.data.ValuesStoredData;
 import java.time.LocalDateTime;
-import java.util.Set;
+import java.util.List;
 import java.util.function.Function;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -29,7 +29,7 @@ public class UserInfoService {
         return userInfoRepository.findById(username).orElse(createEmpty(username));
     }
 
-    public UserInfo setStrengths(String username, Set<String> strengths) {
+    public UserInfo setStrengths(String username, List<String> strengths) {
         return Function.<String>identity()
             .andThen(user -> dataHistoryRepository.save(new DataHistory()
                 .setUsername(user)
@@ -44,7 +44,7 @@ public class UserInfoService {
             .apply(username);
     }
 
-    public UserInfo setValues(String username, Set<String> values) {
+    public UserInfo setValues(String username, List<String> values) {
         return Function.<String>identity()
             .andThen(user -> dataHistoryRepository.save(new DataHistory()
                 .setUsername(user)
@@ -62,9 +62,9 @@ public class UserInfoService {
     private static UserInfo createEmpty(String username) {
         return new UserInfo()
             .setUsername(username)
-            .setStrengths(Set.of())
-            .setValues(Set.of())
-            .setAreaOfDevelopment(Set.of());
+            .setStrengths(List.of())
+            .setValues(List.of())
+            .setAreaOfDevelopment(List.of());
     }
 
 

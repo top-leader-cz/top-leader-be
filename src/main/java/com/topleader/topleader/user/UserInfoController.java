@@ -5,7 +5,7 @@ package com.topleader.topleader.user;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
-import java.util.Set;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -32,20 +32,20 @@ public class UserInfoController {
     }
 
     @PostMapping("/strengths")
-    public UserInfoDto setStrengths(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetDataRequestDto request) {
+    public UserInfoDto setStrengths(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
         return UserInfoDto.from(userInfoService.setStrengths(user.getUsername(), request.data()));
     }
 
     @PostMapping("/values")
-    public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetDataRequestDto request) {
+    public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
         return UserInfoDto.from(userInfoService.setValues(user.getUsername(), request.data()));
     }
 
     public record UserInfoDto(
         String username,
-        Set<String> strengths,
-        Set<String> values,
-        Set<String> areaOfDevelopment,
+        List<String> strengths,
+        List<String> values,
+        List<String> areaOfDevelopment,
         String notes
     ) {
         public static UserInfoDto from(UserInfo info) {
@@ -59,5 +59,5 @@ public class UserInfoController {
         }
     }
 
-    public record SetDataRequestDto(@NotEmpty Set<String> data) {}
+    public record ListDataRequestDto(@NotEmpty List<String> data) {}
 }

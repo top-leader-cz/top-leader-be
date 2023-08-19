@@ -7,7 +7,7 @@ import com.topleader.topleader.util.converter.SetConverter;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
-import java.util.Set;
+import java.util.List;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -24,13 +24,13 @@ public class UserInfo {
     private String username;
 
     @Convert(converter = SetConverter.class)
-    private Set<String> strengths;
+    private List<String> strengths;
 
     @Convert(converter = SetConverter.class)
-    private Set<String> values;
+    private List<String> values;
 
     @Convert(converter = SetConverter.class)
-    private Set<String> areaOfDevelopment;
+    private List<String> areaOfDevelopment;
 
     private String notes;
 }

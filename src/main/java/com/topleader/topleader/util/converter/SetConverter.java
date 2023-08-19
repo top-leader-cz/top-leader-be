@@ -8,21 +8,21 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
-import java.util.Set;
+import java.util.List;
 
 
 /**
  * @author Daniel Slavik
  */
 @Converter
-public class SetConverter implements AttributeConverter<Set<String>, String> {
+public class SetConverter implements AttributeConverter<List<String>, String> {
 
 
 
     private static final ObjectMapper OB = new ObjectMapper();
 
     @Override
-    public String convertToDatabaseColumn(Set<String> data) {
+    public String convertToDatabaseColumn(List<String> data) {
         if (data == null) {
             return null;
         }
@@ -35,9 +35,9 @@ public class SetConverter implements AttributeConverter<Set<String>, String> {
     }
 
     @Override
-    public Set<String> convertToEntityAttribute(String dbData) {
+    public List<String> convertToEntityAttribute(String dbData) {
         if (dbData == null) {
-            return Set.of();
+            return List.of();
         }
 
         try {
