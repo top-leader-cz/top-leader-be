@@ -4,7 +4,7 @@
 package com.topleader.topleader.user.assessment;
 
 import com.topleader.topleader.IntegrationTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -24,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Daniel Slavik
  */
 @Sql("/sql/user_info/assessments/user-assessment-test.sql")
-public class UserAssessmentControllerIT extends IntegrationTest {
+class UserAssessmentControllerIT extends IntegrationTest {
 
     @Autowired
     private UserAssessmentRepository userAssessmentRepository;
@@ -32,7 +32,7 @@ public class UserAssessmentControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser
-    public void getUserAssessmentsTest() throws Exception {
+    void getUserAssessmentsTest() throws Exception {
         mvc.perform(get("/api/latest/user-assessments"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("questionAnswered").value(3))
@@ -49,7 +49,7 @@ public class UserAssessmentControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser
-    public void deleteUserAssessmentsTest() throws Exception {
+    void deleteUserAssessmentsTest() throws Exception {
         mvc.perform(delete("/api/latest/user-assessments"))
             .andExpect(status().isOk())
         ;
@@ -59,7 +59,7 @@ public class UserAssessmentControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser
-    public void setUserAssessmentsTest() throws Exception {
+    void setUserAssessmentsTest() throws Exception {
         mvc.perform(post("/api/latest/user-assessments/4")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
@@ -73,13 +73,13 @@ public class UserAssessmentControllerIT extends IntegrationTest {
             .andExpect(jsonPath("answer").value(2))
         ;
 
-        assertThat(userAssessmentRepository.findById(new UserAssessmentId().setQuestionId(4L).setUsername("user")), is(2));
+        assertThat(userAssessmentRepository.findById(new UserAssessmentId().setQuestionId(4L).setUsername("user")).orElseThrow().getAnswer(), is(2));
 
     }
 
     @Test
     @WithMockUser
-    public void getUserAssessmentsByIdTest() throws Exception {
+    void getUserAssessmentsByIdTest() throws Exception {
         mvc.perform(get("/api/latest/user-assessments/3"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("questionId").value(3))

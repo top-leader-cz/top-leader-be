@@ -5,6 +5,7 @@ package com.topleader.topleader.history;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.topleader.topleader.history.data.StoredData;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
@@ -16,7 +17,9 @@ import jakarta.persistence.Converter;
 @Converter
 public class HistoryDataConverter implements AttributeConverter<StoredData, String> {
 
-    private static final ObjectMapper OB = new ObjectMapper();
+    private static final ObjectMapper OB = new ObjectMapper()
+        .registerModule(new JavaTimeModule())
+        ;
 
     @Override
     public String convertToDatabaseColumn(StoredData data) {

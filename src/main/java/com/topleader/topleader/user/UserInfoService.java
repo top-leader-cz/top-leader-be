@@ -59,6 +59,23 @@ public class UserInfoService {
             .apply(username);
     }
 
+    public UserInfo setSessionData(
+        String username,
+        List<String> areaOfDevelopment,
+        String longTermGoal,
+        String motivation
+    ) {
+        return Function.<String>identity()
+            .andThen(this::find)
+            .andThen(info -> info
+                .setAreaOfDevelopment(areaOfDevelopment)
+                .setLongTermGoal(longTermGoal)
+                .setMotivation(motivation)
+            )
+            .andThen(userInfoRepository::save)
+            .apply(username);
+    }
+
     private static UserInfo createEmpty(String username) {
         return new UserInfo()
             .setUsername(username)
