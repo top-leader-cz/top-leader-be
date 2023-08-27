@@ -40,6 +40,7 @@ public class DataHistory {
 
     public enum Type {
         STRENGTHS,
-        VALUES
+        VALUES,
+        USER_SESSION
     }
 }

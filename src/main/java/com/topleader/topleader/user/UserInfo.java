@@ -4,6 +4,7 @@
 package com.topleader.topleader.user;
 
 import com.topleader.topleader.util.converter.SetConverter;
+import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -33,4 +34,10 @@ public class UserInfo {
     private List<String> areaOfDevelopment;
 
     private String notes;
+
+    @Column(length = 1000)
+    private String longTermGoal;
+
+    @Column(length = 2000)
+    private String motivation;
 }
