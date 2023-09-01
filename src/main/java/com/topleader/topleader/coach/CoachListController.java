@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasExperienceBetween;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasExperienceFrom;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasExperienceTo;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFieldsInList;
@@ -114,17 +113,11 @@ public class CoachListController {
             Optional.ofNullable(fields())
                 .ifPresent(fields -> result.add(hasFieldsInList(fields)));
 
-            if (experienceFrom() != null && experienceTo() != null) {
-                result.add(hasExperienceBetween(toDate(experienceFrom()), toDate(experienceTo())));
-            }
+            Optional.ofNullable(experienceFrom())
+                .ifPresent(from -> result.add(hasExperienceFrom(toDate(experienceFrom()))));
 
-            if (experienceFrom() != null && experienceTo() == null) {
-                result.add(hasExperienceFrom(toDate(experienceFrom())));
-            }
-
-            if (experienceFrom() == null && experienceTo() != null) {
-                result.add(hasExperienceTo(toDate(experienceTo())));
-            }
+            Optional.ofNullable(experienceTo())
+                .ifPresent(to -> result.add(hasExperienceTo(toDate(experienceTo()))));
 
             Optional.ofNullable(prices())
                 .ifPresent(prices -> result.add(hasRateInSet(prices)));

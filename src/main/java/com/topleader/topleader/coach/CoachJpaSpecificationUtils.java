@@ -33,10 +33,6 @@ public final class CoachJpaSpecificationUtils {
         );
     }
 
-    public static Specification<Coach> hasExperienceBetween(LocalDate from, LocalDate to) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.between(root.get(EXPERIENCE_FIELD), from, to);
-    }
-
     public static Specification<Coach> hasExperienceFrom(LocalDate from) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.lessThanOrEqualTo(root.get(EXPERIENCE_FIELD), from);
     }

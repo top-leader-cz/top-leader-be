@@ -37,12 +37,15 @@ class UserInfoControllerIT extends IntegrationTest {
     private UserInfoRepository userInfoRepository;
 
     @Test
-    @WithMockUser(username = "user")
+    @WithMockUser(username = "user", authorities = "USER")
     void getEmptyDetailTest() throws Exception {
 
         mvc.perform(get("/api/latest/user-info"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user")))
+            .andExpect(jsonPath("$.timeZone", is("UTC")))
+            .andExpect(jsonPath("$.userRoles", hasSize(1)))
+            .andExpect(jsonPath("$.userRoles", hasItems("USER")))
             .andExpect(jsonPath("$.strengths", hasSize(0)))
             .andExpect(jsonPath("$.values", hasSize(0)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
@@ -51,12 +54,13 @@ class UserInfoControllerIT extends IntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "user2")
+    @WithMockUser(username = "user2", authorities = "USER")
     void getNotEmptyDetailTest() throws Exception {
 
         mvc.perform(get("/api/latest/user-info"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user2")))
+            .andExpect(jsonPath("$.timeZone", is("UTC")))
             .andExpect(jsonPath("$.strengths", hasSize(2)))
             .andExpect(jsonPath("$.strengths", hasItems("s1", "s2")))
             .andExpect(jsonPath("$.values", hasSize(2)))
@@ -68,7 +72,29 @@ class UserInfoControllerIT extends IntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
+    @WithMockUser(username = "user", authorities = "USER")
+    void setTimezoneTest() throws Exception {
+
+        mvc.perform(post("/api/latest/user-info/timezone")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "timezone": "CST"
+                     }
+                                        """)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.username", is("user")))
+            .andExpect(jsonPath("$.timeZone", is("CST")))
+            .andExpect(jsonPath("$.strengths", hasSize(0)))
+            .andExpect(jsonPath("$.values", hasSize(0)))
+            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+            .andExpect(jsonPath("$.notes", nullValue()))
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
     void setStrengthsTest() throws Exception {
 
         mvc.perform(post("/api/latest/user-info/strengths")
@@ -104,7 +130,7 @@ class UserInfoControllerIT extends IntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "user")
+    @WithMockUser(username = "user", authorities = "USER")
     void setValuesTest() throws Exception {
 
         mvc.perform(post("/api/latest/user-info/values")

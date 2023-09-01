@@ -155,8 +155,8 @@ class CoachListControllerIT extends IntegrationTest {
     @WithMockUser
     void searchByExpBetweenTest() throws Exception {
 
-        final var expFrom = LocalDate.now().getYear() - 2018;
-        final var expTo = LocalDate.now().getYear() - 2020;
+        final var expFrom = LocalDate.now().getYear() - 2020;
+        final var expTo = LocalDate.now().getYear() - 2018;
 
         mvc.perform(post("/api/latest/coaches")
             .contentType(MediaType.APPLICATION_JSON)

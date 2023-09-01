@@ -6,16 +6,22 @@ package com.topleader.topleader.user.assessment;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 
 /**
  * @author Daniel Slavik
  */
-@Data
+@Getter
+@Setter
+@ToString
 @Entity
 @Accessors(chain = true)
+@NoArgsConstructor
 @IdClass(UserAssessmentId.class)
 public class UserAssessment {
 
