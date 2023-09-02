@@ -5,18 +5,17 @@ package com.topleader.topleader.message;
 
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import static java.util.stream.Collectors.groupingBy;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toMap;
 
 
@@ -29,46 +28,68 @@ public class MessageService {
 
     private final MessageRepository messageRepository;
 
+    private final UserChatRepository userChatRepository;
+
+    private final LastMessageRepository lastMessageRepository;
+
     public List<ChatInfoDto> getUserChatInfo(String username) {
-        final var unreadMessages = messageRepository.findAllByUserToAndDisplayed(username, Boolean.FALSE).stream()
-            .collect(groupingBy(Message::getUserFrom, Collectors.maxBy(Comparator.comparing(Message::getCreatedAt))));
+
+        final var allChats = userChatRepository.findAllForUser(username).stream()
+            .collect(toMap(chat -> chat.getUser1().equals(username) ? chat.getUser2() : chat.getUser1(), UserChat::getChatId));
+
+        final var lastMessages = Optional.of(lastMessageRepository.findAllByChatIdIn(allChats.values()))
+            .filter(not(List::isEmpty))
+            .map(c ->
+                messageRepository.findAllById(c.stream().map(LastMessage::getMessageId).collect(Collectors.toSet())).stream()
+                    .collect(toMap(Message::getChatId, Function.identity()))
+            ).orElse(Map.of());
+
         final var unreadCountMap = messageRepository.getUnreadMessagesCount(username).stream()
             .collect(toMap(UnreadMessagesCount::getUserFrom, UnreadMessagesCount::getUnread));
 
-        return Stream.concat(
-                unreadMessages.keySet().stream(),
-                unreadCountMap.keySet().stream()
-            ).collect(Collectors.toSet()).stream()
-            .map(userFrom -> new ChatInfoDto(
-                userFrom,
-                unreadCountMap.get(userFrom),
-                unreadMessages.getOrDefault(userFrom, Optional.empty()).map(Message::getMessageData).orElse(null))
-            )
+        return allChats.entrySet().stream()
+            .map(e -> new ChatInfoDto(
+                e.getKey(),
+                unreadCountMap.getOrDefault(e.getKey(), 0L),
+                lastMessages.get(e.getValue()).getMessageData(),
+                lastMessages.get(e.getValue()).getCreatedAt()
+            ))
             .toList();
-
-
     }
 
     @Transactional
     public Page<Message> findUserMessages(String username, String addressee, Pageable pageable) {
-        markAllMessagesAsDisplayed(username, addressee);
-        final var addresses = Set.of(username, addressee);
 
-        return messageRepository.findByUserFromInAndUserToIn(addresses, addresses, pageable);
+        return userChatRepository.findUserChat(username, addressee)
+            .map(userChat -> {
+                markAllMessagesAsDisplayed(username, addressee);
+                return messageRepository.findAllByChatId(userChat.getChatId(), pageable);
+            })
+            .orElse(Page.empty());
     }
 
     @Transactional
     public void sendMessage(String username, String addressee, String messageData) {
 
+        final var chat = userChatRepository.findUserChat(username, addressee)
+            .orElseGet(() -> userChatRepository.save(new UserChat().setUser1(username).setUser2(addressee)));
+
         final var time = LocalDateTime.now();
 
-        messageRepository.save(
+        final var message = messageRepository.save(
             new Message()
+                .setChatId(chat.getChatId())
                 .setUserFrom(username)
                 .setUserTo(addressee)
                 .setMessageData(messageData)
                 .setCreatedAt(time)
                 .setDisplayed(true)
+        );
+
+        lastMessageRepository.save(
+            new LastMessage()
+                .setChatId(chat.getChatId())
+                .setMessageId(message.getId())
         );
 
     }
@@ -77,6 +98,6 @@ public class MessageService {
         messageRepository.setAllUserMessagesAsDisplayed(username, addressee);
     }
 
-    public record ChatInfoDto(String username, Long unreadMessageCount, String lastMessage) {
+    public record ChatInfoDto(String username, Long unreadMessageCount, String lastMessage, LocalDateTime createdAt) {
     }
 }

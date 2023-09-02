@@ -18,7 +18,7 @@ import org.springframework.data.jpa.repository.Query;
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
     Page<Message> findByUserFromInAndUserToIn(Set<String> userFrom, Set<String>  userTo, Pageable pageable);
-
+    Page<Message> findAllByChatId(Long chatId, Pageable pageable);
     @Modifying
     @Query("update Message set displayed = true where userFrom = :username and userTo = :addressee")
     void setAllUserMessagesAsDisplayed(String username, String addressee);
