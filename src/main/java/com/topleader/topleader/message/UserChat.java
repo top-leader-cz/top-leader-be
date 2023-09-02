@@ -3,14 +3,13 @@
  */
 package com.topleader.topleader.message;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import jakarta.persistence.UniqueConstraint;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -25,28 +24,17 @@ import lombok.experimental.Accessors;
 @Setter
 @ToString
 @Entity
-@Accessors(chain = true)
 @NoArgsConstructor
-@Table(name = "user_message")
-public class Message {
+@Accessors(chain = true)
+@Table(uniqueConstraints = {@UniqueConstraint(columnNames = {"user1", "user2"})})
+public class UserChat {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_id_seq")
-    @SequenceGenerator(name = "message_id_seq", sequenceName = "message_id_seq", allocationSize = 1)
-    private Long id;
-
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "chat_id_seq")
+    @SequenceGenerator(name = "chat_id_seq", sequenceName = "chat_id_seq", allocationSize = 1)
     private Long chatId;
 
-    private String userFrom;
+    private String user1;
 
-    private String userTo;
-
-    @Column(length = 1000)
-    private String messageData;
-
-    private Boolean displayed;
-
-    private LocalDateTime createdAt;
-
-
+    private String user2;
 }
