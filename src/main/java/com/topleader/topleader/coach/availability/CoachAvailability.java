@@ -11,16 +11,22 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 
 /**
  * @author Daniel Slavik
  */
-@Data
+@Getter
+@Setter
+@ToString
 @Entity
 @Accessors(chain = true)
+@NoArgsConstructor
 public class CoachAvailability {
 
     @Id

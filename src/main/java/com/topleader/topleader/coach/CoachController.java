@@ -65,9 +65,6 @@ public class CoachController {
         @Size(max = 1000)
         String bio,
 
-        @Size(max = 240)
-        String timeZone,
-
         @NotNull
         Set<String> languages,
 
@@ -79,7 +76,7 @@ public class CoachController {
         @NotNull
         String rate
     ) {
-        public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, null, Set.of(), Set.of(), null, null);
+        public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, Set.of(), Set.of(), null, null);
 
         public static CoachDto from(Coach c) {
             return new CoachDto(
@@ -89,7 +86,6 @@ public class CoachController {
                 c.getEmail(),
                 c.getPhoto(),
                 c.getBio(),
-                c.getTimeZone(),
                 c.getLanguages(),
                 c.getFields(),
                 c.getExperienceSince(),
@@ -106,7 +102,6 @@ public class CoachController {
                 .setEmail(email)
                 .setPhoto(photo)
                 .setBio(bio)
-                .setTimeZone(timeZone)
                 .setLanguages(languages)
                 .setFields(fields)
                 .setExperienceSince(experienceSince)

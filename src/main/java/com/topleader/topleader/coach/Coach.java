@@ -11,16 +11,22 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Lob;
 import java.time.LocalDate;
 import java.util.Set;
-import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 
 /**
  * @author Daniel Slavik
  */
-@Data
+@Getter
+@Setter
+@ToString
 @Entity
 @Accessors(chain = true)
+@NoArgsConstructor
 public class Coach {
 
     @Id
@@ -40,8 +46,6 @@ public class Coach {
 
     @Column(length = 1000)
     private String bio;
-
-    private String timeZone;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> languages;

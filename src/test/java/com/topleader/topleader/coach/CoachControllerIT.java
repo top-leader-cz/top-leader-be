@@ -16,7 +16,6 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -48,7 +47,6 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("email", nullValue()))
             .andExpect(jsonPath("photo", nullValue()))
             .andExpect(jsonPath("bio", nullValue()))
-            .andExpect(jsonPath("timeZone", nullValue()))
             .andExpect(jsonPath("languages", hasSize(0)))
             .andExpect(jsonPath("fields", hasSize(0)))
             .andExpect(jsonPath("experienceSince", nullValue()))
@@ -63,14 +61,12 @@ class CoachControllerIT extends IntegrationTest {
 
         mvc.perform(get("/api/latest/coach-info"))
             .andExpect(status().isOk())
-            .andDo(print())
             .andExpect(jsonPath("publicProfile", is(true)))
             .andExpect(jsonPath("firstName", is("firstName")))
             .andExpect(jsonPath("lastName", is("lastName")))
             .andExpect(jsonPath("email", is("cool@email.cz")))
             .andExpect(jsonPath("photo", nullValue()))
             .andExpect(jsonPath("bio", is("some bio")))
-            .andExpect(jsonPath("timeZone", is("UTC")))
             .andExpect(jsonPath("languages", hasSize(2)))
             .andExpect(jsonPath("languages", hasItems("cz", "aj")))
             .andExpect(jsonPath("fields", hasSize(2)))
@@ -107,7 +103,6 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("email", is("cool@email.cz")))
             .andExpect(jsonPath("photo", nullValue()))
             .andExpect(jsonPath("bio", is("some bio")))
-            .andExpect(jsonPath("timeZone", is("UTC")))
             .andExpect(jsonPath("languages", hasSize(2)))
             .andExpect(jsonPath("languages", hasItems("cz", "aj")))
             .andExpect(jsonPath("fields", hasSize(2)))

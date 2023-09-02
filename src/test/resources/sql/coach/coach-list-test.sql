@@ -4,10 +4,10 @@ VALUES ('coach1', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO'
        ('coach3', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', true, '["USER", "COACH"]');
 
 
-INSERT INTO coach (username, public_profile, first_name, last_name, email, photo, bio, time_zone, experience_since, rate)
-VALUES ('coach1', true, 'John', 'Doe', 'john.doe@example.com', null, 'Experienced coach', 'UTC', '2021-01-01', '$'),
-       ('coach2', true, 'Jane', 'Smith', 'jane.smith@example.com', null, 'Passionate about coaching', 'GMT', '2017-05-15', '$$'),
-       ('coach3', true, 'Michael', 'Johnson', 'michael.johnson@example.com', null, 'Certified fitness coach', 'PST', '2019-09-10', '$$$');
+INSERT INTO coach (username, public_profile, first_name, last_name, email, photo, bio, experience_since, rate)
+VALUES ('coach1', true, 'John', 'Doe', 'john.doe@example.com', null, 'Experienced coach', '2021-01-01', '$'),
+       ('coach2', true, 'Jane', 'Smith', 'jane.smith@example.com', null, 'Passionate about coaching', '2017-05-15', '$$'),
+       ('coach3', true, 'Michael', 'Johnson', 'michael.johnson@example.com', null, 'Certified fitness coach', '2019-09-10', '$$$');
 
 INSERT INTO coach_languages (coach_username, languages)
 VALUES ('coach1', 'English'),

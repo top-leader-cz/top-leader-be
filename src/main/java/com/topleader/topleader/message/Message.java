@@ -1,16 +1,15 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.history;
+package com.topleader.topleader.message;
 
-import com.topleader.topleader.history.data.StoredData;
-import jakarta.persistence.Convert;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,25 +27,24 @@ import lombok.experimental.Accessors;
 @Entity
 @Accessors(chain = true)
 @NoArgsConstructor
-public class DataHistory {
+@Table(name = "user_message")
+public class Message {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "message_id_seq")
+    @SequenceGenerator(name = "message_id_seq", sequenceName = "message_id_seq", allocationSize = 1)
     private Long id;
 
-    private String username;
+    private String userFrom;
 
-    @Enumerated(EnumType.STRING)
-    private Type type;
+    private String userTo;
+
+    @Column(length = 1000)
+    private String messageData;
+
+    private Boolean displayed;
 
     private LocalDateTime createdAt;
 
-    @Convert(converter = HistoryDataConverter.class)
-    private StoredData data;
 
-    public enum Type {
-        STRENGTHS,
-        VALUES,
-        USER_SESSION
-    }
 }
