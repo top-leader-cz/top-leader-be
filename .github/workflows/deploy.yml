@@ -47,6 +47,6 @@ jobs:
           version: '>= 363.0.0'
 
       - name: Deploy top-leader-be
-        run: mvn package appengine:deploy -Dapp.deploy.projectId=topleader-394306
+        run: mvn package --file pom.xml appengine:deploy -Dapp.deploy.projectId=topleader-394306 --file pom.xml
 
   
