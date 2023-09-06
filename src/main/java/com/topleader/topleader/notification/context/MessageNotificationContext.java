@@ -1,11 +1,10 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.history.data;
+package com.topleader.topleader.notification.context;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import java.util.List;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -16,8 +15,8 @@ import lombok.experimental.Accessors;
 @Data
 @Accessors(chain = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@JsonTypeName(StoredData.VALUES_TYPE)
-public class ValuesStoredData implements StoredData {
-
-    private List<String> values;
+@JsonTypeName(NotificationContext.MESSAGE_CONTEXT)
+public class MessageNotificationContext implements NotificationContext {
+    private String fromUser;
+    private String message;
 }

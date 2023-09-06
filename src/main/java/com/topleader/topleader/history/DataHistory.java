@@ -4,6 +4,7 @@
 package com.topleader.topleader.history;
 
 import com.topleader.topleader.history.data.StoredData;
+import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -42,6 +43,7 @@ public class DataHistory {
     private LocalDateTime createdAt;
 
     @Convert(converter = HistoryDataConverter.class)
+    @Column(columnDefinition = "text")
     private StoredData data;
 
     public enum Type {

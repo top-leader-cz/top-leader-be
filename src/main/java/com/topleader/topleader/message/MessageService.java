@@ -3,6 +3,9 @@
  */
 package com.topleader.topleader.message;
 
+import com.topleader.topleader.notification.Notification;
+import com.topleader.topleader.notification.NotificationService;
+import com.topleader.topleader.notification.context.MessageNotificationContext;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +34,8 @@ public class MessageService {
     private final UserChatRepository userChatRepository;
 
     private final LastMessageRepository lastMessageRepository;
+
+    private final NotificationService notificationService;
 
     public List<ChatInfoDto> getUserChatInfo(String username) {
 
@@ -90,6 +95,16 @@ public class MessageService {
             new LastMessage()
                 .setChatId(chat.getChatId())
                 .setMessageId(message.getId())
+        );
+
+        notificationService.addNotification(
+            new NotificationService.CreateNotificationRequest(
+                addressee,
+                Notification.Type.MESSAGE,
+                 new MessageNotificationContext()
+                    .setFromUser(username)
+                    .setMessage(messageData)
+            )
         );
 
     }
