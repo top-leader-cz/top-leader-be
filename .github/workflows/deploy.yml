@@ -39,6 +39,15 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - uses: actions/checkout@v3
+
+      - name: Deploy top-leader-be
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
       - name: Cloud Authentication
         uses: google-github-actions/auth@v0
         with:
@@ -48,14 +57,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           version: '>= 363.0.0'
-
-      - uses: actions/checkout@v3
-      - name: Deploy top-leader-be
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: maven
           
       - name: Display structure of downloaded files
         run: pwd & ls -l
