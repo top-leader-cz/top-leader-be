@@ -58,7 +58,7 @@ jobs:
           cache: maven
 
       - name: Deploy with Maven
-        run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306
+        run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
 
 
   
