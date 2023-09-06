@@ -16,9 +16,7 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v3
     - name: Set up JDK 17
@@ -29,5 +27,26 @@ jobs:
         cache: maven
     - name: Build with Maven
       run: mvn -B verify --file pom.xml
+
+  deploy:
+    name: Deploy top-leader-fe
+    if: github.ref == 'refs/heads/main'
+    needs: [ build ]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Cloud Authentication
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: '>= 363.0.0'
+
+      - name: Deploy top-leader-be
+        run: mvn package appengine:deploy -Dapp.deploy.projectId=topleader-394306
 
   
