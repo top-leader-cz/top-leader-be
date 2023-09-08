@@ -40,6 +40,9 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v3
+      - uses: 73h/gae-app-yaml-replace-env-variables@v0.3
+        env:
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
 
       - name: Deploy top-leader-be
         uses: actions/setup-java@v3
