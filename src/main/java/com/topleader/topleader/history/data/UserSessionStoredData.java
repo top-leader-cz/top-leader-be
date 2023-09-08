@@ -8,7 +8,6 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 
@@ -17,10 +16,9 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeName(StoredData.USER_SESSION_TYPE)
-public class UserSessionStoredData extends StoredData {
+public class UserSessionStoredData implements StoredData {
 
     List<String> areaOfDevelopment;
     String longTermGoal;

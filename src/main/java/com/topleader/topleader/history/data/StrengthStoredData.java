@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import java.util.List;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 
@@ -16,10 +15,9 @@ import lombok.experimental.Accessors;
  */
 @Data
 @Accessors(chain = true)
-@EqualsAndHashCode(callSuper = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonTypeName(StoredData.STRENGTH_TYPE)
-public class StrengthStoredData extends StoredData {
+public class StrengthStoredData implements StoredData {
 
     private List<String> strengths;
 }
