@@ -58,6 +58,9 @@ jobs:
         with:
           version: '>= 363.0.0'
 
+      - name: Deploy workaround
+        run: gcloud config set app/use_deprecated_preparation True
+
       - name: Deploy with Maven
         run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
 
