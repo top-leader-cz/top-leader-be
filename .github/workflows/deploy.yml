@@ -57,9 +57,6 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           version: '>= 363.0.0'
-          
-      - name: Display structure of downloaded files
-        run: pwd & ls -l
 
       - name: Deploy with Maven
         run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
