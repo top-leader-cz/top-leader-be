@@ -64,23 +64,23 @@ jobs:
 #        run: gcloud config set app/use_deprecated_preparation True
 
       - name: Deploy with Maven
-#        run: mvn verify
-        run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
+        run: mvn package
+#        run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
 
-#      - name: Upload .jar to Bucket
-#        uses: google-github-actions/upload-cloud-storage@v1
-#        with:
-#          parent: false
-#          path: target/top-leader.jar
-#          destination: top-leader-be-deploy
-#
-#      - name: Upload app.yaml to Bucket
-#        uses: google-github-actions/upload-cloud-storage@v1
-#        with:
-#          parent: false
-#          path: src/main/appengine/app.yaml
-#          destination: top-leader-be-deploy
-#
-#      - name: Jar deploy from bucket
-#        run: gcloud config set project topleader-394306 & gcloud app deploy --bucket=gs://top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
-#
+      - name: Upload .jar to Bucket
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          parent: false
+          path: target/top-leader.jar
+          destination: top-leader-be-deploy
+
+      - name: Upload app.yaml to Bucket
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          parent: false
+          path: src/main/appengine/app.yaml
+          destination: top-leader-be-deploy
+
+      - name: Jar deploy from bucket
+        run: gcloud app deploy --project=topleader-394306 --bucket=gs://top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
+
