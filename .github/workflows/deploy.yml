@@ -67,14 +67,14 @@ jobs:
         run: mvn verify
      #   run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA") -D
 
-      - name: Upload target to Bucket
+      - name: Upload .jar to Bucket
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           parent: false
-          path: target
+          path: target/top-leader.jar
           destination: top-leader-be-deploy
 
-      - name: Upload target to Bucket
+      - name: Upload app.yaml to Bucket
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           parent: false
@@ -85,7 +85,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
            version: '>= 445.0.0'
-#
-#      - name: Jar deploy from bucket
-#        run: gcloud app deploy --bucket --bucket=top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")
-#
+
+      - name: Jar deploy from bucket
+        run: gcloud app deploy --bucket --bucket=top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")
+
