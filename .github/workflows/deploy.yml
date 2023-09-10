@@ -69,17 +69,17 @@ jobs:
       - name: Upload .jar to Bucket
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          path: target/top-leader.jar
+          path: target
           destination: top-leader-be-deploy/top-leader.jar
 
       - name: Upload app.yaml to Bucket
         uses: google-github-actions/upload-cloud-storage@v1
         with:
           path: src/main/appengine/app.yaml
-          destination: top-leader-be-deploy/app.yaml
+          destination: top-leader-be-deploy
 
-#      - name: Deploy workaround
-#        run: gcloud config set app/use_deprecated_preparation True
+      - name: Deploy workaround
+        run: pwd & ls -l
 
       - name: Jar deploy from bucket
         run: gcloud app deploy --project=topleader-394306 --bucket=gs://top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
