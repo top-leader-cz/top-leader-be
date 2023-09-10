@@ -81,11 +81,6 @@ jobs:
 #          path: src/main/appengine/app.yaml
 #          destination: top-leader-be-deploy
 #
-#      - name: Set up Cloud SDK
-#        uses: google-github-actions/setup-gcloud@v1
-#        with:
-#           version: '>= 445.0.0'
-#
 #      - name: Jar deploy from bucket
 #        run: gcloud config set project topleader-394306 & gcloud app deploy --bucket=gs://top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
 #
