@@ -6,9 +6,9 @@ basic_scaling:
 env_variables:
   SPRING_DATASOURCE_PASSWORD: $SPRING_DATASOURCE_PASSWORD
 
-handlers:
-  - url: /*
-    static_files: None
-    upload: None
-    http_headers:
-      Access-Control-Allow-Origin: "*"
+#handlers:
+#  - url: /*
+#    static_files: None
+#    upload: None
+#    http_headers:
+#      Access-Control-Allow-Origin: "*"
