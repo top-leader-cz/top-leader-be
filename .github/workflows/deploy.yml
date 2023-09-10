@@ -60,8 +60,7 @@ jobs:
         with:
           version: '>= 445.0.0'
 
-#      - name: Deploy workaround
-#        run: gcloud config set app/use_deprecated_preparation True
+
 
       - name: Deploy with Maven
         run: mvn package
@@ -81,6 +80,9 @@ jobs:
           path: src/main/appengine/app.yaml
           destination: top-leader-be-deploy
 
+      - name: Deploy workaround
+        run: gcloud config set app/use_deprecated_preparation True
+        
       - name: Jar deploy from bucket
         run: gcloud app deploy --project=topleader-394306 --bucket=gs://top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
 
