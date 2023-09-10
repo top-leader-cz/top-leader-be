@@ -87,5 +87,5 @@ jobs:
            version: '>= 445.0.0'
 
       - name: Jar deploy from bucket
-        run: gcloud config set project topleader-394306 & gcloud app deploy --bucket=top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")
+        run: gcloud config set project topleader-394306 & gcloud app deploy --bucket=gs://top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")
 
