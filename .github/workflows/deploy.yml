@@ -37,11 +37,11 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v3
-      - uses: 73h/gae-app-yaml-replace-env-variables@v0.3
-        with:
-          app_yaml_path: src/main/appengine/app.yaml
-        env:
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+#      - uses: 73h/gae-app-yaml-replace-env-variables@v0.3
+#        with:
+#          app_yaml_path: src/main/appengine/app.yaml
+#        env:
+#          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
 
       - name: Deploy top-leader-be
         uses: actions/setup-java@v3
@@ -50,10 +50,10 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-#      - name: Cloud Authentication
-#        uses: google-github-actions/auth@v0
-#        with:
-#          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+      - name: Cloud Authentication
+        uses: google-github-actions/auth@v0
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
 #      - name: Set up Cloud SDK
 #        uses: google-github-actions/setup-gcloud@v1
