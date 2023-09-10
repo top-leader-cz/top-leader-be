@@ -82,8 +82,8 @@ jobs:
         run: pwd & ls -l
 
       - name: ls 2
-        run: cd target & ls -l
+        run: ls target
 
-      - name: Jar deploy from bucket
+      - name: App Deploy
         run: gcloud app deploy --project=topleader-394306 --appyaml=src/main/appengine/app.yaml --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
 
