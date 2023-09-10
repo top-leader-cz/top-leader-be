@@ -69,14 +69,12 @@ jobs:
       - name: Upload .jar to Bucket
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          parent: false
           path: target/top-leader.jar
           destination: top-leader-be-deploy
 
       - name: Upload app.yaml to Bucket
         uses: google-github-actions/upload-cloud-storage@v1
         with:
-          parent: false
           path: src/main/appengine/app.yaml
           destination: top-leader-be-deploy
 
