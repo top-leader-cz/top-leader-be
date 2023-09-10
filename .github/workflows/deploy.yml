@@ -54,17 +54,38 @@ jobs:
         uses: google-github-actions/auth@v0
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
-        with:
-          version: '>= 445.0.0'
+#
+#      - name: Set up Cloud SDK
+#        uses: google-github-actions/setup-gcloud@v1
+#        with:
+#          version: '>= 445.0.0'
 
 #      - name: Deploy workaround
 #        run: gcloud config set app/use_deprecated_preparation True
 
       - name: Deploy with Maven
-        run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
+      - run: mvn verify
+     #   run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA") -D
 
+      - name: Upload target to Bucket
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          parent: false
+          path: target
+          destination: top-leader-be-deploy
 
+      - name: Upload target to Bucket
+        uses: google-github-actions/upload-cloud-storage@v1
+        with:
+          parent: false
+          path: src/main/appengine/app.yaml
+          destination: top-leader-be-deploy
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+           version: '>= 445.0.0'
+
+      - name: Jar deploy from bucket
+        run: gcloud app deploy --bucket --bucket=top-leader-be-deploy --version=$(git rev-parse --short "$GITHUB_SHA")
   
