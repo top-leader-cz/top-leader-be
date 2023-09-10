@@ -78,8 +78,11 @@ jobs:
 #          path: src/main/appengine/app.yaml
 #          destination: top-leader-be-deploy
 
-      - name: Deploy workaround
+      - name: ls 1
         run: pwd & ls -l
+
+      - name: ls 2
+        run: cd target & ls -l
 
       - name: Jar deploy from bucket
         run: gcloud app deploy --project=topleader-394306 --appyaml=src/main/appengine/app.yaml --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
