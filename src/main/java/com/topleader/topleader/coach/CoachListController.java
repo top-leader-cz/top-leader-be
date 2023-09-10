@@ -3,6 +3,8 @@
  */
 package com.topleader.topleader.coach;
 
+import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.util.image.ImageUtil;
 import com.topleader.topleader.util.page.PageDto;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +17,11 @@ import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,6 +45,19 @@ public class CoachListController {
 
     private final CoachRepository coachRepository;
 
+    private final CoachImageRepository coachImageRepository;
+
+    @GetMapping("/{username}/photo")
+    public ResponseEntity<byte[]> getCoachPhoto(@PathVariable String username) {
+
+        return coachImageRepository.findById(username)
+            .map(i -> ResponseEntity.status(HttpStatus.OK)
+                .contentType(MediaType.valueOf(i.getType()))
+                .body(ImageUtil.decompressImage(i.getImageData()))
+            )
+            .orElseThrow(NotFoundException::new);
+    }
+
     @PostMapping
     public Page<CoachListDto> findCoaches(@RequestBody @Valid FilterRequest request) {
         return findCoaches(request.toSpecification(), request.page().toPageable())
@@ -57,8 +77,6 @@ public class CoachListController {
         String lastName,
         String email,
 
-        byte[] photo,
-
         String bio,
 
         Set<String> languages,
@@ -75,7 +93,6 @@ public class CoachListController {
                 c.getFirstName(),
                 c.getLastName(),
                 c.getEmail(),
-                c.getPhoto(),
                 c.getBio(),
                 c.getLanguages(),
                 c.getFields(),
