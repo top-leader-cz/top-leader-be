@@ -3,7 +3,7 @@
   "firstName": "firstName",
   "lastName": "lastName",
   "email": "cool@email.cz",
-  "photo": null,
+  "webLink": "http://some_video1",
   "bio": "some bio",
   "languages": [
     "cz",

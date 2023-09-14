@@ -8,7 +8,6 @@ import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
 import java.time.LocalDate;
 import java.util.Set;
 import lombok.Getter;
@@ -40,9 +39,8 @@ public class Coach {
 
     private String email;
 
-    @Lob
     @Column(length = 1000)
-    private byte[] photo;
+    private String webLink;
 
     @Column(length = 1000)
     private String bio;

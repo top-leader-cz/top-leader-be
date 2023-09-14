@@ -4,16 +4,23 @@
 package com.topleader.topleader.coach;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.util.image.ImageUtil;
 import java.time.LocalDate;
+import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 /**
@@ -22,19 +29,52 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql("/sql/coach/coach-list-test.sql")
 class CoachListControllerIT extends IntegrationTest {
 
+    @Autowired
+    private CoachImageRepository coachImageRepository;
+
+    @Test
+    @WithMockUser
+    void getCoachPhoto() throws Exception {
+
+        coachImageRepository.save(
+            new CoachImage()
+                .setUsername("coach1")
+                .setType(MediaType.IMAGE_PNG_VALUE)
+                .setImageData(ImageUtil.compressImage("image-data".getBytes()))
+        );
+
+        final var result = mvc.perform(get("/api/latest/coaches/coach1/photo"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.IMAGE_PNG))
+            .andReturn();
+
+        final var imageData = new String(result.getResponse().getContentAsByteArray());
+
+        assertThat(imageData, is("image-data"));
+    }
+
+    @Test
+    @WithMockUser
+    void getCoachPhotoNotFound() throws Exception {
+
+        mvc.perform(get("/api/latest/coaches/coach1/photo"))
+            .andExpect(status().isNotFound())
+        ;
+    }
+
     @Test
     @WithMockUser
     void searchByFirstNameTest() throws Exception {
 
         mvc.perform(post("/api/latest/coaches")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                    "page": {},
-                    "name": "Mich"
-                }
-                """)
-        )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "page": {},
+                        "name": "Mich"
+                    }
+                    """)
+            )
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].username", is("coach3")))
         ;
@@ -45,14 +85,14 @@ class CoachListControllerIT extends IntegrationTest {
     void searchByLastNameTest() throws Exception {
 
         mvc.perform(post("/api/latest/coaches")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                    "page": {},
-                    "name": "Sm"
-                }
-                """)
-        )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "page": {},
+                        "name": "Sm"
+                    }
+                    """)
+            )
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].username", is("coach2")))
         ;
@@ -63,14 +103,14 @@ class CoachListControllerIT extends IntegrationTest {
     void searchByLanguagesTest() throws Exception {
 
         mvc.perform(post("/api/latest/coaches")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                    "page": {},
-                    "languages": ["French", "Unknown"]
-                }
-                """)
-        )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "page": {},
+                        "languages": ["French", "Unknown"]
+                    }
+                    """)
+            )
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].username", is("coach1")))
         ;
@@ -81,14 +121,14 @@ class CoachListControllerIT extends IntegrationTest {
     void searchByFieldsTest() throws Exception {
 
         mvc.perform(post("/api/latest/coaches")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                    "page": {},
-                    "fields": ["Yoga", "Unknown"]
-                }
-                """)
-        )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "page": {},
+                        "fields": ["Yoga", "Unknown"]
+                    }
+                    """)
+            )
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].username", is("coach2")))
         ;
@@ -99,14 +139,14 @@ class CoachListControllerIT extends IntegrationTest {
     void searchByPricesTest() throws Exception {
 
         mvc.perform(post("/api/latest/coaches")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content("""
-                {
-                    "page": {},
-                    "prices": ["$", "Unknown"]
-                }
-                """)
-        )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "page": {},
+                        "prices": ["$", "Unknown"]
+                    }
+                    """)
+            )
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].username", is("coach1")))
         ;
@@ -119,14 +159,14 @@ class CoachListControllerIT extends IntegrationTest {
         final var expFrom = LocalDate.now().getYear() - 2018;
 
         mvc.perform(post("/api/latest/coaches")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(String.format("""
-                {
-                    "page": {},
-                    "experienceFrom": %s
-                }
-                """, expFrom))
-        )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                    {
+                        "page": {},
+                        "experienceFrom": %s
+                    }
+                    """, expFrom))
+            )
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].username", is("coach2")))
         ;
@@ -139,18 +179,19 @@ class CoachListControllerIT extends IntegrationTest {
         final var expTo = LocalDate.now().getYear() - 2021;
 
         mvc.perform(post("/api/latest/coaches")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(String.format("""
-                {
-                    "page": {},
-                    "experienceTo": %s
-                }
-                """, expTo))
-        )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                    {
+                        "page": {},
+                        "experienceTo": %s
+                    }
+                    """, expTo))
+            )
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].username", is("coach1")))
         ;
     }
+
     @Test
     @WithMockUser
     void searchByExpBetweenTest() throws Exception {
@@ -159,15 +200,15 @@ class CoachListControllerIT extends IntegrationTest {
         final var expTo = LocalDate.now().getYear() - 2018;
 
         mvc.perform(post("/api/latest/coaches")
-            .contentType(MediaType.APPLICATION_JSON)
-            .content(String.format("""
-                {
-                    "page": {},
-                    "experienceFrom": %s,
-                    "experienceTo": %s
-                }
-                """, expFrom, expTo))
-        )
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                    {
+                        "page": {},
+                        "experienceFrom": %s,
+                        "experienceTo": %s
+                    }
+                    """, expFrom, expTo))
+            )
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].username", is("coach3")))
         ;
@@ -182,11 +223,11 @@ class CoachListControllerIT extends IntegrationTest {
         mvc.perform(post("/api/latest/coaches")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                {
-                    "page": {},
-                    "name": "Mich"
-                }
-                """)
+                    {
+                        "page": {},
+                        "name": "Mich"
+                    }
+                    """)
             )
             .andExpect(jsonPath("$.content", hasSize(1)))
             .andExpect(jsonPath("$.content[0].username", is("coach3")))
