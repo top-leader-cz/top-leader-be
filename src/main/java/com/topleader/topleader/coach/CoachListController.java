@@ -3,6 +3,10 @@
  */
 package com.topleader.topleader.coach;
 
+import com.topleader.topleader.coach.availability.AvailabilityType;
+import com.topleader.topleader.coach.availability.CoachAvailabilityController;
+import com.topleader.topleader.coach.availability.CoachAvailabilityService;
+import com.topleader.topleader.coach.availability.DayType;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.util.image.ImageUtil;
 import com.topleader.topleader.util.page.PageDto;
@@ -11,6 +15,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -25,6 +30,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasExperienceFrom;
@@ -33,6 +39,9 @@ import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFields
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 
 /**
@@ -46,6 +55,18 @@ public class CoachListController {
     private final CoachRepository coachRepository;
 
     private final CoachImageRepository coachImageRepository;
+
+    private final CoachAvailabilityService coachAvailabilityService;
+
+    @GetMapping("/{username}/availability")
+    public Map<DayType, List<CoachAvailabilityController.CoachAvailabilityDto>> getCoachAvailability(
+        @PathVariable String username,
+        @RequestParam LocalDate firstDayOfTheWeek
+    ) {
+        return coachAvailabilityService.getWeekAvailability(username, firstDayOfTheWeek, AvailabilityType.ALL).stream()
+            .map(a -> Map.entry(a.getDay(), CoachAvailabilityController.CoachAvailabilityDto.from(a)))
+            .collect(groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
+    }
 
     @GetMapping("/{username}/photo")
     public ResponseEntity<byte[]> getCoachPhoto(@PathVariable String username) {
