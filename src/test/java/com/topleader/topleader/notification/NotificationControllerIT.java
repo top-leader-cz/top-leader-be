@@ -4,7 +4,7 @@
 package com.topleader.topleader.notification;
 
 import com.topleader.topleader.IntegrationTest;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.test.context.support.WithMockUser;

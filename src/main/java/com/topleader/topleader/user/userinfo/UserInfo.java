@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.user.userinfo;
 
+import com.topleader.topleader.user.User;
 import com.topleader.topleader.util.converter.SetConverter;
 import jakarta.persistence.*;
 
@@ -47,6 +48,10 @@ public class UserInfo {
 
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "username")
+    private User user;
 
     public enum Status {
         AUTHORIZED, PENDING, PAID

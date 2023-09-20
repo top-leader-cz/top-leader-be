@@ -5,12 +5,10 @@ package com.topleader.topleader;
 
 import com.topleader.topleader.configuration.EnablePostgresTestContainerContextCustomizerFactory;
 import org.jetbrains.annotations.NotNull;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.test.context.TestExecutionListeners;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -23,7 +21,6 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
  * @author Daniel Slavik
  */
 @Testcontainers
-@RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @TestExecutionListeners(mergeMode =
     TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS,

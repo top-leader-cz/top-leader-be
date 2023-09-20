@@ -1,4 +1,4 @@
-package com.topleader.topleader.user;
+package com.topleader.topleader.user.userinfo;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.history.DataHistory;
@@ -7,7 +7,6 @@ import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.data.ValuesStoredData;
 import java.util.List;
 
-import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

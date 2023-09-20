@@ -20,7 +20,7 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    password: dummy
+    password: pjcovqnwxocfnvjg
     properties:
       mail:
         transport:
@@ -33,3 +33,5 @@ spring:
 
 top-leader:
   app-url: http://34.36.149.115
+  supported-invitations: en, cs, fr
+  default-locale: en

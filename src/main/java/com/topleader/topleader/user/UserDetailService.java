@@ -26,9 +26,7 @@ public class UserDetailService implements UserDetailsService {
     }
 
     public com.topleader.topleader.user.User addUser(com.topleader.topleader.user.User user) {
-        var saved =  userRepository.save(user);
-
-        return  saved;
+       return userRepository.save(user);
     }
 }
 

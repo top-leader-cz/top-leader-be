@@ -32,7 +32,7 @@ public class User {
 
     private String timeZone;
 
-    @OneToOne(cascade ={CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY, mappedBy = "user")
     private UserInfo userInfo;
 
     public enum Authority {
