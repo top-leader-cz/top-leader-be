@@ -4,6 +4,7 @@
 package com.topleader.topleader.coach;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.util.image.ImageUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -169,4 +170,15 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("rate", is("$$$")))
         ;
     }
+
+
+    @Autowired
+    private EmailService emailService;
+    @Test
+    @WithMockUser(username = "no_coach")
+    void a() throws Exception {
+        emailService.sendEmail("jakub.krhovjak@protonmail.com", "test", "test body");
+    }
+
+
 }

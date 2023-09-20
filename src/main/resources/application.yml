@@ -17,3 +17,19 @@ spring:
     placeholder-replacement: false
     baseline-on-migrate: true
     validate-on-migrate: true
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    password: dummy
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
+
+top-leader:
+  app-url: http://34.36.149.115

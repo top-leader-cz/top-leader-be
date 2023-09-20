@@ -6,6 +6,8 @@ import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.data.ValuesStoredData;
 import java.util.List;
+
+import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

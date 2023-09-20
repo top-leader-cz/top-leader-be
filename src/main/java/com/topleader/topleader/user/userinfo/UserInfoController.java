@@ -1,8 +1,10 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.user;
+package com.topleader.topleader.user.userinfo;
 
+import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;

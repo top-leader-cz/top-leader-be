@@ -1,13 +1,11 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.user;
+package com.topleader.topleader.user.userinfo;
 
 import com.topleader.topleader.util.converter.SetConverter;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,4 +44,12 @@ public class UserInfo {
 
     @Column(length = 2000)
     private String motivation;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    public enum Status {
+        AUTHORIZED, PENDING, PAID
+
+   }
 }

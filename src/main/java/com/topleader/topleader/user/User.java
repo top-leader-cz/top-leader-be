@@ -1,10 +1,9 @@
 package com.topleader.topleader.user;
 
 
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.topleader.topleader.user.userinfo.UserInfo;
+import jakarta.persistence.*;
+
 import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -32,6 +31,9 @@ public class User {
     private Set<Authority> authorities;
 
     private String timeZone;
+
+    @OneToOne(cascade ={CascadeType.PERSIST, CascadeType.MERGE})
+    private UserInfo userInfo;
 
     public enum Authority {
         USER,
