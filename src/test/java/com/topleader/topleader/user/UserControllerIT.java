@@ -1,6 +1,8 @@
 package com.topleader.topleader.user;
 
+import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -41,6 +43,14 @@ public class UserControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.timeZone", is("Europe/Prague")))
                 .andExpect(jsonPath("$.status",is("AUTHORIZED")))
         ;
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        var body = GreenMailUtil.getBody(receivedMessage);
+        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("jakub.svezi@dummy.com");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
+        Assertions.assertThat(body).contains("Jakub Svezi,").contains(" http://app-test-url");
+
     }
 
     @Test

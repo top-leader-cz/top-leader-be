@@ -1,0 +1,15 @@
+spring:
+  mail:
+    host: 127.0.0.1
+    port: 3025
+    properties:
+      mail:
+        smtp:
+          starttls:
+            enable: false
+            required: false
+          auth: false
+
+top-leader:
+  app-url: http://app-test-url
+

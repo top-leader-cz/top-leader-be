@@ -170,15 +170,4 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("rate", is("$$$")))
         ;
     }
-
-
-    @Autowired
-    private EmailService emailService;
-    @Test
-    @WithMockUser(username = "no_coach")
-    void a() throws Exception {
-        emailService.sendEmail("jakub.krhovjak@protonmail.com", "test", "test body");
-    }
-
-
 }
