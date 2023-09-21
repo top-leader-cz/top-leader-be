@@ -37,8 +37,7 @@ public class UserController {
                 .setFirstName(request.getFirstName())
                 .setLastName(request.getLastName())
                 .setTimeZone(request.getTimeZone())
-                .setStatus(request.getStatus())
-                .setEnabled(true);
+                .setStatus(request.getStatus());
 
         var saved = userDetailService.save(user);
         if(sendInvite(request.getStatus())) {

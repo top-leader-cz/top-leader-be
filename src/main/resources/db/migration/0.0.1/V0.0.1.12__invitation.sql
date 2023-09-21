@@ -5,6 +5,9 @@ alter table users
 alter table users
     add column last_name varchar(255) not null default '';
 
+alter table users
+    drop column enabled;
+
 
 update users set  status = 'AUTHORIZED'
 

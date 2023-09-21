@@ -61,7 +61,7 @@ public class UserControllerIT extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                     {
-                        "status": "PAID"
+                        "status": "AUTHORIZED"
                     }
                     """))
                 .andExpect(status().isOk())
@@ -69,7 +69,7 @@ public class UserControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.firstName", is("Jakub")))
                 .andExpect(jsonPath("$.lastName",  is("Svezi")))
                 .andExpect(jsonPath("$.timeZone", is("Europe/Prague")))
-                .andExpect(jsonPath("$.status",is("PAID")))
+                .andExpect(jsonPath("$.status",is("AUTHORIZED")))
         ;
     }
 }

@@ -29,8 +29,6 @@ public class User {
 
     private String lastName;
 
-    private boolean enabled;
-
     @Convert(converter = RoleConverter.class)
     private Set<Authority> authorities;
 

@@ -1,8 +1,8 @@
-insert into users (username, password, enabled, authorities)
-values ('coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', true, '["USER", "COACH"]');
+insert into users (username, password, status, authorities)
+values ('coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]');
 
-insert into users (username, password, enabled, authorities)
-values ('coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', true, '["USER", "COACH"]');
+insert into users (username, password, status, authorities)
+values ('coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]');
 
 
 insert into coach_availability (id, username, date, first_day_of_the_week, day, recurring, time_from, time_to)
