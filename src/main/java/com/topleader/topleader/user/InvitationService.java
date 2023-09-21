@@ -30,7 +30,7 @@ public class InvitationService {
     public void sendInvite(UserController.AddUserRequest request) {
         var params = Map.of("firstName", request.getFirstName(), "lastName", request.getLastName(), "appUrl", appUrl);
         var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(request.getLocale()));
-        emailService.sendEmail(request.getEmail(), "Unlock Your Potential with TopLeader!",  emailBody);
+        emailService.sendEmail(request.getUsername(), "Unlock Your Potential with TopLeader!",  emailBody);
     }
 
     public String parseTemplateName(String locale) {

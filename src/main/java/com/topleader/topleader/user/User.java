@@ -25,6 +25,10 @@ public class User {
 
     private String password;
 
+    private String firstName;
+
+    private String lastName;
+
     private boolean enabled;
 
     @Convert(converter = RoleConverter.class)
@@ -32,11 +36,16 @@ public class User {
 
     private String timeZone;
 
-    @OneToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE }, fetch = FetchType.LAZY, mappedBy = "user")
-    private UserInfo userInfo;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
     public enum Authority {
         USER,
         COACH
+    }
+
+    public enum Status {
+        AUTHORIZED, PENDING, PAID
+
     }
 }

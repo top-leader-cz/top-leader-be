@@ -25,7 +25,14 @@ public class UserDetailService implements UserDetailsService {
 
     }
 
-    public com.topleader.topleader.user.User addUser(com.topleader.topleader.user.User user) {
+
+    public com.topleader.topleader.user.User getUser(String username) {
+        return userRepository.findById(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+
+    public com.topleader.topleader.user.User save(com.topleader.topleader.user.User user) {
        return userRepository.save(user);
     }
 }

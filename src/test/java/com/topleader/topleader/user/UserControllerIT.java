@@ -6,10 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,23 +20,46 @@ public class UserControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
-    public void getEmptyDetailTest() throws Exception {
-        var a = passwordEncoder.encode("pass");
-
+    public void addUser() throws Exception {
         mvc.perform(post("/api/latest/user")
                 .contentType(MediaType.APPLICATION_JSON)
                           .content("""
                     {
                        "firstName": "Jakub",
                        "lastName": "Svezi",
-                       "email":  "jakub.krhovjak@protonmail.com",
+                       "username":  "jakub.svezi@dummy.com",
                        "password": "test",
                        "locale": "cs",
-                       "timezone": "Europe/Prague",
+                       "timeZone": "Europe/Prague",
                        "status": "AUTHORIZED"
                     }
                     """))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username", is("jakub.svezi@dummy.com")))
+                .andExpect(jsonPath("$.firstName", is("Jakub")))
+                .andExpect(jsonPath("$.lastName",  is("Svezi")))
+                .andExpect(jsonPath("$.timeZone", is("Europe/Prague")))
+                .andExpect(jsonPath("$.status",is("AUTHORIZED")))
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/sql/user/user-test.sql"})
+    public void updateUser() throws Exception {
+        mvc.perform(put("/api/latest/user/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                        "status": "PAID"
+                    }
+                    """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username", is("user")))
+                .andExpect(jsonPath("$.firstName", is("Jakub")))
+                .andExpect(jsonPath("$.lastName",  is("Svezi")))
+                .andExpect(jsonPath("$.timeZone", is("Europe/Prague")))
+                .andExpect(jsonPath("$.status",is("PAID")))
         ;
     }
 }

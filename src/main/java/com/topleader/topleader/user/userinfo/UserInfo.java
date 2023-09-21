@@ -46,15 +46,4 @@ public class UserInfo {
     @Column(length = 2000)
     private String motivation;
 
-    @Enumerated(EnumType.STRING)
-    private Status status;
-
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "username")
-    private User user;
-
-    public enum Status {
-        AUTHORIZED, PENDING, PAID
-
-   }
 }
