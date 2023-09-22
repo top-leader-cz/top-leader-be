@@ -4,6 +4,7 @@
 package com.topleader.topleader.coach;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.util.image.ImageUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -16,12 +16,26 @@ public class UserDetailService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) {
         var user = userRepository.findById(username)
-                                 .orElseThrow(() -> new UsernameNotFoundException(username));
+                .orElseThrow(() -> new UsernameNotFoundException(username));
 
         return User.withUsername(user.getUsername())
-                   .password(user.getPassword())
-                   .authorities(user.getAuthorities().stream().map(Enum::name).toArray(String[]::new))
-            .build();
+                .disabled(com.topleader.topleader.user.User.Status.PENDING == user.getStatus())
+                .password(user.getPassword())
+                .authorities(user.getAuthorities().stream().map(Enum::name).toArray(String[]::new))
+                .build();
 
     }
+
+
+    public com.topleader.topleader.user.User getUser(String username) {
+        return userRepository.findById(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+    }
+
+
+    public com.topleader.topleader.user.User save(com.topleader.topleader.user.User user) {
+       return userRepository.save(user);
+    }
 }
+
+

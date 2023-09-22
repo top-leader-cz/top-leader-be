@@ -1,10 +1,9 @@
 package com.topleader.topleader.user;
 
 
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.topleader.topleader.user.userinfo.UserInfo;
+import jakarta.persistence.*;
+
 import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,15 +25,25 @@ public class User {
 
     private String password;
 
-    private boolean enabled;
+    private String firstName;
+
+    private String lastName;
 
     @Convert(converter = RoleConverter.class)
     private Set<Authority> authorities;
 
     private String timeZone;
 
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
     public enum Authority {
         USER,
         COACH
+    }
+
+    public enum Status {
+        AUTHORIZED, PENDING, PAID
+
     }
 }
