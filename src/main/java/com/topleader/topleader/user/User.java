@@ -41,10 +41,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    private String firstName;
-
-    private String lastName;
-
     private Long companyId;
 
     private String coach;

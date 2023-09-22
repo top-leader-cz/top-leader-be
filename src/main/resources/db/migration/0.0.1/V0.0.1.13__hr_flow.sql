@@ -6,9 +6,6 @@ create table company
 
 create sequence company_id_seq;
 
-alter table users add column state varchar(255) not null default 'CREATED';
-alter table users add column first_name varchar(255);
-alter table users add column last_name varchar(255);
 alter table users add column company_id bigint;
 alter table users add column coach varchar(255);
 alter table users add column credit integer;

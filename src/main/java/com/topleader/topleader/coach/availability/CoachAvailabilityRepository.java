@@ -16,7 +16,11 @@ public interface CoachAvailabilityRepository extends JpaRepository<CoachAvailabi
 
     List<CoachAvailability> findAllByUsernameAndFirstDayOfTheWeekAndRecurringIsFalse(String username, LocalDate dateFrom);
 
+    List<CoachAvailability> findAllByUsernameAndFirstDayOfTheWeekAndDayAndRecurringIsFalse(String username, LocalDate dateFrom, DayType day);
+
     List<CoachAvailability> findAllByUsernameAndRecurringIsTrue(String username);
+
+    List<CoachAvailability> findAllByUsernameAndDayAndRecurringIsTrue(String username, DayType day);
 
     @Modifying
     void deleteAllByUsernameAndFirstDayOfTheWeekAndRecurringIsFalse(String username, LocalDate dateFrom);

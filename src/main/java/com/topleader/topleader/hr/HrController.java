@@ -71,14 +71,13 @@ public class HrController {
             new User()
                 .setUsername(request.email())
                 .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
-                .setEnabled(false)
                 .setFirstName(request.firstName())
                 .setLastName(request.lastName())
                 .setCompanyId(companyId)
                 .setAuthorities(Set.of(User.Authority.USER))
                 .setCredit(0)
                 .setTimeZone(hrUser.getTimeZone())
-                .setState(User.State.INVITED)));
+                .setStatus(User.Status.PENDING)));
     }
 
     @Secured("HR")
@@ -107,14 +106,14 @@ public class HrController {
     public record CreditRequestDto(@NotNull Integer credit) {
     }
 
-    public record HrUserDto(String username, String coach, Integer credit, Integer requestedCredit, User.State state) {
+    public record HrUserDto(String username, String coach, Integer credit, Integer requestedCredit, User.Status state) {
 
         public static List<HrUserDto> from(List<User> users) {
             return users.stream().map(HrUserDto::from).toList();
         }
 
         public static HrUserDto from(User user) {
-            return new HrUserDto(user.getUsername(), user.getCoach(), user.getCredit(), user.getRequestedCredit(), user.getState());
+            return new HrUserDto(user.getUsername(), user.getCoach(), user.getCredit(), user.getRequestedCredit(), user.getStatus());
         }
 
     }

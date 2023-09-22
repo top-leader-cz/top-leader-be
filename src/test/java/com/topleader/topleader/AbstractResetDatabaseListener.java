@@ -53,7 +53,7 @@ public class AbstractResetDatabaseListener extends AbstractTestExecutionListener
 
         // Find all tables and truncate them
         Set<String> tables = new HashSet<>();
-        ResultSet rs = s.executeQuery("select table_name from INFORMATION_SCHEMA.TABLES where table_schema = 'public'");
+        ResultSet rs = s.executeQuery("select table_name from INFORMATION_SCHEMA.TABLES where table_schema = 'public' and table_type = 'BASE TABLE'");
         while (rs.next()) {
             tables.add(rs.getString(1));
         }

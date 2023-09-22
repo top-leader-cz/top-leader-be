@@ -29,8 +29,8 @@ class HrControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
             .andExpect(content().json(
-                "[{\"username\":\"hrUser\",\"coach\":\"Coach1\",\"credit\":100,\"requestedCredit\":0,\"state\":\"INVITED\"},{\"username\":\"user1\",\"coach\":\"Coach2\","
-                    + "\"credit\":50,\"requestedCredit\":10,\"state\":\"CREATED\"}]"))
+                "[{\"username\":\"hrUser\",\"coach\":\"Coach1\",\"credit\":100,\"requestedCredit\":0,\"state\":\"PENDING\"},{\"username\":\"user1\",\"coach\":\"Coach2\","
+                    + "\"credit\":50,\"requestedCredit\":10,\"state\":\"AUTHORIZED\"}]"))
         ;
     }
 
@@ -51,7 +51,7 @@ class HrControllerIT extends IntegrationTest {
                 ))
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().json("{\"username\":\"user4\",\"coach\":null,\"credit\":0,\"requestedCredit\":null,\"state\":\"INVITED\"}"))
+            .andExpect(content().json("{\"username\":\"user4\",\"coach\":null,\"credit\":0,\"requestedCredit\":null,\"state\":\"PENDING\"}"))
         ;
     }
 
@@ -69,7 +69,7 @@ class HrControllerIT extends IntegrationTest {
                 ))
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().json("{\"username\":\"user1\",\"coach\":\"Coach2\",\"credit\":50,\"requestedCredit\":1000,\"state\":\"CREATED\"}"))
+            .andExpect(content().json("{\"username\":\"user1\",\"coach\":\"Coach2\",\"credit\":50,\"requestedCredit\":1000,\"state\":\"AUTHORIZED\"}"))
         ;
     }
 }

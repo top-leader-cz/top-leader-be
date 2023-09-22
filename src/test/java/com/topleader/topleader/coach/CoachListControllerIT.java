@@ -4,8 +4,16 @@
 package com.topleader.topleader.coach;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.coach.availability.CoachAvailability;
+import com.topleader.topleader.coach.availability.CoachAvailabilityRepository;
+import com.topleader.topleader.coach.availability.DayType;
+import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.util.image.ImageUtil;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,6 +25,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,6 +40,54 @@ class CoachListControllerIT extends IntegrationTest {
     @Autowired
     private CoachImageRepository coachImageRepository;
 
+    @Autowired
+    private CoachAvailabilityRepository coachAvailabilityRepository;
+
+    @Autowired
+    private ScheduledSessionRepository scheduledSessionRepository;
+
+    @Test
+    @WithMockUser
+    void scheduleEventTest() throws Exception {
+
+        final var nextMonday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+
+        coachAvailabilityRepository.save(
+            new CoachAvailability()
+                .setUsername("coach1")
+                .setDay(DayType.MONDAY)
+                .setDate(nextMonday)
+                .setTimeFrom(LocalTime.of(10, 0))
+                .setTimeTo(LocalTime.of(12, 0))
+                .setRecurring(false)
+                .setFirstDayOfTheWeek(nextMonday)
+        );
+
+        mvc.perform(post("/api/latest/coaches/coach1/schedule")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                    {
+                        "firstDayOfTheWeek": "%s",
+                        "day": "MONDAY",
+                        "time": "11:00:00"
+                    }
+                    """, nextMonday))
+            )
+            .andDo(print())
+            .andExpect(status().isOk());
+
+        final var sessions = scheduledSessionRepository.findAll();
+
+        assertThat(sessions, hasSize(1));
+
+        final var session = sessions.get(0);
+
+        assertThat(session.getCoachUsername(), is("coach1"));
+        assertThat(session.getUsername(), is("user"));
+        assertThat(session.getTime(), is(LocalDateTime.of(nextMonday, LocalTime.of(11, 0))));
+        assertThat(session.getFirstDayOfTheWeek(), is(nextMonday));
+    }
+
     @Test
     @WithMockUser
     void getCompleteWeekTest() throws Exception {
@@ -39,35 +96,49 @@ class CoachListControllerIT extends IntegrationTest {
                 .param("firstDayOfTheWeek", "2023-08-14")
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("MONDAY").isArray())
-            .andExpect(jsonPath("MONDAY", hasSize(2)))
-
-            .andExpect(jsonPath("MONDAY[0].day", is("MONDAY")))
-            .andExpect(jsonPath("MONDAY[0].date").doesNotExist()) // date is null
-            .andExpect(jsonPath("MONDAY[0].timeFrom", is("13:00:00")))
-            .andExpect(jsonPath("MONDAY[0].timeTo", is("14:00:00")))
-            .andExpect(jsonPath("MONDAY[0].recurring", is(true)))
-
-            .andExpect(jsonPath("MONDAY[1].day", is("MONDAY")))
-            .andExpect(jsonPath("MONDAY[1].date", is("2023-08-14")))
-            .andExpect(jsonPath("MONDAY[1].timeFrom", is("13:00:00")))
-            .andExpect(jsonPath("MONDAY[1].timeTo", is("14:00:00")))
-            .andExpect(jsonPath("MONDAY[1].recurring", is(false)))
-
-            .andExpect(jsonPath("TUESDAY").isArray())
-            .andExpect(jsonPath("TUESDAY", hasSize(2)))
-
-            .andExpect(jsonPath("TUESDAY[0].day", is("TUESDAY")))
-            .andExpect(jsonPath("TUESDAY[0].date").doesNotExist()) // date is null
-            .andExpect(jsonPath("TUESDAY[0].timeFrom", is("12:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].timeTo", is("13:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].recurring", is(true)))
-
-            .andExpect(jsonPath("TUESDAY[1].day", is("TUESDAY")))
-            .andExpect(jsonPath("TUESDAY[1].date", is("2023-08-15")))
-            .andExpect(jsonPath("TUESDAY[1].timeFrom", is("12:00:00")))
-            .andExpect(jsonPath("TUESDAY[1].timeTo", is("13:00:00")))
-            .andExpect(jsonPath("TUESDAY[1].recurring", is(false)))
+            .andExpect(content().json("""
+                {
+                  "MONDAY": [
+                    {
+                      "day": "MONDAY",
+                      "date": "2023-08-14",
+                      "timeFrom": "13:00:00",
+                      "timeTo": "14:00:00",
+                      "firstDayOfTheWeek": "2023-08-14"
+                    },
+                    {
+                      "day": "MONDAY",
+                      "date": "2023-08-14",
+                      "timeFrom": "14:00:00",
+                      "timeTo": "15:00:00",
+                      "firstDayOfTheWeek": "2023-08-14"
+                    },
+                    {
+                      "day": "MONDAY",
+                      "date": "2023-08-14",
+                      "timeFrom": "12:00:00",
+                      "timeTo": "13:00:00",
+                      "firstDayOfTheWeek": "2023-08-14"
+                    }
+                  ],
+                  "TUESDAY": [
+                    {
+                      "day": "TUESDAY",
+                      "date": "2023-08-15",
+                      "timeFrom": "12:00:00",
+                      "timeTo": "13:00:00",
+                      "firstDayOfTheWeek": "2023-08-14"
+                    },
+                    {
+                      "day": "TUESDAY",
+                      "date": "2023-08-15",
+                      "timeFrom": "13:00:00",
+                      "timeTo": "14:00:00",
+                      "firstDayOfTheWeek": "2023-08-14"
+                    }
+                  ]
+                }
+                """))
         ;
     }
 
@@ -84,7 +155,6 @@ class CoachListControllerIT extends IntegrationTest {
 
         ;
     }
-
 
 
     @Test
@@ -292,6 +362,23 @@ class CoachListControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.content[0].bio", is("Certified fitness coach")))
             .andExpect(jsonPath("$.content[0].experience", is(exp)))
             .andExpect(jsonPath("$.content[0].rate", is("$$$")))
+        ;
+    }
+
+    @Test
+    @WithMockUser
+    void singleCoachTest() throws Exception {
+
+        final var exp = LocalDate.now().getYear() - 2019;
+
+        mvc.perform(get("/api/latest/coaches/coach3"))
+            .andExpect(jsonPath("$.username", is("coach3")))
+            .andExpect(jsonPath("$.firstName", is("Michael")))
+            .andExpect(jsonPath("$.lastName", is("Johnson")))
+            .andExpect(jsonPath("$.email", is("michael.johnson@example.com")))
+            .andExpect(jsonPath("$.bio", is("Certified fitness coach")))
+            .andExpect(jsonPath("$.experience", is(exp)))
+            .andExpect(jsonPath("$.rate", is("$$$")))
         ;
     }
 }

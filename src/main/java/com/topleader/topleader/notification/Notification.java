@@ -55,7 +55,9 @@ public class Notification {
     private LocalDateTime createdAt;
 
     public enum Type {
-        MESSAGE
+        MESSAGE,
+        COACH_UNLINKED,
+        COACH_LINKED
     }
 
 }
