@@ -4,8 +4,12 @@
 package com.topleader.topleader.coach;
 
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.email.EmailService;
+import com.topleader.topleader.scheduled_session.ScheduledSession;
+import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.util.image.ImageUtil;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -22,6 +26,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -35,6 +40,9 @@ class CoachControllerIT extends IntegrationTest {
 
     @Autowired
     private CoachImageRepository coachImageRepository;
+
+    @Autowired
+    private ScheduledSessionRepository scheduledSessionRepository;
 
     @Test
     @WithMockUser(username = "no_coach")
@@ -168,6 +176,57 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("fields", hasItems("field1", "field2")))
             .andExpect(jsonPath("experienceSince", is("2023-08-06")))
             .andExpect(jsonPath("rate", is("$$$")))
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "coach", authorities = {"COACH"})
+    void getCoachUpcomingSessions() throws Exception {
+
+        final var now = LocalDateTime.now().withNano(0);
+
+        final var user1Session1 = now.plusHours(2);
+        final var user1Session2 = now.plusDays(2);
+
+        scheduledSessionRepository.saveAll(List.of(
+            new ScheduledSession()
+                .setCoachUsername("coach")
+                .setTime(user1Session1)
+                .setUsername("user1")
+                .setFirstDayOfTheWeek(now.toLocalDate()),
+            new ScheduledSession()
+                .setCoachUsername("coach")
+                .setTime(user1Session2)
+                .setUsername("user1")
+                .setFirstDayOfTheWeek(now.toLocalDate()),
+            new ScheduledSession()
+                .setCoachUsername("coach_no_info")
+                .setTime(now.plusHours(3))
+                .setUsername("user1")
+                .setFirstDayOfTheWeek(now.toLocalDate())
+        ));
+
+        mvc.perform(get("/api/latest/coach-info/upcoming-sessions"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(String.format(
+                """
+                    [
+                      {
+                        "username": "user1",
+                        "firstName": "user1FirstName",
+                        "lastName": "user1lastName",
+                        "time": "%s"
+                      },
+                      {
+                        "username": "user1",
+                        "firstName": "user1FirstName",
+                        "lastName": "user1lastName",
+                        "time": "%s"
+                      }
+                    ]
+                    """, user1Session1, user1Session2
+            )))
+
         ;
     }
 }

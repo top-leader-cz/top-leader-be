@@ -4,6 +4,7 @@
 package com.topleader.topleader.scheduled_session;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
@@ -12,4 +13,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
  */
 public interface ScheduledSessionRepository extends JpaRepository<ScheduledSession, Long> {
     boolean existsByCoachUsernameAndTime(String coachUsername, LocalDateTime time);
+
+    List<ScheduledSession> findAllByCoachUsernameAndTimeIsAfter(String coach, LocalDateTime time);
 }

@@ -4,7 +4,6 @@
 package com.topleader.topleader.message;
 
 import java.util.List;
-import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,7 +16,6 @@ import org.springframework.data.jpa.repository.Query;
  */
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
-    Page<Message> findByUserFromInAndUserToIn(Set<String> userFrom, Set<String>  userTo, Pageable pageable);
     Page<Message> findAllByChatId(Long chatId, Pageable pageable);
     @Modifying
     @Query("update Message set displayed = true where userFrom = :username and userTo = :addressee")
@@ -25,7 +23,5 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     @Query("select m.userFrom as userFrom, count(*) as unread from Message m where m.userTo = :username and m.displayed = false group by m.userFrom")
     List<UnreadMessagesCount> getUnreadMessagesCount(String username);
-
-    List<Message> findAllByUserToAndDisplayed(String username, Boolean displayed);
 
 }

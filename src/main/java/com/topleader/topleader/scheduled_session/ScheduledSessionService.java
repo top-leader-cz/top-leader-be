@@ -4,6 +4,7 @@
 package com.topleader.topleader.scheduled_session;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -25,5 +26,9 @@ public class ScheduledSessionService {
 
     public ScheduledSession scheduleSession(ScheduledSession scheduledSession) {
         return scheduledSessionRepository.save(scheduledSession);
+    }
+
+    public List<ScheduledSession> listCoachesSessions(String username) {
+        return scheduledSessionRepository.findAllByCoachUsernameAndTimeIsAfter(username, LocalDateTime.now());
     }
 }

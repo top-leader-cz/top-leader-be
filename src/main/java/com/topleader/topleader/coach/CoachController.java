@@ -4,6 +4,10 @@
 package com.topleader.topleader.coach;
 
 import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.scheduled_session.ScheduledSession;
+import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -12,7 +16,11 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -28,6 +36,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import static java.util.stream.Collectors.toMap;
+
 
 /**
  * @author Daniel Slavik
@@ -40,6 +50,10 @@ public class CoachController {
     private final CoachRepository coachRepository;
 
     private final CoachImageRepository coachImageRepository;
+
+    private final ScheduledSessionService sessionService;
+
+    private final UserRepository userRepository;
 
     @GetMapping
     @Secured("COACH")
@@ -80,6 +94,47 @@ public class CoachController {
             )
             .orElseThrow(NotFoundException::new);
     }
+
+    @Transactional
+    @Secured("COACH")
+    @GetMapping("/upcoming-sessions")
+    public List<UpcomingSessionDto> getUpcomingSessions(@AuthenticationPrincipal UserDetails user) {
+
+        final var sessions = sessionService.listCoachesSessions(user.getUsername());
+
+        if (sessions.isEmpty()) {
+            return List.of();
+        }
+
+        final var clients = userRepository.findAllById(sessions.stream()
+                .map(ScheduledSession::getUsername)
+                .collect(Collectors.toSet())
+            ).stream()
+            .collect(toMap(User::getUsername, Function.identity()));
+
+        return sessions.stream()
+            .map(s -> UpcomingSessionDto.from(s, clients.get(s.getUsername())))
+            .toList();
+
+    }
+
+    public record UpcomingSessionDto(
+        String username,
+        String firstName,
+        String lastName,
+        LocalDateTime time
+    ) {
+
+        public static UpcomingSessionDto from(ScheduledSession s, User u) {
+            return new UpcomingSessionDto(
+                u.getUsername(),
+                u.getFirstName(),
+                u.getLastName(),
+                s.getTime()
+            );
+        }
+    }
+
 
     public record CoachDto(
         @NotNull
