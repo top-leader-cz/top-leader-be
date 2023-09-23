@@ -3,16 +3,27 @@
  */
 package com.topleader.topleader.coach;
 
+import com.topleader.topleader.coach.availability.CoachAvailability;
+import com.topleader.topleader.coach.availability.CoachAvailabilityService;
+import com.topleader.topleader.coach.availability.DayType;
+import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.scheduled_session.ScheduledSession;
+import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.util.image.ImageUtil;
 import com.topleader.topleader.util.page.PageDto;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,11 +31,14 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasExperienceFrom;
@@ -33,6 +47,9 @@ import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFields
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toList;
 
 
 /**
@@ -47,6 +64,59 @@ public class CoachListController {
 
     private final CoachImageRepository coachImageRepository;
 
+    private final CoachAvailabilityService coachAvailabilityService;
+
+    private final ScheduledSessionService scheduledSessionService;
+
+    @Transactional
+    @PostMapping("/{username}/schedule")
+    public void scheduleSession(
+        @AuthenticationPrincipal UserDetails user,
+        @PathVariable String username,
+        @RequestBody ScheduleSessionRequest request
+    ) {
+
+        final var requestedDay = request.firstDayOfTheWeek().plusDays(request.day().getDayOffset());
+
+        if (requestedDay.isBefore(LocalDate.now())) {
+            throw new ApiValidationException("firstDayOfTheWeek", "Not possible to schedule session in past.");
+        }
+
+
+        final var requestedDayTime = LocalDateTime.of(requestedDay, request.time());
+
+        final var possibleStartDates = coachAvailabilityService.getWeekAvailabilitySplitIntoHours(username, request.firstDayOfTheWeek, request.day()).stream()
+            .map(a -> LocalDateTime.of(a.getDate(), a.getTimeFrom()))
+            .collect(Collectors.toSet());
+
+        if (!possibleStartDates.contains(requestedDayTime)) {
+            throw new ApiValidationException("time", "Time " + request.time() + " is not available");
+        }
+
+        if (scheduledSessionService.isAlreadyScheduled(username, requestedDayTime)) {
+            throw new ApiValidationException("time", "Time " + request.time() + " is not available");
+        }
+
+        scheduledSessionService.scheduleSession(
+            new ScheduledSession()
+                .setUsername(user.getUsername())
+                .setCoachUsername(username)
+                .setTime(requestedDayTime)
+                .setFirstDayOfTheWeek(request.firstDayOfTheWeek())
+        );
+
+    }
+
+    @GetMapping("/{username}/availability")
+    public Map<DayType, List<CoachAvailabilityDto>> getCoachAvailability(
+        @PathVariable String username,
+        @RequestParam LocalDate firstDayOfTheWeek
+    ) {
+        return coachAvailabilityService.getWeekAvailabilitySplitIntoHours(username, firstDayOfTheWeek).stream()
+            .map(a -> Map.entry(a.getDay(), CoachAvailabilityDto.from(a)))
+            .collect(groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
+    }
+
     @GetMapping("/{username}/photo")
     public ResponseEntity<byte[]> getCoachPhoto(@PathVariable String username) {
 
@@ -55,6 +125,13 @@ public class CoachListController {
                 .contentType(MediaType.valueOf(i.getType()))
                 .body(ImageUtil.decompressImage(i.getImageData()))
             )
+            .orElseThrow(NotFoundException::new);
+    }
+
+    @GetMapping("/{username}")
+    public CoachListDto findCoach(@PathVariable String username) {
+        return coachRepository.findById(username)
+            .map(CoachListDto::from)
             .orElseThrow(NotFoundException::new);
     }
 
@@ -69,6 +146,28 @@ public class CoachListController {
             coachRepository.findAll(page) :
             coachRepository.findAll(Specification.allOf(filter), page);
 
+    }
+
+    public record CoachAvailabilityDto(
+        DayType day,
+        LocalDate date,
+        LocalTime timeFrom,
+        LocalTime timeTo,
+
+        LocalDate firstDayOfTheWeek
+    ) {
+        public static CoachAvailabilityDto from(CoachAvailability c) {
+            return new CoachAvailabilityDto(
+                c.getDay(),
+                c.getDate(),
+                c.getTimeFrom(),
+                c.getTimeTo(),
+                c.getFirstDayOfTheWeek()
+            );
+        }
+    }
+
+    public record ScheduleSessionRequest(LocalDate firstDayOfTheWeek, DayType day, LocalTime time) {
     }
 
     public record CoachListDto(
