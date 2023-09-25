@@ -54,6 +54,7 @@ public class User {
     public enum Authority {
         USER,
         COACH,
+        ADMIN,
         HR
     }
 

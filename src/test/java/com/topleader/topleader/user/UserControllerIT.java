@@ -20,6 +20,9 @@ public class UserControllerIT extends IntegrationTest {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private UserRepository userRepository;
+
     @Test
     @WithMockUser(username = "user", authorities = "USER")
     public void addUser() throws Exception {
@@ -30,7 +33,7 @@ public class UserControllerIT extends IntegrationTest {
                        "firstName": "Jakub",
                        "lastName": "Svezi",
                        "username":  "jakub.svezi@dummy.com",
-                       "password": "test",
+                       "authorities": [ "USER" ],
                        "locale": "cs",
                        "timeZone": "Europe/Prague",
                        "status": "AUTHORIZED"
@@ -42,6 +45,7 @@ public class UserControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.lastName",  is("Svezi")))
                 .andExpect(jsonPath("$.timeZone", is("Europe/Prague")))
                 .andExpect(jsonPath("$.status",is("AUTHORIZED")))
+                .andExpect(jsonPath("$.authorities", hasItems("USER")))
         ;
 
         var receivedMessage = greenMail.getReceivedMessages()[0];

@@ -28,12 +28,10 @@ public class UserController {
 
     private final InvitationService invitationService;
 
-    private final PasswordEncoder passwordEncoder;
-
     @PostMapping
     public UserDto addUser(@RequestBody @Valid AddUserRequest request) {
         var user = new User().setUsername(request.getUsername())
-                .setPassword(passwordEncoder.encode(request.getPassword()))
+                .setAuthorities(request.getAuthorities())
                 .setFirstName(request.getFirstName())
                 .setLastName(request.getLastName())
                 .setTimeZone(request.getTimeZone())
@@ -73,7 +71,7 @@ public class UserController {
         private String lastName;
 
         @NotEmpty
-        private String password;
+        private Set<User.Authority> authorities;
 
         @NotEmpty
         private String username;
@@ -84,7 +82,7 @@ public class UserController {
         @NotNull
         private User.Status status;
 
-//        @Pattern(regexp = "[a-z]{2}")
+        @Pattern(regexp = "[a-z]{2}")
         private String locale;
     }
 
@@ -94,7 +92,9 @@ public class UserController {
             String firstName,
             String lastName,
             String timeZone,
-            User.Status status
+            User.Status status,
+
+            Set<User.Authority> authorities
 
     ) {
         public static UserDto fromUser(User user) {
@@ -103,7 +103,8 @@ public class UserController {
                     user.getFirstName(),
                     user.getLastName(),
                     user.getTimeZone(),
-                    user.getStatus()
+                    user.getStatus(),
+                    user.getAuthorities()
             );
 
         }
