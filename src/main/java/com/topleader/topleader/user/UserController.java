@@ -1,6 +1,7 @@
 package com.topleader.topleader.user;
 
 
+import com.topleader.topleader.user.token.TokenService;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoController;
 import com.topleader.topleader.user.userinfo.UserInfoService;
@@ -11,14 +12,18 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/latest/user")
 @AllArgsConstructor
@@ -28,6 +33,9 @@ public class UserController {
 
     private final InvitationService invitationService;
 
+    private final TokenService tokenService;
+
+    @Secured({"ADMIN", "HR"})
     @PostMapping
     public UserDto addUser(@RequestBody @Valid AddUserRequest request) {
         var user = new User().setUsername(request.getUsername())
@@ -39,11 +47,12 @@ public class UserController {
 
         var saved = userDetailService.save(user);
         if(sendInvite(request.getStatus())) {
-            invitationService.sendInvite(request);
+           invitationService.sendInvite(request);
         }
         return UserDto.fromUser(saved);
     }
 
+    @Secured({"ADMIN", "HR", "USER", "COACH"})
     @PutMapping("/{username}")
     public UserDto updateUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequest request) {
         var user = userDetailService.getUser(username);
@@ -52,7 +61,7 @@ public class UserController {
     }
 
     private boolean sendInvite(User.Status status) {
-        return User.Status.AUTHORIZED == status|| User.Status.PAID == status;
+        return User.Status.AUTHORIZED == status || User.Status.PAID == status;
     }
 
     @Data

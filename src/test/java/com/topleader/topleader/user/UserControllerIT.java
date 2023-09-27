@@ -3,12 +3,15 @@ package com.topleader.topleader.user;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.PathAssert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -24,7 +27,7 @@ public class UserControllerIT extends IntegrationTest {
     private UserRepository userRepository;
 
     @Test
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithMockUser(username = "user", authorities = "ADMIN")
     public void addUser() throws Exception {
         mvc.perform(post("/api/latest/user")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -55,6 +58,28 @@ public class UserControllerIT extends IntegrationTest {
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
         Assertions.assertThat(body).contains("Jakub Svezi,").contains(" http://app-test-url");
 
+        Assertions.assertThat(userRepository.findById("jakub.svezi@dummy.com")).isNotEmpty();
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    public void addUser403() throws Exception {
+
+        mvc.perform(post("/api/latest/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                       "firstName": "Jakub",
+                       "lastName": "Svezi",
+                       "username":  "jakub.svezi@dummy.com",
+                       "authorities": [ "USER" ],
+                       "locale": "cs",
+                       "timeZone": "Europe/Prague",
+                       "status": "AUTHORIZED"
+                    }
+                    """))
+                .andExpect(status().is(403))
+               ;
     }
 
     @Test

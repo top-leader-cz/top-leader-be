@@ -17,7 +17,7 @@ import lombok.experimental.Accessors;
 
 @Getter
 @Setter
-@ToString
+@ToString(of={"username"})
 @Entity
 @Accessors(chain = true)
 @NoArgsConstructor
