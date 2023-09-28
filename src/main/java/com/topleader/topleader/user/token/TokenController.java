@@ -35,6 +35,7 @@ public class TokenController {
         log.info("Token found for user {}", user.getUsername());
         user.setPassword(passwordEncoder.encode(request.password));
         userRepository.save(user);
+        tokenRepository.delete(savedToken);
 
         log.info("User set-password finished. token: {}", token);
     }

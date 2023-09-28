@@ -1,13 +1,11 @@
 create table token
 (
-    id       bigint       not null,
+    id       bigserial primary key,
     username varchar(255) not null
         constraint fk_token_username references users on delete cascade,
-    token    varchar(50)  not null,
+    token    varchar(500)  not null,
     type     varchar(50)  not null
 );
-
-create sequence token_id_seq;
 
 create index token_username_idx on token (username);
 create index token_token_idx on token (token);

@@ -26,7 +26,9 @@ public class WebSecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests((requests) -> requests
-                .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**",
+                        "/v3/api-docs/**",
+                        "set-password/**").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(e ->

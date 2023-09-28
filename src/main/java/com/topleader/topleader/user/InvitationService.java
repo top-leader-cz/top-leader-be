@@ -35,7 +35,7 @@ public class InvitationService {
     @Value("${top-leader.default-locale}")
     private String defaultLocale;
 
-    public void sendInvite(UserController.AddUserRequest request) {
+    public void sendInvite(UserController.UserRequest request) {
         log.info("Sending invitation for: [{}]", request.getUsername());
         var token = tokenService.generateToken();
         var params = Map.of("firstName", request.getFirstName(), "lastName", request.getLastName(), "appUrl", appUrl +"/#/set-password/" + token);
