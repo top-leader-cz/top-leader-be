@@ -1,6 +1,7 @@
 package com.topleader.topleader.user;
 
 
+import com.topleader.topleader.user.token.TokenService;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoController;
 import com.topleader.topleader.user.userinfo.UserInfoService;
@@ -11,14 +12,18 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/latest/user")
 @AllArgsConstructor
@@ -28,6 +33,9 @@ public class UserController {
 
     private final InvitationService invitationService;
 
+    private final TokenService tokenService;
+
+    @Secured({"ADMIN", "HR"})
     @PostMapping
     public UserDto addUser(@RequestBody @Valid AddUserRequest request) {
         var user = new User().setUsername(request.getUsername())
@@ -38,32 +46,70 @@ public class UserController {
                 .setStatus(request.getStatus());
 
         var saved = userDetailService.save(user);
-        if(sendInvite(request.getStatus())) {
-            invitationService.sendInvite(request);
+        if(sendInvite(User.Status.PENDING, request.getStatus())) {
+           invitationService.sendInvite(request);
         }
         return UserDto.fromUser(saved);
     }
 
+    @Secured({"ADMIN", "HR"})
     @PutMapping("/{username}")
     public UserDto updateUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequest request) {
         var user = userDetailService.getUser(username);
+        var oldStatus = user.getStatus();
         user.setStatus(request.getStatus());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setTimeZone(request.getTimeZone());
+        user.setAuthorities(request.getAuthorities());
+
+        if(sendInvite(oldStatus, request.getStatus())) {
+            request.setUsername(username);
+            invitationService.sendInvite(request);
+        }
         return UserDto.fromUser(userDetailService.save(user));
     }
 
-    private boolean sendInvite(User.Status status) {
-        return User.Status.AUTHORIZED == status|| User.Status.PAID == status;
+    private boolean sendInvite(User.Status oldStatus, User.Status newStatus) {
+        return User.Status.PENDING == oldStatus && (User.Status.AUTHORIZED == newStatus || User.Status.PAID == newStatus);
+    }
+
+    public interface UserRequest {
+        String getFirstName();
+
+        String getLastName();
+
+        String getUsername();
+
+        String getLocale();
     }
 
     @Data
-    public static class UpdateUserRequest {
+    public static class UpdateUserRequest implements UserRequest {
+
+        @NotEmpty
+        private String firstName;
+
+        @NotEmpty
+        private String lastName;
+
+        private String username;
 
         @NotNull
         private User.Status status;
+
+        @NotEmpty
+        private String timeZone;
+
+        @NotEmpty
+        private Set<User.Authority> authorities;
+
+        @Pattern(regexp = "[a-z]{2}")
+        private String locale;
     }
 
     @Data
-    public static class AddUserRequest {
+    public static class AddUserRequest implements UserRequest {
         @NotEmpty
         private String firstName;
 
@@ -109,4 +155,6 @@ public class UserController {
 
         }
     }
+
+
 }
