@@ -1,12 +1,15 @@
-package com.topleader.topleader.user;
+/*
+ * Copyright (c) 2023 Price f(x), s.r.o.
+ */
+package com.topleader.topleader.admin;
 
-
+import com.topleader.topleader.user.RoleConverter;
+import com.topleader.topleader.user.User;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,51 +18,45 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 
 
+/**
+ * @author Daniel Slavik
+ */
 @Getter
 @Setter
-@ToString(of={"username"})
+@ToString
 @Entity
 @Accessors(chain = true)
 @NoArgsConstructor
-@Table(name = "users")
-public class User {
+public class AdminView {
 
     @Id
     private String username;
-
-    private String password;
 
     private String firstName;
 
     private String lastName;
 
     @Convert(converter = RoleConverter.class)
-    private Set<Authority> authorities;
+    private Set<User.Authority> authorities;
 
     private String timeZone;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private User.Status status;
 
     private Long companyId;
 
+    private String companyName;
+
     private String coach;
+
+    private String coachFirstName;
+
+    private String coachLastName;
 
     private Integer credit;
 
     private Integer requestedCredit;
 
     private Boolean isTrial;
-
-    public enum Authority {
-        USER,
-        COACH,
-        HR,
-        ADMIN
-    }
-
-    public enum Status {
-        AUTHORIZED, PENDING, PAID
-
-    }
 }
