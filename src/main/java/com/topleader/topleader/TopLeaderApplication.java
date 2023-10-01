@@ -1,5 +1,7 @@
 package com.topleader.topleader;
 
+import java.time.ZoneOffset;
+import java.util.TimeZone;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class TopLeaderApplication {
 
     public static void main(String[] args) {
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.UTC));
         SpringApplication.run(TopLeaderApplication.class, args);
     }
 

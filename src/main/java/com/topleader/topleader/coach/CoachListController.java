@@ -3,13 +3,13 @@
  */
 package com.topleader.topleader.coach;
 
-import com.topleader.topleader.coach.availability.CoachAvailability;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
-import com.topleader.topleader.coach.availability.DayType;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 import com.topleader.topleader.util.page.PageDto;
 import jakarta.transaction.Transactional;
@@ -17,10 +17,10 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -47,9 +47,7 @@ import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFields
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
-import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.mapping;
-import static java.util.stream.Collectors.toList;
+import static java.util.function.Predicate.not;
 
 
 /**
@@ -68,6 +66,8 @@ public class CoachListController {
 
     private final ScheduledSessionService scheduledSessionService;
 
+    private final UserRepository userRepository;
+
     @Transactional
     @PostMapping("/{username}/schedule")
     public void scheduleSession(
@@ -76,24 +76,27 @@ public class CoachListController {
         @RequestBody ScheduleSessionRequest request
     ) {
 
-        final var requestedDay = request.firstDayOfTheWeek().plusDays(request.day().getDayOffset());
+        final var userZoneId = userRepository.findById(username)
+            .map(User::getTimeZone)
+            .map(ZoneId::of)
+            .orElseThrow();
 
-        if (requestedDay.isBefore(LocalDate.now())) {
-            throw new ApiValidationException("firstDayOfTheWeek", "Not possible to schedule session in past.");
+        final var shiftedTime = request.time()
+            .atZone(userZoneId)
+            .withZoneSameInstant(ZoneOffset.UTC)
+            .toLocalDateTime();
+
+        if (shiftedTime.isBefore(LocalDateTime.now(ZoneOffset.UTC))) {
+            throw new ApiValidationException("time", "Not possible to schedule session in past.");
         }
 
+        final var possibleStartDates = coachAvailabilityService.getAvailabilitySplitIntoHours(username, shiftedTime.minusDays(1), shiftedTime.plusDays(1));
 
-        final var requestedDayTime = LocalDateTime.of(requestedDay, request.time());
-
-        final var possibleStartDates = coachAvailabilityService.getWeekAvailabilitySplitIntoHours(username, request.firstDayOfTheWeek, request.day()).stream()
-            .map(a -> LocalDateTime.of(a.getDate(), a.getTimeFrom()))
-            .collect(Collectors.toSet());
-
-        if (!possibleStartDates.contains(requestedDayTime)) {
+        if (!possibleStartDates.contains(shiftedTime)) {
             throw new ApiValidationException("time", "Time " + request.time() + " is not available");
         }
 
-        if (scheduledSessionService.isAlreadyScheduled(username, requestedDayTime)) {
+        if (scheduledSessionService.isAlreadyScheduled(username, shiftedTime)) {
             throw new ApiValidationException("time", "Time " + request.time() + " is not available");
         }
 
@@ -101,20 +104,31 @@ public class CoachListController {
             new ScheduledSession()
                 .setUsername(user.getUsername())
                 .setCoachUsername(username)
-                .setTime(requestedDayTime)
-                .setFirstDayOfTheWeek(request.firstDayOfTheWeek())
+                .setTime(shiftedTime)
         );
 
     }
 
     @GetMapping("/{username}/availability")
-    public Map<DayType, List<CoachAvailabilityDto>> getCoachAvailability(
+    public List<LocalDateTime> getCoachAvailability(
         @PathVariable String username,
-        @RequestParam LocalDate firstDayOfTheWeek
+        @RequestParam LocalDateTime from,
+        @RequestParam LocalDateTime to
     ) {
-        return coachAvailabilityService.getWeekAvailabilitySplitIntoHours(username, firstDayOfTheWeek).stream()
-            .map(a -> Map.entry(a.getDay(), CoachAvailabilityDto.from(a)))
-            .collect(groupingBy(Map.Entry::getKey, mapping(Map.Entry::getValue, toList())));
+        final var userZoneId = userRepository.findById(username)
+            .map(User::getTimeZone)
+            .map(ZoneId::of)
+            .orElseThrow();
+
+        final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
+            .map(ScheduledSession::getTime)
+            .collect(Collectors.toSet());
+
+        return coachAvailabilityService.getAvailabilitySplitIntoHours(username, from, to).stream()
+            .filter(not(scheduledEvents::contains))
+            .map(d -> d.atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId).toLocalDateTime())
+            .sorted()
+            .toList();
     }
 
     @GetMapping("/{username}/photo")
@@ -148,26 +162,8 @@ public class CoachListController {
 
     }
 
-    public record CoachAvailabilityDto(
-        DayType day,
-        LocalDate date,
-        LocalTime timeFrom,
-        LocalTime timeTo,
 
-        LocalDate firstDayOfTheWeek
-    ) {
-        public static CoachAvailabilityDto from(CoachAvailability c) {
-            return new CoachAvailabilityDto(
-                c.getDay(),
-                c.getDate(),
-                c.getTimeFrom(),
-                c.getTimeTo(),
-                c.getFirstDayOfTheWeek()
-            );
-        }
-    }
-
-    public record ScheduleSessionRequest(LocalDate firstDayOfTheWeek, DayType day, LocalTime time) {
+    public record ScheduleSessionRequest(LocalDateTime time) {
     }
 
     public record CoachListDto(

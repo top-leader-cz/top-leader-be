@@ -1,7 +1,7 @@
-INSERT INTO users (username, password, status, authorities)
-VALUES ('coach1', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]'),
-       ('coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]'),
-       ('coach3', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]');
+INSERT INTO users (username, password, status, authorities, time_zone)
+VALUES ('coach1', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'CET'),
+       ('coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'CET'),
+       ('coach3', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'CET');
 
 
 INSERT INTO coach (username, public_profile, first_name, last_name, email, web_link, bio, experience_since, rate)
@@ -22,16 +22,16 @@ VALUES ('coach1', 'Fitness'),
        ('coach2', 'Meditation'),
        ('coach3', 'Weightlifting');
 
-insert into coach_availability (id, username, date, first_day_of_the_week, day, recurring, time_from, time_to)
-values (nextval('coach_availability_seq'), 'coach1', null, null, 'MONDAY', true, '13:00:00', '15:00:00');
-insert into coach_availability (id, username, date, first_day_of_the_week, day, recurring, time_from, time_to)
-values (nextval('coach_availability_seq'), 'coach1', null, null, 'TUESDAY', true, '12:00:00', '13:00:00');
+insert into coach_availability (id, username, recurring, day_from, time_from, day_to, time_to)
+values (nextval('coach_availability_seq'), 'coach1', true, 'MONDAY', '13:00:00', 'MONDAY', '14:00:00');
+insert into coach_availability (id, username, recurring, day_from, time_from, day_to, time_to)
+values (nextval('coach_availability_seq'), 'coach1', true, 'TUESDAY', '13:00:00', 'TUESDAY', '14:00:00');
 
-insert into coach_availability (id, username, date, first_day_of_the_week, day, recurring, time_from, time_to)
-values (nextval('coach_availability_seq'), 'coach1', '2023-08-14', '2023-08-14', 'MONDAY', false, '12:00:00', '14:00:00');
-insert into coach_availability (id, username, date, first_day_of_the_week, day, recurring, time_from, time_to)
-values (nextval('coach_availability_seq'), 'coach1', '2023-08-15', '2023-08-14', 'TUESDAY', false, '13:00:00', '14:00:00');
-insert into coach_availability (id, username, date, first_day_of_the_week, day, recurring, time_from, time_to)
-values (nextval('coach_availability_seq'), 'coach1', '2023-09-14', '2023-09-14', 'MONDAY', false, '13:00:00', '14:00:00');
-insert into coach_availability (id, username, date, first_day_of_the_week, day, recurring, time_from, time_to)
-values (nextval('coach_availability_seq'), 'coach1', '2023-09-15', '2023-09-14', 'TUESDAY', false, '12:00:00', '13:00:00');
+insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
+values (nextval('coach_availability_seq'), 'coach1', false, '2023-08-14 10:00:00', '2023-08-14 12:00:00');
+insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
+values (nextval('coach_availability_seq'), 'coach1', false, '2023-08-15 12:00:00', '2023-08-15 14:00:00');
+insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
+values (nextval('coach_availability_seq'), 'coach1', false, '2023-09-14 13:00:00', '2023-09-14 14:00:00');
+insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
+values (nextval('coach_availability_seq'), 'coach1', false, '2023-09-15 12:00:00', '2023-09-15 13:00:00');

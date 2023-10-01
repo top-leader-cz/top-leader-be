@@ -100,7 +100,7 @@ public class CoachController {
     @GetMapping("/upcoming-sessions")
     public List<UpcomingSessionDto> getUpcomingSessions(@AuthenticationPrincipal UserDetails user) {
 
-        final var sessions = sessionService.listCoachesSessions(user.getUsername());
+        final var sessions = sessionService.listCoachesFutureSessions(user.getUsername());
 
         if (sessions.isEmpty()) {
             return List.of();

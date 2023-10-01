@@ -28,7 +28,7 @@ public class ScheduledSessionService {
         return scheduledSessionRepository.save(scheduledSession);
     }
 
-    public List<ScheduledSession> listCoachesSessions(String username) {
+    public List<ScheduledSession> listCoachesFutureSessions(String username) {
         return scheduledSessionRepository.findAllByCoachUsernameAndTimeIsAfter(username, LocalDateTime.now());
     }
 }

@@ -6,13 +6,14 @@ package com.topleader.topleader.coach;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.coach.availability.CoachAvailability;
 import com.topleader.topleader.coach.availability.CoachAvailabilityRepository;
-import com.topleader.topleader.coach.availability.DayType;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.temporal.TemporalAdjusters;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,28 +51,26 @@ class CoachListControllerIT extends IntegrationTest {
     @WithMockUser
     void scheduleEventTest() throws Exception {
 
-        final var nextMonday = LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+        final var scheduleTime = LocalDateTime.of(
+            LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
+            LocalTime.of(11, 0)
+            );
 
         coachAvailabilityRepository.save(
             new CoachAvailability()
                 .setUsername("coach1")
-                .setDay(DayType.MONDAY)
-                .setDate(nextMonday)
-                .setTimeFrom(LocalTime.of(10, 0))
-                .setTimeTo(LocalTime.of(12, 0))
+                .setDateTimeFrom(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(8, 0)))
+                .setDateTimeTo(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(10, 0)))
                 .setRecurring(false)
-                .setFirstDayOfTheWeek(nextMonday)
         );
 
         mvc.perform(post("/api/latest/coaches/coach1/schedule")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("""
                     {
-                        "firstDayOfTheWeek": "%s",
-                        "day": "MONDAY",
-                        "time": "11:00:00"
+                        "time": "%s"
                     }
-                    """, nextMonday))
+                    """, scheduleTime))
             )
             .andDo(print())
             .andExpect(status().isOk());
@@ -84,75 +83,25 @@ class CoachListControllerIT extends IntegrationTest {
 
         assertThat(session.getCoachUsername(), is("coach1"));
         assertThat(session.getUsername(), is("user"));
-        assertThat(session.getTime(), is(LocalDateTime.of(nextMonday, LocalTime.of(11, 0))));
-        assertThat(session.getFirstDayOfTheWeek(), is(nextMonday));
+        assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("CET")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
     }
 
     @Test
     @WithMockUser
-    void getCompleteWeekTest() throws Exception {
+    void getCoachAvailabilityTest() throws Exception {
 
         mvc.perform(get("/api/latest/coaches/coach1/availability")
-                .param("firstDayOfTheWeek", "2023-08-14")
+                .param("from", "2023-08-14T00:00:00")
+                .param("to", "2023-08-14T23:59:00")
             )
             .andExpect(status().isOk())
             .andExpect(content().json("""
-                {
-                  "MONDAY": [
-                    {
-                      "day": "MONDAY",
-                      "date": "2023-08-14",
-                      "timeFrom": "13:00:00",
-                      "timeTo": "14:00:00",
-                      "firstDayOfTheWeek": "2023-08-14"
-                    },
-                    {
-                      "day": "MONDAY",
-                      "date": "2023-08-14",
-                      "timeFrom": "14:00:00",
-                      "timeTo": "15:00:00",
-                      "firstDayOfTheWeek": "2023-08-14"
-                    },
-                    {
-                      "day": "MONDAY",
-                      "date": "2023-08-14",
-                      "timeFrom": "12:00:00",
-                      "timeTo": "13:00:00",
-                      "firstDayOfTheWeek": "2023-08-14"
-                    }
-                  ],
-                  "TUESDAY": [
-                    {
-                      "day": "TUESDAY",
-                      "date": "2023-08-15",
-                      "timeFrom": "12:00:00",
-                      "timeTo": "13:00:00",
-                      "firstDayOfTheWeek": "2023-08-14"
-                    },
-                    {
-                      "day": "TUESDAY",
-                      "date": "2023-08-15",
-                      "timeFrom": "13:00:00",
-                      "timeTo": "14:00:00",
-                      "firstDayOfTheWeek": "2023-08-14"
-                    }
-                  ]
-                }
+                [
+                  "2023-08-14T12:00:00",
+                  "2023-08-14T13:00:00",
+                  "2023-08-14T15:00:00"
+                ]
                 """))
-        ;
-    }
-
-    @Test
-    @WithMockUser
-    void getCompleteWeekTest_empty() throws Exception {
-
-        mvc.perform(get("/api/latest/coaches/coach2/availability")
-                .param("firstDayOfTheWeek", "2023-08-14")
-            )
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$").isMap())
-            .andExpect(jsonPath("$").isEmpty())
-
         ;
     }
 
