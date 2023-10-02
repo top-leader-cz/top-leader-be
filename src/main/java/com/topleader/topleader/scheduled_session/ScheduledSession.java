@@ -8,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.SequenceGenerator;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,8 +35,6 @@ public class ScheduledSession {
     private String username;
 
     private String coachUsername;
-
-    private LocalDate firstDayOfTheWeek;
 
     private LocalDateTime time;
 

@@ -9,7 +9,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import java.time.LocalDate;
+import jakarta.persistence.SequenceGenerator;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,22 +32,26 @@ import lombok.experimental.Accessors;
 public class CoachAvailability {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "coach_availability_seq")
+    @SequenceGenerator(name = "coach_availability_seq", sequenceName = "coach_availability_seq", allocationSize = 1)
     private Long id;
 
     private String username;
 
     @Enumerated(EnumType.STRING)
-    private DayType day;
+    private DayOfWeek dayFrom;
 
-    private LocalDate firstDayOfTheWeek;
-
-    private LocalDate date;
+    @Enumerated(EnumType.STRING)
+    private DayOfWeek dayTo;
 
     private LocalTime timeFrom;
 
     private LocalTime timeTo;
 
     private Boolean recurring;
+
+    private LocalDateTime dateTimeFrom;
+
+    private LocalDateTime dateTimeTo;
 
 }

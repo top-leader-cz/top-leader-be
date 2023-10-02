@@ -4,7 +4,10 @@
 package com.topleader.topleader.coach.availability;
 
 import com.topleader.topleader.IntegrationTest;
-import java.time.LocalDate;
+import java.time.DayOfWeek;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Comparator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -17,7 +20,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -34,7 +37,7 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach")
     void getApiIsSecured() throws Exception {
 
-        mvc.perform(get("/api/latest/coach-availability/RECURRING"))
+        mvc.perform(get("/api/latest/coach-availability/recurring"))
             .andExpect(status().isForbidden())
         ;
 
@@ -44,24 +47,32 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach", authorities = {"COACH"})
     void getRecurringTest() throws Exception {
 
-        mvc.perform(get("/api/latest/coach-availability/RECURRING"))
+        mvc.perform(get("/api/latest/coach-availability/recurring"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("TUESDAY").isArray())
-            .andExpect(jsonPath("TUESDAY", hasSize(1)))
-            .andExpect(jsonPath("TUESDAY[0].day", is("TUESDAY")))
-            .andExpect(jsonPath("TUESDAY[0].date").doesNotExist()) // date is null
-            .andExpect(jsonPath("TUESDAY[0].timeFrom", is("12:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].timeTo", is("13:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].recurring", is(true)))
-
-            .andExpect(jsonPath("MONDAY").isArray())
-            .andExpect(jsonPath("MONDAY", hasSize(1)))
-            .andExpect(jsonPath("MONDAY[0].day", is("MONDAY")))
-            .andExpect(jsonPath("MONDAY[0].date").doesNotExist()) // date is null
-            .andExpect(jsonPath("MONDAY[0].timeFrom", is("13:00:00")))
-            .andExpect(jsonPath("MONDAY[0].timeTo", is("14:00:00")))
-            .andExpect(jsonPath("MONDAY[0].recurring", is(true)))
-            .andDo(print())
+            .andExpect(content().json("""
+                    [
+                      {
+                        "from": {
+                          "day": "MONDAY",
+                          "time": "15:00:00"
+                        },
+                        "to": {
+                          "day": "MONDAY",
+                          "time": "16:00:00"
+                        }
+                      },
+                      {
+                        "from": {
+                          "day": "TUESDAY",
+                          "time": "15:00:00"
+                        },
+                        "to": {
+                          "day": "TUESDAY",
+                          "time": "16:00:00"
+                        }
+                      }
+                    ]
+                """))
         ;
 
     }
@@ -70,67 +81,41 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach", authorities = {"COACH"})
     void getNonRecurringTest() throws Exception {
 
-        mvc.perform(get("/api/latest/coach-availability/NON_RECURRING")
-                .param("firstDayOfTheWeek", "2023-08-14")
+        mvc.perform(get("/api/latest/coach-availability/non-recurring")
+                .param("from", "2023-08-14T00:00:00")
+                .param("to", "2023-08-16T00:00:00")
             )
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("MONDAY").isArray())
-            .andExpect(jsonPath("MONDAY", hasSize(1)))
-            .andExpect(jsonPath("MONDAY[0].day", is("MONDAY")))
-            .andExpect(jsonPath("MONDAY[0].date", is("2023-08-14")))
-            .andExpect(jsonPath("MONDAY[0].timeFrom", is("13:00:00")))
-            .andExpect(jsonPath("MONDAY[0].timeTo", is("14:00:00")))
-            .andExpect(jsonPath("MONDAY[0].recurring", is(false)))
-
-            .andExpect(jsonPath("TUESDAY").isArray())
-            .andExpect(jsonPath("TUESDAY", hasSize(1)))
-            .andExpect(jsonPath("TUESDAY[0].day", is("TUESDAY")))
-            .andExpect(jsonPath("TUESDAY[0].date", is("2023-08-15")))
-            .andExpect(jsonPath("TUESDAY[0].timeFrom", is("12:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].timeTo", is("13:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].recurring", is(false)))
+            .andDo(print())
+            .andExpect(content().json("""
+                [
+                  {
+                    "from": "2023-08-14T15:00:00",
+                    "to": "2023-08-14T16:00:00"
+                  },
+                  {
+                    "from": "2023-08-15T14:00:00",
+                    "to": "2023-08-15T16:00:00"
+                  }
+                ]"""))
         ;
 
     }
 
     @Test
     @WithMockUser(username = "coach", authorities = {"COACH"})
-    void getCompleteWeekTest() throws Exception {
+    void getNonRecurringSingleItemTest() throws Exception {
 
-        mvc.perform(get("/api/latest/coach-availability/ALL")
-                .param("firstDayOfTheWeek", "2023-08-14")
+        mvc.perform(get("/api/latest/coach-availability/non-recurring")
+                .param("from", "2023-08-14T14:59:00")
+                .param("to", "2023-08-14T16:01:00")
             )
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("MONDAY").isArray())
-            .andExpect(jsonPath("MONDAY", hasSize(2)))
-
-            .andExpect(jsonPath("MONDAY[0].day", is("MONDAY")))
-            .andExpect(jsonPath("MONDAY[0].date").doesNotExist()) // date is null
-            .andExpect(jsonPath("MONDAY[0].timeFrom", is("13:00:00")))
-            .andExpect(jsonPath("MONDAY[0].timeTo", is("14:00:00")))
-            .andExpect(jsonPath("MONDAY[0].recurring", is(true)))
-
-            .andExpect(jsonPath("MONDAY[1].day", is("MONDAY")))
-            .andExpect(jsonPath("MONDAY[1].date", is("2023-08-14")))
-            .andExpect(jsonPath("MONDAY[1].timeFrom", is("13:00:00")))
-            .andExpect(jsonPath("MONDAY[1].timeTo", is("14:00:00")))
-            .andExpect(jsonPath("MONDAY[1].recurring", is(false)))
-
-            .andExpect(jsonPath("TUESDAY").isArray())
-            .andExpect(jsonPath("TUESDAY", hasSize(2)))
-
-            .andExpect(jsonPath("TUESDAY[0].day", is("TUESDAY")))
-            .andExpect(jsonPath("TUESDAY[0].date").doesNotExist()) // date is null
-            .andExpect(jsonPath("TUESDAY[0].timeFrom", is("12:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].timeTo", is("13:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].recurring", is(true)))
-
-            .andExpect(jsonPath("TUESDAY[1].day", is("TUESDAY")))
-            .andExpect(jsonPath("TUESDAY[1].date", is("2023-08-15")))
-            .andExpect(jsonPath("TUESDAY[1].timeFrom", is("12:00:00")))
-            .andExpect(jsonPath("TUESDAY[1].timeTo", is("13:00:00")))
-            .andExpect(jsonPath("TUESDAY[1].recurring", is(false)))
-
+            .andExpect(content().json("""
+                [
+                  {
+                    "from": "2023-08-14T15:00:00",
+                    "to": "2023-08-14T16:00:00"
+                  }
+                ]"""))
         ;
 
     }
@@ -139,56 +124,47 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach", authorities = {"COACH"})
     void setNonRecurringTest() throws Exception {
 
-        mvc.perform(post("/api/latest/coach-availability/NON_RECURRING")
-                .param("firstDayOfTheWeek", "2023-08-14")
+        mvc.perform(post("/api/latest/coach-availability/non-recurring")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
                         {
-                          "firstDayOfTheWeek": "2023-08-14",
-                          "availabilities" : {
-                            "MONDAY": [
+                          "timeFrame": {
+                            "from": "2023-08-14T00:00:00",
+                            "to": "2023-08-16T00:00:00"
+                          },
+                          "events": [
                               {
-                                "timeFrom": "01:00:00",
-                                "timeTo": "02:00:00"
-                              }
-                            ],
-                            "TUESDAY": [
+                                "from": "2023-08-14T16:00:00",
+                                "to": "2023-08-14T18:00:00"
+                              },
                               {
-                                "timeFrom": "02:00:00",
-                                "timeTo": "03:00:00"
+                                "from": "2023-08-15T14:00:00",
+                                "to": "2023-08-15T16:00:00"
                               }
-                            ]
-                          }
+                          ]
                         }
                         """
                 )
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("TUESDAY").isArray())
-            .andExpect(jsonPath("TUESDAY", hasSize(1)))
-            .andExpect(jsonPath("TUESDAY[0].day", is("TUESDAY")))
-            .andExpect(jsonPath("TUESDAY[0].date", is("2023-08-15")))
-            .andExpect(jsonPath("TUESDAY[0].timeFrom", is("02:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].timeTo", is("03:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].recurring", is(false)))
-
-            .andExpect(jsonPath("MONDAY").isArray())
-            .andExpect(jsonPath("MONDAY", hasSize(1)))
-            .andExpect(jsonPath("MONDAY[0].day", is("MONDAY")))
-            .andExpect(jsonPath("MONDAY[0].date", is("2023-08-14")))
-            .andExpect(jsonPath("MONDAY[0].timeFrom", is("01:00:00")))
-            .andExpect(jsonPath("MONDAY[0].timeTo", is("02:00:00")))
-            .andExpect(jsonPath("MONDAY[0].recurring", is(false)))
         ;
 
-        final var changedData = coachAvailabilityRepository.findAllByUsernameAndFirstDayOfTheWeekAndRecurringIsFalse("coach", LocalDate.parse("2023-08-14"));
+        final var events = coachAvailabilityRepository.findAllByUsernameAndDateTimeFromAfterAndDateTimeToBefore(
+                "coach",
+                LocalDateTime.parse("2023-08-14T00:00:00"),
+                LocalDateTime.parse("2023-08-16T00:00:00")
+            ).stream()
+            .sorted(Comparator.comparingLong(CoachAvailability::getId))
+            .toList();
 
-        assertThat(changedData, hasSize(2));
-
-        final var unchangedData = coachAvailabilityRepository.findAllByUsernameAndFirstDayOfTheWeekAndRecurringIsFalse("coach", LocalDate.parse("2023-09-14"));
-
-        assertThat(unchangedData, hasSize(2));
+        assertThat(events, hasSize(2));
+        assertThat(events.get(0).getRecurring(), is(false));
+        assertThat(events.get(0).getDateTimeFrom(), is(LocalDateTime.parse("2023-08-15T12:00:00")));
+        assertThat(events.get(0).getDateTimeTo(), is(LocalDateTime.parse("2023-08-15T14:00:00")));
+        assertThat(events.get(1).getRecurring(), is(false));
+        assertThat(events.get(1).getDateTimeFrom(), is(LocalDateTime.parse("2023-08-14T14:00:00")));
+        assertThat(events.get(1).getDateTimeTo(), is(LocalDateTime.parse("2023-08-14T16:00:00")));
 
     }
 
@@ -196,51 +172,54 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach", authorities = {"COACH"})
     void setRecurringTest() throws Exception {
 
-        mvc.perform(post("/api/latest/coach-availability/RECURRING")
+        mvc.perform(post("/api/latest/coach-availability/recurring")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
-                        {
-                          "availabilities" : {
-                            "MONDAY": [
-                              {
-                                "timeFrom": "01:00:00",
-                                "timeTo": "02:00:00"
-                              }
-                            ],
-                            "TUESDAY": [
-                              {
-                                "timeFrom": "02:00:00",
-                                "timeTo": "03:00:00"
-                              }
-                            ]
+                        [
+                          {
+                            "from": {
+                              "day": "MONDAY",
+                              "time": "15:00:00"
+                            },
+                            "to": {
+                              "day": "MONDAY",
+                              "time": "16:00:00"
+                            }
+                          },
+                          {
+                            "from": {
+                              "day": "TUESDAY",
+                              "time": "12:00:00"
+                            },
+                            "to": {
+                              "day": "TUESDAY",
+                              "time": "14:00:00"
+                            }
                           }
-                        }
-                        """
+                        ]
+                            """
                 )
             )
-            .andDo(print())
             .andExpect(status().isOk())
-            .andExpect(jsonPath("MONDAY").isArray())
-            .andExpect(jsonPath("MONDAY", hasSize(1)))
-            .andExpect(jsonPath("MONDAY[0].day", is("MONDAY")))
-            .andExpect(jsonPath("MONDAY[0].date").doesNotExist()) // date is null
-            .andExpect(jsonPath("MONDAY[0].timeFrom", is("01:00:00")))
-            .andExpect(jsonPath("MONDAY[0].timeTo", is("02:00:00")))
-            .andExpect(jsonPath("MONDAY[0].recurring", is(true)))
-
-            .andExpect(jsonPath("TUESDAY").isArray())
-            .andExpect(jsonPath("TUESDAY", hasSize(1)))
-            .andExpect(jsonPath("TUESDAY[0].day", is("TUESDAY")))
-            .andExpect(jsonPath("TUESDAY[0].date").doesNotExist()) // date is null
-            .andExpect(jsonPath("TUESDAY[0].timeFrom", is("02:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].timeTo", is("03:00:00")))
-            .andExpect(jsonPath("TUESDAY[0].recurring", is(true)))
         ;
 
-        final var changedData = coachAvailabilityRepository.findAllByUsernameAndRecurringIsTrue("coach");
+        final var events = coachAvailabilityRepository.findAllByUsernameAndRecurringIsTrue("coach")
+            .stream()
+            .sorted(Comparator.comparingLong(CoachAvailability::getId))
+            .toList();
 
-        assertThat(changedData, hasSize(2));
+        assertThat(events, hasSize(2));
+        assertThat(events.get(0).getRecurring(), is(true));
+        assertThat(events.get(0).getDayFrom(), is(DayOfWeek.MONDAY));
+        assertThat(events.get(0).getTimeFrom(), is(LocalTime.parse("13:00:00")));
+        assertThat(events.get(0).getDayTo(), is(DayOfWeek.MONDAY));
+        assertThat(events.get(0).getTimeTo(), is(LocalTime.parse("14:00:00")));
+        assertThat(events.get(1).getRecurring(), is(true));
+        assertThat(events.get(1).getDayFrom(), is(DayOfWeek.TUESDAY));
+        assertThat(events.get(1).getTimeFrom(), is(LocalTime.parse("10:00:00")));
+        assertThat(events.get(1).getDayTo(), is(DayOfWeek.TUESDAY));
+        assertThat(events.get(1).getTimeTo(), is(LocalTime.parse("12:00:00")));
 
 
     }
