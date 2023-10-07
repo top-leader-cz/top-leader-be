@@ -24,8 +24,3 @@ spring:
           starttls:
             enable: true
           auth: true
-
-          set-password
-
-
-
