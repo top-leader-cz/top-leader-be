@@ -31,6 +31,6 @@ spring:
           auth: true
 
 top-leader:
-  app-url: http://34.36.149.115
+  app-url: https://toplead.app
   supported-invitations: en, cs, fr
   default-locale: en

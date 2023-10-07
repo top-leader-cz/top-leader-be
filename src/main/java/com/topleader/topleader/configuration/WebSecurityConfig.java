@@ -28,7 +28,7 @@ public class WebSecurityConfig {
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**",
                         "/v3/api-docs/**",
-                        "set-password/**").permitAll()
+                        "/set-password/**").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(e ->
