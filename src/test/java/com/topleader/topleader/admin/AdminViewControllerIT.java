@@ -3,12 +3,19 @@
  */
 package com.topleader.topleader.admin;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.UserRepository;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -19,6 +26,76 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @Sql(scripts = "/sql/admin/admin-view-data.sql")
 class AdminViewControllerIT extends IntegrationTest {
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void testConfirmTopUp() throws Exception {
+
+        mvc.perform(post("/api/latest/admin/users/user1/confirm-requested-credits"))
+            .andExpect(status().isOk());
+
+        final var fetchedUser = userRepository.findById("user1").orElseThrow();
+        assertThat(fetchedUser).isNotNull();
+        assertThat(fetchedUser.getCredit()).isEqualTo(150);
+        assertThat(fetchedUser.getRequestedCredit()).isZero();
+
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void testCreateUser() throws Exception {
+        final var createUserRequestDto = new AdminViewController.CreateUserRequestDto(
+            "newuser", "John", "Doe", "UTC", 1L,
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN)
+        );
+
+        mvc.perform(post("/api/latest/admin/users")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(createUserRequestDto)))
+            .andExpect(status().isOk());
+
+        final var fetchedUser = userRepository.findById("newuser").orElseThrow();
+        assertThat(fetchedUser).isNotNull();
+        assertThat(fetchedUser.getUsername()).isEqualTo(createUserRequestDto.username());
+        assertThat(fetchedUser.getFirstName()).isEqualTo(createUserRequestDto.firstName());
+        assertThat(fetchedUser.getLastName()).isEqualTo(createUserRequestDto.lastName());
+        assertThat(fetchedUser.getTimeZone()).isEqualTo(createUserRequestDto.timeZone());
+        assertThat(fetchedUser.getCompanyId()).isEqualTo(createUserRequestDto.companyId());
+        assertThat(fetchedUser.getIsTrial()).isEqualTo(createUserRequestDto.isTrial());
+        assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(createUserRequestDto.authorities());
+
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void testUpdateUser() throws Exception {
+        final var updatedUser = new AdminViewController.UpdateUserRequestDto(
+            "John", "UpdatedDoe", "PST", 2L,
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "updatedCoach", 150
+        );
+        mvc.perform(post("/api/latest/admin/users/user1")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(updatedUser)))
+            .andExpect(status().isOk());
+
+        final var fetchedUser = userRepository.findById("user1").orElseThrow();
+        assertThat(fetchedUser).isNotNull();
+        assertThat(fetchedUser.getFirstName()).isEqualTo(updatedUser.firstName());
+        assertThat(fetchedUser.getLastName()).isEqualTo(updatedUser.lastName());
+        assertThat(fetchedUser.getTimeZone()).isEqualTo(updatedUser.timeZone());
+        assertThat(fetchedUser.getCompanyId()).isEqualTo(updatedUser.companyId());
+        assertThat(fetchedUser.getIsTrial()).isEqualTo(updatedUser.isTrial());
+        assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(updatedUser.authorities());
+        assertThat(fetchedUser.getCoach()).isEqualTo(updatedUser.coach());
+        assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
+    }
 
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
@@ -78,7 +155,7 @@ class AdminViewControllerIT extends IntegrationTest {
                   "empty": false
                 }
                 """))
-            ;
+        ;
     }
 
     @Test

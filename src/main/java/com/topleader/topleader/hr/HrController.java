@@ -5,6 +5,7 @@ package com.topleader.topleader.hr;
 
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.constraints.NotEmpty;
@@ -41,6 +42,8 @@ public class HrController {
 
     private final PasswordEncoder passwordEncoder;
 
+    private final InvitationService invitationService;
+
 
     @Secured("HR")
     @GetMapping
@@ -67,7 +70,8 @@ public class HrController {
             throw new ApiValidationException("email", "Already used");
         }
 
-        return HrUserDto.from(userRepository.save(
+
+        final var createdUser = userRepository.save(
             new User()
                 .setUsername(request.email())
                 .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
@@ -77,7 +81,11 @@ public class HrController {
                 .setAuthorities(Set.of(User.Authority.USER))
                 .setCredit(0)
                 .setTimeZone(hrUser.getTimeZone())
-                .setStatus(User.Status.PENDING)));
+                .setStatus(User.Status.PENDING));
+
+        invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser));
+
+        return HrUserDto.from(createdUser);
     }
 
     @Secured("HR")

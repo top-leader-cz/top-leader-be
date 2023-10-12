@@ -3,10 +3,18 @@
  */
 package com.topleader.topleader.admin;
 
+import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.UserRepository;
+import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -14,6 +22,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -29,7 +40,11 @@ import static java.util.function.Predicate.not;
 @AllArgsConstructor
 public class AdminViewController {
 
+    private final UserRepository userRepository;
+
     private final AdminViewRepository repository;
+
+    private final InvitationService invitationService;
 
     @Secured("ADMIN")
     @GetMapping("/users")
@@ -43,6 +58,98 @@ public class AdminViewController {
             .filter(not(List::isEmpty))
             .map(filter -> repository.findAll(Specification.allOf(filter), pageable))
             .orElseGet(() -> repository.findAll(pageable));
+    }
+
+    @Transactional
+    @Secured("ADMIN")
+    @PostMapping("/users")
+    public void createUser(@RequestBody @Valid CreateUserRequestDto userRequest) {
+        final var user = userRepository.save(userRequest.toUser());
+        invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user));
+    }
+
+    @Transactional
+    @Secured("ADMIN")
+    @PostMapping("/users/{username}")
+    public void createUser(@PathVariable String username, @RequestBody UpdateUserRequestDto userRequest) {
+
+        userRepository.findById(username)
+            .map(userRequest::updateUser)
+            .ifPresentOrElse(
+                userRepository::save,
+                () -> {
+                    throw new NotFoundException();
+                }
+            );
+
+    }
+
+    @Transactional
+    @Secured("ADMIN")
+    @PostMapping("/users/{username}/confirm-requested-credits")
+    public void createUser(@PathVariable String username) {
+
+        userRepository.findById(username)
+            .map(u -> u
+                .setCredit(Optional.ofNullable(u.getCredit()).orElse(0) + Optional.ofNullable(u.getRequestedCredit()).orElse(0))
+                .setRequestedCredit(0)
+            )
+            .ifPresentOrElse(
+                userRepository::save,
+                () -> {
+                    throw new NotFoundException();
+                }
+            );
+
+    }
+
+
+    public record UpdateUserRequestDto(
+        String firstName,
+        String lastName,
+        String timeZone,
+        Long companyId,
+        Boolean isTrial,
+        Set<User.Authority> authorities,
+        User.Status status,
+        String coach,
+        Integer credit
+    ) {
+        public User updateUser(User user) {
+            Optional.ofNullable(firstName).ifPresent(user::setFirstName);
+            Optional.ofNullable(lastName).ifPresent(user::setLastName);
+            Optional.ofNullable(timeZone).ifPresent(user::setTimeZone);
+            Optional.ofNullable(companyId).ifPresent(user::setCompanyId);
+            Optional.ofNullable(isTrial).ifPresent(user::setIsTrial);
+            Optional.ofNullable(authorities).ifPresent(user::setAuthorities);
+            Optional.ofNullable(status).ifPresent(user::setStatus);
+            Optional.ofNullable(coach).ifPresent(user::setCoach);
+            Optional.ofNullable(credit).ifPresent(user::setCredit);
+            return user;
+        }
+    }
+
+    public record CreateUserRequestDto(
+        @NotBlank String username,
+        @NotBlank String firstName,
+        @NotBlank String lastName,
+        @NotBlank String timeZone,
+        Long companyId,
+        @NotNull Boolean isTrial,
+
+        Set<User.Authority> authorities
+    ) {
+        public User toUser() {
+            return new User()
+                .setUsername(username)
+                .setFirstName(firstName)
+                .setLastName(lastName)
+                .setTimeZone(timeZone)
+                .setCompanyId(companyId)
+                .setIsTrial(isTrial)
+                .setAuthorities(authorities)
+                .setStatus(User.Status.PENDING);
+        }
     }
 
     public record FilterDto(
