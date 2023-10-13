@@ -10,6 +10,7 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -38,9 +39,10 @@ public class UserController {
             .setTimeZone(request.timeZone())
             .setStatus(request.status());
 
-        if(userDetailService.getUser(request.username()) != null) {
-            throw new UserValidationException("User already  exits! Username: " + request.username);
-        }
+        userDetailService.getUser(request.username())
+                .ifPresent(u -> {
+                    throw new UserValidationException("User already  exits! Username: " + u.getUsername());
+                });
 
         var saved = userDetailService.save(user);
         if (sendInvite(User.Status.PENDING, request.status())) {
@@ -52,7 +54,8 @@ public class UserController {
     @Secured({"ADMIN", "HR"})
     @PutMapping("/{username}")
     public UserDto updateUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequest request) {
-        var user = userDetailService.getUser(username);
+        var user = userDetailService.getUser(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
         var oldStatus = user.getStatus();
         user.setStatus(request.status);
         user.setFirstName(request.firstName());
