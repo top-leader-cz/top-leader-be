@@ -34,3 +34,4 @@ top-leader:
   app-url: https://toplead.app
   supported-invitations: en, cs, fr
   default-locale: en
+  default-from: top-leader

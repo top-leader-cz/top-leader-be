@@ -2,18 +2,14 @@ package com.topleader.topleader.user;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.user.token.Token;
 import com.topleader.topleader.user.token.TokenRepository;
 import org.assertj.core.api.Assertions;
-import org.assertj.core.api.PathAssert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
-
-import java.util.UUID;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -59,6 +55,7 @@ public class UserControllerIT extends IntegrationTest {
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("jakub.svezi@dummy.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
         Assertions.assertThat(body).contains("Jakub Svezi,").contains(" http://app-test-url/#/set-password/");
@@ -114,6 +111,7 @@ public class UserControllerIT extends IntegrationTest {
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("jakub.svezi@dummy.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
         Assertions.assertThat(body).contains("Jakub1 Svezi2,").contains(" http://app-test-url/#/set-password/");

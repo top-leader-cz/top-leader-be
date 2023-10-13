@@ -22,7 +22,7 @@ public class TokenController {
 
     private final UserRepository userRepository;
 
-    @PostMapping("{token}")
+    @PostMapping("/{token}")
     public void setPassword(@PathVariable String token,  @Valid @RequestBody SetPasswordRequestDto request) {
         log.info("User set-password start. token: {}", token);
 

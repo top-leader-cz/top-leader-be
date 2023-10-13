@@ -1,6 +1,7 @@
 package com.topleader.topleader.user;
 
 
+import com.topleader.topleader.user.exception.UserValidationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -36,6 +37,10 @@ public class UserController {
             .setLastName(request.lastName())
             .setTimeZone(request.timeZone())
             .setStatus(request.status());
+
+        if(userDetailService.getUser(request.username()) != null) {
+            throw new UserValidationException("User already  exits! Username: " + request.username);
+        }
 
         var saved = userDetailService.save(user);
         if (sendInvite(User.Status.PENDING, request.status())) {
