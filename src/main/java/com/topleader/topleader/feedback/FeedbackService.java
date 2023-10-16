@@ -18,8 +18,6 @@ public class FeedbackService {
 
     private final QuestionRepository questionRepository;
 
-
-
     public List<Question> fetchQuestions() {
         return questionRepository.findAll();
     }
@@ -31,5 +29,9 @@ public class FeedbackService {
 
     public FeedbackForm save(FeedbackForm form) {
         return feedbackFormRepository.save(form);
+    }
+
+    public void delete(long id) {
+        feedbackFormRepository.deleteById(id);
     }
 }

@@ -1,8 +1,6 @@
 create table if not exists fb_question
 (
-    key  varchar(500) not null primary key,
-    type varchar(20)  not null
-
+    key  varchar(500) not null primary key
 );
 
 create table if not exists fb_answer
@@ -27,7 +25,9 @@ create table if not exists feedback_form_question
 (
     feedback_form_id bigint       not null references feedback_form (id) on delete cascade,
     question_key     varchar(500) not null references fb_question (key),
+    type             varchar(20)  not null,
     required         bool         not null default true,
+
     constraint feedback_form_question_unique unique (feedback_form_id, question_key)
 );
 create index if not exists feedback_form_question_feedback_form_idx on feedback_form_question (feedback_form_id);
@@ -46,10 +46,12 @@ create table if not exists feedback_form_answer
     feedback_form_id bigint       not null references feedback_form (id) on delete cascade,
     question_key     varchar(500) not null references fb_question (key),
     answer_key       varchar(500) not null references fb_answer (key),
-    recipient        varchar(255) not null
+    recipient        varchar(255) not null,
+   constraint feedback_form_answer_unique unique(feedback_form_id, question_key, answer_key, recipient)
 );
--- create index if not exists feedback_form_answer_feedback_form_idx on feedback_form_answer (form_id);
--- create index if not exists feedback_form_answer_answer_idx on feedback_form_answer (answer_id);
+create index if not exists feedback_form_answer_feedback_form_idx on feedback_form_answer (feedback_form_id);
+create index if not exists feedback_form_answer_question_idx on feedback_form_answer (question_key);
+create index if not exists feedback_form_answer_answer_idx on feedback_form_answer (answer_key);
 
 
 

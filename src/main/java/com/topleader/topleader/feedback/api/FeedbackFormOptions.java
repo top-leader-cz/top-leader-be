@@ -1,6 +1,7 @@
 package com.topleader.topleader.feedback.api;
 
 import com.topleader.topleader.feedback.entity.Answer;
+import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
 import com.topleader.topleader.feedback.entity.Question;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -21,7 +22,7 @@ public class FeedbackFormOptions {
 
     public static FeedbackFormOptions of(List<Question> questions) {
         var options = questions.stream()
-                .map(q -> new OptionDto(q.getKey(), q.getType(), q.getAnswers().stream()
+                .map(q -> new OptionDto(q.getKey(), QuestionType.PARAGRAPH, q.getAnswers().stream()
                         .map(Answer::getKey)
                         .collect(Collectors.toList())))
                 .collect(Collectors.toList());
@@ -35,6 +36,6 @@ public class FeedbackFormOptions {
                 .setScales(scales);
     }
 
-    public record OptionDto(String key, Question.Type type, List<String> answers) {
+    public record OptionDto(String key, QuestionType type, List<String> answers) {
     }
 }

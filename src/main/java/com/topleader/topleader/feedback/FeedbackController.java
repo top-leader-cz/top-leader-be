@@ -27,7 +27,6 @@ public class FeedbackController {
 
     private final FeedbackService feedbackService;
 
-
     @Transactional
     @GetMapping("/options")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
@@ -44,6 +43,7 @@ public class FeedbackController {
 
     @Transactional
     @PostMapping
+    @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormDto createForm(@RequestBody @Valid FeedbackFormRequest request) {
         var form = feedbackService.save(FeedbackFormRequest.toForm(request));
         return FeedbackFormDto.of(form);
@@ -51,9 +51,16 @@ public class FeedbackController {
 
     @Transactional
     @PutMapping("/{id}")
+    @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormDto updaateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
         var form = FeedbackFormRequest.toForm(request).setId(id);
         return FeedbackFormDto.of(feedbackService.save(form));
+    }
+
+    @DeleteMapping("/{id}")
+    @Secured({"ADMIN", "HR", "COACH", "USER"})
+    public void deleteForm(@PathVariable long id) {
+        feedbackService.delete(id);
     }
 
 }

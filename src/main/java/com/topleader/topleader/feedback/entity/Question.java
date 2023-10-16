@@ -19,14 +19,7 @@ public class Question {
     @Id
     private String key;
 
-    @Enumerated(EnumType.STRING)
-    private Type type;
-
     @OneToMany(mappedBy="question", cascade = {CascadeType.ALL, CascadeType.PERSIST})
     private List<Answer> answers;
 
-      public enum Type {
-        PARAGRAPH,
-        SCALE
-    }
 }

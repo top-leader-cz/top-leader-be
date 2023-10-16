@@ -2,7 +2,10 @@ package com.topleader.topleader.feedback;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
+import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -11,6 +14,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class FeedbackControllerTest extends IntegrationTest {
+
+    @Autowired
+    FeedbackFormRepository repository;
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
@@ -74,5 +80,16 @@ public class FeedbackControllerTest extends IntegrationTest {
         var expected = TestUtils.readFileAsString("feedback/json/update-form-response.json");
 
         TestUtils.assertJsonEquals(result, expected);
+    }
+
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @WithMockUser(username = "user", authorities = "USER")
+    void deleteForm() throws Exception {
+        mvc.perform(delete("/api/latest/feedback/1"))
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(repository.findById(1l)).isEmpty();
+
     }
 }

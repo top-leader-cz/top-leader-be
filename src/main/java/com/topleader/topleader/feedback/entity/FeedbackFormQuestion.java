@@ -1,6 +1,7 @@
 package com.topleader.topleader.feedback.entity;
 
 
+import com.topleader.topleader.feedback.api.QuestionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,7 +26,11 @@ public class FeedbackFormQuestion {
     @MapsId("questionKey")
     private Question question;
 
+    @Enumerated(EnumType.STRING)
+    private QuestionType type;
+
     private boolean required;
+
     @Data
     @Embeddable
     @AllArgsConstructor

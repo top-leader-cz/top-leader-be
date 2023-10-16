@@ -47,9 +47,10 @@ public class FeedbackFormRequest {
 
         var feedbackFormQuestion = request.getQuestions().stream()
                 .map(q -> {
-                    var question = new Question().setType(q.type()).setKey(q.key());
+                    var question = new Question().setKey(q.key());
                     return new FeedbackFormQuestion()
-                            .setId(new FeedbackFormQuestion.FeedbackFormQuestionId(request.getId(), question.getKey()))
+                            .setId(new FeedbackFormQuestion.FeedbackFormQuestionId(request.getId(), q.key()))
+                            .setType(q.type())
                             .setRequired(q.required())
                             .setQuestion(question)
                             .setFeedbackForm(feedbackForm);

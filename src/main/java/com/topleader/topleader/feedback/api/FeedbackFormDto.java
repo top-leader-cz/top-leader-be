@@ -29,7 +29,7 @@ public class FeedbackFormDto {
         var questions = feedbackForm.getQuestions().stream()
                 .map(q -> {
                     var question = q.getQuestion();
-                    return new QuestionDto(question.getKey(), question.getType(), q.isRequired());
+                    return new QuestionDto(question.getKey(), q.getType(), q.isRequired());
                 })
                 .collect(Collectors.toList());
 
