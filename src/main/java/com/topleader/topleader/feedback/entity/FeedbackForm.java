@@ -36,7 +36,7 @@ public class FeedbackForm {
     @OneToMany(mappedBy = "feedbackForm", cascade = { CascadeType.ALL }, orphanRemoval = true)
     private List<FeedbackFormAnswer> answers = new ArrayList<>();
 
-    @OneToMany(mappedBy="feedbackForm", cascade = {CascadeType.PERSIST, CascadeType.PERSIST})
+    @OneToMany(mappedBy="form", cascade = {CascadeType.PERSIST, CascadeType.PERSIST})
     private List<Recipient> recipients = new ArrayList<>();
 
 

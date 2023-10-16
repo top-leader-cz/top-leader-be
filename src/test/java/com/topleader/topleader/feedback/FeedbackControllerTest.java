@@ -27,7 +27,7 @@ public class FeedbackControllerTest extends IntegrationTest {
     }
 
     @Test
-    @Sql(scripts = {"/sql/user/user-test.sql", "/feedback/sql/feedback.sql"})
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
     @WithMockUser(username = "user", authorities = "USER")
     void getEmptyDetailTest() throws Exception {
         var result = mvc.perform(get("/api/latest/feedback/1"))
@@ -36,7 +36,7 @@ public class FeedbackControllerTest extends IntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        var expected = TestUtils.readFileAsString("feedback/json/feedback-options-response.json");
+        var expected = TestUtils.readFileAsString("feedback/json/get-form-response.json");
 
         TestUtils.assertJsonEquals(result, expected);
     }

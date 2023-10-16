@@ -1,18 +1,18 @@
 {
   "id": 1,
-  "title": null,
-  "description": null,
+  "title": "test-from",
+  "description": "test description",
   "validTo": "2023-12-12T00:00:00",
   "questions": [
-    {
-      "key": "question.key.2",
-      "type": "PARAGRAPH",
-      "required": false
-    },
     {
       "key": "question.key.1",
       "type": "PARAGRAPH",
       "required": true
+    },
+    {
+      "key": "question.key.2",
+      "type": "PARAGRAPH",
+      "required": false
     }
   ],
   "recipients": [
@@ -20,3 +20,4 @@
     "pepa@cerny.cz"
   ]
 }
+

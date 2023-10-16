@@ -1,14 +1,13 @@
 package com.topleader.topleader.feedback;
 
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.topleader.topleader.feedback.api.FeedbackFormDto;
 import com.topleader.topleader.feedback.api.FeedbackFormOptions;
 import com.topleader.topleader.feedback.entity.*;
 
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
@@ -16,10 +15,8 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 @RestController
 @RequestMapping("/api/latest/feedback")
@@ -47,44 +44,6 @@ public class FeedbackController {
     public FeedbackFormDto createForm(@RequestBody @Valid FeedbackFormRequest request) {
         var form = feedbackService.create(FeedbackFormRequest.toForm(request));
         return FeedbackFormDto.of(form);
-    }
-
-    @Data
-    @Accessors(chain = true)
-    public static class FeedbackFormDto {
-        private Long id;
-
-        private String title;
-
-        private String description;
-
-        private LocalDateTime validTo;
-
-        private Set<QuestionDto> questions;
-
-        private Set<String> recipients;
-
-        public static FeedbackFormDto of(FeedbackForm feedbackForm) {
-             var questions = feedbackForm.getQuestions().stream()
-                    .map(q -> {
-                        var question = q.getQuestion();
-                        return new QuestionDto(question.getKey(), question.getType(), q.isRequired());
-                    })
-                     .collect(Collectors.toSet());
-
-            var recipients = feedbackForm.getRecipients().stream()
-                    .map(Recipient::getRecipient)
-                    .collect(Collectors.toSet());
-
-            return new FeedbackFormDto()
-                    .setId(feedbackForm.getId())
-                    .setValidTo(feedbackForm.getValidTo())
-                    .setQuestions(questions)
-                    .setRecipients(recipients);
-        }
-     }
-
-    public record QuestionDto(String key, Question.Type type, boolean required) {
     }
 
 
@@ -125,12 +84,15 @@ public class FeedbackController {
             feedbackForm.setQuestions(feedbackFormQuestion);
 
             var recipients = request.getRecipients().stream()
-                    .map(r -> new Recipient().setRecipient(r).setFeedbackForm(feedbackForm))
+                    .map(r -> new Recipient().setRecipient(r).setForm(feedbackForm))
                     .collect(Collectors.toList());
             feedbackForm.setRecipients(recipients);
 
             return feedbackForm;
         }
     }
+    public record QuestionDto(String key, Question.Type type, boolean required) {
+    }
+
 
 }

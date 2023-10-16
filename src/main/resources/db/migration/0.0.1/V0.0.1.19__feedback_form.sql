@@ -35,10 +35,9 @@ create index if not exists feedback_form_question_question_idx on feedback_form_
 
 create table if not exists fb_recipient
 (
-    id        bigserial primary key,
     form_id   bigint       not null references feedback_form (id) on delete cascade,
     recipient varchar(255) not null,
-    constraint feedback_form_recipient_unique unique (form_id, recipient)
+    constraint fb_recipient_pk primary key (form_id, recipient)
 );
 create index if not exists fb_recipient_feedback_form_idx on fb_recipient (form_id);
 
