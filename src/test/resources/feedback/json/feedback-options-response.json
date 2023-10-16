@@ -17,6 +17,15 @@
         "answer.key.2.2",
         "answer.key.2.3"
       ]
+    },
+    {
+      "key": "question.key.3",
+      "type": "PARAGRAPH",
+      "answers": [
+        "answer.key.3.1",
+        "answer.key.3.2",
+        "answer.key.3.3"
+      ]
     }
   ],
   "scales": [

@@ -1,6 +1,7 @@
 package com.topleader.topleader.feedback.api;
 
 import com.topleader.topleader.feedback.entity.Recipient;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import java.time.LocalDateTime;
@@ -15,6 +16,8 @@ public class FeedbackFormDto {
     private String title;
 
     private String description;
+
+    private String username;
 
     private LocalDateTime validTo;
 
@@ -36,6 +39,7 @@ public class FeedbackFormDto {
 
         return new FeedbackFormDto()
                 .setTitle(feedbackForm.getTitle())
+                .setUsername(feedbackForm.getUser().getUsername())
                 .setDescription(feedbackForm.getDescription())
                 .setId(feedbackForm.getId())
                 .setValidTo(feedbackForm.getValidTo())

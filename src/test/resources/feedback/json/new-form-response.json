@@ -1,23 +1,23 @@
 {
-  "id": 1,
-  "title": "test-from",
+  "id": 50,
+  "title": "new-from",
   "username": "jakub.svezi@dummy.com",
-  "description": "test description",
+  "description": "new test description",
   "validTo": "2023-12-12T00:00:00",
   "questions": [
     {
       "key": "question.key.1",
       "type": "PARAGRAPH",
-      "required": true
+      "required": false
     },
     {
       "key": "question.key.2",
-      "type": "PARAGRAPH",
-      "required": false
+      "type": "SCALE",
+      "required": true
     }
   ],
   "recipients": [
-    "pepa@cerny.cz",
-    "ilja@bily.cz"
+    "mala@mela.cz",
+    "dula@dula.cz"
   ]
 }

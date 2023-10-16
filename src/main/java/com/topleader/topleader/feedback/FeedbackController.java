@@ -3,8 +3,10 @@ package com.topleader.topleader.feedback;
 
 import com.topleader.topleader.feedback.api.FeedbackFormDto;
 import com.topleader.topleader.feedback.api.FeedbackFormOptions;
+import com.topleader.topleader.feedback.api.FeedbackFormRequest;
 import com.topleader.topleader.feedback.entity.*;
 
+import com.topleader.topleader.user.User;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -40,59 +42,18 @@ public class FeedbackController {
         return FeedbackFormDto.of(feedbackService.fetch(id));
     }
 
-    @PostMapping()
+    @Transactional
+    @PostMapping
     public FeedbackFormDto createForm(@RequestBody @Valid FeedbackFormRequest request) {
-        var form = feedbackService.create(FeedbackFormRequest.toForm(request));
+        var form = feedbackService.save(FeedbackFormRequest.toForm(request));
         return FeedbackFormDto.of(form);
     }
 
-
-    @Data
-    @Accessors(chain = true)
-    public static class FeedbackFormRequest {
-
-        @NotNull
-        private String title;
-
-        private String description;
-
-        @NotNull
-        private String link;
-
-        @NotNull
-        private LocalDateTime validTo;
-
-        private Set<QuestionDto> questions;
-
-        private Set<String> recipients;
-
-        public static FeedbackForm toForm(FeedbackFormRequest request) {
-
-            var feedbackForm = new FeedbackForm().setTitle(request.getTitle())
-                    .setDescription(request.getDescription())
-                    .setValidTo(request.getValidTo());
-
-            var feedbackFormQuestion = request.getQuestions().stream()
-                    .map(q -> {
-                        var question = new Question().setType(q.type).setKey(q.key);
-                        return new FeedbackFormQuestion().setRequired(q.required)
-                                .setQuestion(question)
-                                .setFeedbackForm(feedbackForm);
-                    })
-                            .collect(Collectors.toList());
-
-            feedbackForm.setQuestions(feedbackFormQuestion);
-
-            var recipients = request.getRecipients().stream()
-                    .map(r -> new Recipient().setRecipient(r).setForm(feedbackForm))
-                    .collect(Collectors.toList());
-            feedbackForm.setRecipients(recipients);
-
-            return feedbackForm;
-        }
+    @Transactional
+    @PutMapping("/{id}")
+    public FeedbackFormDto updaateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
+        var form = FeedbackFormRequest.toForm(request).setId(id);
+        return FeedbackFormDto.of(feedbackService.save(form));
     }
-    public record QuestionDto(String key, Question.Type type, boolean required) {
-    }
-
 
 }

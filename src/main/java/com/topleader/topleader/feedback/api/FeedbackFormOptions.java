@@ -1,6 +1,5 @@
 package com.topleader.topleader.feedback.api;
 
-import com.topleader.topleader.feedback.FeedbackController;
 import com.topleader.topleader.feedback.entity.Answer;
 import com.topleader.topleader.feedback.entity.Question;
 import lombok.Data;

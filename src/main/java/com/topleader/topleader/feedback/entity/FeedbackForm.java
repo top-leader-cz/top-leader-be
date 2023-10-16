@@ -18,6 +18,8 @@ import java.util.Set;
 public class FeedbackForm {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "feedback_form_id_seq")
+    @SequenceGenerator(name = "feedback_form_id_seq", sequenceName = "feedback_form_id_seq", allocationSize = 1)
     private Long id;
 
     private String title;
@@ -30,13 +32,13 @@ public class FeedbackForm {
     @JoinColumn(name = "username")
     private User user;
 
-    @OneToMany(mappedBy = "feedbackForm", cascade = { CascadeType.ALL }, orphanRemoval = true)
+    @OneToMany(mappedBy = "feedbackForm", orphanRemoval = true)
     private List<FeedbackFormQuestion> questions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "feedbackForm", cascade = { CascadeType.ALL }, orphanRemoval = true)
+    @OneToMany(mappedBy = "feedbackForm", orphanRemoval = true)
     private List<FeedbackFormAnswer> answers = new ArrayList<>();
 
-    @OneToMany(mappedBy="form", cascade = {CascadeType.PERSIST, CascadeType.PERSIST})
+    @OneToMany(mappedBy="form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Recipient> recipients = new ArrayList<>();
 
 

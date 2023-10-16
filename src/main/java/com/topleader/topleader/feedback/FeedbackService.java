@@ -29,7 +29,7 @@ public class FeedbackService {
                 .orElseThrow(() -> new EntityNotFoundException("Feedback form not found! id: " + id));
     }
 
-    public FeedbackForm create(FeedbackForm form) {
+    public FeedbackForm save(FeedbackForm form) {
         return feedbackFormRepository.save(form);
     }
 }
