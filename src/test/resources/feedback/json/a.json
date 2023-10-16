@@ -1,0 +1,34 @@
+{
+  "options": [
+    {
+      "key": "question.key.1",
+      "type": "PARAGRAPH",
+      "answers": [
+        "answer.key.1.1",
+        "answer.key.1.2",
+        "answer.key.1.3"
+      ]
+    },
+    {
+      "key": "question.key.2",
+      "type": "PARAGRAPH",
+      "answers": [
+        "answer.key.2.1",
+        "answer.key.2.2",
+        "answer.key.2.3"
+      ]
+    }
+  ],
+  "scales": [
+    "scale.1",
+    "scale.2",
+    "scale.3",
+    "scale.4",
+    "scale.5",
+    "scale.6",
+    "scale.7",
+    "scale.8",
+    "scale.9",
+    "scale.10"
+  ]
+}

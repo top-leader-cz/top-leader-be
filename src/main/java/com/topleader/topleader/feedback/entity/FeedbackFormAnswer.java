@@ -15,7 +15,7 @@ public class FeedbackFormAnswer {
     @EmbeddedId
     private FeedbackFormAnswerId id;
 
-    @ManyToOne( fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("formId")
     private FeedbackForm feedbackForm;
 

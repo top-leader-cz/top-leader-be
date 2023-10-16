@@ -1,13 +1,18 @@
 package com.topleader.topleader.feedback;
 
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.topleader.topleader.feedback.api.FeedbackFormOptions;
 import com.topleader.topleader.feedback.entity.*;
 
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
@@ -16,19 +21,24 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@RestController("/api/latest/feedback")
+@RestController
+@RequestMapping("/api/latest/feedback")
 @RequiredArgsConstructor
 public class FeedbackController {
 
     private final FeedbackService feedbackService;
 
-    private static final String SCALE_KEY = "scale.";
 
+    @Transactional
     @GetMapping("/options")
+    @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormOptions getOptions() {
         return FeedbackFormOptions.of(feedbackService.fetchQuestions());
     }
+
+    @Transactional
     @GetMapping("/{id}")
+    @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormDto getForm(@PathVariable long id) {
         return FeedbackFormDto.of(feedbackService.fetch(id));
     }
@@ -48,8 +58,6 @@ public class FeedbackController {
 
         private String description;
 
-        private String link;
-
         private LocalDateTime validTo;
 
         private Set<QuestionDto> questions;
@@ -63,53 +71,22 @@ public class FeedbackController {
                         return new QuestionDto(question.getKey(), question.getType(), q.isRequired());
                     })
                      .collect(Collectors.toSet());
+
             var recipients = feedbackForm.getRecipients().stream()
                     .map(Recipient::getRecipient)
                     .collect(Collectors.toSet());
 
             return new FeedbackFormDto()
                     .setId(feedbackForm.getId())
-                    .setLink(feedbackForm.getLink())
                     .setValidTo(feedbackForm.getValidTo())
                     .setQuestions(questions)
                     .setRecipients(recipients);
         }
      }
 
-    @Data
-    @Accessors(chain = true)
-    public static class FeedbackFormOptions {
-
-        private Map<QuestionDto, List<String>> items;
-
-
-        private Set<String> scales;
-
-        public static FeedbackFormOptions of(List<Question> questions) {
-            var items = new HashMap<QuestionDto, List<String>>();
-            questions.forEach(question -> {
-                        var questionDto = new QuestionDto(question.getKey(), question.getType(),);
-                        items.compute(questionDto, (key, value) -> {
-                            var answers = items.getOrDefault(questionDto, new ArrayList<>());
-                            answers.addAll(question.getAnswers().stream()
-                                    .map(Answer::getKey)
-                                    .collect(Collectors.toSet()));
-                            return answers;
-                        });
-                    });
-
-            var scales = IntStream.range(1, 11)
-                    .mapToObj(i -> SCALE_KEY + i)
-                    .collect(Collectors.toSet());
-
-            return new FeedbackFormOptions()
-                    .setItems(items)
-                    .setScales(scales);
-        }
-    }
-
     public record QuestionDto(String key, Question.Type type, boolean required) {
     }
+
 
     @Data
     @Accessors(chain = true)
@@ -134,7 +111,6 @@ public class FeedbackController {
 
             var feedbackForm = new FeedbackForm().setTitle(request.getTitle())
                     .setDescription(request.getDescription())
-                    .setLink(request.getLink())
                     .setValidTo(request.getValidTo());
 
             var feedbackFormQuestion = request.getQuestions().stream()
@@ -144,13 +120,13 @@ public class FeedbackController {
                                 .setQuestion(question)
                                 .setFeedbackForm(feedbackForm);
                     })
-                            .collect(Collectors.toSet());
+                            .collect(Collectors.toList());
 
             feedbackForm.setQuestions(feedbackFormQuestion);
 
             var recipients = request.getRecipients().stream()
                     .map(r -> new Recipient().setRecipient(r).setFeedbackForm(feedbackForm))
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toList());
             feedbackForm.setRecipients(recipients);
 
             return feedbackForm;

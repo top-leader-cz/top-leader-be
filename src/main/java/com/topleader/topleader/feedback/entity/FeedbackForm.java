@@ -1,11 +1,13 @@
 package com.topleader.topleader.feedback.entity;
 
 
+import com.topleader.topleader.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,18 +24,21 @@ public class FeedbackForm {
 
     private String description;
 
-    private String link;
-
     private LocalDateTime validTo;
 
-    @OneToMany(mappedBy = "feedbackForm", cascade = { CascadeType.ALL }, orphanRemoval = true)
-    private Set<FeedbackFormQuestion> questions = new HashSet<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "username")
+    private User user;
 
+    @OneToMany(mappedBy = "feedbackForm", cascade = { CascadeType.ALL }, orphanRemoval = true)
+    private List<FeedbackFormQuestion> questions = new ArrayList<>();
 
     @OneToMany(mappedBy = "feedbackForm", cascade = { CascadeType.ALL }, orphanRemoval = true)
-    private Set<FeedbackFormAnswer> answers = new HashSet<>();
+    private List<FeedbackFormAnswer> answers = new ArrayList<>();
 
     @OneToMany(mappedBy="feedbackForm", cascade = {CascadeType.PERSIST, CascadeType.PERSIST})
-    private Set<Recipient> recipients;
+    private List<Recipient> recipients = new ArrayList<>();
+
+
 
 }
