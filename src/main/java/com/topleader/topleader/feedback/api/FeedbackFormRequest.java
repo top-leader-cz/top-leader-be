@@ -53,14 +53,15 @@ public class FeedbackFormRequest {
                             .setType(q.type())
                             .setRequired(q.required())
                             .setQuestion(question)
-                            .setFeedbackForm(feedbackForm);
+                            .setForm(feedbackForm);
                 })
                 .collect(Collectors.toList());
-
         feedbackForm.setQuestions(feedbackFormQuestion);
 
         var recipients = request.getRecipients().stream()
-                .map(r -> new Recipient().setId(new Recipient.RecipientId(request.getId(), r)).setRecipient(r).setForm(feedbackForm))
+                .map(r -> new Recipient().setId(new Recipient.RecipientId(request.getId(), r))
+                        .setRecipient(r)
+                        .setForm(feedbackForm))
                 .collect(Collectors.toList());
         feedbackForm.setRecipients(recipients);
 

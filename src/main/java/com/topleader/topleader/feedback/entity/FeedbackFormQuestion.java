@@ -20,7 +20,7 @@ public class FeedbackFormQuestion {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("formId")
-    private FeedbackForm feedbackForm;
+    private FeedbackForm form;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("questionKey")

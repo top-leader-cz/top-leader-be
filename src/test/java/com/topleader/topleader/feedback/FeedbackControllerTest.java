@@ -89,7 +89,7 @@ public class FeedbackControllerTest extends IntegrationTest {
         mvc.perform(delete("/api/latest/feedback/1"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(repository.findById(1l)).isEmpty();
+        Assertions.assertThat(repository.findById(1L)).isEmpty();
 
     }
 }
