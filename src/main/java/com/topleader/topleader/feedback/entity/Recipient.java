@@ -15,8 +15,8 @@ import java.util.List;
 @Accessors(chain = true)
 public class Recipient {
 
-    @EmbeddedId
-    private RecipientId id;
+    @Id
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("formId")
@@ -25,16 +25,8 @@ public class Recipient {
     @Column(name = "recipient", insertable=false, updatable=false)
     private String recipient;
 
-    @Data
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class RecipientId implements Serializable {
+    private String token;
 
-        @Column(name = "form_id")
-        private Long formId;
+    private boolean submitted;
 
-        @Column(name = "recipient")
-        private String recipient;
-    }
 }

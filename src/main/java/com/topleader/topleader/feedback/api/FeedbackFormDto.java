@@ -23,7 +23,7 @@ public class FeedbackFormDto {
 
     private List<QuestionDto> questions;
 
-    private List<String> recipients;
+    private List<RecipientDto> recipients;
 
     public static FeedbackFormDto of(com.topleader.topleader.feedback.entity.FeedbackForm feedbackForm) {
         var questions = feedbackForm.getQuestions().stream()
@@ -34,7 +34,7 @@ public class FeedbackFormDto {
                 .collect(Collectors.toList());
 
         var recipients = feedbackForm.getRecipients().stream()
-                .map(Recipient::getRecipient)
+                .map(r -> new RecipientDto(r.getId(), r.getRecipient(), r.isSubmitted()))
                 .collect(Collectors.toList());
 
         return new FeedbackFormDto()

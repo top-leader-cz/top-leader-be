@@ -35,7 +35,7 @@ public class FeedbackFormRequest {
     private Set<QuestionDto> questions;
 
     @NotNull
-    private Set<String> recipients;
+    private Set<RecipientDto> recipients;
 
     public static FeedbackForm toForm(FeedbackFormRequest request) {
         var feedbackForm = new FeedbackForm()
@@ -59,8 +59,9 @@ public class FeedbackFormRequest {
         feedbackForm.setQuestions(feedbackFormQuestion);
 
         var recipients = request.getRecipients().stream()
-                .map(r -> new Recipient().setId(new Recipient.RecipientId(request.getId(), r))
-                        .setRecipient(r)
+                .map(r -> new Recipient().setId(r.id())
+                        .setRecipient(r.username())
+                        .setSubmitted(r.submitted())
                         .setForm(feedbackForm))
                 .collect(Collectors.toList());
         feedbackForm.setRecipients(recipients);

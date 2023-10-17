@@ -19,7 +19,4 @@ public class Question {
     @Id
     private String key;
 
-    @OneToMany(mappedBy="question", cascade = {CascadeType.ALL, CascadeType.PERSIST})
-    private List<Answer> answers;
-
 }

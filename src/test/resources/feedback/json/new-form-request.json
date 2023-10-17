@@ -16,7 +16,15 @@
     }
   ],
   "recipients": [
-    "mala@mela.cz",
-    "dula@dula.cz"
+    {
+      "id": null,
+      "username": "pepa@cerny.cz",
+      "submitted": false
+    },
+    {
+      "id": null,
+      "username": "ilja@bily.cz",
+      "submitted": false
+    }
   ]
 }
