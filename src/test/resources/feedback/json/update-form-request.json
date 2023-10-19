@@ -17,8 +17,15 @@
     }
   ],
   "recipients": [
-    "mala@mela.cz",
-    "dula@dula.cz",
-    "kuku@kuku.cz"
+    {
+      "id": null,
+      "username": "mala@mela.cz",
+      "submitted": false
+    },
+    {
+      "id": null,
+      "username": "kuku@kuku.cz",
+      "submitted": false
+    }
   ]
 }

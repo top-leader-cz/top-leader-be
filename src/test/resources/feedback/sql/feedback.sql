@@ -19,10 +19,10 @@ values (1, 'question.key.1', true, 'PARAGRAPH');
 insert into feedback_form_question(form_id, question_key, required, type)
 values (1, 'question.key.2', false, 'PARAGRAPH');
 
-insert into fb_recipient(form_id, recipient, token, submitted)
-values (1, 'pepa@cerny.cz', 'token1', false);
+insert into fb_recipient(id, form_id, recipient, token, submitted)
+values (1, 1, 'pepa@cerny.cz', 'token1', false);
 
-insert into fb_recipient(form_id, recipient, token, submitted)
-values (1, 'ilja@bily.cz', 'token2', false)
+insert into fb_recipient(id, form_id, recipient, token, submitted)
+values (2, 1, 'ilja@bily.cz', 'token2', false)
 
 

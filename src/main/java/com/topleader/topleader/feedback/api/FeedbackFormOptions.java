@@ -20,21 +20,19 @@ public class FeedbackFormOptions {
     private List<String> scales;
 
     public static FeedbackFormOptions of(List<Question> questions) {
-//        var options = questions.stream()
-//                .map(q -> new OptionDto(q.getKey(), QuestionType.PARAGRAPH, q.getAnswers().stream()
-//                        .map(Answer::getKey)
-//                        .collect(Collectors.toList())))
-//                .collect(Collectors.toList());
+        var options = questions.stream()
+                .map(q -> new OptionDto(q.getKey(), QuestionType.PARAGRAPH))
+                .collect(Collectors.toList());
 
         var scales = IntStream.range(1, 11)
                 .mapToObj(i -> SCALE_KEY + i)
                 .collect(Collectors.toList());
 
         return new FeedbackFormOptions()
-//                .setOptions(options)
+                .setOptions(options)
                 .setScales(scales);
     }
 
-    public record OptionDto(String key, QuestionType type, List<String> answers) {
+    public record OptionDto(String key, QuestionType type) {
     }
 }

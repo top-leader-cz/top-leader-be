@@ -6,6 +6,7 @@ import com.topleader.topleader.feedback.api.FeedbackFormDto;
 import com.topleader.topleader.feedback.api.FeedbackFormOptions;
 import com.topleader.topleader.feedback.api.FeedbackFormRequest;
 
+import com.topleader.topleader.user.token.TokenService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class FeedbackController {
 
     private final FeedbackService feedbackService;
 
-    private EmailService emailService;
+    private final EmailService emailService;
 
     @Transactional
     @GetMapping("/options")
@@ -41,6 +42,7 @@ public class FeedbackController {
     public FeedbackFormDto createForm(@RequestBody @Valid FeedbackFormRequest request) {
         var form = feedbackService.saveForm(FeedbackFormRequest.toForm(request));
 //        form.getRecipients().forEach(r -> emailService.sendEmail(r.getRecipient(), "em"));
+
         return FeedbackFormDto.of(form);
     }
 

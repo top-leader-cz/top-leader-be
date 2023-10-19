@@ -1,5 +1,6 @@
 package com.topleader.topleader.user.token;
 
+import com.topleader.topleader.util.common.CommonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -17,8 +18,7 @@ public class TokenService {
     private final PasswordEncoder passwordEncoder;
 
     public String generateToken() {
-        var uuid = UUID.randomUUID().toString();
-        return passwordEncoder.encode(uuid);
+        return passwordEncoder.encode(CommonUtils.generateToken());
     }
 
     public void saveToken(Token token) {

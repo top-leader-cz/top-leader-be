@@ -10,11 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -35,7 +30,7 @@ public class FeedbackControllerTest extends IntegrationTest {
 
         var expected = TestUtils.readFileAsString("feedback/json/feedback-options-response.json");
 
-        TestUtils.assertJsonEquals(result, expected);
+         TestUtils.assertJsonEquals(result, expected);
     }
 
     @Test

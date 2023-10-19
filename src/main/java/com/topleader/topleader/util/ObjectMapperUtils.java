@@ -6,6 +6,7 @@ package com.topleader.topleader.util;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import lombok.experimental.UtilityClass;
 
 
 /**
@@ -17,9 +18,6 @@ public final class ObjectMapperUtils {
         .registerModule(new JavaTimeModule())
         ;
 
-    private ObjectMapperUtils() {
-        //util class
-    }
 
     public static <T> String toJsonString(T data) {
         try {

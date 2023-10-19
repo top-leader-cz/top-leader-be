@@ -1,5 +1,6 @@
 package com.topleader.topleader.feedback.api;
 
+import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.Recipient;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
@@ -25,7 +26,7 @@ public class FeedbackFormDto {
 
     private List<RecipientDto> recipients;
 
-    public static FeedbackFormDto of(com.topleader.topleader.feedback.entity.FeedbackForm feedbackForm) {
+    public static FeedbackFormDto of(FeedbackForm feedbackForm) {
         var questions = feedbackForm.getQuestions().stream()
                 .map(q -> {
                     var question = q.getQuestion();

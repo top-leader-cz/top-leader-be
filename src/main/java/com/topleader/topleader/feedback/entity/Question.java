@@ -13,7 +13,7 @@ import java.util.Set;
 @Data
 @Entity(name = "fb_question")
 @Accessors(chain = true)
-@ToString(of={"key", "type"})
+@ToString(of={"key"})
 public class Question {
 
     @Id

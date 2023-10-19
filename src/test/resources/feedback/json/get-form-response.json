@@ -18,12 +18,12 @@
   ],
   "recipients": [
     {
-      "id": 50,
+      "id": 1,
       "username": "pepa@cerny.cz",
       "submitted": false
     },
     {
-      "id": 51,
+      "id": 2,
       "username": "ilja@bily.cz",
       "submitted": false
     }

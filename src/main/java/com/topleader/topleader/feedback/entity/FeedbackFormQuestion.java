@@ -3,9 +3,7 @@ package com.topleader.topleader.feedback.entity;
 
 import com.topleader.topleader.feedback.api.QuestionType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
@@ -13,6 +11,7 @@ import java.io.Serializable;
 @Data
 @Entity
 @Accessors(chain = true)
+@ToString(of={"id", "form", "question", "type", "required"})
 public class FeedbackFormQuestion {
 
     @EmbeddedId

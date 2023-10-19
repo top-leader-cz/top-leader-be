@@ -6,6 +6,7 @@ import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
 import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.user.User;
+import com.topleader.topleader.util.common.CommonUtils;
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -60,6 +61,8 @@ public class FeedbackFormRequest {
 
         var recipients = request.getRecipients().stream()
                 .map(r -> new Recipient().setId(r.id())
+                        .setForm(feedbackForm)
+                        .setToken(CommonUtils.generateToken())
                         .setRecipient(r.username())
                         .setSubmitted(r.submitted())
                         .setForm(feedbackForm))
@@ -68,4 +71,5 @@ public class FeedbackFormRequest {
 
         return feedbackForm;
     }
+
 }

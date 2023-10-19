@@ -4,6 +4,8 @@ package com.topleader.topleader.feedback.entity;
 import com.topleader.topleader.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
@@ -15,6 +17,7 @@ import java.util.Set;
 @Data
 @Entity
 @Accessors(chain = true)
+@ToString(of={"id", "title", "description", "validTo"})
 public class FeedbackForm {
 
     @Id
@@ -32,13 +35,13 @@ public class FeedbackForm {
     @JoinColumn(name = "username")
     private User user;
 
-    @OneToMany(mappedBy = "form", cascade = { CascadeType.MERGE }, orphanRemoval = true)
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.MERGE}, orphanRemoval = true)
     private List<FeedbackFormQuestion> questions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "form", cascade = { CascadeType.MERGE }, orphanRemoval = true)
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.MERGE}, orphanRemoval = true)
     private List<FeedbackFormAnswer> answers = new ArrayList<>();
 
-    @OneToMany(mappedBy="form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Recipient> recipients = new ArrayList<>();
 
 
