@@ -1,6 +1,5 @@
 package com.topleader.topleader.feedback.repository;
 
-import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.Recipient;
 import org.springframework.data.jpa.repository.JpaRepository;
 
