@@ -19,15 +19,15 @@ public class FeedbackSubmitRequest {
         return request.getAnswers().stream()
                 .map(answerDto ->
                         new FeedbackFormAnswer()
-                                .setId(new FeedbackFormAnswer.FeedbackFormAnswerId(formId, recipient.getId(), answerDto.questionKey()))
+                                .setId(new FeedbackFormAnswer.FeedbackFormAnswerId(formId, recipient.getId(), answerDto.question()))
                                 .setForm(new FeedbackForm().setId(formId))
-                                .setQuestion(new Question().setKey(answerDto.questionKey()))
+                                .setQuestion(new Question().setKey(answerDto.question()))
                                 .setAnswer(answerDto.answer())
-                                .setRecipient(new Recipient().setForm(new FeedbackForm().setId(formId)).setRecipient(recipient.getRecipient()).setSubmitted(true)))
+                                .setRecipient(recipient.setSubmitted(true)))
                 .collect(Collectors.toList());
 
     }
 
-    public record AnswerDto(String questionKey, String answer) {
+    public record AnswerDto(String question, String answer) {
     }
 }

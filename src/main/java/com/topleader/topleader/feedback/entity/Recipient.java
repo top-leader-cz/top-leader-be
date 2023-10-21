@@ -12,7 +12,8 @@ import java.io.Serializable;
 import java.util.List;
 
 @Data
-@Entity(name = "fb_recipient")
+@Entity
+@Table(name = "fb_recipient")
 @Accessors(chain = true)
 @ToString(of={"id", "form", "recipient", "token", "submitted"})
 public class Recipient {

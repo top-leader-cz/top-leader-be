@@ -4,6 +4,8 @@ import com.topleader.topleader.feedback.api.FeedbackFormDto;
 import com.topleader.topleader.feedback.api.FeedbackSubmitRequest;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.feedback.exception.InvalidFormOrRecipientException;
+import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -16,6 +18,8 @@ public class PublicFeedbackController {
 
     private final FeedbackService feedbackService;
 
+
+    @Transactional
     @GetMapping("/{formId}/{username}/{token}")
     public FeedbackFormDto getForm(@PathVariable long formId, @PathVariable String username, @PathVariable String token) {
         feedbackService.getRecipientIfValid(formId, username, token);

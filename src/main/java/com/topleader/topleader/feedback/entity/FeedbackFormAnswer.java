@@ -10,21 +10,21 @@ import java.io.Serializable;
 @Entity
 @Table
 @Accessors(chain = true)
-@ToString(of={"id", "form", "question", "recipient", "answer"})
+@ToString(of={"id", "form.id", "question.key", "recipient.recipient", "answer"})
 public class FeedbackFormAnswer {
 
     @EmbeddedId
     private FeedbackFormAnswerId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("formId")
     private FeedbackForm form;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("questionKey")
     private Question question;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(cascade = { CascadeType.MERGE})
     @MapsId("recipientId")
     private Recipient recipient;
 

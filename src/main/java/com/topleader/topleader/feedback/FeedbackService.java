@@ -54,8 +54,8 @@ public class FeedbackService {
     }
 
     @Transactional
-    public void submitForm(List<FeedbackFormAnswer> answers) {
-        feedbackFormAnswerRepository.saveAll(answers);
+    public List<FeedbackFormAnswer> submitForm(List<FeedbackFormAnswer> answers) {
+        return feedbackFormAnswerRepository.saveAll(answers);
 //        recipientRepository.findById(recipientId)
 //                .ifPresent(r -> recipientRepository.save(r.setSubmitted(true)));
     }

@@ -3,7 +3,7 @@
   "title": "test-from",
   "description": "test description",
   "username": "jakub.svezi@dummy.com",
-  "validTo": "2023-12-12T00:00:00",
+  "validTo": "2060-12-12T00:00:00",
   "questions": [
     {
       "key": "question.key.1",

@@ -1,10 +1,12 @@
 {
   "answers": [
     {
-      "question.key.1": "answer test"
+      "question": "question.key.1",
+      "answer": "answer test"
     },
     {
-      "question.key.2": "scale.2"
+      "question": "question.key.2",
+      "answer": "scale.2"
     }
   ]
 }
