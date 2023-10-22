@@ -48,6 +48,7 @@ import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLangua
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
 import static java.util.function.Predicate.not;
+import static org.springframework.data.jpa.domain.Specification.allOf;
 
 
 /**
@@ -156,12 +157,20 @@ public class CoachListController {
     }
 
     private Page<Coach> findCoaches(List<Specification<Coach>> filter, Pageable page) {
-        return filter.isEmpty() ?
-            coachRepository.findAll(page) :
-            coachRepository.findAll(Specification.allOf(filter), page);
+        return coachRepository.findAll(
+            Optional.ofNullable(filter)
+                .filter(not(List::isEmpty))
+                .map(f -> allOf(f).and(isProfilePublic()))
+                .orElse(isProfilePublic()),
+            page
+        );
 
     }
 
+    public static Specification<Coach> isProfilePublic() {
+        return (root, query, criteriaBuilder) ->
+            criteriaBuilder.isTrue(root.get("publicProfile"));
+    }
 
     public record ScheduleSessionRequest(LocalDateTime time) {
     }
@@ -180,7 +189,9 @@ public class CoachListController {
 
         Integer experience,
 
-        String rate
+        String rate,
+
+        String timeZone
     ) {
         public static CoachListDto from(Coach c) {
             return new CoachListDto(
@@ -192,7 +203,8 @@ public class CoachListController {
                 c.getLanguages(),
                 c.getFields(),
                 toExperience(c.getExperienceSince()),
-                c.getRate()
+                c.getRate(),
+                c.getTimeZone()
             );
         }
 

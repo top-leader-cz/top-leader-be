@@ -48,6 +48,8 @@ public class Coach {
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> languages;
 
+    private String timeZone;
+
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<String> fields;
 
