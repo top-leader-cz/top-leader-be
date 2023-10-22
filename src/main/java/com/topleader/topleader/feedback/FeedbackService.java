@@ -14,7 +14,6 @@ import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
 import com.topleader.topleader.user.User;
-import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.persistence.EntityNotFoundException;
@@ -83,9 +82,16 @@ public class FeedbackService {
     }
 
     @Transactional
-    public Recipient getRecipientIfValid(long formId, String recipient, String token) {
+    public Recipient validateRecipientIfValid(long formId, String recipient, String token) {
         return recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
                 .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo()) && !r.isSubmitted())
+                .orElseThrow(() -> new InvalidFormOrRecipientException("Recipient or form is invalid!"));
+    }
+
+    @Transactional
+    public Recipient validateRecipientIfSubmitted(long formId, String recipient, String token) {
+        return recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
+                .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo()) && r.isSubmitted())
                 .orElseThrow(() -> new InvalidFormOrRecipientException("Recipient or form is invalid!"));
     }
 

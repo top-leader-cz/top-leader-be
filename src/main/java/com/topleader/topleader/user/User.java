@@ -51,6 +51,10 @@ public class User {
 
     private Boolean isTrial;
 
+    private String company;
+
+    private String hrEmail;
+
     public enum Authority {
         USER,
         COACH,

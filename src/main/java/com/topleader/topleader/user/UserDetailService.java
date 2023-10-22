@@ -37,6 +37,9 @@ public class UserDetailService implements UserDetailsService {
     public com.topleader.topleader.user.User save(com.topleader.topleader.user.User user) {
        return userRepository.save(user);
     }
+    public void delete(String username) {
+        userRepository.deleteById(username);
+    }
 }
 
 

@@ -25,5 +25,7 @@ create index if not exists feedback_form_answer_question_idx on feedback_form_an
 create index if not exists feedback_form_answer_recipient_idx on feedback_form_answer (recipient_id);
 
 alter table feedback_form add column created_at timestamp not null;
+alter table users add column company varchar(255) null;
+alter table users add column hr_email varchar(255) null;
 
 
