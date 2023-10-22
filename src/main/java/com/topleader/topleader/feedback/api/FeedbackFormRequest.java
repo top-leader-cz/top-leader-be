@@ -6,11 +6,14 @@ import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
 import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.user.User;
+import com.topleader.topleader.util.common.CommonUtils;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,10 +35,13 @@ public class FeedbackFormRequest {
     private LocalDateTime validTo;
 
     @NotNull
-    private Set<QuestionDto> questions;
+    private List<QuestionDto> questions;
 
     @NotNull
-    private Set<String> recipients;
+    private List<RecipientDto> recipients;
+
+    @Pattern(regexp = "[a-z]{2}")
+    private String locale;
 
     public static FeedbackForm toForm(FeedbackFormRequest request) {
         var feedbackForm = new FeedbackForm()
@@ -43,6 +49,7 @@ public class FeedbackFormRequest {
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
+                .setCreatedAt(LocalDateTime.now())
                 .setUser(new User().setUsername(request.getUsername()));
 
         var feedbackFormQuestion = request.getQuestions().stream()
@@ -59,12 +66,16 @@ public class FeedbackFormRequest {
         feedbackForm.setQuestions(feedbackFormQuestion);
 
         var recipients = request.getRecipients().stream()
-                .map(r -> new Recipient().setId(new Recipient.RecipientId(request.getId(), r))
-                        .setRecipient(r)
+                .map(r -> new Recipient().setId(r.id())
+                        .setForm(feedbackForm)
+                        .setToken(CommonUtils.generateToken())
+                        .setRecipient(r.username())
+                        .setSubmitted(r.submitted())
                         .setForm(feedbackForm))
                 .collect(Collectors.toList());
         feedbackForm.setRecipients(recipients);
 
         return feedbackForm;
     }
+
 }

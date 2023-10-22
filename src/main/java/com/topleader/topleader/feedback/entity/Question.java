@@ -13,13 +13,10 @@ import java.util.Set;
 @Data
 @Entity(name = "fb_question")
 @Accessors(chain = true)
-@ToString(of={"key", "type"})
+@ToString(of={"key"})
 public class Question {
 
     @Id
     private String key;
-
-    @OneToMany(mappedBy="question", cascade = {CascadeType.ALL, CascadeType.PERSIST})
-    private List<Answer> answers;
 
 }

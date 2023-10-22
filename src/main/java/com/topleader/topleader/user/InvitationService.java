@@ -45,7 +45,7 @@ public class InvitationService {
     }
 
     public String parseTemplateName(String locale) {
-        return "templates/invitation-" + parseLocale(locale) + ".vm";
+        return "templates/invitation/invitation-" + parseLocale(locale) + ".vm";
     }
 
     public String parseLocale(String locale) {

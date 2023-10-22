@@ -1,8 +1,8 @@
 {
   "id": 50,
   "title": "new-from",
-  "username": "jakub.svezi@dummy.com",
   "description": "new test description",
+  "username": "jakub.svezi@dummy.com",
   "validTo": "2023-12-12T00:00:00",
   "questions": [
     {
@@ -17,7 +17,15 @@
     }
   ],
   "recipients": [
-    "mala@mela.cz",
-    "dula@dula.cz"
+    {
+      "id": 50,
+      "username": "pepa@cerny.cz",
+      "submitted": false
+    },
+    {
+      "id": 51,
+      "username": "ilja@bily.cz",
+      "submitted": false
+    }
   ]
 }

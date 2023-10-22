@@ -1,0 +1,12 @@
+{
+  "answers": [
+    {
+      "question": "question.key.1",
+      "answer": "answer test"
+    },
+    {
+      "question": "question.key.2",
+      "answer": "scale.2"
+    }
+  ]
+}

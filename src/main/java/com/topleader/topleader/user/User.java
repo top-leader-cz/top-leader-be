@@ -51,15 +51,20 @@ public class User {
 
     private Boolean isTrial;
 
+    private String company;
+
+    private String hrEmail;
+
     public enum Authority {
         USER,
         COACH,
         HR,
-        ADMIN
+        ADMIN,
+        RESPONDENT
     }
 
     public enum Status {
-        AUTHORIZED, PENDING, PAID
+        AUTHORIZED, PENDING, PAID, REQUESTED, VIEWED, SUBMITTED
 
     }
 }

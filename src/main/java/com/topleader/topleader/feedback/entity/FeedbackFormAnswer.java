@@ -1,33 +1,34 @@
 package com.topleader.topleader.feedback.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 import java.io.Serializable;
 
 @Data
 @Entity
 @Table
+@Accessors(chain = true)
+@ToString(of={"id", "form.id", "question.key", "recipient.recipient", "answer"})
 public class FeedbackFormAnswer {
 
     @EmbeddedId
     private FeedbackFormAnswerId id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("formId")
     private FeedbackForm form;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @MapsId("questionKey")
     private Question question;
 
-    @ManyToOne( fetch = FetchType.LAZY)
-    @MapsId("answerKey")
-    private Answer answer;
+    @ManyToOne(cascade = { CascadeType.MERGE})
+    @MapsId("recipientId")
+    private Recipient recipient;
 
-    private String recipient;
+    private String answer;
 
 
     @Data
@@ -36,13 +37,15 @@ public class FeedbackFormAnswer {
     @NoArgsConstructor
     public static class FeedbackFormAnswerId implements Serializable {
 
-        @Column(name = "feedback_form_id")
+        @Column(name = "form_id")
         private Long formId;
+
+        @Column(name = "recipient_id")
+        private Long recipientId;
 
         @Column(name = "question_key")
         private String questionKey;
 
-        @Column(name = "answer_key")
-        private String answerKey;
+
     }
 }
