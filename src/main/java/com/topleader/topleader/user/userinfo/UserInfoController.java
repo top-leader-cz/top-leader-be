@@ -6,14 +6,20 @@ package com.topleader.topleader.user.userinfo;
 import com.topleader.topleader.notification.Notification;
 import com.topleader.topleader.notification.NotificationService;
 import com.topleader.topleader.notification.context.CoachLinkedNotificationContext;
-import jakarta.transaction.Transactional;
+import com.topleader.topleader.scheduled_session.ScheduledSession;
+import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +28,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static java.util.Objects.nonNull;
+import static java.util.stream.Collectors.toMap;
 
 
 /**
@@ -37,6 +46,8 @@ public class UserInfoController {
     private final UserRepository userRepository;
 
     private final NotificationService notificationService;
+
+    private final ScheduledSessionService scheduledSessionService;
 
 
     @GetMapping
@@ -81,14 +92,17 @@ public class UserInfoController {
 
         final var currentUser = userRepository.findById(user.getUsername()).orElseThrow();
 
-        if (!request.coach().equals(currentUser.getCoach())) {
+        if (!Objects.equals(request.coach(), currentUser.getCoach())) {
             currentUser.setCoach(request.coach());
             userRepository.save(currentUser);
-            notificationService.addNotification(new NotificationService.CreateNotificationRequest(
-                request.coach(),
-                Notification.Type.COACH_LINKED,
-                new CoachLinkedNotificationContext().setUsername(user.getUsername())
-            ));
+            scheduledSessionService.deleteUserSessions(user.getUsername());
+            if (nonNull(request.coach())) {
+                notificationService.addNotification(new NotificationService.CreateNotificationRequest(
+                    request.coach(),
+                    Notification.Type.COACH_LINKED,
+                    new CoachLinkedNotificationContext().setUsername(user.getUsername())
+                ));
+            }
         }
 
         return UserInfoDto.from(
@@ -99,6 +113,46 @@ public class UserInfoController {
                 .orElseThrow()
         );
     }
+
+    @GetMapping("/upcoming-sessions")
+    public List<UpcomingSessionDto> setCoach(@AuthenticationPrincipal UserDetails user) {
+
+        final var sessions = scheduledSessionService.listUsersFutureSessions(user.getUsername());
+
+        if (sessions.isEmpty()) {
+            return List.of();
+        }
+
+        final var coaches = userRepository.findAllById(sessions.stream()
+                .map(ScheduledSession::getCoachUsername)
+                .collect(Collectors.toSet())
+            ).stream()
+            .collect(toMap(User::getUsername, Function.identity()));
+
+
+        return sessions.stream()
+            .map(s -> UpcomingSessionDto.from(s, coaches.get(s.getCoachUsername())))
+            .toList();
+
+    }
+
+    public record UpcomingSessionDto(
+        String coach,
+        String firstName,
+        String lastName,
+        LocalDateTime time
+    ) {
+
+        public static UpcomingSessionDto from(ScheduledSession s, User u) {
+            return new UpcomingSessionDto(
+                u.getUsername(),
+                u.getFirstName(),
+                u.getLastName(),
+                s.getTime()
+            );
+        }
+    }
+
 
     public record UserInfoDto(
         String username,
@@ -130,6 +184,6 @@ public class UserInfoController {
     public record SetTimezoneRequestDto(@Size(min = 1, max = 20) String timezone) {
     }
 
-    public record SetCoachRequestDto(@NotEmpty String coach) {
+    public record SetCoachRequestDto(String coach) {
     }
 }

@@ -5,9 +5,12 @@ package com.topleader.topleader.scheduled_session;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import static java.util.function.Predicate.not;
 
 
 /**
@@ -30,5 +33,15 @@ public class ScheduledSessionService {
 
     public List<ScheduledSession> listCoachesFutureSessions(String username) {
         return scheduledSessionRepository.findAllByCoachUsernameAndTimeIsAfter(username, LocalDateTime.now());
+    }
+
+    public List<ScheduledSession> listUsersFutureSessions(String username) {
+        return scheduledSessionRepository.findAllByUsernameAndTimeIsAfter(username, LocalDateTime.now());
+    }
+
+    public void deleteUserSessions(String username) {
+        Optional.of(scheduledSessionRepository.findAllByUsernameAndTimeIsAfter(username, LocalDateTime.now()))
+            .filter(not(List::isEmpty))
+            .ifPresent(scheduledSessionRepository::deleteAll);
     }
 }
