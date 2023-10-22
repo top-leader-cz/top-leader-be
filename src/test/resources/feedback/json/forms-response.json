@@ -1,0 +1,19 @@
+[
+  {
+    "id": 1,
+    "title": "test-from",
+    "createdAt": "2023-10-12T00:00:00",
+    "recipients": [
+      {
+        "id": 1,
+        "username": "pepa@cerny.cz",
+        "submitted": false
+      },
+      {
+        "id": 2,
+        "username": "ilja@bily.cz",
+        "submitted": false
+      }
+    ]
+  }
+]

@@ -52,6 +52,22 @@ public class FeedbackControllerTest extends IntegrationTest {
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
     @WithMockUser(username = "user", authorities = "USER")
+    void getForms() throws Exception {
+        var result = mvc.perform(get("/api/latest/feedback/user/jakub.svezi@dummy.com"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("feedback/json/forms-response.json");
+
+        TestUtils.assertJsonEquals(result, expected);
+    }
+
+
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @WithMockUser(username = "user", authorities = "USER")
     void createForm() throws Exception {
         var result = mvc.perform(post("/api/latest/feedback")
                         .contentType(MediaType.APPLICATION_JSON)

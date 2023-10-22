@@ -65,6 +65,10 @@ public class FeedbackService {
                 .orElseThrow(() -> new EntityNotFoundException("Feedback form not found! id: " + id));
     }
 
+    public List<FeedbackForm> fetchForms(String username) {
+        return feedbackFormRepository.findByUsername(username);
+    }
+
     @Transactional
     public FeedbackForm saveForm(FeedbackForm form) {
         return feedbackFormRepository.save(form);

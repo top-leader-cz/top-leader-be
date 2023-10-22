@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,13 @@ public class FeedbackController {
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormDto getForm(@PathVariable long id) {
         return FeedbackFormDto.of(feedbackService.fetchForm(id));
+    }
+
+    @Transactional
+    @GetMapping("/user/{username}")
+    @Secured({"ADMIN", "HR", "COACH", "USER"})
+    public List<FeedbackForms> getForms(@PathVariable String username) {
+       return FeedbackForms.of(feedbackService.fetchForms(username));
     }
 
     @PostMapping

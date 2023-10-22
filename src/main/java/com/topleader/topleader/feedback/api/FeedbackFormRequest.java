@@ -49,6 +49,7 @@ public class FeedbackFormRequest {
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
+                .setCreatedAt(LocalDateTime.now())
                 .setUser(new User().setUsername(request.getUsername()));
 
         var feedbackFormQuestion = request.getQuestions().stream()

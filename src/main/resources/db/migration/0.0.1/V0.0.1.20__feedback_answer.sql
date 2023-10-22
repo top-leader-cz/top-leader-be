@@ -24,4 +24,6 @@ create index if not exists feedback_form_answer_feedback_form_idx on feedback_fo
 create index if not exists feedback_form_answer_question_idx on feedback_form_answer (question_key);
 create index if not exists feedback_form_answer_recipient_idx on feedback_form_answer (recipient_id);
 
+alter table feedback_form add column created_at timestamp not null;
+
 
