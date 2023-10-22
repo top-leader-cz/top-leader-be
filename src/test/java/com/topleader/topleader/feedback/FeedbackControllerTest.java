@@ -4,13 +4,17 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
+import com.topleader.topleader.user.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+import java.util.Set;
 
+import static com.topleader.topleader.user.User.Authority.RESPONDENT;
+import static com.topleader.topleader.user.User.Status.REQUESTED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,6 +22,9 @@ public class FeedbackControllerTest extends IntegrationTest {
 
     @Autowired
     FeedbackFormRepository repository;
+
+    @Autowired
+    UserRepository userRepository;
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
@@ -94,6 +101,16 @@ public class FeedbackControllerTest extends IntegrationTest {
         receivedMessage = greenMail.getReceivedMessages()[1];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("ilja@bily.cz");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for ilja@bily.cz Growth on TopLeader");
+
+
+        Assertions.assertThat(userRepository.findAll()).hasSize(3);
+        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
+               .extracting("username", "lastName", "firstName", "authorities", "status")
+               .containsExactly("pepa@cerny.cz", "pepa", "pepa", Set.of(RESPONDENT), REQUESTED);
+
+        Assertions.assertThat(userRepository.findById("ilja@bily.cz").get())
+                .extracting("username", "lastName", "firstName", "authorities", "status")
+                .containsExactly("ilja@bily.cz", "ilja", "ilja", Set.of(RESPONDENT), REQUESTED);
    }
 
     @Test
@@ -122,6 +139,15 @@ public class FeedbackControllerTest extends IntegrationTest {
         receivedMessage = greenMail.getReceivedMessages()[1];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("kuku@kuku.cz");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for kuku@kuku.cz Growth on TopLeader");
+
+        Assertions.assertThat(userRepository.findAll()).hasSize(3);
+        Assertions.assertThat(userRepository.findById("mala@mela.cz").get())
+                .extracting("username", "lastName", "firstName", "authorities", "status")
+                .containsExactly("mala@mela.cz", "mala", "mala", Set.of(RESPONDENT), REQUESTED);
+
+        Assertions.assertThat(userRepository.findById("kuku@kuku.cz").get())
+                .extracting("username", "lastName", "firstName", "authorities", "status")
+                .containsExactly("kuku@kuku.cz", "kuku", "kuku", Set.of(RESPONDENT), REQUESTED);
     }
 
     @Test

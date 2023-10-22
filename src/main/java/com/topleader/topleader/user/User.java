@@ -55,11 +55,12 @@ public class User {
         USER,
         COACH,
         HR,
-        ADMIN
+        ADMIN,
+        RESPONDENT
     }
 
     public enum Status {
-        AUTHORIZED, PENDING, PAID
+        AUTHORIZED, PENDING, PAID, REQUESTED, VIEWED, SUBMITTED
 
     }
 }

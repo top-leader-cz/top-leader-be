@@ -13,6 +13,10 @@ import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
+import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.UserDetailService;
+import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +24,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.topleader.topleader.util.common.CommonUtils.TOP_LEADER_FORMATTER;
 
@@ -46,6 +48,8 @@ public class FeedbackService {
     private final VelocityService velocityService;
 
     private final EmailService emailService;
+
+    private final UserRepository userRepository;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -86,11 +90,13 @@ public class FeedbackService {
     }
 
     @Transactional
-    public List<FeedbackFormAnswer> submitForm(List<FeedbackFormAnswer> answers) {
+    public List<FeedbackFormAnswer> submitForm(List<FeedbackFormAnswer> answers, String username) {
+        userRepository.findById(username)
+                .ifPresent(u -> userRepository.save(u.setStatus(User.Status.SUBMITTED)));
         return feedbackFormAnswerRepository.saveAll(answers);
     }
 
-    public void sendFeedbacks(FeedbackData data) {
+    void sendFeedbacks(FeedbackData data) {
         data.getRecipients().stream()
                 .filter(r -> r.id() == null)
                 .forEach(r -> {
@@ -99,6 +105,10 @@ public class FeedbackService {
                     var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(data.getLocale()));
                     var subject = String.format(subjects.get(data.getLocale()), r.recipient());
 
+                    var newUser = UserUtils.fromEmail(r.recipient())
+                            .setAuthorities(Set.of(User.Authority.RESPONDENT))
+                            .setStatus(User.Status.REQUESTED);
+                    userRepository.save(newUser);
                     emailService.sendEmail(r.recipient(), subject, body);
                 });
     }
