@@ -68,7 +68,8 @@ public class CoachController {
     @Secured("COACH")
     @Transactional
     public CoachDto setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid CoachDto request) {
-        return CoachDto.from(coachRepository.save(request.toCoach(user.getUsername())));
+        final String coachTimeZone = userRepository.findById(user.getUsername()).map(User::getTimeZone).orElse(null);
+        return CoachDto.from(coachRepository.save(request.toCoach(user.getUsername(), coachTimeZone)));
     }
 
     @Transactional
@@ -163,9 +164,11 @@ public class CoachController {
         LocalDate experienceSince,
 
         @NotNull
-        String rate
+        String rate,
+
+        String timeZone
     ) {
-        public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, Set.of(), Set.of(), null, null);
+        public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, Set.of(), Set.of(), null, null, null);
 
         public static CoachDto from(Coach c) {
             return new CoachDto(
@@ -178,11 +181,12 @@ public class CoachController {
                 c.getLanguages(),
                 c.getFields(),
                 c.getExperienceSince(),
-                c.getRate()
+                c.getRate(),
+                c.getTimeZone()
             );
         }
 
-        public Coach toCoach(String username) {
+        public Coach toCoach(String username, String timeZone) {
             return new Coach()
                 .setUsername(username)
                 .setPublicProfile(publicProfile)
@@ -194,7 +198,8 @@ public class CoachController {
                 .setLanguages(languages)
                 .setFields(fields)
                 .setExperienceSince(experienceSince)
-                .setRate(rate);
+                .setRate(rate)
+                .setTimeZone(timeZone);
         }
 
 

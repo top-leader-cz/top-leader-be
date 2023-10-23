@@ -15,4 +15,6 @@ public interface ScheduledSessionRepository extends JpaRepository<ScheduledSessi
     boolean existsByCoachUsernameAndTime(String coachUsername, LocalDateTime time);
 
     List<ScheduledSession> findAllByCoachUsernameAndTimeIsAfter(String coach, LocalDateTime time);
+
+    List<ScheduledSession> findAllByUsernameAndTimeIsAfter(String username, LocalDateTime now);
 }

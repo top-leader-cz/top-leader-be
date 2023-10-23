@@ -5,8 +5,10 @@ import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.data.ValuesStoredData;
+import com.topleader.topleader.scheduled_session.ScheduledSession;
+import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+import java.time.LocalDateTime;
 import java.util.List;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -21,6 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,6 +39,9 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Autowired
     private UserInfoRepository userInfoRepository;
+
+    @Autowired
+    private ScheduledSessionRepository scheduledSessionRepository;
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
@@ -164,5 +170,86 @@ class UserInfoControllerIT extends IntegrationTest {
         assertEquals("user", storedHistoryData.getUsername());
         assertEquals(ValuesStoredData.class, storedHistoryData.getData().getClass());
         assertIterableEquals(List.of("v1", "v2"), ((ValuesStoredData)storedHistoryData.getData()).getValues());
+    }
+
+    @Test
+    @WithMockUser(username = "user_with_coach", authorities = "USER")
+    void deleteCoachTest() throws Exception {
+
+        scheduledSessionRepository.saveAll(List.of(
+            new ScheduledSession()
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(LocalDateTime.now().plusHours(3)),
+            new ScheduledSession()
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(LocalDateTime.now().plusDays(3))
+        ));
+
+        mvc.perform(post("/api/latest/user-info/coach")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                        {
+                            "coach": null
+                        }
+                    """)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.username", is("user_with_coach")))
+            .andExpect(jsonPath("$.timeZone", is("UTC")))
+            .andExpect(jsonPath("$.userRoles", hasSize(1)))
+            .andExpect(jsonPath("$.userRoles", hasItems("USER")))
+            .andExpect(jsonPath("$.strengths", hasSize(0)))
+            .andExpect(jsonPath("$.values", hasSize(0)))
+            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+            .andExpect(jsonPath("$.notes", nullValue()))
+            .andExpect(jsonPath("$.coach", nullValue()))
+        ;
+
+        final var sessions = scheduledSessionRepository.findAll();
+
+        assertEquals(1, sessions.size());
+    }
+
+    @Test
+    @WithMockUser(username = "user_with_coach", authorities = "USER")
+    void getUpcomingSessionsTest() throws Exception {
+
+        final var now = LocalDateTime.now().withNano(0);
+
+        final var dateTime1 = now.plusHours(3);
+        final var dateTime2 = now.plusDays(3);
+
+        scheduledSessionRepository.saveAll(List.of(
+            new ScheduledSession()
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(dateTime1),
+            new ScheduledSession()
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(dateTime2)
+        ));
+
+        mvc.perform(get("/api/latest/user-info/upcoming-sessions"))
+            .andExpect(status().isOk())
+            .andExpect(content().json(String.format("""
+                [
+                  {
+                    "coach": "coach",
+                    "firstName": "Mitch",
+                    "lastName": "Cleverman",
+                    "time": "%s"
+                  },
+                  {
+                    "coach": "coach",
+                    "firstName": "Mitch",
+                    "lastName": "Cleverman",
+                    "time": "%s"
+                  }
+                ]
+                """, dateTime1, dateTime2)))
+        ;
     }
 }
