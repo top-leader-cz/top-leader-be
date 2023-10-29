@@ -49,7 +49,7 @@ public class UserController {
 
         var saved = userDetailService.save(user);
         if (sendInvite(User.Status.PENDING, request.status())) {
-            invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user));
+            invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, request.locale()));
         }
         return UserDto.fromUser(saved);
     }
@@ -69,7 +69,7 @@ public class UserController {
         final var updatedUser = userDetailService.save(user);
 
         if (sendInvite(oldStatus, request.status())) {
-            invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser));
+            invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, request.locale()));
         }
         return UserDto.fromUser(updatedUser);
     }

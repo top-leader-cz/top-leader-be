@@ -32,6 +32,6 @@ spring:
 
 top-leader:
   app-url: https://toplead.app
-  supported-invitations: en, cs, fr
+  supported-invitations: en, cs, fr, de
   default-locale: en
   default-from: top-leader

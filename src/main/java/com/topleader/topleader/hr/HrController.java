@@ -84,7 +84,7 @@ public class HrController {
                 .setRequestedBy(user.getUsername())
                 .setStatus(User.Status.PENDING));
 
-        invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser));
+        invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser, null));
 
         return HrUserDto.from(createdUser);
     }

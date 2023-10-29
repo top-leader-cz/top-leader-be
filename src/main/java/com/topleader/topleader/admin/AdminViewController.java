@@ -70,7 +70,7 @@ public class AdminViewController {
     @PostMapping("/users")
     public void createUser(@AuthenticationPrincipal UserDetails u, @RequestBody @Valid CreateUserRequestDto userRequest) {
         final var user = userRepository.save(userRequest.toUser(u.getUsername()));
-        invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user));
+        invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, null));
     }
 
     @Transactional
