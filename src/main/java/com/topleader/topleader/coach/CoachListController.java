@@ -101,11 +101,16 @@ public class CoachListController {
             throw new ApiValidationException("time", "Time " + request.time() + " is not available");
         }
 
+        if (!scheduledSessionService.isPossibleToSchedule(user.getUsername(), username)) {
+            throw new ApiValidationException("user", "User does not have enough credit");
+        }
+
         scheduledSessionService.scheduleSession(
             new ScheduledSession()
                 .setUsername(user.getUsername())
                 .setCoachUsername(username)
                 .setTime(shiftedTime)
+                .setPaid(false)
         );
 
     }

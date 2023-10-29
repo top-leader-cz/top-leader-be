@@ -106,6 +106,28 @@ public final class AdminViewSpecifications {
                 criteriaBuilder.equal(root.get("requestedCredit"), r));
     }
 
+    public static Optional<Specification<AdminView>> paidCreditEquals(Integer paidCredit) {
+        return Optional.ofNullable(paidCredit)
+            .map(r -> (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("paidCredit"), r));
+    }
+
+    public static Optional<Specification<AdminView>> hrsContains(String hrs) {
+        if (!StringUtils.hasText(hrs)) {
+            return Optional.empty(); // Empty filter, return empty Optional
+        }
+        return Optional.of((root, query, criteriaBuilder) ->
+            criteriaBuilder.like(root.get("hrs"), "%" + hrs + "%"));
+    }
+
+    public static Optional<Specification<AdminView>> requestedByContains(String requestedBy) {
+        if (!StringUtils.hasText(requestedBy)) {
+            return Optional.empty(); // Empty filter, return empty Optional
+        }
+        return Optional.of((root, query, criteriaBuilder) ->
+            criteriaBuilder.like(root.get("requestedBy"), "%" + requestedBy + "%"));
+    }
+
     public static Optional<Specification<AdminView>> isTrialEquals(Boolean isTrial) {
         return Optional.ofNullable(isTrial)
             .map(r -> (root, query, criteriaBuilder) ->

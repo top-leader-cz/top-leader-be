@@ -12,7 +12,7 @@ import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -32,7 +32,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Daniel Slavik
  */
 @Sql(scripts = "/sql/coach/coach-clients-test.sql")
-public class CoachClientControllerIT extends IntegrationTest {
+class CoachClientControllerIT extends IntegrationTest {
 
     @Autowired
     private ScheduledSessionRepository scheduledSessionRepository;
@@ -45,9 +45,9 @@ public class CoachClientControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "coach", authorities = "COACH")
-    public void findClientsTest() throws Exception {
+    void findClientsTest() throws Exception {
 
-        final var now = LocalDateTime.now();
+        final var now = LocalDateTime.now().withNano(0);
 
         final var nextSessionTimeClient1 = now.plusHours(1L);
         final var nextSessionTimeClient2 = now.plusHours(1L).plusMinutes(10);
@@ -55,26 +55,32 @@ public class CoachClientControllerIT extends IntegrationTest {
         scheduledSessionRepository.saveAll(
             List.of(
                 new ScheduledSession()
+                    .setPaid(false)
                     .setCoachUsername("coach")
                     .setUsername("client1")
                     .setTime(now.plusHours(2L)),
                 new ScheduledSession()
+                    .setPaid(false)
                     .setCoachUsername("coach")
                     .setUsername("client1")
                     .setTime(nextSessionTimeClient1),
                 new ScheduledSession()
+                    .setPaid(false)
                     .setCoachUsername("coach")
                     .setUsername("client2")
                     .setTime(now.plusHours(2L)),
                 new ScheduledSession()
+                    .setPaid(false)
                     .setCoachUsername("coach")
                     .setUsername("client2")
                     .setTime(nextSessionTimeClient2),
                 new ScheduledSession()
+                    .setPaid(false)
                     .setCoachUsername("coach")
                     .setUsername("client3")
                     .setTime(now.plusHours(2L)),
                 new ScheduledSession()
+                    .setPaid(false)
                     .setCoachUsername("coach")
                     .setUsername("client3")
                     .setTime(now)
@@ -106,7 +112,7 @@ public class CoachClientControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "coach", authorities = "COACH")
-    public void deleteClientTest() throws Exception {
+    void deleteClientTest() throws Exception {
 
         mvc.perform(delete("/api/latest/coach-clients/client1"))
             .andExpect(status().isOk())

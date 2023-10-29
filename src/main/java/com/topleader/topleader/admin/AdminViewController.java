@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.admin;
 
+import com.topleader.topleader.credit.CreditService;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
@@ -21,6 +22,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,6 +49,8 @@ public class AdminViewController {
 
     private final InvitationService invitationService;
 
+    private final CreditService creditService;
+
     @Secured("ADMIN")
     @GetMapping("/users")
     public Page<AdminView> getUsers(
@@ -63,8 +68,8 @@ public class AdminViewController {
     @Transactional
     @Secured("ADMIN")
     @PostMapping("/users")
-    public void createUser(@RequestBody @Valid CreateUserRequestDto userRequest) {
-        final var user = userRepository.save(userRequest.toUser());
+    public void createUser(@AuthenticationPrincipal UserDetails u, @RequestBody @Valid CreateUserRequestDto userRequest) {
+        final var user = userRepository.save(userRequest.toUser(u.getUsername()));
         invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user));
     }
 
@@ -87,20 +92,8 @@ public class AdminViewController {
     @Transactional
     @Secured("ADMIN")
     @PostMapping("/users/{username}/confirm-requested-credits")
-    public void createUser(@PathVariable String username) {
-
-        userRepository.findById(username)
-            .map(u -> u
-                .setCredit(Optional.ofNullable(u.getCredit()).orElse(0) + Optional.ofNullable(u.getRequestedCredit()).orElse(0))
-                .setRequestedCredit(0)
-            )
-            .ifPresentOrElse(
-                userRepository::save,
-                () -> {
-                    throw new NotFoundException();
-                }
-            );
-
+    public void topUpCredits(@PathVariable String username) {
+        creditService.topUpCredit(username);
     }
 
 
@@ -139,7 +132,7 @@ public class AdminViewController {
 
         Set<User.Authority> authorities
     ) {
-        public User toUser() {
+        public User toUser(String requestedBy) {
             return new User()
                 .setUsername(username)
                 .setFirstName(firstName)
@@ -148,6 +141,7 @@ public class AdminViewController {
                 .setCompanyId(companyId)
                 .setIsTrial(isTrial)
                 .setAuthorities(authorities)
+                .setRequestedBy(requestedBy)
                 .setStatus(User.Status.PENDING);
         }
     }
@@ -165,6 +159,9 @@ public class AdminViewController {
         String coachLastName,
         Integer credit,
         Integer requestedCredit,
+        Integer paidCredit,
+        String hrs,
+        String requestedBy,
         Boolean isTrial) {
 
         public List<Specification<AdminView>> toSpecifications() {
@@ -182,6 +179,9 @@ public class AdminViewController {
             AdminViewSpecifications.coachLastNameContains(coachLastName).ifPresent(specs::add);
             AdminViewSpecifications.creditEquals(credit).ifPresent(specs::add);
             AdminViewSpecifications.requestedCreditEquals(requestedCredit).ifPresent(specs::add);
+            AdminViewSpecifications.paidCreditEquals(paidCredit).ifPresent(specs::add);
+            AdminViewSpecifications.hrsContains(hrs).ifPresent(specs::add);
+            AdminViewSpecifications.requestedByContains(requestedBy).ifPresent(specs::add);
             AdminViewSpecifications.isTrialEquals(isTrial).ifPresent(specs::add);
 
             return specs;

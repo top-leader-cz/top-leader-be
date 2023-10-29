@@ -58,5 +58,11 @@ public class AdminView {
 
     private Integer requestedCredit;
 
+    private Integer paidCredit;
+
+    private String hrs;
+
+    private String requestedBy;
+
     private Boolean isTrial;
 }

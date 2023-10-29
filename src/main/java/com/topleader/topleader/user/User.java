@@ -47,7 +47,13 @@ public class User {
 
     private Integer credit;
 
+    private Integer scheduledCredit;
+
     private Integer requestedCredit;
+
+    private Integer paidCredit;
+
+    private String requestedBy;
 
     private Boolean isTrial;
 

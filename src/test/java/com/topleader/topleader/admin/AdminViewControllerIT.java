@@ -16,6 +16,7 @@ import org.springframework.test.context.jdbc.Sql;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -105,6 +106,7 @@ class AdminViewControllerIT extends IntegrationTest {
                 .param("sort", "username,asc")
             )
             .andExpect(status().isOk())
+            .andDo(print())
             .andExpect(content().json("""
                 {
                   "content": [
@@ -125,6 +127,9 @@ class AdminViewControllerIT extends IntegrationTest {
                       "coachLastName": "Smith",
                       "credit": 150,
                       "requestedCredit": 75,
+                      "paidCredit": 0,
+                      "requestedBy": "god",
+                      "hrs": "hr1, hr2",
                       "isTrial": true
                     }
                   ],
@@ -219,5 +224,32 @@ class AdminViewControllerIT extends IntegrationTest {
                 .param("isTrial", "true"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content[0].isTrial").value(true));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void testFilterByPaidCredit() throws Exception {
+        mvc.perform(get("/api/latest/admin/users")
+                .param("paidCredit", "100"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].paidCredit").value(100));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void testFilterByRequestedBy() throws Exception {
+        mvc.perform(get("/api/latest/admin/users")
+                .param("requestedBy", "somebody"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].requestedBy").value("somebody"));
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void testFilterByHrs() throws Exception {
+        mvc.perform(get("/api/latest/admin/users")
+                .param("hrs", "user3"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content[0].hrs").value("user3"));
     }
 }

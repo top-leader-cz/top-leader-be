@@ -6,7 +6,10 @@ package com.topleader.topleader.coach;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.coach.availability.CoachAvailability;
 import com.topleader.topleader.coach.availability.CoachAvailabilityRepository;
+import com.topleader.topleader.credit.history.CreditHistory;
+import com.topleader.topleader.credit.history.CreditHistoryRepository;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -47,14 +50,20 @@ class CoachListControllerIT extends IntegrationTest {
     @Autowired
     private ScheduledSessionRepository scheduledSessionRepository;
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CreditHistoryRepository creditHistoryRepository;
+
     @Test
     @WithMockUser
     void scheduleEventTest() throws Exception {
 
         final var scheduleTime = LocalDateTime.of(
             LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
-            LocalTime.of(11, 0)
-            );
+            LocalTime.of(9, 0)
+        );
 
         coachAvailabilityRepository.save(
             new CoachAvailability()
@@ -72,7 +81,6 @@ class CoachListControllerIT extends IntegrationTest {
                     }
                     """, scheduleTime))
             )
-            .andDo(print())
             .andExpect(status().isOk());
 
         final var sessions = scheduledSessionRepository.findAll();
@@ -83,7 +91,65 @@ class CoachListControllerIT extends IntegrationTest {
 
         assertThat(session.getCoachUsername(), is("coach1"));
         assertThat(session.getUsername(), is("user"));
-        assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("CET")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
+        assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
+
+        final var user = userRepository.findById("user").orElseThrow();
+
+        assertThat(user.getScheduledCredit(), is(110));
+        assertThat(user.getCredit(), is(400));
+
+        final var creditHistory = creditHistoryRepository.findAll();
+
+        assertThat(creditHistory, hasSize(1));
+
+        final var creditHistoryEvent = creditHistory.get(0);
+
+        assertThat(creditHistoryEvent.getCredit(), is(110));
+        assertThat(creditHistoryEvent.getUsername(), is("user"));
+        assertThat(creditHistoryEvent.getType(), is(CreditHistory.Type.SCHEDULED));
+    }
+
+    @Test
+    @WithMockUser("no-credit-user")
+    void scheduleEventNoCreditTest() throws Exception {
+
+        final var scheduleTime = LocalDateTime.of(
+            LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
+            LocalTime.of(9, 0)
+        );
+
+        coachAvailabilityRepository.save(
+            new CoachAvailability()
+                .setUsername("coach1")
+                .setDateTimeFrom(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(8, 0)))
+                .setDateTimeTo(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(10, 0)))
+                .setRecurring(false)
+        );
+
+        mvc.perform(post("/api/latest/coaches/coach1/schedule")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                    {
+                        "time": "%s"
+                    }
+                    """, scheduleTime))
+            )
+            .andExpect(status().isBadRequest())
+            .andExpect(content().json("{\"user\":\"User does not have enough credit\"}"))
+        ;
+
+        final var sessions = scheduledSessionRepository.findAll();
+
+        assertThat(sessions, hasSize(0));
+
+        final var user = userRepository.findById("no-credit-user").orElseThrow();
+
+        assertThat(user.getScheduledCredit(), is(400));
+        assertThat(user.getCredit(), is(400));
+
+        final var creditHistory = creditHistoryRepository.findAll();
+
+        assertThat(creditHistory, hasSize(0));
     }
 
     @Test
@@ -95,12 +161,9 @@ class CoachListControllerIT extends IntegrationTest {
                 .param("to", "2023-08-14T23:59:00")
             )
             .andExpect(status().isOk())
+            .andDo(print())
             .andExpect(content().json("""
-                [
-                  "2023-08-14T12:00:00",
-                  "2023-08-14T13:00:00",
-                  "2023-08-14T15:00:00"
-                ]
+                ["2023-08-14T10:00:00","2023-08-14T11:00:00","2023-08-14T13:00:00"]
                 """))
         ;
     }

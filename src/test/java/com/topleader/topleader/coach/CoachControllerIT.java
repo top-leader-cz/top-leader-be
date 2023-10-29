@@ -190,14 +190,17 @@ class CoachControllerIT extends IntegrationTest {
 
         scheduledSessionRepository.saveAll(List.of(
             new ScheduledSession()
+                .setPaid(false)
                 .setCoachUsername("coach")
                 .setTime(user1Session1)
                 .setUsername("user1"),
             new ScheduledSession()
+                .setPaid(false)
                 .setCoachUsername("coach")
                 .setTime(user1Session2)
                 .setUsername("user1"),
             new ScheduledSession()
+                .setPaid(false)
                 .setCoachUsername("coach_no_info")
                 .setTime(now.plusHours(3))
                 .setUsername("user1")

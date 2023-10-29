@@ -54,21 +54,21 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
                       {
                         "from": {
                           "day": "MONDAY",
-                          "time": "15:00:00"
+                          "time": "13:00:00"
                         },
                         "to": {
                           "day": "MONDAY",
-                          "time": "16:00:00"
+                          "time": "14:00:00"
                         }
                       },
                       {
                         "from": {
                           "day": "TUESDAY",
-                          "time": "15:00:00"
+                          "time": "13:00:00"
                         },
                         "to": {
                           "day": "TUESDAY",
-                          "time": "16:00:00"
+                          "time": "14:00:00"
                         }
                       }
                     ]
@@ -89,12 +89,12 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
             .andExpect(content().json("""
                 [
                   {
-                    "from": "2023-08-14T15:00:00",
-                    "to": "2023-08-14T16:00:00"
+                    "from": "2023-08-14T13:00:00",
+                    "to": "2023-08-14T14:00:00"
                   },
                   {
-                    "from": "2023-08-15T14:00:00",
-                    "to": "2023-08-15T16:00:00"
+                    "from": "2023-08-15T12:00:00",
+                    "to": "2023-08-15T14:00:00"
                   }
                 ]"""))
         ;
@@ -106,14 +106,14 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     void getNonRecurringSingleItemTest() throws Exception {
 
         mvc.perform(get("/api/latest/coach-availability/non-recurring")
-                .param("from", "2023-08-14T14:59:00")
-                .param("to", "2023-08-14T16:01:00")
+                .param("from", "2023-08-14T12:59:00")
+                .param("to", "2023-08-14T14:01:00")
             )
             .andExpect(content().json("""
                 [
                   {
-                    "from": "2023-08-14T15:00:00",
-                    "to": "2023-08-14T16:00:00"
+                    "from": "2023-08-14T13:00:00",
+                    "to": "2023-08-14T14:00:00"
                   }
                 ]"""))
         ;
@@ -155,16 +155,16 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
                 LocalDateTime.parse("2023-08-14T00:00:00"),
                 LocalDateTime.parse("2023-08-16T00:00:00")
             ).stream()
-            .sorted(Comparator.comparingLong(CoachAvailability::getId))
+            .sorted(Comparator.comparing(CoachAvailability::getDateTimeFrom))
             .toList();
 
         assertThat(events, hasSize(2));
         assertThat(events.get(0).getRecurring(), is(false));
-        assertThat(events.get(0).getDateTimeFrom(), is(LocalDateTime.parse("2023-08-15T12:00:00")));
-        assertThat(events.get(0).getDateTimeTo(), is(LocalDateTime.parse("2023-08-15T14:00:00")));
+        assertThat(events.get(0).getDateTimeFrom(), is(LocalDateTime.parse("2023-08-14T16:00:00")));
+        assertThat(events.get(0).getDateTimeTo(), is(LocalDateTime.parse("2023-08-14T18:00:00")));
         assertThat(events.get(1).getRecurring(), is(false));
-        assertThat(events.get(1).getDateTimeFrom(), is(LocalDateTime.parse("2023-08-14T14:00:00")));
-        assertThat(events.get(1).getDateTimeTo(), is(LocalDateTime.parse("2023-08-14T16:00:00")));
+        assertThat(events.get(1).getDateTimeFrom(), is(LocalDateTime.parse("2023-08-15T14:00:00")));
+        assertThat(events.get(1).getDateTimeTo(), is(LocalDateTime.parse("2023-08-15T16:00:00")));
 
     }
 
@@ -180,21 +180,21 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
                           {
                             "from": {
                               "day": "MONDAY",
-                              "time": "15:00:00"
+                              "time": "13:00:00"
                             },
                             "to": {
                               "day": "MONDAY",
-                              "time": "16:00:00"
+                              "time": "14:00:00"
                             }
                           },
                           {
                             "from": {
                               "day": "TUESDAY",
-                              "time": "12:00:00"
+                              "time": "10:00:00"
                             },
                             "to": {
                               "day": "TUESDAY",
-                              "time": "14:00:00"
+                              "time": "12:00:00"
                             }
                           }
                         ]
