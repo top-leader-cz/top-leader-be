@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -24,5 +25,13 @@ public class TokenService {
     public void saveToken(Token token) {
         log.info("Saving token for: [{}] type: [{}]", token.getUsername(), token.getType());
         tokenRepository.save(token);
+    }
+
+    public Optional<Token> findByTokenAndType(String token, Token.Type type) {
+        return tokenRepository.findByTokenAndType(token, type);
+    }
+
+    public void delete(Token token) {
+        tokenRepository.delete(token);
     }
 }

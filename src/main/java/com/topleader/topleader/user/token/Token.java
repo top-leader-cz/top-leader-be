@@ -25,5 +25,6 @@ public class Token {
 
     public enum Type {
         SET_PASSWORD
+
     }
 }
