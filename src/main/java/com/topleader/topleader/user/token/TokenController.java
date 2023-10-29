@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequiredArgsConstructor
 @RestController
-@RequestMapping("/set-password")
+@RequestMapping("/api/public")
 public class TokenController {
 
     private final PasswordEncoder passwordEncoder;
@@ -22,7 +22,7 @@ public class TokenController {
 
     private final UserRepository userRepository;
 
-    @PostMapping("/{token}")
+    @PostMapping("/set-password/{token}")
     public void setPassword(@PathVariable String token,  @Valid @RequestBody SetPasswordRequestDto request) {
         log.info("User set-password start. token: {}", token);
 
