@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.user.userinfo;
 
+import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.notification.Notification;
 import com.topleader.topleader.notification.NotificationService;
 import com.topleader.topleader.notification.context.CoachLinkedNotificationContext;
@@ -23,7 +24,9 @@ import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -134,6 +137,19 @@ public class UserInfoController {
             .map(s -> UpcomingSessionDto.from(s, coaches.get(s.getCoachUsername())))
             .toList();
 
+    }
+
+    @Transactional
+    @DeleteMapping("/upcoming-sessions/{sessionId}")
+    public void cancelSession(@PathVariable Long sessionId, @AuthenticationPrincipal UserDetails user) {
+
+        if (scheduledSessionService.listUsersFutureSessions(user.getUsername())
+            .stream().anyMatch(s -> s.getId().equals(sessionId))
+        ) {
+            throw new NotFoundException();
+        }
+
+        scheduledSessionService.cancelSession(sessionId);
     }
 
     public record UpcomingSessionDto(

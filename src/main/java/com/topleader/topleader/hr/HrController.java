@@ -81,6 +81,7 @@ public class HrController {
                 .setAuthorities(Set.of(User.Authority.USER))
                 .setCredit(0)
                 .setTimeZone(hrUser.getTimeZone())
+                .setRequestedBy(user.getUsername())
                 .setStatus(User.Status.PENDING));
 
         invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser));

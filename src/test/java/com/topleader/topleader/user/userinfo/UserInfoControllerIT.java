@@ -1,12 +1,15 @@
 package com.topleader.topleader.user.userinfo;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.credit.history.CreditHistory;
+import com.topleader.topleader.credit.history.CreditHistoryRepository;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.data.ValuesStoredData;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -42,6 +45,12 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Autowired
     private ScheduledSessionRepository scheduledSessionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private CreditHistoryRepository creditHistoryRepository;
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
@@ -178,10 +187,12 @@ class UserInfoControllerIT extends IntegrationTest {
 
         scheduledSessionRepository.saveAll(List.of(
             new ScheduledSession()
+                .setPaid(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(LocalDateTime.now().plusHours(3)),
             new ScheduledSession()
+                .setPaid(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(LocalDateTime.now().plusDays(3))
@@ -210,6 +221,20 @@ class UserInfoControllerIT extends IntegrationTest {
         final var sessions = scheduledSessionRepository.findAll();
 
         assertEquals(1, sessions.size());
+
+        final var user = userRepository.findById("user_with_coach").orElseThrow();
+
+        assertEquals(180, user.getScheduledCredit());
+        assertEquals(400, user.getCredit());
+
+        final var history = creditHistoryRepository.findAll();
+
+        assertEquals(2, history.size());
+
+        assertEquals(CreditHistory.Type.CANCELED, history.get(0).getType());
+        assertEquals(CreditHistory.Type.CANCELED, history.get(1).getType());
+        assertEquals(110, history.get(0).getCredit());
+        assertEquals(110, history.get(1).getCredit());
     }
 
     @Test
@@ -223,10 +248,12 @@ class UserInfoControllerIT extends IntegrationTest {
 
         scheduledSessionRepository.saveAll(List.of(
             new ScheduledSession()
+                .setPaid(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(dateTime1),
             new ScheduledSession()
+                .setPaid(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(dateTime2)

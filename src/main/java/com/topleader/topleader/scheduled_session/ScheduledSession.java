@@ -38,4 +38,6 @@ public class ScheduledSession {
 
     private LocalDateTime time;
 
+    private boolean paid;
+
 }

@@ -10,6 +10,8 @@ import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,12 +33,13 @@ public class UserController {
 
     @Secured({"ADMIN", "HR"})
     @PostMapping
-    public UserDto addUser(@RequestBody @Valid AddUserRequest request) {
+    public UserDto addUser(@AuthenticationPrincipal UserDetails loggedUser, @RequestBody @Valid AddUserRequest request) {
         var user = new User().setUsername(request.username())
             .setAuthorities(request.authorities())
             .setFirstName(request.firstName())
             .setLastName(request.lastName())
             .setTimeZone(request.timeZone())
+            .setRequestedBy(loggedUser.getUsername())
             .setStatus(request.status());
 
         userDetailService.getUser(request.username())
