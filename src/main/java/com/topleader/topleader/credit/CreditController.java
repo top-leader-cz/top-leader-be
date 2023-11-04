@@ -17,14 +17,14 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/latest/credit")
+@RequestMapping("/api/protected/jobs")
 @RequiredArgsConstructor
 public class CreditController {
 
     private final ScheduledSessionService scheduledSessionService;
 
     @PostMapping("/payments")
-    @Secured({"ADMIN"})
+    @Secured({"JOB"})
     public void processPayments() {
         log.info("Triggering payment processing");
         scheduledSessionService.processPayments();

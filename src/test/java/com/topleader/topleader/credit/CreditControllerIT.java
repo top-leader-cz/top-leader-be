@@ -34,10 +34,10 @@ class CreditControllerIT extends IntegrationTest {
     private CreditHistoryRepository creditHistoryRepository;
 
     @Test
-    @WithMockUser(authorities = "ADMIN")
+    @WithMockUser(authorities = "JOB")
     void processPaymentTest() throws Exception {
 
-        mvc.perform(post("/api/latest/credit/payments"))
+        mvc.perform(post("/api/protected/jobs/payments"))
             .andExpect(status().isOk())
         ;
 
