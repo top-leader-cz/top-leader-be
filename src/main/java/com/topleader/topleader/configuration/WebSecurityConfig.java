@@ -34,7 +34,7 @@ public class WebSecurityConfig {
                 User.withUsername("job-trigger")
                     .passwordEncoder(passwordEncoder::encode)
                     .password("V7s7REyHo4v2HM9T")
-                    .roles("JOB")
+                    .authorities("JOB")
                     .build()
             ))
             .authorizeHttpRequests((requests) ->
