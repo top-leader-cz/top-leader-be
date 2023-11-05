@@ -16,7 +16,9 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -45,13 +47,19 @@ public class HrController {
     private final InvitationService invitationService;
 
 
-    @Secured("HR")
+    @Secured({"HR", "USER"})
     @GetMapping
     public List<HrUserDto> listUsers(@AuthenticationPrincipal UserDetails user) {
 
-        return userRepository.findById(user.getUsername()).map(User::getCompanyId).map(userRepository::findAllByCompanyId).map(HrUserDto::from).orElseGet(() -> {
-            log.info("User {} is not part of any company. Returning an empty list.", user.getUsername()); return List.of();
-        });
+        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow();
+
+        if (user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch("HR"::equalsIgnoreCase)) {
+            return Optional.ofNullable(dbUser.getCompanyId()).map(userRepository::findAllByCompanyId).map(HrUserDto::from).orElseGet(() -> {
+                log.info("User {} is not part of any company. Returning an empty list.", user.getUsername()); return List.of();
+            });
+        }
+
+        return List.of(HrUserDto.from(dbUser));
     }
 
     @Secured("HR")
@@ -89,12 +97,25 @@ public class HrController {
         return HrUserDto.from(createdUser);
     }
 
-    @Secured("HR")
+    @Secured({"HR", "USER"})
     @Transactional
     @PostMapping("/{username}/credit-request")
     public HrUserDto requestCredits(
         @AuthenticationPrincipal UserDetails user, @PathVariable String username, @RequestBody CreditRequestDto request
     ) {
+
+        if (user.getUsername().equalsIgnoreCase(username)) {
+            return HrUserDto.from(
+                userRepository.findById(user.getUsername())
+                .map(u -> u.setRequestedCredit(request.credit()))
+                .map(userRepository::save)
+                .orElseThrow(NotFoundException::new)
+            );
+        }
+
+        if (user.getAuthorities().stream().map(GrantedAuthority::getAuthority).noneMatch("HR"::equalsIgnoreCase)) {
+            throw new AccessDeniedException("User is not allowed to request credits for another user");
+        }
 
         final var companyId = userRepository.findById(user.getUsername()).map(User::getCompanyId).orElseThrow(NotFoundException::new);
 

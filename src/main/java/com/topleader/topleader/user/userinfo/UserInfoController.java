@@ -152,6 +152,28 @@ public class UserInfoController {
         scheduledSessionService.cancelSession(sessionId);
     }
 
+    @GetMapping("/credits")
+    public List<UpcomingSessionDto> getUserCredits(@AuthenticationPrincipal UserDetails user) {
+
+        final var sessions = scheduledSessionService.listUsersFutureSessions(user.getUsername());
+
+        if (sessions.isEmpty()) {
+            return List.of();
+        }
+
+        final var coaches = userRepository.findAllById(sessions.stream()
+                .map(ScheduledSession::getCoachUsername)
+                .collect(Collectors.toSet())
+            ).stream()
+            .collect(toMap(User::getUsername, Function.identity()));
+
+
+        return sessions.stream()
+            .map(s -> UpcomingSessionDto.from(s, coaches.get(s.getCoachUsername())))
+            .toList();
+
+    }
+
     public record UpcomingSessionDto(
         String coach,
         String firstName,
