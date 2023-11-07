@@ -33,6 +33,17 @@ class HrControllerIT extends IntegrationTest {
                     + "\"credit\":50,\"requestedCredit\":10,\"state\":\"AUTHORIZED\"}]"))
         ;
     }
+    @Test
+    @WithMockUser(username = "user1", authorities = "USER")
+    void testListUsersNoHrEndpoint() throws Exception {
+
+        mvc.perform(get("/api/latest/hr-users"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json"))
+            .andExpect(content().json(
+                "[{\"username\":\"user1\",\"coach\":\"Coach2\",\"credit\":50,\"requestedCredit\":10,\"state\":\"AUTHORIZED\"}]"))
+        ;
+    }
 
     @Test
     @WithMockUser(username = "hrUser", authorities = "HR")
@@ -58,6 +69,40 @@ class HrControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "hrUser", authorities = "HR")
     void testRequestCredits() throws Exception {
+
+        mvc.perform(post("/api/latest/hr-users/user1/credit-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "credit": 1000
+                    }
+                    """
+                ))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json"))
+            .andExpect(content().json("{\"username\":\"user1\",\"coach\":\"Coach2\",\"credit\":50,\"requestedCredit\":1000,\"state\":\"AUTHORIZED\"}"))
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "user2", authorities = "USER")
+    void testRequestCreditsNoRights() throws Exception {
+
+        mvc.perform(post("/api/latest/hr-users/user1/credit-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "credit": 1000
+                    }
+                    """
+                ))
+            .andExpect(status().isForbidden())
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "user1", authorities = "USER")
+    void testRequestCreditsToHimself() throws Exception {
 
         mvc.perform(post("/api/latest/hr-users/user1/credit-request")
                 .contentType(MediaType.APPLICATION_JSON)
