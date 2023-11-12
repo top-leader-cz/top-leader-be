@@ -12,10 +12,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -42,8 +41,30 @@ class PasswordControllerIT extends IntegrationTest {
                     """)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.oldPassword", is("must not be empty")))
-            .andExpect(jsonPath("$.newPassword", is("must not be empty")))
+            .andExpect(content().json("""
+                [
+                  {
+                    "errorCode": "NotEmpty",
+                    "fields": [
+                      {
+                        "name": "oldPassword",
+                        "value": "null"
+                      }
+                    ],
+                    "errorMessage": "must not be empty"
+                  },
+                  {
+                    "errorCode": "NotEmpty",
+                    "fields": [
+                      {
+                        "name": "newPassword",
+                        "value": "null"
+                      }
+                    ],
+                    "errorMessage": "must not be empty"
+                  }
+                ]
+                """))
         ;
     }
 
@@ -61,7 +82,20 @@ class PasswordControllerIT extends IntegrationTest {
                     """)
             )
             .andExpect(status().isBadRequest())
-            .andExpect(jsonPath("$.oldPassword", is("Invalid password")))
+            .andExpect(content().json("""
+                [
+                  {
+                    "errorCode": "invalid.password",
+                    "fields": [
+                      {
+                        "name": "oldPassword",
+                        "value": null
+                      }
+                    ],
+                    "errorMessage": "Invalid password"
+                  }
+                ]
+                """))
         ;
     }
 

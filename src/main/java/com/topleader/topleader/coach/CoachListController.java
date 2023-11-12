@@ -47,6 +47,9 @@ import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFields
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
+import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_ENOUGH_CREDITS;
+import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
+import static com.topleader.topleader.exception.ErrorCodeConstants.TIME_NOT_AVAILABLE;
 import static java.util.function.Predicate.not;
 import static org.springframework.data.jpa.domain.Specification.allOf;
 
@@ -88,21 +91,21 @@ public class CoachListController {
             .toLocalDateTime();
 
         if (shiftedTime.isBefore(LocalDateTime.now(ZoneOffset.UTC))) {
-            throw new ApiValidationException("time", "Not possible to schedule session in past.");
+            throw new ApiValidationException(SESSION_IN_PAST, "time", request.time().toString(), "Not possible to schedule session in past.");
         }
 
         final var possibleStartDates = coachAvailabilityService.getAvailabilitySplitIntoHours(username, shiftedTime.minusDays(1), shiftedTime.plusDays(1));
 
         if (!possibleStartDates.contains(shiftedTime)) {
-            throw new ApiValidationException("time", "Time " + request.time() + " is not available");
+            throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", request.time().toString(), "Time " + request.time() + " is not available");
         }
 
         if (scheduledSessionService.isAlreadyScheduled(username, shiftedTime)) {
-            throw new ApiValidationException("time", "Time " + request.time() + " is not available");
+            throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", request.time().toString(), "Time " + request.time() + " is not available");
         }
 
         if (!scheduledSessionService.isPossibleToSchedule(user.getUsername(), username)) {
-            throw new ApiValidationException("user", "User does not have enough credit");
+            throw new ApiValidationException(NOT_ENOUGH_CREDITS, "user", user.getUsername(), "User does not have enough credit");
         }
 
         scheduledSessionService.scheduleSession(

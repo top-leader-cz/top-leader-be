@@ -18,7 +18,7 @@ import static com.topleader.topleader.user.User.Status.REQUESTED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class FeedbackControllerTest extends IntegrationTest {
+class FeedbackControllerTest extends IntegrationTest {
 
     @Autowired
     FeedbackFormRepository repository;
@@ -104,11 +104,11 @@ public class FeedbackControllerTest extends IntegrationTest {
 
 
         Assertions.assertThat(userRepository.findAll()).hasSize(3);
-        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
+        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").orElseThrow())
                .extracting("username", "lastName", "firstName", "authorities", "status")
                .containsExactly("pepa@cerny.cz", "pepa", "pepa", Set.of(RESPONDENT), REQUESTED);
 
-        Assertions.assertThat(userRepository.findById("ilja@bily.cz").get())
+        Assertions.assertThat(userRepository.findById("ilja@bily.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("ilja@bily.cz", "ilja", "ilja", Set.of(RESPONDENT), REQUESTED);
    }
@@ -141,11 +141,11 @@ public class FeedbackControllerTest extends IntegrationTest {
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for kuku@kuku.cz Growth on TopLeader");
 
         Assertions.assertThat(userRepository.findAll()).hasSize(3);
-        Assertions.assertThat(userRepository.findById("mala@mela.cz").get())
+        Assertions.assertThat(userRepository.findById("mala@mela.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("mala@mela.cz", "mala", "mala", Set.of(RESPONDENT), REQUESTED);
 
-        Assertions.assertThat(userRepository.findById("kuku@kuku.cz").get())
+        Assertions.assertThat(userRepository.findById("kuku@kuku.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("kuku@kuku.cz", "kuku", "kuku", Set.of(RESPONDENT), REQUESTED);
     }

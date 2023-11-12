@@ -30,6 +30,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.topleader.topleader.exception.ErrorCodeConstants.EMAIL_USED;
+import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
+
 
 /**
  * @author Daniel Slavik
@@ -71,11 +74,13 @@ public class HrController {
 
         final var hrUser = userRepository.findById(user.getUsername()).orElseThrow();
 
-        final var companyId = Optional.of(hrUser).map(User::getCompanyId).orElseThrow(() -> new ApiValidationException("companyId", "User is not part of any company"));
+        final var companyId = Optional.of(hrUser).map(User::getCompanyId).orElseThrow(() ->
+            new ApiValidationException(NOT_PART_OF_COMPANY, "user", hrUser.getUsername(), "User is not part of any company")
+        );
 
 
         if (userRepository.findById(request.email()).isPresent()) {
-            throw new ApiValidationException("email", "Already used");
+            throw new ApiValidationException(EMAIL_USED, "email", request.email(), "Already used");
         }
 
 
@@ -107,9 +112,9 @@ public class HrController {
         if (user.getUsername().equalsIgnoreCase(username)) {
             return HrUserDto.from(
                 userRepository.findById(user.getUsername())
-                .map(u -> u.setRequestedCredit(request.credit()))
-                .map(userRepository::save)
-                .orElseThrow(NotFoundException::new)
+                    .map(u -> u.setRequestedCredit(request.credit()))
+                    .map(userRepository::save)
+                    .orElseThrow(NotFoundException::new)
             );
         }
 
