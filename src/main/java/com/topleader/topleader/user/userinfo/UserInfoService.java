@@ -29,6 +29,14 @@ public class UserInfoService {
         return userInfoRepository.findById(username).orElse(createEmpty(username));
     }
 
+    public UserInfo setNotes(String username, String notes) {
+        return Function.<String>identity()
+            .andThen(this::find)
+            .andThen(info -> info.setNotes(notes))
+            .andThen(userInfoRepository::save)
+            .apply(username);
+    }
+
     public UserInfo setStrengths(String username, List<String> strengths) {
         return Function.<String>identity()
             .andThen(user -> dataHistoryRepository.save(new DataHistory()

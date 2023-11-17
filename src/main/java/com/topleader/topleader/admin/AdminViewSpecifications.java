@@ -106,6 +106,12 @@ public final class AdminViewSpecifications {
                 criteriaBuilder.equal(root.get("requestedCredit"), r));
     }
 
+    public static Optional<Specification<AdminView>> sumRequestedCreditEquals(Integer requestedCredit) {
+        return Optional.ofNullable(requestedCredit)
+            .map(r -> (root, query, criteriaBuilder) ->
+                criteriaBuilder.equal(root.get("sumRequestedCredit"), r));
+    }
+
     public static Optional<Specification<AdminView>> paidCreditEquals(Integer paidCredit) {
         return Optional.ofNullable(paidCredit)
             .map(r -> (root, query, criteriaBuilder) ->

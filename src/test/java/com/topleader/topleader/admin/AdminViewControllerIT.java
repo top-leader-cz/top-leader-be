@@ -45,6 +45,8 @@ class AdminViewControllerIT extends IntegrationTest {
         final var fetchedUser = userRepository.findById("user1").orElseThrow();
         assertThat(fetchedUser).isNotNull();
         assertThat(fetchedUser.getCredit()).isEqualTo(150);
+        assertThat(fetchedUser.getPaidCredit()).isEqualTo(100);
+        assertThat(fetchedUser.getSumRequestedCredit()).isEqualTo(1050);
         assertThat(fetchedUser.getRequestedCredit()).isZero();
 
     }
@@ -127,6 +129,7 @@ class AdminViewControllerIT extends IntegrationTest {
                       "coachLastName": "Smith",
                       "credit": 150,
                       "requestedCredit": 75,
+                      "sumRequestedCredit": 2000,
                       "paidCredit": 0,
                       "requestedBy": "god",
                       "hrs": "hr1, hr2",

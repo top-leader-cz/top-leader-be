@@ -29,6 +29,9 @@ spring:
             enable: true
             required: true
           auth: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
 
 top-leader:
   app-url: https://toplead.app

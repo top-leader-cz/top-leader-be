@@ -159,6 +159,7 @@ public class AdminViewController {
         String coachLastName,
         Integer credit,
         Integer requestedCredit,
+        Integer sumRequestedCredit,
         Integer paidCredit,
         String hrs,
         String requestedBy,
@@ -179,6 +180,7 @@ public class AdminViewController {
             AdminViewSpecifications.coachLastNameContains(coachLastName).ifPresent(specs::add);
             AdminViewSpecifications.creditEquals(credit).ifPresent(specs::add);
             AdminViewSpecifications.requestedCreditEquals(requestedCredit).ifPresent(specs::add);
+            AdminViewSpecifications.sumRequestedCreditEquals(sumRequestedCredit).ifPresent(specs::add);
             AdminViewSpecifications.paidCreditEquals(paidCredit).ifPresent(specs::add);
             AdminViewSpecifications.hrsContains(hrs).ifPresent(specs::add);
             AdminViewSpecifications.requestedByContains(requestedBy).ifPresent(specs::add);

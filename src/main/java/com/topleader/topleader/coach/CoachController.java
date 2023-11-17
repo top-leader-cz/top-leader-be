@@ -17,6 +17,7 @@ import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
@@ -115,6 +116,7 @@ public class CoachController {
 
         return sessions.stream()
             .map(s -> UpcomingSessionDto.from(s, clients.get(s.getUsername())))
+            .sorted(Comparator.comparing(UpcomingSessionDto::time))
             .toList();
 
     }

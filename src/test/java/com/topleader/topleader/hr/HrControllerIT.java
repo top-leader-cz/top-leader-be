@@ -29,8 +29,29 @@ class HrControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
             .andExpect(content().json(
-                "[{\"username\":\"hrUser\",\"coach\":\"Coach1\",\"credit\":100,\"requestedCredit\":0,\"state\":\"PENDING\"},{\"username\":\"user1\",\"coach\":\"Coach2\","
-                    + "\"credit\":50,\"requestedCredit\":10,\"state\":\"AUTHORIZED\"}]"))
+                """
+                    [
+                      {
+                        "username": "hrUser",
+                        "coach": "Coach1",
+                        "credit": 100,
+                        "requestedCredit": 0,
+                        "scheduledCredit": 10,
+                        "paidCredit": 111,
+                        "state": "PENDING"
+                      },
+                      {
+                        "username": "user1",
+                        "coach": "Coach2",
+                        "credit": 50,
+                        "requestedCredit": 10,
+                        "scheduledCredit": 20,
+                        "paidCredit": 222,
+                        "state": "AUTHORIZED"
+                      }
+                    ]
+                    """
+            ))
         ;
     }
     @Test
@@ -41,7 +62,18 @@ class HrControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
             .andExpect(content().json(
-                "[{\"username\":\"user1\",\"coach\":\"Coach2\",\"credit\":50,\"requestedCredit\":10,\"state\":\"AUTHORIZED\"}]"))
+                """
+                    [
+                      {
+                        "username": "user1",
+                        "coach": "Coach2",
+                        "credit": 50,
+                        "requestedCredit": 10,
+                        "scheduledCredit": 20,
+                        "state": "AUTHORIZED"
+                      }
+                    ]
+                    """))
         ;
     }
 

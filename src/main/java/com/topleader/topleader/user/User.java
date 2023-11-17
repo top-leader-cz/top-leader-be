@@ -53,6 +53,8 @@ public class User {
 
     private Integer paidCredit;
 
+    private Integer sumRequestedCredit;
+
     private String requestedBy;
 
     private Boolean isTrial;

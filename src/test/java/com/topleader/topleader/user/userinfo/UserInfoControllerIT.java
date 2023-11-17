@@ -111,6 +111,28 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
+    void setNotes() throws Exception {
+
+        mvc.perform(post("/api/latest/user-info/notes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "notes": "some cool notes"
+                     }
+                                        """)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.username", is("user")))
+            .andExpect(jsonPath("$.timeZone", is("UTC")))
+            .andExpect(jsonPath("$.strengths", hasSize(0)))
+            .andExpect(jsonPath("$.values", hasSize(0)))
+            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+            .andExpect(jsonPath("$.notes", is("some cool notes")))
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
     void setStrengthsTest() throws Exception {
 
         mvc.perform(post("/api/latest/user-info/strengths")

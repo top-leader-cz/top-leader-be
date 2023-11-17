@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -61,6 +62,14 @@ public class UserInfoController {
         );
     }
 
+    @PostMapping("/notes")
+    public UserInfoDto setNotes(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetNotesRequestDto request) {
+        return UserInfoDto.from(
+            userInfoService.setNotes(user.getUsername(), request.notes()),
+            userRepository.findById(user.getUsername()).orElseThrow()
+        );
+    }
+
     @PostMapping("/strengths")
     public UserInfoDto setStrengths(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
         return UserInfoDto.from(
@@ -68,6 +77,7 @@ public class UserInfoController {
             userRepository.findById(user.getUsername()).orElseThrow()
         );
     }
+
 
     @PostMapping("/values")
     public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
@@ -118,7 +128,7 @@ public class UserInfoController {
     }
 
     @GetMapping("/upcoming-sessions")
-    public List<UpcomingSessionDto> setCoach(@AuthenticationPrincipal UserDetails user) {
+    public List<UpcomingSessionDto> getUpcomingSessions(@AuthenticationPrincipal UserDetails user) {
 
         final var sessions = scheduledSessionService.listUsersFutureSessions(user.getUsername());
 
@@ -135,6 +145,7 @@ public class UserInfoController {
 
         return sessions.stream()
             .map(s -> UpcomingSessionDto.from(s, coaches.get(s.getCoachUsername())))
+            .sorted(Comparator.comparing(UpcomingSessionDto::time))
             .toList();
 
     }
@@ -171,6 +182,10 @@ public class UserInfoController {
         return sessions.stream()
             .map(s -> UpcomingSessionDto.from(s, coaches.get(s.getCoachUsername())))
             .toList();
+
+    }
+
+    public record SetNotesRequestDto(String notes) {
 
     }
 

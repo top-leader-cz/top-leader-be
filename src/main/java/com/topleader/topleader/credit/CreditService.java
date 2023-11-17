@@ -58,6 +58,7 @@ public class CreditService {
         userRepository.save(
             user
                 .setCredit(Optional.ofNullable(user.getCredit()).orElse(0) + credit)
+                .setSumRequestedCredit(Optional.ofNullable(user.getSumRequestedCredit()).orElse(0) + credit)
                 .setRequestedCredit(0)
         );
         creditHistoryRepository.save(
