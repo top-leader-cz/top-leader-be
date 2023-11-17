@@ -4,8 +4,9 @@
 package com.topleader.topleader.util.error;
 
 import com.topleader.topleader.exception.ApiValidationException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.validation.FieldError;
@@ -27,23 +28,43 @@ public class ErrorController {
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public Map<String, String> handleValidationExceptions(
+    public List<ErrorDto> handleValidationExceptions(
         MethodArgumentNotValidException ex
     ) {
-        Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
-            String errorMessage = error.getDefaultMessage();
-            errors.put(fieldName, errorMessage);
-        });
-        return errors;
+        return ex.getBindingResult().getAllErrors().stream()
+            .map(e -> {
+                String fieldName = ((FieldError) e).getField();
+                return new ErrorDto(
+                    e.getCode(),
+                    List.of(new ErrorCodeFieldDto(fieldName, Objects.toString(((FieldError) e).getRejectedValue()))),
+                    e.getDefaultMessage()
+                );
+            })
+            .toList();
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = ApiValidationException.class)
-    public Map<String, String> handleApiValidationExceptions(
+    public List<ErrorDto> handleApiValidationExceptions(
         ApiValidationException ex
     ) {
-        return Map.of(ex.getField(), ex.getMessage());
+        return List.of(
+            new ErrorDto(
+                Optional.ofNullable(ex.getError()).map(ApiValidationException.Error::code).orElse(null),
+                Optional.ofNullable(ex.getError()).map(ApiValidationException.Error::files).orElse(List.of()).stream()
+                    .map(ErrorCodeFieldDto::from)
+                    .toList(),
+                ex.getMessage()
+            )
+        );
+    }
+
+    public record ErrorDto(String errorCode, List<ErrorCodeFieldDto> fields, String errorMessage) {
+    }
+
+    public record ErrorCodeFieldDto(String name, String value) {
+        public static ErrorCodeFieldDto from(ApiValidationException.ErrorField f) {
+            return new ErrorCodeFieldDto(f.name(), f.value());
+        }
     }
 }

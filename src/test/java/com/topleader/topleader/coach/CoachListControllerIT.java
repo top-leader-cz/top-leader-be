@@ -135,7 +135,20 @@ class CoachListControllerIT extends IntegrationTest {
                     """, scheduleTime))
             )
             .andExpect(status().isBadRequest())
-            .andExpect(content().json("{\"user\":\"User does not have enough credit\"}"))
+            .andExpect(content().json("""
+                [
+                  {
+                    "errorCode": "not.enough.credits",
+                    "fields": [
+                      {
+                        "name": "user",
+                        "value": "no-credit-user"
+                      }
+                    ],
+                    "errorMessage": "User does not have enough credit"
+                  }
+                ]
+                """))
         ;
 
         final var sessions = scheduledSessionRepository.findAll();

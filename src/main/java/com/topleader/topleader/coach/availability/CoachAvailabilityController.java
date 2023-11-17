@@ -26,6 +26,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.topleader.topleader.exception.ErrorCodeConstants.FIELD_OUTSIDE_OF_FRAME;
+import static com.topleader.topleader.exception.ErrorCodeConstants.MORE_THEN_24_EVENT;
+
 
 /**
  * @author Daniel Slavik
@@ -68,15 +71,15 @@ public class CoachAvailabilityController {
     public void setNonRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetNonrecurringRequestDto request) {
 
         if (request.events.stream().anyMatch(e -> e.from().isBefore(request.timeFrame().from()))) {
-            throw new ApiValidationException("from", "field from cannot by outside of the time frame");
+            throw new ApiValidationException(FIELD_OUTSIDE_OF_FRAME, "from", request.timeFrame().from().toString() ,"field from cannot by outside of the time frame");
         }
 
         if (request.events.stream().anyMatch(e -> e.to().isAfter(request.timeFrame().to()))) {
-            throw new ApiValidationException("to", "field from cannot by outside of the time frame");
+            throw new ApiValidationException(FIELD_OUTSIDE_OF_FRAME, "to", request.timeFrame().to().toString() ,"field from cannot by outside of the time frame");
         }
 
         if (request.events.stream().anyMatch(e -> e.to().isBefore(e.from()))) {
-            throw new ApiValidationException("to", "field to cannot be before the field from in a single event");
+            throw new ApiValidationException(FIELD_OUTSIDE_OF_FRAME, "to", request.timeFrame().to().toString() ,"field to cannot be before the field from in a single event");
         }
 
         coachAvailabilityService.setNonRecurringAvailability(user.getUsername(), request);
@@ -115,19 +118,27 @@ public class CoachAvailabilityController {
     public void setRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user, @RequestBody @NotNull List<ReoccurringEventDto> request) {
 
 
-        if (
-            request.stream().anyMatch(e ->
-                e.from().time().isAfter(e.to().time()) && e.from().day().equals(e.to().day())
-            )
-        ) {
-            throw new ApiValidationException("to", "the field to cannot be before the field from in a single day event");
+        final var incorrectTo = request.stream().filter(e ->
+            e.from().time().isAfter(e.to().time()) && e.from().day().equals(e.to().day())
+        ).findAny();
+
+        if (incorrectTo.isPresent()) {
+            throw new ApiValidationException(FIELD_OUTSIDE_OF_FRAME, "to", incorrectTo.orElseThrow().to().toString() , "the field to cannot be before the field from in a single day event");
         }
-        if (
-            request.stream().anyMatch(e ->
-                !e.from().day().equals(e.to().day()) && !e.from().day().equals(e.to().day().minus(1))
-            )
-        ) {
-            throw new ApiValidationException("day", "events longer that one day are not supported");
+
+        final var incorrectDay = request.stream().filter(e ->
+            !e.from().day().equals(e.to().day()) && !e.from().day().equals(e.to().day().minus(1))
+        ).findAny();
+
+
+        if (incorrectDay.isPresent()) {
+            throw new ApiValidationException(new ApiValidationException.Error(MORE_THEN_24_EVENT,
+                List.of(
+                    new ApiValidationException.ErrorField("from", incorrectDay.orElseThrow().from().toString()),
+                    new ApiValidationException.ErrorField("to", incorrectDay.orElseThrow().to().toString())
+                )),
+                "events longer that one day are not supported"
+            );
         }
 
         coachAvailabilityService.setRecurringAvailability(user.getUsername(), request);

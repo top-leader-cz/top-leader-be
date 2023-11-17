@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.topleader.topleader.exception.ErrorCodeConstants.INVALID_PASSWORD;
+
 
 /**
  * @author Daniel Slavik
@@ -34,7 +36,7 @@ public class PasswordController {
         final var dbUser = userRepository.findById(user.getUsername()).orElseThrow();
 
         if (!passwordEncoder.matches(request.oldPassword(), dbUser.getPassword())) {
-            throw new ApiValidationException("oldPassword", "Invalid password");
+            throw new ApiValidationException(INVALID_PASSWORD, "oldPassword", null, "Invalid password");
         }
 
         userRepository.save(dbUser
