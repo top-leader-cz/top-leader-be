@@ -16,6 +16,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -127,7 +128,7 @@ public class UserInfoController {
     }
 
     @GetMapping("/upcoming-sessions")
-    public List<UpcomingSessionDto> setCoach(@AuthenticationPrincipal UserDetails user) {
+    public List<UpcomingSessionDto> getUpcomingSessions(@AuthenticationPrincipal UserDetails user) {
 
         final var sessions = scheduledSessionService.listUsersFutureSessions(user.getUsername());
 
@@ -144,6 +145,7 @@ public class UserInfoController {
 
         return sessions.stream()
             .map(s -> UpcomingSessionDto.from(s, coaches.get(s.getCoachUsername())))
+            .sorted(Comparator.comparing(UpcomingSessionDto::time))
             .toList();
 
     }

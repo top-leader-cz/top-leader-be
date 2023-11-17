@@ -136,14 +136,14 @@ public class HrController {
     public record CreditRequestDto(@NotNull Integer credit) {
     }
 
-    public record HrUserDto(String username, String coach, Integer credit, Integer requestedCredit, User.Status state) {
+    public record HrUserDto(String username, String coach, Integer credit, Integer requestedCredit, Integer scheduledCredit, User.Status state) {
 
         public static List<HrUserDto> from(List<User> users) {
             return users.stream().map(HrUserDto::from).toList();
         }
 
         public static HrUserDto from(User user) {
-            return new HrUserDto(user.getUsername(), user.getCoach(), user.getCredit(), user.getRequestedCredit(), user.getStatus());
+            return new HrUserDto(user.getUsername(), user.getCoach(), user.getCredit(), user.getRequestedCredit(), user.getScheduledCredit(), user.getStatus());
         }
 
     }
