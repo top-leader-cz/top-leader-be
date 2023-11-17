@@ -61,6 +61,14 @@ public class UserInfoController {
         );
     }
 
+    @PostMapping("/notes")
+    public UserInfoDto setNotes(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetNotesRequestDto request) {
+        return UserInfoDto.from(
+            userInfoService.setNotes(user.getUsername(), request.notes()),
+            userRepository.findById(user.getUsername()).orElseThrow()
+        );
+    }
+
     @PostMapping("/strengths")
     public UserInfoDto setStrengths(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
         return UserInfoDto.from(
@@ -68,6 +76,7 @@ public class UserInfoController {
             userRepository.findById(user.getUsername()).orElseThrow()
         );
     }
+
 
     @PostMapping("/values")
     public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
@@ -171,6 +180,10 @@ public class UserInfoController {
         return sessions.stream()
             .map(s -> UpcomingSessionDto.from(s, coaches.get(s.getCoachUsername())))
             .toList();
+
+    }
+
+    public record SetNotesRequestDto(String notes) {
 
     }
 
