@@ -107,9 +107,9 @@ public class HrController {
         if (user.getUsername().equalsIgnoreCase(username)) {
             return HrUserDto.from(
                 userRepository.findById(user.getUsername())
-                .map(u -> u.setRequestedCredit(request.credit()))
-                .map(userRepository::save)
-                .orElseThrow(NotFoundException::new)
+                    .map(u -> u.setRequestedCredit(request.credit()))
+                    .map(userRepository::save)
+                    .orElseThrow(NotFoundException::new)
             );
         }
 
@@ -136,14 +136,20 @@ public class HrController {
     public record CreditRequestDto(@NotNull Integer credit) {
     }
 
-    public record HrUserDto(String username, String coach, Integer credit, Integer requestedCredit, Integer scheduledCredit, User.Status state) {
+    public record HrUserDto(String username, String coach, Integer credit, Integer requestedCredit, Integer scheduledCredit, Integer paidCredit, User.Status state) {
 
         public static List<HrUserDto> from(List<User> users) {
             return users.stream().map(HrUserDto::from).toList();
         }
 
         public static HrUserDto from(User user) {
-            return new HrUserDto(user.getUsername(), user.getCoach(), user.getCredit(), user.getRequestedCredit(), user.getScheduledCredit(), user.getStatus());
+            return new HrUserDto(user.getUsername(),
+                user.getCoach(),
+                user.getCredit(),
+                user.getRequestedCredit(),
+                user.getScheduledCredit(),
+                user.getPaidCredit(),
+                user.getStatus());
         }
 
     }

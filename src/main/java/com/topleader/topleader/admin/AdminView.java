@@ -58,6 +58,8 @@ public class AdminView {
 
     private Integer requestedCredit;
 
+    private Integer sumRequestedCredit;
+
     private Integer paidCredit;
 
     private String hrs;

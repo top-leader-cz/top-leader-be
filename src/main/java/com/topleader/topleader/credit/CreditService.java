@@ -58,7 +58,7 @@ public class CreditService {
         userRepository.save(
             user
                 .setCredit(Optional.ofNullable(user.getCredit()).orElse(0) + credit)
-                .setPaidCredit(Optional.ofNullable(user.getPaidCredit()).orElse(0) + credit)
+                .setSumRequestedCredit(Optional.ofNullable(user.getSumRequestedCredit()).orElse(0) + credit)
                 .setRequestedCredit(0)
         );
         creditHistoryRepository.save(
@@ -151,6 +151,7 @@ public class CreditService {
         user
             .setCredit(Optional.ofNullable(user.getCredit()).orElse(0) - coachRate)
             .setScheduledCredit(Optional.ofNullable(user.getScheduledCredit()).orElse(0) - coachRate)
+            .setPaidCredit(Optional.ofNullable(user.getPaidCredit()).orElse(0) + coachRate)
         ;
         coach.setCredit(Optional.ofNullable(coach.getCredit()).orElse(0) + coachRate);
 

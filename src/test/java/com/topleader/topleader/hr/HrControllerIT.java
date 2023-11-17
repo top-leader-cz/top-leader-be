@@ -37,6 +37,7 @@ class HrControllerIT extends IntegrationTest {
                         "credit": 100,
                         "requestedCredit": 0,
                         "scheduledCredit": 10,
+                        "paidCredit": 111,
                         "state": "PENDING"
                       },
                       {
@@ -45,6 +46,7 @@ class HrControllerIT extends IntegrationTest {
                         "credit": 50,
                         "requestedCredit": 10,
                         "scheduledCredit": 20,
+                        "paidCredit": 222,
                         "state": "AUTHORIZED"
                       }
                     ]
