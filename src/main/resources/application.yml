@@ -33,6 +33,9 @@ spring:
     multipart:
       max-file-size: 10MB
 
+  jackson:
+    date-format: "yyyy-MM-dd'T'HH:mm:ss"
+
 top-leader:
   app-url: https://toplead.app
   supported-invitations: en, cs, fr, de

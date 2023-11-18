@@ -9,11 +9,13 @@ import com.topleader.topleader.notification.NotificationRepository;
 import com.topleader.topleader.notification.context.CoachUnlinkedNotificationContext;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -24,6 +26,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -130,7 +133,39 @@ class CoachClientControllerIT extends IntegrationTest {
         assertThat(notification.getType(), is(Notification.Type.COACH_UNLINKED));
         assertThat(notification.getContext(), instanceOf(CoachUnlinkedNotificationContext.class));
         assertThat(((CoachUnlinkedNotificationContext)notification.getContext()).getCoach(), is("coach"));
+    }
 
+    @Test
+    @WithMockUser(username = "coach", authorities = "COACH")
+    void testInviteUserEndpoint() throws Exception {
 
+        mvc.perform(post("/api/latest/coach-clients")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "email": "user4",
+                        "firstName": "Dan",
+                        "lastName": "Aaa",
+                        "isTrial": true
+                    }
+                    """
+                ))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(content().json("""
+                {
+                  "username": "user4",
+                  "firstName": "Dan",
+                  "lastName": "Aaa",
+                  "lastSession": null,
+                  "nextSession": null
+                }
+                """))
+        ;
+
+        final var user = userRepository.findById("user4").orElseThrow();
+
+        assertThat(user.getCoach(), is("coach"));
+        assertThat(user.getStatus(), is(User.Status.PENDING));
     }
 }
