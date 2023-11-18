@@ -79,43 +79,57 @@ public class CoachListController {
         @PathVariable String username,
         @RequestBody ScheduleSessionRequest request
     ) {
+        scheduleSession(user.getUsername(), username, request.time());
+    }
 
-        final var userZoneId = userRepository.findById(username)
+    @Transactional
+    @PostMapping("/schedule")
+    public void scheduleSession(
+        @AuthenticationPrincipal UserDetails user,
+        @RequestBody ScheduleSessionRequest request
+    ) {
+
+        final var coachName = userRepository.findById(user.getUsername()).orElseThrow().getCoach();
+
+        scheduleSession(user.getUsername(), coachName, request.time());
+    }
+
+    private void scheduleSession(String clientName, String coachName, LocalDateTime time) {
+        final var userZoneId = userRepository.findById(coachName)
             .map(User::getTimeZone)
             .map(ZoneId::of)
             .orElseThrow();
 
-        final var shiftedTime = request.time()
+        final var shiftedTime = time
             .atZone(userZoneId)
             .withZoneSameInstant(ZoneOffset.UTC)
             .toLocalDateTime();
 
         if (shiftedTime.isBefore(LocalDateTime.now(ZoneOffset.UTC))) {
-            throw new ApiValidationException(SESSION_IN_PAST, "time", request.time().toString(), "Not possible to schedule session in past.");
+            throw new ApiValidationException(SESSION_IN_PAST, "time", time.toString(), "Not possible to schedule session in past.");
         }
 
-        final var possibleStartDates = coachAvailabilityService.getAvailabilitySplitIntoHours(username, shiftedTime.minusDays(1), shiftedTime.plusDays(1));
+        final var possibleStartDates = coachAvailabilityService.getAvailabilitySplitIntoHours(coachName, shiftedTime.minusDays(1), shiftedTime.plusDays(1));
 
         if (!possibleStartDates.contains(shiftedTime)) {
-            throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", request.time().toString(), "Time " + request.time() + " is not available");
+            throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", time.toString(), "Time " + time + " is not available");
         }
 
-        if (scheduledSessionService.isAlreadyScheduled(username, shiftedTime)) {
-            throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", request.time().toString(), "Time " + request.time() + " is not available");
+        if (scheduledSessionService.isAlreadyScheduled(coachName, shiftedTime)) {
+            throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", time.toString(), "Time " + time + " is not available");
         }
 
-        if (!scheduledSessionService.isPossibleToSchedule(user.getUsername(), username)) {
-            throw new ApiValidationException(NOT_ENOUGH_CREDITS, "user", user.getUsername(), "User does not have enough credit");
+        if (!scheduledSessionService.isPossibleToSchedule(clientName, coachName)) {
+            throw new ApiValidationException(NOT_ENOUGH_CREDITS, "user", clientName, "User does not have enough credit");
         }
 
         scheduledSessionService.scheduleSession(
             new ScheduledSession()
-                .setUsername(user.getUsername())
-                .setCoachUsername(username)
+                .setUsername(clientName)
+                .setCoachUsername(coachName)
                 .setTime(shiftedTime)
                 .setPaid(false)
         );
-
     }
 
     @GetMapping("/{username}/availability")

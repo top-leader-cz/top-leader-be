@@ -58,7 +58,7 @@ class CoachListControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser
-    void scheduleEventTest() throws Exception {
+    void scheduleDefaultCoachEventTest() throws Exception {
 
         final var scheduleTime = LocalDateTime.of(
             LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
@@ -74,6 +74,59 @@ class CoachListControllerIT extends IntegrationTest {
         );
 
         mvc.perform(post("/api/latest/coaches/coach1/schedule")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                    {
+                        "time": "%s"
+                    }
+                    """, scheduleTime))
+            )
+            .andExpect(status().isOk());
+
+        final var sessions = scheduledSessionRepository.findAll();
+
+        assertThat(sessions, hasSize(1));
+
+        final var session = sessions.get(0);
+
+        assertThat(session.getCoachUsername(), is("coach1"));
+        assertThat(session.getUsername(), is("user"));
+        assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
+
+        final var user = userRepository.findById("user").orElseThrow();
+
+        assertThat(user.getScheduledCredit(), is(110));
+        assertThat(user.getCredit(), is(400));
+
+        final var creditHistory = creditHistoryRepository.findAll();
+
+        assertThat(creditHistory, hasSize(1));
+
+        final var creditHistoryEvent = creditHistory.get(0);
+
+        assertThat(creditHistoryEvent.getCredit(), is(110));
+        assertThat(creditHistoryEvent.getUsername(), is("user"));
+        assertThat(creditHistoryEvent.getType(), is(CreditHistory.Type.SCHEDULED));
+    }
+
+    @Test
+    @WithMockUser
+    void scheduleEventTest() throws Exception {
+
+        final var scheduleTime = LocalDateTime.of(
+            LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
+            LocalTime.of(9, 0)
+        );
+
+        coachAvailabilityRepository.save(
+            new CoachAvailability()
+                .setUsername("coach1")
+                .setDateTimeFrom(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(8, 0)))
+                .setDateTimeTo(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(10, 0)))
+                .setRecurring(false)
+        );
+
+        mvc.perform(post("/api/latest/coaches/schedule")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("""
                     {
