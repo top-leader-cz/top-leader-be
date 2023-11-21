@@ -8,7 +8,6 @@ import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 import java.time.LocalDateTime;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -22,6 +21,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -188,23 +188,26 @@ class CoachControllerIT extends IntegrationTest {
         final var user1Session1 = now.plusHours(2);
         final var user1Session2 = now.plusDays(2);
 
-        scheduledSessionRepository.saveAll(List.of(
-            new ScheduledSession()
-                .setPaid(false)
-                .setCoachUsername("coach")
-                .setTime(user1Session1)
-                .setUsername("user1"),
-            new ScheduledSession()
-                .setPaid(false)
-                .setCoachUsername("coach")
-                .setTime(user1Session2)
-                .setUsername("user1"),
-            new ScheduledSession()
-                .setPaid(false)
-                .setCoachUsername("coach_no_info")
-                .setTime(now.plusHours(3))
-                .setUsername("user1")
-        ));
+        final var id1 = scheduledSessionRepository.save(new ScheduledSession()
+            .setPaid(false)
+            .setCoachUsername("coach")
+            .setTime(user1Session1)
+            .setUsername("user1")
+        ).getId();
+
+        final var id2 = scheduledSessionRepository.save(new ScheduledSession()
+            .setPaid(false)
+            .setCoachUsername("coach")
+            .setTime(user1Session2)
+            .setUsername("user1")
+        ).getId();
+
+        final var id3 = scheduledSessionRepository.save(new ScheduledSession()
+            .setPaid(false)
+            .setCoachUsername("coach_no_info")
+            .setTime(now.plusHours(3))
+            .setUsername("user1")
+        ).getId();
 
         mvc.perform(get("/api/latest/coach-info/upcoming-sessions"))
             .andExpect(status().isOk())
@@ -212,21 +215,60 @@ class CoachControllerIT extends IntegrationTest {
                 """
                     [
                       {
+                        "id": %s,
                         "username": "user1",
                         "firstName": "user1FirstName",
                         "lastName": "user1lastName",
                         "time": "%s"
                       },
                       {
+                        "id": %s,
                         "username": "user1",
                         "firstName": "user1FirstName",
                         "lastName": "user1lastName",
                         "time": "%s"
                       }
                     ]
-                    """, user1Session1, user1Session2
+                    """, id1, user1Session1, id2, user1Session2
             )))
-
         ;
+    }
+
+    @Test
+    @WithMockUser(username = "coach", authorities = {"COACH"})
+    void deleteCoachUpcomingSessions() throws Exception {
+
+        final var now = LocalDateTime.now().withNano(0);
+
+        final var user1Session1 = now.plusHours(2);
+        final var user1Session2 = now.plusDays(2);
+
+        final var id1 = scheduledSessionRepository.save(new ScheduledSession()
+            .setPaid(false)
+            .setCoachUsername("coach")
+            .setTime(user1Session1)
+            .setUsername("user1")
+        ).getId();
+
+        final var id2 = scheduledSessionRepository.save(new ScheduledSession()
+            .setPaid(false)
+            .setCoachUsername("coach")
+            .setTime(user1Session2)
+            .setUsername("user1")
+        ).getId();
+
+        final var id3 = scheduledSessionRepository.save(new ScheduledSession()
+            .setPaid(false)
+            .setCoachUsername("coach_no_info")
+            .setTime(now.plusHours(3))
+            .setUsername("user1")
+        ).getId();
+
+        mvc.perform(delete("/api/latest/coach-info/upcoming-sessions/" + id2))
+            .andExpect(status().isOk())
+        ;
+        assertThat(scheduledSessionRepository.findById(id1).isPresent(), is(true));
+        assertThat(scheduledSessionRepository.findById(id2).isPresent(), is(false));
+        assertThat(scheduledSessionRepository.findById(id3).isPresent(), is(true));
     }
 }

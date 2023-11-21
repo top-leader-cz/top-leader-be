@@ -29,7 +29,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -121,7 +123,21 @@ public class CoachController {
 
     }
 
+    @Transactional
+    @DeleteMapping("/upcoming-sessions/{sessionId}")
+    public void cancelSession(@PathVariable Long sessionId, @AuthenticationPrincipal UserDetails user) {
+
+        if (sessionService.listCoachesFutureSessions(user.getUsername())
+            .stream().noneMatch(s -> s.getId().equals(sessionId))
+        ) {
+            throw new NotFoundException();
+        }
+
+        sessionService.cancelSession(sessionId);
+    }
+
     public record UpcomingSessionDto(
+        Long id,
         String username,
         String firstName,
         String lastName,
@@ -130,6 +146,7 @@ public class CoachController {
 
         public static UpcomingSessionDto from(ScheduledSession s, User u) {
             return new UpcomingSessionDto(
+                s.getId(),
                 u.getUsername(),
                 u.getFirstName(),
                 u.getLastName(),

@@ -213,7 +213,11 @@ public class CoachListController {
 
         String rate,
 
-        String timeZone
+        String timeZone,
+
+        String webLink
+
+
     ) {
         public static CoachListDto from(Coach c) {
             return new CoachListDto(
@@ -226,7 +230,8 @@ public class CoachListController {
                 c.getFields(),
                 toExperience(c.getExperienceSince()),
                 c.getRate(),
-                c.getTimeZone()
+                c.getTimeZone(),
+                c.getWebLink()
             );
         }
 

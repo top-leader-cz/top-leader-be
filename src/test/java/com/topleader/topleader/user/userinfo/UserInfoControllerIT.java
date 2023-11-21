@@ -24,6 +24,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -268,37 +270,75 @@ class UserInfoControllerIT extends IntegrationTest {
         final var dateTime1 = now.plusHours(3);
         final var dateTime2 = now.plusDays(3);
 
-        scheduledSessionRepository.saveAll(List.of(
+
+        final var id1 = scheduledSessionRepository.save(
             new ScheduledSession()
                 .setPaid(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
-                .setTime(dateTime1),
+                .setTime(dateTime1)
+        ).getId();
+        final var id2 = scheduledSessionRepository.save(
             new ScheduledSession()
                 .setPaid(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(dateTime2)
-        ));
+        ).getId();
 
         mvc.perform(get("/api/latest/user-info/upcoming-sessions"))
             .andExpect(status().isOk())
             .andExpect(content().json(String.format("""
                 [
                   {
+                    "id": %s,
                     "coach": "coach",
                     "firstName": "Mitch",
                     "lastName": "Cleverman",
                     "time": "%s"
                   },
                   {
+                    "id": %s,
                     "coach": "coach",
                     "firstName": "Mitch",
                     "lastName": "Cleverman",
                     "time": "%s"
                   }
                 ]
-                """, dateTime1, dateTime2)))
+                """, id1, dateTime1, id2, dateTime2)))
         ;
+    }
+
+    @Test
+    @WithMockUser(username = "user_with_coach", authorities = "USER")
+    void deleteUpcomingSessionsTest() throws Exception {
+
+        final var now = LocalDateTime.now().withNano(0);
+
+        final var dateTime1 = now.plusHours(3);
+        final var dateTime2 = now.plusDays(3);
+
+
+        final var id1 = scheduledSessionRepository.save(
+            new ScheduledSession()
+                .setPaid(false)
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(dateTime1)
+        ).getId();
+        final var id2 = scheduledSessionRepository.save(
+            new ScheduledSession()
+                .setPaid(false)
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(dateTime2)
+        ).getId();
+
+        mvc.perform(delete("/api/latest/user-info/upcoming-sessions/" + id1))
+            .andExpect(status().isOk())
+            ;
+
+        assertTrue(scheduledSessionRepository.findById(id1).isEmpty());
+        assertTrue(scheduledSessionRepository.findById(id2).isPresent());
     }
 }

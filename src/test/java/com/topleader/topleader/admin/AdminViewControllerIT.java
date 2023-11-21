@@ -99,6 +99,29 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getCoach()).isEqualTo(updatedUser.coach());
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
     }
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void testUpdateUser_nullCoachAndCompany() throws Exception {
+        final var updatedUser = new AdminViewController.UpdateUserRequestDto(
+            "John", "UpdatedDoe", "PST", null,
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, null, 150
+        );
+        mvc.perform(post("/api/latest/admin/users/user1")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(updatedUser)))
+            .andExpect(status().isOk());
+
+        final var fetchedUser = userRepository.findById("user1").orElseThrow();
+        assertThat(fetchedUser).isNotNull();
+        assertThat(fetchedUser.getFirstName()).isEqualTo(updatedUser.firstName());
+        assertThat(fetchedUser.getLastName()).isEqualTo(updatedUser.lastName());
+        assertThat(fetchedUser.getTimeZone()).isEqualTo(updatedUser.timeZone());
+        assertThat(fetchedUser.getCompanyId()).isNull();
+        assertThat(fetchedUser.getIsTrial()).isEqualTo(updatedUser.isTrial());
+        assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(updatedUser.authorities());
+        assertThat(fetchedUser.getCoach()).isNull();
+        assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
+    }
 
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")

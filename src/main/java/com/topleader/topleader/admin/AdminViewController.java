@@ -112,11 +112,11 @@ public class AdminViewController {
             Optional.ofNullable(firstName).ifPresent(user::setFirstName);
             Optional.ofNullable(lastName).ifPresent(user::setLastName);
             Optional.ofNullable(timeZone).ifPresent(user::setTimeZone);
-            Optional.ofNullable(companyId).ifPresent(user::setCompanyId);
+            user.setCompanyId(companyId);
             Optional.ofNullable(isTrial).ifPresent(user::setIsTrial);
             Optional.ofNullable(authorities).ifPresent(user::setAuthorities);
             Optional.ofNullable(status).ifPresent(user::setStatus);
-            Optional.ofNullable(coach).ifPresent(user::setCoach);
+            user.setCoach(coach);
             Optional.ofNullable(credit).ifPresent(user::setCredit);
             return user;
         }

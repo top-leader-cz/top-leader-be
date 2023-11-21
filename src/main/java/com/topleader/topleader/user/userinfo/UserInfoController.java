@@ -155,7 +155,7 @@ public class UserInfoController {
     public void cancelSession(@PathVariable Long sessionId, @AuthenticationPrincipal UserDetails user) {
 
         if (scheduledSessionService.listUsersFutureSessions(user.getUsername())
-            .stream().anyMatch(s -> s.getId().equals(sessionId))
+            .stream().noneMatch(s -> s.getId().equals(sessionId))
         ) {
             throw new NotFoundException();
         }
@@ -190,6 +190,7 @@ public class UserInfoController {
     }
 
     public record UpcomingSessionDto(
+        Long id,
         String coach,
         String firstName,
         String lastName,
@@ -198,6 +199,7 @@ public class UserInfoController {
 
         public static UpcomingSessionDto from(ScheduledSession s, User u) {
             return new UpcomingSessionDto(
+                s.getId(),
                 u.getUsername(),
                 u.getFirstName(),
                 u.getLastName(),

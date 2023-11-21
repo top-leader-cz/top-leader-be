@@ -23,3 +23,8 @@ values (1, 'coach', 'user1', '2023-08-14 10:30:00'),
        (2, 'coach', 'user1', '2023-08-14 11:30:00'),
        (3, 'coach', 'user2', '2023-08-15 10:30:00')
 ;
+
+insert into coach_rate (rate_name, rate_credit)
+values ('$', 110),
+       ('$$', 165),
+       ('$$$', 275)

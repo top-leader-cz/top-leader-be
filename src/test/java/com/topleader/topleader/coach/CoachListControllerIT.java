@@ -441,6 +441,7 @@ class CoachListControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.content[0].experience", is(exp)))
             .andExpect(jsonPath("$.content[0].rate", is("$$$")))
             .andExpect(jsonPath("$.content[0].timeZone", is("Europe/Prague")))
+            .andExpect(jsonPath("$.content[0].webLink", is("http://some_video3")))
         ;
     }
 
@@ -458,6 +459,7 @@ class CoachListControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.bio", is("Certified fitness coach")))
             .andExpect(jsonPath("$.experience", is(exp)))
             .andExpect(jsonPath("$.rate", is("$$$")))
+            .andExpect(jsonPath("$.webLink", is("http://some_video3")))
         ;
     }
 }
