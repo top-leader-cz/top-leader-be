@@ -30,10 +30,11 @@ public class EmailService {
         log.info("Sending email to: [{}] subject: [{}]", to, subject);
         var message = mailSender.createMimeMessage();
         var helper = new MimeMessageHelper(message, "utf-8");
+
         helper.setFrom(from);
         helper.setTo(to);
         helper.setSubject(subject);
-        helper.setText(body);
+        helper.setText(body, true);
         mailSender.send(message);
     }
 }
