@@ -78,4 +78,14 @@ public class FeedbackFormRequest {
         return feedbackForm;
     }
 
+    public static FeedbackForm toSimpleForm(FeedbackFormRequest request) {
+        return new FeedbackForm()
+                .setId(request.getId())
+                .setTitle(request.getTitle())
+                .setDescription(request.getDescription())
+                .setValidTo(request.getValidTo())
+                .setCreatedAt(LocalDateTime.now())
+                .setUser(new User().setUsername(request.getUsername()));
+    }
+
 }

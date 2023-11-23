@@ -1,3 +1,5 @@
+<html>
+<body>
 🌟 Odemkněte svůj potenciál s TopLeader! 🌟
 
 Vážený/Vážená $firstName $lastName,
@@ -6,7 +8,7 @@ Vážený/Vážená $firstName $lastName,
 
 Vaše cesta k mimořádnému osobnímu rozvoji začíná dnes. Zde je návod, jak začít:
 
-Přihlaste se zde: $appUrl 🖱️
+<a href="$appUrl " target="_blank">Přihlaste se zde</a>
 Uživatelské jméno: Použijte svou e-mailovou adresu.
 Heslo: Prosím, nastavte si své vlastní unikátní heslo při prvním přihlášení.
 
@@ -17,3 +19,5 @@ Děkujeme, že jste si vybrali TopLeader. Pojďme společně stoupat k novým v�
 Srdečné pozdravy,
 
 Tým TopLeader
+</body>
+</html>

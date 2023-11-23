@@ -1,3 +1,5 @@
+<html>
+<body>
 🌟 Débloquez Votre Potentiel avec TopLeader! 🌟
 
 Cher(e) $firstName $lastName,
@@ -6,7 +8,7 @@ Cher(e) $firstName $lastName,
 
 Votre voyage vers une croissance personnelle exceptionnelle commence aujourd'hui. Voici comment débuter :
 
-Connectez-vous ici: $appUrl 🖱️
+<a href="$appUrl " target="_blank">Connectez-vous ici</a>
 Nom d'utilisateur: Utilisez votre adresse e-mail.
 Mot de passe: Veuillez définir votre propre mot de passe lors de votre première connexion.
 
@@ -17,3 +19,5 @@ Merci d'avoir choisi TopLeader. Envolez-vous vers de nouveaux sommets ensemble! 
 Cordialement,
 
 L'équipe TopLeader
+</body>
+</html>

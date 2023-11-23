@@ -5,6 +5,7 @@ import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.user.UserRepository;
+import jakarta.transaction.Transactional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ class FeedbackControllerTest extends IntegrationTest {
 
     @Autowired
     UserRepository userRepository;
+
 
 
 
@@ -62,6 +64,7 @@ class FeedbackControllerTest extends IntegrationTest {
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
     @WithMockUser(username = "user", authorities = "USER")
+    @Transactional
     void createForm() throws Exception {
         var result = mvc.perform(post("/api/latest/feedback")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -72,6 +75,7 @@ class FeedbackControllerTest extends IntegrationTest {
                 .getContentAsString();
 
         var expected = TestUtils.readFileAsString("feedback/json/new-form-response.json");
+        Assertions.assertThat(repository.findById(50L).get().getQuestions().stream().findFirst().get().getId().getFormId()).isNotNull();
 
         TestUtils.assertJsonEquals(result, expected);
 
@@ -111,6 +115,8 @@ class FeedbackControllerTest extends IntegrationTest {
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
+
+        Assertions.assertThat(repository.findById(50L).get().getQuestions().stream().findFirst().get().getId().getFormId()).isNotNull();
 
         var expected = TestUtils.readFileAsString("feedback/json/update-form-response.json");
 

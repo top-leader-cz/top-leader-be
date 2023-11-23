@@ -39,9 +39,14 @@ public class FeedbackController {
     @PostMapping
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormDto createForm(@RequestBody @Valid FeedbackFormRequest request) {
-       var form = feedbackService.saveForm(FeedbackFormRequest.toForm(request));
+       var form = saveForm(request);
        feedbackService.sendFeedbacks(getFeedbackData(request, form));
        return feedbackService.toFeedbackFormDto(form);
+    }
+
+    private FeedbackForm saveForm(FeedbackFormRequest request) {
+        var form = feedbackService.saveForm(FeedbackFormRequest.toSimpleForm(request));
+        return feedbackService.saveForm(FeedbackFormRequest.toForm(request.setId(form.getId())));
     }
 
 

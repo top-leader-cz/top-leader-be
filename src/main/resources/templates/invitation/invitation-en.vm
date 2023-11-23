@@ -1,3 +1,5 @@
+<html>
+<body>
 🌟 Unlock Your Potential with TopLeader! 🌟
 
 Dear $firstName $lastName,
@@ -6,7 +8,7 @@ Dear $firstName $lastName,
 
 Your journey towards exceptional personal growth starts today. Here's how you can embark:
 
-Login Here: $appUrl 🖱️
+<a href="$appUrl " target="_blank">Login Here</a>
 Username: Use your email address.
 Password: Please set your own unique password upon the first login.
 
@@ -17,3 +19,5 @@ Thank you for choosing TopLeader. Let's soar to new heights together! 🚀
 Warm regards,
 
 The TopLeader Team
+</body>
+</html>
