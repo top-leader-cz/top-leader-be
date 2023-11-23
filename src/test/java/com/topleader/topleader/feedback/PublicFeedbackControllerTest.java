@@ -9,6 +9,7 @@ import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Set;
@@ -28,6 +29,22 @@ public class PublicFeedbackControllerTest extends IntegrationTest {
 
     @Autowired
     UserRepository userRepository;
+
+
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @WithMockUser(username = "user", authorities = "USER")
+    void getOptions() throws Exception {
+        var result = mvc.perform(get("/api/public/latest/feedback/options"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("feedback/json/feedback-options-response.json");
+
+        TestUtils.assertJsonEquals(result, expected);
+    }
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/submit-feedback.sql"})

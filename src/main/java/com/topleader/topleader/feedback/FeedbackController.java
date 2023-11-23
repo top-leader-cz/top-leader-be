@@ -21,12 +21,6 @@ public class FeedbackController {
 
     private final FeedbackService feedbackService;
 
-    @Transactional
-    @GetMapping("/options")
-    @Secured({"ADMIN", "HR", "COACH", "USER"})
-    public FeedbackFormOptions getOptions() {
-        return FeedbackFormOptions.of(feedbackService.fetchQuestions());
-    }
 
     @Transactional
     @GetMapping("/{id}")

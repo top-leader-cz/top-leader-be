@@ -37,7 +37,7 @@ public class InvitationService {
     public void sendInvite(UserInvitationRequestDto request) {
         log.info("Sending invitation for: [{}]", request.username());
         var token = tokenService.generateToken();
-        var setPasswordUrl =  String.format( "%s/#/api/public/set-password/%s/%s",appUrl, request.username, token);
+        var setPasswordUrl =  String.format( "%s/#/api/public/set-password/%s/%s", appUrl, request.username, token);
         var params = Map.of("firstName", request.firstName(), "lastName", request.lastName(), "appUrl", setPasswordUrl);
         var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(request.locale()));
         tokenService.saveToken(new Token().setToken(token).setUsername(request.username()).setType(Token.Type.SET_PASSWORD));

@@ -26,20 +26,7 @@ class FeedbackControllerTest extends IntegrationTest {
     @Autowired
     UserRepository userRepository;
 
-    @Test
-    @Sql(scripts = {"/feedback/sql/feedback.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
-    void getOptions() throws Exception {
-        var result = mvc.perform(get("/api/latest/feedback/options"))
-                .andExpect(status().isOk())
-                .andReturn()
-                .getResponse()
-                .getContentAsString();
 
-        var expected = TestUtils.readFileAsString("feedback/json/feedback-options-response.json");
-
-         TestUtils.assertJsonEquals(result, expected);
-    }
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})

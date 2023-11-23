@@ -1,6 +1,7 @@
 package com.topleader.topleader.feedback;
 
 import com.topleader.topleader.feedback.api.FeedbackFormDto;
+import com.topleader.topleader.feedback.api.FeedbackFormOptions;
 import com.topleader.topleader.feedback.api.FeedbackSubmitRequest;
 import com.topleader.topleader.feedback.api.NewUser;
 import com.topleader.topleader.user.User;
@@ -9,6 +10,7 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +21,13 @@ public class PublicFeedbackController {
     private final FeedbackService feedbackService;
 
     private final UserDetailService userDetailService;
+
+    @Transactional
+    @GetMapping("/options")
+    @Secured({"ADMIN", "HR", "COACH", "USER"})
+    public FeedbackFormOptions getOptions() {
+        return FeedbackFormOptions.of(feedbackService.fetchQuestions());
+    }
 
 
     @Transactional

@@ -6,6 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,7 +20,7 @@ public class TokenService {
     private final PasswordEncoder passwordEncoder;
 
     public String generateToken() {
-        return passwordEncoder.encode(CommonUtils.generateToken());
+        return Base64.getEncoder().encodeToString(passwordEncoder.encode(CommonUtils.generateToken()).getBytes());
     }
 
     public void saveToken(Token token) {
