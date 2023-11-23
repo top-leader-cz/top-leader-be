@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 <body>
 🌟 Unlock Your Potential with TopLeader! 🌟
@@ -8,7 +9,7 @@ Dear $firstName $lastName,
 
 Your journey towards exceptional personal growth starts today. Here's how you can embark:
 
-<a href="$appUrl " target="_blank">Login Here</a>
+<a href="$appUrl" target="_blank">Login Here</a>
 Username: Use your email address.
 Password: Please set your own unique password upon the first login.
 

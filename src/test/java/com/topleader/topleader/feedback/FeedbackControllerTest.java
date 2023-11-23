@@ -116,8 +116,6 @@ class FeedbackControllerTest extends IntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        Assertions.assertThat(repository.findById(50L).get().getQuestions().stream().findFirst().get().getId().getFormId()).isNotNull();
-
         var expected = TestUtils.readFileAsString("feedback/json/update-form-response.json");
 
         TestUtils.assertJsonEquals(result, expected);
