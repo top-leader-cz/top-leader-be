@@ -33,7 +33,6 @@ public class PublicFeedbackControllerTest extends IntegrationTest {
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
     void getOptions() throws Exception {
         var result = mvc.perform(get("/api/public/latest/feedback/options"))
                 .andExpect(status().isOk())

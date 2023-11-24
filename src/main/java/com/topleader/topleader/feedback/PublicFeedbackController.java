@@ -24,7 +24,6 @@ public class PublicFeedbackController {
 
     @Transactional
     @GetMapping("/options")
-    @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormOptions getOptions() {
         return FeedbackFormOptions.of(feedbackService.fetchQuestions());
     }
