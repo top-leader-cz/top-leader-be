@@ -31,7 +31,7 @@ public class UserController {
 
     private final InvitationService invitationService;
 
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "HR"})
     @PostMapping
     public UserDto addUser(@AuthenticationPrincipal UserDetails loggedUser, @RequestBody @Valid AddUserRequest request) {
         var user = new User().setUsername(request.username())
@@ -54,7 +54,7 @@ public class UserController {
         return UserDto.fromUser(saved);
     }
 
-    @Secured({"ADMIN"})
+    @Secured({"ADMIN", "HR"})
     @PutMapping("/{username}")
     public UserDto updateUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequest request) {
         var user = userDetailService.getUser(username)
