@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
 <body>
-Dobrý den,
+<p>Dobrý den,</p>
 
-doufám, že se máte dobře. V rámci mého závazku k neustálému osobnímu a profesnímu růstu hledám zpětnou vazbu na platformě TopLeader týkající se mého výkonu a charakteristik.
+<p>doufám, že se máte dobře. V rámci mého závazku k neustálému osobnímu a profesnímu růstu hledám zpětnou vazbu na platformě TopLeader týkající se mého výkonu a charakteristik.</p>
 
-Vaše postřehy jsou pro můj pokrok klíčové. Mohli byste si prosím vyhradit několik minut a podělit se o svou zpětnou vazbu? Vaše upřímná odpověď mi výrazně pomůže pochopit oblasti ke zlepšení a ještě více se zlepšit.
+<p>Vaše postřehy jsou pro můj pokrok klíčové. Mohli byste si prosím vyhradit několik minut a podělit se o svou zpětnou vazbu? Vaše upřímná odpověď mi výrazně pomůže pochopit oblasti ke zlepšení a ještě více se zlepšit.</p>
 
-Prosím, dokončete zpětnou vazbu do $validTo.
+<p>Prosím, dokončete zpětnou vazbu do <b>$validTo.</b></p>
 
-<a href="$link" target="_blank">Klikněte zde a poskytněte svou zpětnou vazbu</a>
+<p><a href="$link" target="_blank">Klikněte zde a poskytněte svou zpětnou vazbu</a></p>
 
-Kliknutím na výše uvedený odkaz souhlasíte s podmínkami TopLeader, které si můžete prohlédnout na www.topleader.io/terms-conditions.
+<p>Kliknutím na výše uvedený odkaz souhlasíte s podmínkami TopLeader, které si můžete prohlédnout na www.topleader.io/terms-conditions.</p>
 
-Vaše účast zůstane důvěrná a upřímně si vážím vašeho času a úsilí, které věnujete mé cestě rozvoje.
+<p>Vaše účast zůstane důvěrná a upřímně si vážím vašeho času a úsilí, které věnujete mé cestě rozvoje.</p>
 
-Děkuji za vaši podporu.
+<p>Děkuji za vaši podporu.</p>
 
-S pozdravem,
+<p>S pozdravem,</p>
 
-Top-leader Team
+<p>Top-leader Team</p>
 </body>
 </html>

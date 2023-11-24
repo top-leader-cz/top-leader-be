@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
 <body>
-Hello,
+<p>Hello,</p>
 
-I hope this message finds you well. As part of my commitment to ongoing personal and professional growth, I'm seeking feedback on the TopLeader platform regarding my performance and characteristics.
+<p>I hope this message finds you well. As part of my commitment to ongoing personal and professional growth, I'm seeking feedback on the TopLeader platform regarding my performance and characteristics.</p>
 
-Your insights are crucial for my progress. Can you kindly take a few minutes to share your feedback? Your candid response will immensely help me understand areas of improvement and excel further.
+<p>Your insights are crucial for my progress. Can you kindly take a few minutes to share your feedback? Your candid response will immensely help me understand areas of improvement and excel further.</p>
 
-Please complete the feedback by $validTo.
+<p>Please complete the feedback by <b>$validTo.</b></p>
 
-<a href="$link" target="_blank">Click here to provide your feedback</a>
+<p><a href="$link" target="_blank">Click here to provide your feedback</a></p>
 
-By clicking the above link, you agree to the Terms and Conditions of TopLeader, which can be viewed at www.topleader.io/terms-conditions.
+<p>By clicking the above link, you agree to the Terms and Conditions of TopLeader, which can be viewed at www.topleader.io/terms-conditions.</p>
 
-Your participation will remain confidential, and I sincerely appreciate your time and effort in assisting my development journey.
+<p>Your participation will remain confidential, and I sincerely appreciate your time and effort in assisting my development journey.</p>
 
-Thank you for your support.
+<p>Thank you for your support.</p>
 
-Warm regards,
+<p>Warm regards,</p>
 
-Top-leader Team
+<p>Top-leader Team</p>
 </body>
 </html>

@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
 <body>
-🌟 Unlock Your Potential with TopLeader! 🌟
+<p>🌟 Unlock Your Potential with TopLeader! 🌟
 
-Dear $firstName $lastName,
+<p>Dear <b>$firstName $lastName,</b></p>
 
-🎉 Congratulations on joining the TopLeader coaching platform! 🎉
+<p>🎉 Congratulations on joining the TopLeader coaching platform! 🎉</p>
 
-Your journey towards exceptional personal growth starts today. Here's how you can embark:
+<p>Your journey towards exceptional personal growth starts today. Here's how you can embark:</p>
 
-<a href="$appUrl" target="_blank">Login Here</a>
-Username: Use your email address.
-Password: Please set your own unique password upon the first login.
+<p><a href="$appUrl" target="_blank">Login Here</a></p>
+<p>Username: Use your email address.</p>
+<p>Password: Please set your own unique password upon the first login.</p>
 
-We've designed TopLeader with YOU in mind, ensuring every step you take here is towards a brighter, better future. Embrace the wealth of knowledge, tips, and tools waiting for you and watch as they transform your world.
+<p>We've designed TopLeader with YOU in mind, ensuring every step you take here is towards a brighter, better future. Embrace the wealth of knowledge, tips, and tools waiting for you and watch as they transform your world.</p>
 
-Thank you for choosing TopLeader. Let's soar to new heights together! 🚀
+<p>Thank you for choosing TopLeader. Let's soar to new heights together! 🚀</p>
 
-Warm regards,
+<p>Warm regards,</p>
 
-The TopLeader Team
+<p>The TopLeader Team</p>
 </body>
 </html>

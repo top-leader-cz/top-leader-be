@@ -1,24 +1,24 @@
 <!DOCTYPE html>
 <html>
 <body>
-🌟 Odemkněte svůj potenciál s TopLeader! 🌟
+<p>🌟 Odemkněte svůj potenciál s TopLeader! 🌟 </p>
 
-Vážený/Vážená $firstName $lastName,
+<p>Vážený/Vážená <b>$firstName $lastName, </b></p>
 
-🎉 Gratulujeme k připojení k platformě TopLeader! 🎉
+<p>🎉 Gratulujeme k připojení k platformě TopLeader! 🎉</p>
 
-Vaše cesta k mimořádnému osobnímu rozvoji začíná dnes. Zde je návod, jak začít:
+<p>Vaše cesta k mimořádnému osobnímu rozvoji začíná dnes. Zde je návod, jak začít:</p>
 
-<a href="$appUrl" target="_blank">Přihlaste se zde</a>
-Uživatelské jméno: Použijte svou e-mailovou adresu.
-Heslo: Prosím, nastavte si své vlastní unikátní heslo při prvním přihlášení.
+<p><a href="$appUrl" target="_blank">Přihlaste se zde</a></p>
+<p>Uživatelské jméno: Použijte svou e-mailovou adresu.</p>
+<p>Heslo: Prosím, nastavte si své vlastní unikátní heslo při prvním přihlášení.</p>
 
-TopLeader byl navržen s MYŠLENKOU NA VÁS, aby každý váš krok zde směřoval k jasnější a lepší budoucnosti. Vstřebávejte bohatství znalostí, tipů a nástrojů, které na vás čekají, a sledujte, jak transformují váš svět.
+<p>TopLeader byl navržen s MYŠLENKOU NA VÁS, aby každý váš krok zde směřoval k jasnější a lepší budoucnosti. Vstřebávejte bohatství znalostí, tipů a nástrojů, které na vás čekají, a sledujte, jak transformují váš svět.</p>
 
-Děkujeme, že jste si vybrali TopLeader. Pojďme společně stoupat k novým výšinám! 🚀
+<p>Děkujeme, že jste si vybrali TopLeader. Pojďme společně stoupat k novým výšinám! 🚀</p>
 
-Srdečné pozdravy,
+<p>Srdečné pozdravy,</p>
 
-Tým TopLeader
+<p>Tým TopLeader</p>
 </body>
 </html>
