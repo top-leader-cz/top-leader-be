@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-public class UserControllerIT extends IntegrationTest {
+class UserControllerIT extends IntegrationTest {
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -29,7 +29,7 @@ public class UserControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "user", authorities = "ADMIN")
-    public void addUser() throws Exception {
+    void addUser() throws Exception {
         mvc.perform(post("/api/latest/user")
                 .contentType(MediaType.APPLICATION_JSON)
                           .content("""
@@ -58,15 +58,17 @@ public class UserControllerIT extends IntegrationTest {
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("jakub.svezi@dummy.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
-        Assertions.assertThat(body).contains("Jakub Svezi,").contains("http://app-test-url/#/api/public/set-password/");
-        Assertions.assertThat(body).contains("Odemkn=C4=9Bte");
+        Assertions.assertThat(body)
+            .contains("Jakub Svezi,")
+            .contains("http://app-test-url/#/api/public/set-password/")
+            .contains("Odemkn=C4=9Bte");
 
         Assertions.assertThat(userRepository.findById("jakub.svezi@dummy.com")).isNotEmpty();
     }
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
-    public void addUser403() throws Exception {
+    void addUser403() throws Exception {
 
         mvc.perform(post("/api/latest/user")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -88,7 +90,7 @@ public class UserControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "user", authorities = "ADMIN")
     @Sql(scripts = {"/sql/user/user-test.sql"})
-    public void updateUser() throws Exception {
+    void updateUser() throws Exception {
         mvc.perform(put("/api/latest/user/jakub.svezi@dummy.com")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
