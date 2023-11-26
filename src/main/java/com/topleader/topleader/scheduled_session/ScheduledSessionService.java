@@ -35,9 +35,10 @@ public class ScheduledSessionService {
         return creditService.canScheduleSession(user, coach);
     }
 
-    public void scheduleSession(ScheduledSession scheduledSession) {
-        final var session =  scheduledSessionRepository.save(scheduledSession);
+    public ScheduledSession scheduleSession(ScheduledSession scheduledSession) {
+        final var session = scheduledSessionRepository.save(scheduledSession);
         creditService.scheduleSession(session.getId());
+        return session;
     }
 
     public List<ScheduledSession> listCoachesFutureSessions(String username) {

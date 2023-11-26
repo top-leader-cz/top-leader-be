@@ -40,4 +40,6 @@ public class ScheduledSession {
 
     private boolean paid;
 
+    private boolean isPrivate;
+
 }
