@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -46,13 +47,9 @@ public class UserController {
     @PostMapping
     public UserDto addUser(@AuthenticationPrincipal UserDetails loggedUser, @RequestBody @Valid AddUserRequest request) {
 
-        if (userRepository.findById(request.username).isPresent()) {
-            throw new ApiValidationException(EMAIL_USED, "username", request.username(), "Already used");
-        }
-
         var user = new User();
         if (isHr(loggedUser)) {
-            final var hrUser = userRepository.findById(user.getUsername()).orElseThrow();
+            final var hrUser = userRepository.findById(loggedUser.getUsername()).orElseThrow();
 
             final var companyId = Optional.of(hrUser).map(User::getCompanyId).orElseThrow(() ->
                 new ApiValidationException(NOT_PART_OF_COMPANY, "user", hrUser.getUsername(), "User is not part of any company")
@@ -80,6 +77,10 @@ public class UserController {
 
         }
 
+        if (userRepository.findById(request.username).isPresent()) {
+            throw new ApiValidationException(EMAIL_USED, "username", request.username(), "Already used");
+        }
+
         var saved = userDetailService.save(user);
         if (sendInvite(User.Status.PENDING, request.status())) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, request.locale()));
@@ -89,10 +90,28 @@ public class UserController {
 
     @Secured({"ADMIN", "HR"})
     @PutMapping("/{username}")
-    public UserDto updateUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequest request) {
-        var user = userDetailService.getUser(username)
+    public UserDto updateUser(
+        @AuthenticationPrincipal UserDetails loggedUser,
+        @PathVariable String username,
+        @RequestBody @Valid UpdateUserRequest request
+    ) {
+
+        if (isHr(loggedUser)) {
+            final var hr = userRepository.findById(loggedUser.getUsername()).orElseThrow();
+
+            final var user = userRepository.findById(username)
+                .filter(u -> Objects.equals(hr.getCompanyId(), u.getCompanyId()))
+                .orElseThrow(() -> new ApiValidationException(NOT_PART_OF_COMPANY, "username", username, "User is not part of any company"));
+
+            user.setFirstName(request.firstName());
+            user.setLastName(request.lastName());
+            user.setTimeZone(request.timeZone());
+            return UserDto.fromUser(userDetailService.save(user));
+        }
+
+        final var user = userDetailService.getUser(username)
             .orElseThrow(() -> new UsernameNotFoundException(username));
-        var oldStatus = user.getStatus();
+        final var oldStatus = user.getStatus();
         user.setStatus(request.status);
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
@@ -104,6 +123,7 @@ public class UserController {
         if (sendInvite(oldStatus, request.status())) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, request.locale()));
         }
+
         return UserDto.fromUser(updatedUser);
     }
 
