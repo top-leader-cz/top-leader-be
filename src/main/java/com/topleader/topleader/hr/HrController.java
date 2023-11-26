@@ -18,7 +18,6 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -32,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.EMAIL_USED;
 import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
+import static com.topleader.topleader.util.user.UserDetailUtils.isHr;
 
 
 /**
@@ -56,7 +56,7 @@ public class HrController {
 
         final var dbUser = userRepository.findById(user.getUsername()).orElseThrow();
 
-        if (user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch("HR"::equalsIgnoreCase)) {
+        if (isHr(user)) {
             return Optional.ofNullable(dbUser.getCompanyId()).map(userRepository::findAllByCompanyId).map(HrUserDto::from).orElseGet(() -> {
                 log.info("User {} is not part of any company. Returning an empty list.", user.getUsername()); return List.of();
             });
@@ -118,7 +118,7 @@ public class HrController {
             );
         }
 
-        if (user.getAuthorities().stream().map(GrantedAuthority::getAuthority).noneMatch("HR"::equalsIgnoreCase)) {
+        if (!isHr(user)) {
             throw new AccessDeniedException("User is not allowed to request credits for another user");
         }
 

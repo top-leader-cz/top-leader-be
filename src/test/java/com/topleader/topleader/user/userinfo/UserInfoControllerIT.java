@@ -10,14 +10,22 @@ import com.topleader.topleader.history.data.ValuesStoredData;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import org.hamcrest.CoreMatchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -28,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -212,11 +221,13 @@ class UserInfoControllerIT extends IntegrationTest {
         scheduledSessionRepository.saveAll(List.of(
             new ScheduledSession()
                 .setPaid(false)
+                .setPrivate(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(LocalDateTime.now().plusHours(3)),
             new ScheduledSession()
                 .setPaid(false)
+                .setPrivate(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(LocalDateTime.now().plusDays(3))
@@ -274,6 +285,7 @@ class UserInfoControllerIT extends IntegrationTest {
         final var id1 = scheduledSessionRepository.save(
             new ScheduledSession()
                 .setPaid(false)
+                .setPrivate(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(dateTime1)
@@ -281,6 +293,7 @@ class UserInfoControllerIT extends IntegrationTest {
         final var id2 = scheduledSessionRepository.save(
             new ScheduledSession()
                 .setPaid(false)
+                .setPrivate(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(dateTime2)
@@ -322,6 +335,7 @@ class UserInfoControllerIT extends IntegrationTest {
         final var id1 = scheduledSessionRepository.save(
             new ScheduledSession()
                 .setPaid(false)
+                .setPrivate(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(dateTime1)
@@ -329,6 +343,7 @@ class UserInfoControllerIT extends IntegrationTest {
         final var id2 = scheduledSessionRepository.save(
             new ScheduledSession()
                 .setPaid(false)
+                .setPrivate(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(dateTime2)
@@ -340,5 +355,56 @@ class UserInfoControllerIT extends IntegrationTest {
 
         assertTrue(scheduledSessionRepository.findById(id1).isEmpty());
         assertTrue(scheduledSessionRepository.findById(id2).isPresent());
+    }
+
+    @Test
+    @WithMockUser(username = "user_with_coach")
+    void schedulePrivateSessionTest() throws Exception {
+
+        final var scheduleTime = LocalDateTime.of(
+            LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
+            LocalTime.of(9, 0)
+        );
+
+        mvc.perform(post("/api/latest/user-info/private-session")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(String.format("""
+                    {
+                        "time": "%s"
+                    }
+                    """, scheduleTime))
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().json(
+                """
+                    {
+                      "coach": null,
+                      "firstName": null,
+                      "lastName": null,
+                      "time": "2023-11-27T09:00:00",
+                      "isPrivate": true
+                    }
+                    """
+            ))
+        ;
+
+        final var sessions = scheduledSessionRepository.findAll();
+
+        assertThat(sessions, hasSize(2));
+
+        final var session = sessions.get(1);
+
+        assertThat(session.getCoachUsername(), nullValue());
+        assertThat(session.getUsername(), is("user_with_coach"));
+        assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
+
+        final var user = userRepository.findById("user_with_coach").orElseThrow();
+
+        assertThat(user.getScheduledCredit(), is(400));
+        assertThat(user.getCredit(), is(400));
+
+        final var creditHistory = creditHistoryRepository.findAll();
+
+        assertThat(creditHistory, hasSize(0));
     }
 }

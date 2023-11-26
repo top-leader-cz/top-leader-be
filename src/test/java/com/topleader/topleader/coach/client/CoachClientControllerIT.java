@@ -59,31 +59,37 @@ class CoachClientControllerIT extends IntegrationTest {
             List.of(
                 new ScheduledSession()
                     .setPaid(false)
+                    .setPrivate(false)
                     .setCoachUsername("coach")
                     .setUsername("client1")
                     .setTime(now.plusHours(2L)),
                 new ScheduledSession()
                     .setPaid(false)
+                    .setPrivate(false)
                     .setCoachUsername("coach")
                     .setUsername("client1")
                     .setTime(nextSessionTimeClient1),
                 new ScheduledSession()
                     .setPaid(false)
+                    .setPrivate(false)
                     .setCoachUsername("coach")
                     .setUsername("client2")
                     .setTime(now.plusHours(2L)),
                 new ScheduledSession()
                     .setPaid(false)
+                    .setPrivate(false)
                     .setCoachUsername("coach")
                     .setUsername("client2")
                     .setTime(nextSessionTimeClient2),
                 new ScheduledSession()
                     .setPaid(false)
+                    .setPrivate(false)
                     .setCoachUsername("coach")
                     .setUsername("client3")
                     .setTime(now.plusHours(2L)),
                 new ScheduledSession()
                     .setPaid(false)
+                    .setPrivate(false)
                     .setCoachUsername("coach")
                     .setUsername("client3")
                     .setTime(now)

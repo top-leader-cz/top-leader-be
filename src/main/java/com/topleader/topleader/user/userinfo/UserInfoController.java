@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.user.userinfo;
 
+import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.notification.Notification;
 import com.topleader.topleader.notification.NotificationService;
@@ -16,9 +17,12 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -33,6 +37,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toMap;
 
@@ -144,10 +149,41 @@ public class UserInfoController {
 
 
         return sessions.stream()
-            .map(s -> UpcomingSessionDto.from(s, coaches.get(s.getCoachUsername())))
+            .map(s -> UpcomingSessionDto.from(s, Optional.ofNullable(coaches.get(s.getCoachUsername()))))
             .sorted(Comparator.comparing(UpcomingSessionDto::time))
             .toList();
 
+    }
+
+    @Transactional
+    @PostMapping("/private-session")
+    public UpcomingSessionDto schedulePrivateSession(@RequestBody SchedulePrivateSessionRequest request, @AuthenticationPrincipal UserDetails user) {
+
+        final var time = request.time();
+
+        final var userZoneId = userRepository.findById(user.getUsername())
+            .map(User::getTimeZone)
+            .map(ZoneId::of)
+            .orElseThrow();
+
+        final var shiftedTime = time
+            .atZone(userZoneId)
+            .withZoneSameInstant(ZoneOffset.UTC)
+            .toLocalDateTime();
+
+        if (shiftedTime.isBefore(LocalDateTime.now(ZoneOffset.UTC))) {
+            throw new ApiValidationException(SESSION_IN_PAST, "time", time.toString(), "Not possible to schedule session in past.");
+        }
+
+        return UpcomingSessionDto.from(
+            scheduledSessionService.scheduleSession(new ScheduledSession()
+                .setPaid(true)
+                .setPrivate(true)
+                .setTime(request.time())
+                .setUsername(user.getUsername())
+            ),
+            Optional.empty()
+        );
     }
 
     @Transactional
@@ -163,26 +199,7 @@ public class UserInfoController {
         scheduledSessionService.cancelSession(sessionId);
     }
 
-    @GetMapping("/credits")
-    public List<UpcomingSessionDto> getUserCredits(@AuthenticationPrincipal UserDetails user) {
-
-        final var sessions = scheduledSessionService.listUsersFutureSessions(user.getUsername());
-
-        if (sessions.isEmpty()) {
-            return List.of();
-        }
-
-        final var coaches = userRepository.findAllById(sessions.stream()
-                .map(ScheduledSession::getCoachUsername)
-                .collect(Collectors.toSet())
-            ).stream()
-            .collect(toMap(User::getUsername, Function.identity()));
-
-
-        return sessions.stream()
-            .map(s -> UpcomingSessionDto.from(s, coaches.get(s.getCoachUsername())))
-            .toList();
-
+    public record SchedulePrivateSessionRequest(LocalDateTime time) {
     }
 
     public record SetNotesRequestDto(String notes) {
@@ -194,16 +211,19 @@ public class UserInfoController {
         String coach,
         String firstName,
         String lastName,
-        LocalDateTime time
+        LocalDateTime time,
+
+        boolean isPrivate
     ) {
 
-        public static UpcomingSessionDto from(ScheduledSession s, User u) {
+        public static UpcomingSessionDto from(ScheduledSession s, Optional<User> u) {
             return new UpcomingSessionDto(
                 s.getId(),
-                u.getUsername(),
-                u.getFirstName(),
-                u.getLastName(),
-                s.getTime()
+                u.map(User::getUsername).orElse(null),
+                u.map(User::getFirstName).orElse(null),
+                u.map(User::getLastName).orElse(null),
+                s.getTime(),
+                s.isPrivate()
             );
         }
     }

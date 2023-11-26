@@ -24,6 +24,8 @@ public final class ErrorCodeConstants {
 
     public static final String INVALID_PASSWORD = "invalid.password";
 
+    public static final String ALREADY_EXISTING = "already.existing";
+
 
 
 }

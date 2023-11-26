@@ -129,6 +129,7 @@ public class CoachListController {
                 .setCoachUsername(coachName)
                 .setTime(shiftedTime)
                 .setPaid(false)
+                .setPrivate(false)
         );
     }
 

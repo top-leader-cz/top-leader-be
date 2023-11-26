@@ -190,6 +190,7 @@ class CoachControllerIT extends IntegrationTest {
 
         final var id1 = scheduledSessionRepository.save(new ScheduledSession()
             .setPaid(false)
+            .setPrivate(false)
             .setCoachUsername("coach")
             .setTime(user1Session1)
             .setUsername("user1")
@@ -197,6 +198,7 @@ class CoachControllerIT extends IntegrationTest {
 
         final var id2 = scheduledSessionRepository.save(new ScheduledSession()
             .setPaid(false)
+            .setPrivate(false)
             .setCoachUsername("coach")
             .setTime(user1Session2)
             .setUsername("user1")
@@ -204,6 +206,7 @@ class CoachControllerIT extends IntegrationTest {
 
         final var id3 = scheduledSessionRepository.save(new ScheduledSession()
             .setPaid(false)
+            .setPrivate(false)
             .setCoachUsername("coach_no_info")
             .setTime(now.plusHours(3))
             .setUsername("user1")
