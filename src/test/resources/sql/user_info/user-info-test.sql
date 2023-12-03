@@ -7,8 +7,8 @@ values ('user_with_coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYi
 insert into users (username, password, status, first_name, last_name, time_zone)
 values ('coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', 'Mitch', 'Cleverman', 'UTC');
 
-INSERT INTO coach (username, public_profile, first_name, last_name, email, web_link, bio, experience_since, rate, time_zone)
-VALUES ('coach', true, 'John', 'Doe', 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$', 'Europe/Prague');
+INSERT INTO coach (username, public_profile, email, web_link, bio, experience_since, rate)
+VALUES ('coach', true, 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$');
 
 insert into coach_rate (rate_name, rate_credit)
 values ('$', 110),
@@ -21,4 +21,4 @@ values ('user2', '["s1","s2"]', '["v1","v2"]', '["a1","a2"]', 'cool note');
 
 
 insert into scheduled_session (id, coach_username, username, time)
-values (1, 'coach', 'user_with_coach', '2023-08-14 10:30:00');
+values (nextval('scheduled_session_id_seq'), 'coach', 'user_with_coach', '2023-08-14 10:30:00');

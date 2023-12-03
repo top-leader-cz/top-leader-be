@@ -44,7 +44,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                 .content("""
                     {
                        "reflection": "you can do it!",
-                       "checked": [100],
+                       "checked": [2],
                        "newActionSteps": [{"label": "do not lose", "date": "2023-08-15"}]
                     }
                     """)
@@ -68,12 +68,14 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
         final var userActionSteps = userActionStepRepository.findAllByUsername("user2");
         assertThat(userActionSteps, hasSize(2));
-        assertThat(userActionSteps.get(0).getChecked(), is(false));
-        assertThat(userActionSteps.get(0).getLabel(), is("do not lose"));
-        assertThat(userActionSteps.get(0).getDate(), is(LocalDate.parse("2023-08-15")));
-        assertThat(userActionSteps.get(1).getChecked(), is(true));
-        assertThat(userActionSteps.get(1).getLabel(), is("action 2"));
-        assertThat(userActionSteps.get(1).getDate(), is(LocalDate.parse("2023-08-15")));
+        final var doNotLoseStep = userActionSteps.stream().filter(s -> "do not lose".equals(s.getLabel())).findAny().orElseThrow();
+        assertThat(doNotLoseStep.getChecked(), is(false));
+        assertThat(doNotLoseStep.getLabel(), is("do not lose"));
+        assertThat(doNotLoseStep.getDate(), is(LocalDate.parse("2023-08-15")));
+        final var action2Step = userActionSteps.stream().filter(s -> "action 2".equals(s.getLabel())).findAny().orElseThrow();
+        assertThat(action2Step.getChecked(), is(true));
+        assertThat(action2Step.getLabel(), is("action 2"));
+        assertThat(action2Step.getDate(), is(LocalDate.parse("2023-08-15")));
     }
 
 }

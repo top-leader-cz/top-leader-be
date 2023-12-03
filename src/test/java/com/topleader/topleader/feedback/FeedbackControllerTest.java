@@ -75,7 +75,7 @@ class FeedbackControllerTest extends IntegrationTest {
                 .getContentAsString();
 
         var expected = TestUtils.readFileAsString("feedback/json/new-form-response.json");
-        Assertions.assertThat(repository.findById(50L).get().getQuestions().stream().findFirst().get().getId().getFormId()).isNotNull();
+        Assertions.assertThat(repository.findById(2L).orElseThrow().getQuestions().stream().findFirst().orElseThrow().getId().getFormId()).isNotNull();
 
         TestUtils.assertJsonEquals(result, expected);
 
@@ -86,7 +86,7 @@ class FeedbackControllerTest extends IntegrationTest {
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("pepa@cerny.cz");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for pepa@cerny.cz Growth on TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);
-        Assertions.assertThat(body).contains("http://app-test-url/#/feedback/50/pepa@cerny.cz/");
+        Assertions.assertThat(body).contains("http://app-test-url/#/feedback/2/pepa@cerny.cz/");
 
 
         receivedMessage = greenMail.getReceivedMessages()[1];

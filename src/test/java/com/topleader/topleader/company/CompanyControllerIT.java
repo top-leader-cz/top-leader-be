@@ -56,7 +56,7 @@ class CompanyControllerIT extends IntegrationTest {
             .andExpect(content().json(
                 """
                     {
-                        "id": 50,
+                        "id": 1,
                         "name": "company3"
                       }
                     """
