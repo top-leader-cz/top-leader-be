@@ -67,4 +67,6 @@ public class AdminView {
     private String requestedBy;
 
     private Boolean isTrial;
+
+    private String freeCoach;
 }

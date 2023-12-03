@@ -172,6 +172,7 @@ class CoachClientControllerIT extends IntegrationTest {
         final var user = userRepository.findById("user4").orElseThrow();
 
         assertThat(user.getCoach(), is("coach"));
+        assertThat(user.getFreeCoach(), is("coach"));
         assertThat(user.getStatus(), is(User.Status.PENDING));
     }
 }

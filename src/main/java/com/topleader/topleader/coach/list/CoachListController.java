@@ -124,12 +124,14 @@ public class CoachListController {
             throw new ApiValidationException(NOT_ENOUGH_CREDITS, "user", clientName, "User does not have enough credit");
         }
 
+        final var user = userRepository.findById(clientName).orElseThrow();
+
         scheduledSessionService.scheduleSession(
             new ScheduledSession()
                 .setUsername(clientName)
                 .setCoachUsername(coachName)
                 .setTime(shiftedTime)
-                .setPaid(false)
+                .setPaid(coachName.equalsIgnoreCase(user.getFreeCoach()))
                 .setPrivate(false)
         );
     }

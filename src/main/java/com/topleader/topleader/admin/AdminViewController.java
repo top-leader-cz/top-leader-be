@@ -106,7 +106,8 @@ public class AdminViewController {
         Set<User.Authority> authorities,
         User.Status status,
         String coach,
-        Integer credit
+        Integer credit,
+        String freeCoach
     ) {
         public User updateUser(User user) {
             Optional.ofNullable(firstName).ifPresent(user::setFirstName);
@@ -118,6 +119,7 @@ public class AdminViewController {
             Optional.ofNullable(status).ifPresent(user::setStatus);
             user.setCoach(coach);
             Optional.ofNullable(credit).ifPresent(user::setCredit);
+            user.setFreeCoach(freeCoach);
             return user;
         }
     }
@@ -163,7 +165,10 @@ public class AdminViewController {
         Integer paidCredit,
         String hrs,
         String requestedBy,
-        Boolean isTrial) {
+        Boolean isTrial,
+
+        String freeCoach
+        ) {
 
         public List<Specification<AdminView>> toSpecifications() {
             List<Specification<AdminView>> specs = new ArrayList<>();
@@ -185,6 +190,7 @@ public class AdminViewController {
             AdminViewSpecifications.hrsContains(hrs).ifPresent(specs::add);
             AdminViewSpecifications.requestedByContains(requestedBy).ifPresent(specs::add);
             AdminViewSpecifications.isTrialEquals(isTrial).ifPresent(specs::add);
+            AdminViewSpecifications.freeCoach(freeCoach).ifPresent(specs::add);
 
             return specs;
         }

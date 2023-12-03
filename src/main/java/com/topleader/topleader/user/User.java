@@ -63,6 +63,8 @@ public class User {
 
     private String hrEmail;
 
+    private String freeCoach;
+
     public enum Authority {
         USER,
         COACH,

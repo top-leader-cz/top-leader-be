@@ -21,4 +21,4 @@ values ('user2', '["s1","s2"]', '["v1","v2"]', '["a1","a2"]', 'cool note');
 
 
 insert into scheduled_session (id, coach_username, username, time)
-values (1, 'coach', 'user_with_coach', '2023-08-14 10:30:00');
+values (nextval('scheduled_session_id_seq'), 'coach', 'user_with_coach', '2023-08-14 10:30:00');

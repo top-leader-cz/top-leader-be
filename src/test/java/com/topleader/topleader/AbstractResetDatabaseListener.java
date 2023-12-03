@@ -70,7 +70,7 @@ public class AbstractResetDatabaseListener extends AbstractTestExecutionListener
         }
         rs.close();
         for (String seq : sequences) {
-            s.executeUpdate("ALTER SEQUENCE " + seq + " RESTART WITH 50");
+            s.executeUpdate("ALTER SEQUENCE " + seq + " RESTART WITH 1");
         }
 
         // Enable FK

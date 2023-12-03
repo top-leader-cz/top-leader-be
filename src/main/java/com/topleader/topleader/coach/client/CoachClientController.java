@@ -100,6 +100,7 @@ public class CoachClientController {
                 .setFirstName(request.firstName())
                 .setLastName(request.lastName())
                 .setCoach(coach.getUsername())
+                .setFreeCoach(coach.getUsername())
                 .setAuthorities(Set.of(User.Authority.USER))
                 .setCredit(0)
                 .setTimeZone(coach.getTimeZone())

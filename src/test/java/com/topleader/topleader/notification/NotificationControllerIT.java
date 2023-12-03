@@ -24,14 +24,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * @author Daniel Slavik
  */
 @Sql(scripts = "/sql/notifications/notifications-test-data.sql")
-public class NotificationControllerIT extends IntegrationTest {
+class NotificationControllerIT extends IntegrationTest {
 
     @Autowired
     private NotificationRepository notificationRepository;
 
     @Test
     @WithMockUser("testuser1")
-    public void getNotificationTest() throws Exception {
+    void getNotificationTest() throws Exception {
 
         mvc.perform(get("/api/latest/notifications")
                 .param("size", "2")
@@ -43,7 +43,7 @@ public class NotificationControllerIT extends IntegrationTest {
                 {
                   "content": [
                     {
-                      "id": 50,
+                      "id": 1,
                       "username": "testuser1",
                       "type": "MESSAGE",
                       "read": false,
@@ -55,7 +55,7 @@ public class NotificationControllerIT extends IntegrationTest {
                       "createdAt": "2023-08-01T10:00:00"
                     },
                     {
-                      "id": 51,
+                      "id": 2,
                       "username": "testuser1",
                       "type": "MESSAGE",
                       "read": true,
@@ -99,7 +99,7 @@ public class NotificationControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser("testuser1")
-    public void markAllReadForUserTest() throws Exception {
+    void markAllReadForUserTest() throws Exception {
 
         mvc.perform(post("/api/latest/notifications/mark-as-read"));
 

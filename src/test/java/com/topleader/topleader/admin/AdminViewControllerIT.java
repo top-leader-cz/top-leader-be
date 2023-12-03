@@ -81,7 +81,7 @@ class AdminViewControllerIT extends IntegrationTest {
     void testUpdateUser() throws Exception {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", 2L,
-            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "updatedCoach", 150
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "updatedCoach", 150, "updatedCoach"
         );
         mvc.perform(post("/api/latest/admin/users/user1")
                 .contentType("application/json")
@@ -98,13 +98,14 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(updatedUser.authorities());
         assertThat(fetchedUser.getCoach()).isEqualTo(updatedUser.coach());
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
+        assertThat(fetchedUser.getFreeCoach()).isEqualTo(updatedUser.freeCoach());
     }
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
     void testUpdateUser_nullCoachAndCompany() throws Exception {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", null,
-            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, null, 150
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, null, 150, null
         );
         mvc.perform(post("/api/latest/admin/users/user1")
                 .contentType("application/json")

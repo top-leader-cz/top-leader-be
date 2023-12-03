@@ -18,6 +18,14 @@ public final class AdminViewSpecifications {
     private AdminViewSpecifications() {
     }
 
+    public static Optional<Specification<AdminView>> freeCoach(String coach) {
+        if (!StringUtils.hasText(coach)) {
+            return Optional.empty(); // Empty filter, return empty Optional
+        }
+        return Optional.of((root, query, criteriaBuilder) ->
+            criteriaBuilder.equal(root.get("freeCoach"), coach));
+    }
+
     public static Optional<Specification<AdminView>> usernameEquals(String username) {
         if (!StringUtils.hasText(username)) {
             return Optional.empty(); // Empty filter, return empty Optional
