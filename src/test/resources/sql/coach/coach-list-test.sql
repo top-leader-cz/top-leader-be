@@ -1,18 +1,18 @@
-INSERT INTO users (username, password, status, authorities, time_zone)
-VALUES ('coach1', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC'),
-       ('coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC'),
-       ('coach3', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC'),
-       ('coach4', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC');
+INSERT INTO users (username, password, status, authorities, time_zone, first_name, last_name)
+VALUES ('coach1', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC', 'John', 'Doe'),
+       ('coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC', 'Jane', 'Smith'),
+       ('coach3', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC', 'Michael', 'Johnson'),
+       ('coach4', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC', 'Michael1', 'Johnson1');
 
 INSERT INTO users (username, password, status, authorities, time_zone, coach, credit, scheduled_credit)
 VALUES ('user', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC', 'coach1', 400, 0),
        ('no-credit-user', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'coach2', 'UTC', 400, 400);
 
-INSERT INTO coach (username, public_profile, first_name, last_name, email, web_link, bio, experience_since, rate, time_zone)
-VALUES ('coach1', true, 'John', 'Doe', 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$', 'Europe/Prague'),
-       ('coach2', true, 'Jane', 'Smith', 'jane.smith@example.com', 'http://some_video2', 'Passionate about coaching', '2017-05-15', '$$', 'Europe/Prague'),
-       ('coach3', true, 'Michael', 'Johnson', 'michael.johnson@example.com', 'http://some_video3', 'Certified fitness coach', '2019-09-10', '$$$', 'Europe/Prague'),
-       ('coach4', false, 'Michael1', 'Johnson1', 'michael.johnson@example.com', 'http://some_video4', 'Certified fitness coach', '2019-09-10', '$$$', 'Europe/Prague');
+INSERT INTO coach (username, public_profile, email, web_link, bio, experience_since, rate)
+VALUES ('coach1', true, 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$'),
+       ('coach2', true, 'jane.smith@example.com', 'http://some_video2', 'Passionate about coaching', '2017-05-15', '$$'),
+       ('coach3', true, 'michael.johnson@example.com', 'http://some_video3', 'Certified fitness coach', '2019-09-10', '$$$'),
+       ('coach4', false, 'michael.johnson@example.com', 'http://some_video4', 'Certified fitness coach', '2019-09-10', '$$$');
 
 INSERT INTO coach_languages (coach_username, languages)
 VALUES ('coach1', 'English'),

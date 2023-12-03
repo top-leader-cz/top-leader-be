@@ -1,8 +1,9 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.coach;
+package com.topleader.topleader.coach.list;
 
+import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
@@ -62,9 +63,9 @@ import static org.springframework.data.jpa.domain.Specification.allOf;
 @RequestMapping("/api/latest/coaches")
 public class CoachListController {
 
-    private final CoachRepository coachRepository;
-
     private final CoachImageRepository coachImageRepository;
+
+    private final CoachListViewRepository coachListViewRepository;
 
     private final CoachAvailabilityService coachAvailabilityService;
 
@@ -168,7 +169,7 @@ public class CoachListController {
 
     @GetMapping("/{username}")
     public CoachListDto findCoach(@PathVariable String username) {
-        return coachRepository.findById(username)
+        return coachListViewRepository.findById(username)
             .map(CoachListDto::from)
             .orElseThrow(NotFoundException::new);
     }
@@ -179,8 +180,8 @@ public class CoachListController {
             .map(CoachListDto::from);
     }
 
-    private Page<Coach> findCoaches(List<Specification<Coach>> filter, Pageable page) {
-        return coachRepository.findAll(
+    private Page<CoachListView> findCoaches(List<Specification<CoachListView>> filter, Pageable page) {
+        return coachListViewRepository.findAll(
             Optional.ofNullable(filter)
                 .filter(not(List::isEmpty))
                 .map(f -> allOf(f).and(isProfilePublic()))
@@ -190,7 +191,7 @@ public class CoachListController {
 
     }
 
-    public static Specification<Coach> isProfilePublic() {
+    public static Specification<CoachListView> isProfilePublic() {
         return (root, query, criteriaBuilder) ->
             criteriaBuilder.isTrue(root.get("publicProfile"));
     }
@@ -220,7 +221,7 @@ public class CoachListController {
 
 
     ) {
-        public static CoachListDto from(Coach c) {
+        public static CoachListDto from(CoachListView c) {
             return new CoachListDto(
                 c.getUsername(),
                 c.getFirstName(),
@@ -255,9 +256,9 @@ public class CoachListController {
         String name
     ) {
 
-        public List<Specification<Coach>> toSpecification() {
+        public List<Specification<CoachListView>> toSpecification() {
 
-            final var result = new ArrayList<Specification<Coach>>();
+            final var result = new ArrayList<Specification<CoachListView>>();
 
             Optional.ofNullable(languages())
                 .ifPresent(languages -> result.add(hasLanguagesInList(languages)));

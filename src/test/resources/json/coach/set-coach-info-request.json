@@ -14,5 +14,6 @@
     "field2"
   ],
   "experienceSince": "2023-08-06",
-  "rate": "$$$"
+  "rate": "$$$",
+  "timeZone": "UTC"
 }

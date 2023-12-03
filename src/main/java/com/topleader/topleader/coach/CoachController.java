@@ -3,12 +3,15 @@
  */
 package com.topleader.topleader.coach;
 
+import com.topleader.topleader.coach.list.CoachListView;
+import com.topleader.topleader.coach.list.CoachListViewRepository;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
+import com.topleader.topleader.util.transaction.TransactionService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
@@ -52,27 +55,37 @@ public class CoachController {
 
     private final CoachRepository coachRepository;
 
+    private final CoachListViewRepository coachListViewRepository;
+
     private final CoachImageRepository coachImageRepository;
 
     private final ScheduledSessionService sessionService;
 
     private final UserRepository userRepository;
 
+    private final TransactionService transactionService;
+
     @GetMapping
     @Secured("COACH")
     @Transactional
     public CoachDto getCoachInfo(@AuthenticationPrincipal UserDetails user) {
-        return coachRepository.findById(user.getUsername())
+        return coachListViewRepository.findById(user.getUsername())
             .map(CoachDto::from)
             .orElse(CoachDto.EMPTY);
     }
 
     @PostMapping
     @Secured("COACH")
-    @Transactional
     public CoachDto setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid CoachDto request) {
-        final String coachTimeZone = userRepository.findById(user.getUsername()).map(User::getTimeZone).orElse(null);
-        return CoachDto.from(coachRepository.save(request.toCoach(user.getUsername(), coachTimeZone)));
+        transactionService.execute(() -> {
+            coachRepository.save(
+                request.updateCoach()
+                    .apply(coachRepository.findById(user.getUsername()).orElse(new Coach().setUsername(user.getUsername())))
+            );
+            userRepository.findById(user.getUsername()).map(request.updateUser()).ifPresent(userRepository::save);
+        });
+
+        return CoachDto.from(coachListViewRepository.findById(user.getUsername()).orElseThrow());
     }
 
     @Transactional
@@ -189,7 +202,7 @@ public class CoachController {
     ) {
         public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, Set.of(), Set.of(), null, null, null);
 
-        public static CoachDto from(Coach c) {
+        public static CoachDto from(CoachListView c) {
             return new CoachDto(
                 c.getPublicProfile(),
                 c.getFirstName(),
@@ -205,22 +218,25 @@ public class CoachController {
             );
         }
 
-        public Coach toCoach(String username, String timeZone) {
-            return new Coach()
-                .setUsername(username)
+        public Function<User, User> updateUser() {
+            return u ->
+                u.setFirstName(firstName())
+                    .setLastName(lastName())
+                    .setTimeZone(timeZone())
+                ;
+        }
+
+        public Function<Coach, Coach> updateCoach() {
+            return c -> c
                 .setPublicProfile(publicProfile)
-                .setFirstName(firstName)
-                .setLastName(lastName)
                 .setEmail(email)
                 .setWebLink(webLink)
                 .setBio(bio)
                 .setLanguages(languages)
                 .setFields(fields)
                 .setExperienceSince(experienceSince)
-                .setRate(rate)
-                .setTimeZone(timeZone);
+                .setRate(rate);
         }
-
 
     }
 
