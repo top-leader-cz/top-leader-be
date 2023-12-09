@@ -41,7 +41,8 @@ public class UserSessionController {
         List<String> areaOfDevelopment,
         String longTermGoal,
         String motivation,
-        List<ActionStepDto> actionSteps
+        List<ActionStepDto> actionSteps,
+        String lastReflection
     ) {
     }
 

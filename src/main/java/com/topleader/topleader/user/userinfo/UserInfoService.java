@@ -84,6 +84,21 @@ public class UserInfoService {
             .apply(username);
     }
 
+    public UserInfo setLastRestriction(
+        String username,
+        String reflection
+    ) {
+        return Function.<String>identity()
+            .andThen(this::find)
+            .andThen(info -> info
+                .setLastReflection(reflection)
+            )
+            .andThen(userInfoRepository::save)
+            .apply(username);
+    }
+
+
+
     private static UserInfo createEmpty(String username) {
         return new UserInfo()
             .setUsername(username)

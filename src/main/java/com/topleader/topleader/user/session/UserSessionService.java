@@ -37,8 +37,6 @@ public class UserSessionService {
 
     @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
-        final var userInfo = userInfoService.find(username);
-
         final var existingActionSteps = userActionStepRepository.findAllByUsername(username);
 
         deleteCheckActionSteps(existingActionSteps);
@@ -51,7 +49,11 @@ public class UserSessionService {
 
         final var actualActionSteps = saveActionSteps(userActionSteps);
 
-        createSessionStartHistoryData(username, userInfo, request.reflection(), actualActionSteps);
+        createSessionStartHistoryData(
+            username,
+            userInfoService.setLastRestriction(username, request.reflection()),
+            request.reflection(),
+            actualActionSteps);
     }
 
 
@@ -172,7 +174,8 @@ public class UserSessionService {
             userInfo.getMotivation(),
             userActionSteps.stream()
                 .map(s -> new UserSessionController.ActionStepDto(s.getId(), s.getLabel(), s.getDate(), s.getChecked()))
-                .toList()
+                .toList(),
+            userInfo.getLastReflection()
         );
     }
 }

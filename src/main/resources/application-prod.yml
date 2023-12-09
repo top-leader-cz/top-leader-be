@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql:///top_leader
+    url: jdbc:postgresql:///top_leader_prod
     username: top-leader
     password: past1520$A@B
     hikari:

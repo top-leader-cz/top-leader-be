@@ -3,7 +3,6 @@
  */
 package com.topleader.topleader.user.userinfo;
 
-import com.topleader.topleader.user.User;
 import com.topleader.topleader.util.converter.SetConverter;
 import jakarta.persistence.*;
 
@@ -45,5 +44,9 @@ public class UserInfo {
 
     @Column(length = 2000)
     private String motivation;
+
+    @Column(length = 2000)
+    private String lastReflection;
+
 
 }

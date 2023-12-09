@@ -7,6 +7,7 @@ import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
+import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +36,9 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
     @Autowired
     private UserActionStepRepository userActionStepRepository;
+
+    @Autowired
+    private UserInfoRepository userInfoRepository;
 
     @Test
     @WithMockUser("user2")
@@ -76,6 +80,8 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
         assertThat(action2Step.getChecked(), is(true));
         assertThat(action2Step.getLabel(), is("action 2"));
         assertThat(action2Step.getDate(), is(LocalDate.parse("2023-08-15")));
+
+        assertThat(userInfoRepository.findById("user2").orElseThrow().getLastReflection(), is("you can do it!"));
     }
 
 }
