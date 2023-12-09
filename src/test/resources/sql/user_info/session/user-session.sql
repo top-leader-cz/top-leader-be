@@ -4,8 +4,8 @@ values ('user', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 
 insert into users (username, password, status, authorities)
 values ('user2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER"]');
 
-insert into user_info(username, strengths, values, area_of_development, notes, long_term_goal, motivation)
-values ('user2', '["s1","s2"]', '["v1","v2"]', '["a1","a2"]', 'cool note', 'some cool goal', 'I wanna be cool');
+insert into user_info(username, strengths, values, area_of_development, notes, long_term_goal, motivation, last_reflection)
+values ('user2', '["s1","s2"]', '["v1","v2"]', '["a1","a2"]', 'cool note', 'some cool goal', 'I wanna be cool', 'I am cool');
 insert into user_action_step(id ,username, label, date, checked)
 values (nextval('user_action_step_seq'), 'user2', 'action 1', '2023-08-14', true);
 insert into user_action_step(id ,username, label, date, checked)
