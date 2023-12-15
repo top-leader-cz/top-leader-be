@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.user.session;
 
+import com.topleader.topleader.exception.ApiValidationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
@@ -15,6 +16,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_EMPTY;
+import static org.springframework.util.StringUtils.hasText;
 
 
 /**
@@ -31,8 +35,16 @@ public class UserSessionReflectionController {
     public void setUserReflection(
         @AuthenticationPrincipal UserDetails user,
         @RequestBody @Valid UserSessionReflectionRequest request
-
     ) {
+        if (request.areaOfDevelopment() != null) {
+            if (request.areaOfDevelopment().isEmpty()) {
+                throw new ApiValidationException(NOT_EMPTY, "areaOfDevelopment", "[]", "cannot be empty");
+            }
+            if (!hasText(request.longTermGoal())) {
+                throw new ApiValidationException(NOT_EMPTY, "longTermGoal", request.longTermGoal(), "cannot be empty");
+            }
+        }
+
         userSessionService.setUserSessionReflection(user.getUsername(), request);
     }
 
@@ -40,7 +52,9 @@ public class UserSessionReflectionController {
         @Size(min = 1, max = 2000)
         String reflection,
         List<NewActionStepDto> newActionSteps,
-        Set<Long> checked
+        Set<Long> checked,
+        List<String> areaOfDevelopment,
+        String longTermGoal
     ) {
     }
 

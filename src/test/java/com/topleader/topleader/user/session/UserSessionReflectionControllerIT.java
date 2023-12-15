@@ -47,6 +47,8 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
+                       "areaOfDevelopment": ["b1", "b2"],
+                       "longTermGoal": "newGoal",
                        "reflection": "you can do it!",
                        "checked": [2],
                        "newActionSteps": [{"label": "do not lose", "date": "2023-08-15"}]
@@ -66,9 +68,9 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
         assertThat(sessionData.getMotivation(), nullValue());
         assertThat(sessionData.getReflection(), is("you can do it!"));
-        assertThat(sessionData.getLongTermGoal(), is("some cool goal"));
+        assertThat(sessionData.getLongTermGoal(), is("newGoal"));
         assertThat(sessionData.getAreaOfDevelopment(), hasSize(2));
-        assertThat(sessionData.getAreaOfDevelopment(), hasItems("a1", "a2"));
+        assertThat(sessionData.getAreaOfDevelopment(), hasItems("b1", "b2"));
 
         final var userActionSteps = userActionStepRepository.findAllByUsername("user2");
         assertThat(userActionSteps, hasSize(2));

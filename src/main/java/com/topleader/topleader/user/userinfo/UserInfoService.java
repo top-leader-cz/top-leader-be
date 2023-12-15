@@ -29,6 +29,14 @@ public class UserInfoService {
         return userInfoRepository.findById(username).orElse(createEmpty(username));
     }
 
+    public UserInfo setAreaOfDevelopmentAndLongTermGoal(String username, List<String> areaOfDevelopment, String longTermGoal ) {
+        return Function.<String>identity()
+            .andThen(this::find)
+            .andThen(info -> info.setAreaOfDevelopment(areaOfDevelopment).setLongTermGoal(longTermGoal))
+            .andThen(userInfoRepository::save)
+            .apply(username);
+    }
+
     public UserInfo setNotes(String username, String notes) {
         return Function.<String>identity()
             .andThen(this::find)

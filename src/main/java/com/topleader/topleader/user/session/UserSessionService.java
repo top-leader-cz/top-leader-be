@@ -49,6 +49,9 @@ public class UserSessionService {
 
         final var actualActionSteps = saveActionSteps(userActionSteps);
 
+        Optional.ofNullable(request.areaOfDevelopment())
+            .ifPresent(a -> userInfoService.setAreaOfDevelopmentAndLongTermGoal(username, a, request.longTermGoal()));
+
         createSessionStartHistoryData(
             username,
             userInfoService.setLastRestriction(username, request.reflection()),

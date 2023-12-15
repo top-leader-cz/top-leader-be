@@ -26,6 +26,8 @@ public final class ErrorCodeConstants {
 
     public static final String ALREADY_EXISTING = "already.existing";
 
+    public static final String NOT_EMPTY = "field.cannot.be.empty";
+
 
 
 }
