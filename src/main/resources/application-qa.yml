@@ -1,14 +1,14 @@
 server:
   port: {PORT}
-
 spring:
   datasource:
-    username: top-leader-prod
+    username: top-leader
     hikari:
       data-source-properties:
         socketFactory: com.google.cloud.sql.postgres.SocketFactory
         cloudSqlInstance: topleader-394306:europe-west3:top-leader-db
         enableIamAuth: false
         sslmode: disable
+
 top-leader:
-  app-url: https://toplead.app
+  app-url: http://34.36.149.115

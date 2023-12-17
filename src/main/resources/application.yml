@@ -36,8 +36,9 @@ spring:
   jackson:
     date-format: "yyyy-MM-dd'T'HH:mm:ss"
 
+
 top-leader:
-  app-url: https://toplead.app
+  app-url: http://localhost:8080
   supported-invitations: en, cs, fr, de
   default-locale: en
   default-from: top-leader
