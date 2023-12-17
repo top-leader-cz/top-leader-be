@@ -52,10 +52,12 @@ public class UserController {
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .setUsername(request.username())
                 .setFirstName(request.firstName())
+                .setLastName(request.lastName())
                 .setAuthorities(request.authorities())
                 .setTimeZone(request.timeZone())
                 .setRequestedBy(loggedUser.getUsername())
                 .setStatus(request.status());
+
         if (isHr(loggedUser)) {
             final var hrUser = userRepository.findById(loggedUser.getUsername()).orElseThrow();
 
@@ -64,9 +66,7 @@ public class UserController {
             );
 
             user.setCompanyId(companyId)
-                .setCredit(0)
-                .setTimeZone(request.timeZone())
-                .setRequestedBy(user.getUsername());
+                .setCredit(0);
         }
 
         if (userRepository.findById(request.username).isPresent()) {
