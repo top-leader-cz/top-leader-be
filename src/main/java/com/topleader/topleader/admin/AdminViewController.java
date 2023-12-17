@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -31,6 +33,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.topleader.topleader.util.user.UserDetailUtils.sendInvite;
 import static java.util.function.Predicate.not;
 
 
@@ -76,10 +79,17 @@ public class AdminViewController {
     @Transactional
     @Secured("ADMIN")
     @PostMapping("/users/{username}")
-    public void createUser(@PathVariable String username, @RequestBody UpdateUserRequestDto userRequest) {
+    public void createUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequestDto userRequest) {
 
         userRepository.findById(username)
-            .map(userRequest::updateUser)
+            .map(user -> {
+                var oldStatus = user.getStatus();
+                var updatedUser = userRequest.updateUser(user);
+                if (sendInvite(oldStatus, userRequest.status())) {
+                    invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, userRequest.locale()));
+                }
+                return user;
+            })
             .ifPresentOrElse(
                 userRepository::save,
                 () -> {
@@ -107,7 +117,9 @@ public class AdminViewController {
         User.Status status,
         String coach,
         Integer credit,
-        String freeCoach
+        String freeCoach,
+        @Pattern(regexp = "[a-z]{2}")
+        String locale
     ) {
         public User updateUser(User user) {
             Optional.ofNullable(firstName).ifPresent(user::setFirstName);

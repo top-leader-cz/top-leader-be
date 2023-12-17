@@ -4,10 +4,13 @@
 package com.topleader.topleader.admin;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import java.util.Set;
+
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -81,14 +84,14 @@ class AdminViewControllerIT extends IntegrationTest {
     void testUpdateUser() throws Exception {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", 2L,
-            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "updatedCoach", 150, "updatedCoach"
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "updatedCoach", 150, "updatedCoach", "en"
         );
-        mvc.perform(post("/api/latest/admin/users/user1")
+        mvc.perform(post("/api/latest/admin/users/user4")
                 .contentType("application/json")
                 .content(objectMapper.writeValueAsString(updatedUser)))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("user1").orElseThrow();
+        final var fetchedUser = userRepository.findById("user4").orElseThrow();
         assertThat(fetchedUser).isNotNull();
         assertThat(fetchedUser.getFirstName()).isEqualTo(updatedUser.firstName());
         assertThat(fetchedUser.getLastName()).isEqualTo(updatedUser.lastName());
@@ -99,13 +102,26 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getCoach()).isEqualTo(updatedUser.coach());
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
         assertThat(fetchedUser.getFreeCoach()).isEqualTo(updatedUser.freeCoach());
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        var body = GreenMailUtil.getBody(receivedMessage);
+        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("user4");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
+        Assertions.assertThat(body)
+                .contains("John UpdatedDoe,")
+                .contains("http://app-test-url/#/api/public/set-password/")
+                .contains("Unlock Your ");
+
+        Assertions.assertThat(userRepository.findById("user4")).isNotEmpty();
     }
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
     void testUpdateUser_nullCoachAndCompany() throws Exception {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", null,
-            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, null, 150, null
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, null, 150, null, "en"
         );
         mvc.perform(post("/api/latest/admin/users/user1")
                 .contentType("application/json")

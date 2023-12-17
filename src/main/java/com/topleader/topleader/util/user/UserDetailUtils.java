@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.util.user;
 
+import com.topleader.topleader.user.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -20,5 +21,9 @@ public final class UserDetailUtils {
 
     public static boolean isHr(final UserDetails user) {
         return user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(HR.name()::equalsIgnoreCase);
+    }
+
+    public static boolean sendInvite(User.Status oldStatus, User.Status newStatus) {
+        return User.Status.PENDING == oldStatus && (User.Status.AUTHORIZED == newStatus || User.Status.PAID == newStatus);
     }
 }

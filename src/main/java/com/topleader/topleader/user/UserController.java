@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static com.topleader.topleader.exception.ErrorCodeConstants.EMAIL_USED;
 import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
 import static com.topleader.topleader.util.user.UserDetailUtils.isHr;
+import static com.topleader.topleader.util.user.UserDetailUtils.sendInvite;
 
 
 @Slf4j
@@ -98,15 +99,9 @@ public class UserController {
 
         if (isHr(loggedUser)) {
             final var hr = userRepository.findById(loggedUser.getUsername()).orElseThrow();
-
-            final var user = userRepository.findById(username)
+            userRepository.findById(username)
                 .filter(u -> Objects.equals(hr.getCompanyId(), u.getCompanyId()))
                 .orElseThrow(() -> new ApiValidationException(NOT_PART_OF_COMPANY, "username", username, "User is not part of any company"));
-
-            user.setFirstName(request.firstName());
-            user.setLastName(request.lastName());
-            user.setTimeZone(request.timeZone());
-            return UserDto.fromUser(userDetailService.save(user));
         }
 
         final var user = userDetailService.getUser(username)
@@ -125,10 +120,6 @@ public class UserController {
         }
 
         return UserDto.fromUser(updatedUser);
-    }
-
-    private boolean sendInvite(User.Status oldStatus, User.Status newStatus) {
-        return User.Status.PENDING == oldStatus && (User.Status.AUTHORIZED == newStatus || User.Status.PAID == newStatus);
     }
 
     public record UpdateUserRequest(
