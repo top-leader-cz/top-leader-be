@@ -49,6 +49,13 @@ public class UserController {
     public UserDto addUser(@AuthenticationPrincipal UserDetails loggedUser, @RequestBody @Valid AddUserRequest request) {
 
         var user = new User();
+        user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
+                .setUsername(request.username())
+                .setFirstName(request.firstName())
+                .setAuthorities(request.authorities())
+                .setTimeZone(request.timeZone())
+                .setRequestedBy(loggedUser.getUsername())
+                .setStatus(request.status());
         if (isHr(loggedUser)) {
             final var hrUser = userRepository.findById(loggedUser.getUsername()).orElseThrow();
 
@@ -56,26 +63,10 @@ public class UserController {
                 new ApiValidationException(NOT_PART_OF_COMPANY, "user", hrUser.getUsername(), "User is not part of any company")
             );
 
-            user
-                .setUsername(request.username())
-                .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
-                .setFirstName(request.firstName())
-                .setLastName(request.lastName())
-                .setCompanyId(companyId)
-                .setAuthorities(Set.of(User.Authority.USER))
+            user.setCompanyId(companyId)
                 .setCredit(0)
                 .setTimeZone(request.timeZone())
-                .setRequestedBy(user.getUsername())
-                .setStatus(User.Status.PENDING);
-        } else {
-            user.setUsername(request.username())
-                .setAuthorities(request.authorities())
-                .setFirstName(request.firstName())
-                .setLastName(request.lastName())
-                .setTimeZone(request.timeZone())
-                .setRequestedBy(loggedUser.getUsername())
-                .setStatus(request.status());
-
+                .setRequestedBy(user.getUsername());
         }
 
         if (userRepository.findById(request.username).isPresent()) {

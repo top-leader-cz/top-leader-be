@@ -59,7 +59,7 @@ class AdminViewControllerIT extends IntegrationTest {
     void testCreateUser() throws Exception {
         final var createUserRequestDto = new AdminViewController.CreateUserRequestDto(
             "newuser", "John", "Doe", "UTC", 1L,
-            true, Set.of(User.Authority.USER, User.Authority.ADMIN)
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "en"
         );
 
         mvc.perform(post("/api/latest/admin/users")
