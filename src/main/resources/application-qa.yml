@@ -11,4 +11,4 @@ spring:
         sslmode: disable
 
 top-leader:
-  app-url: http://qa.toplead.app
+  app-url: https://qa.toplead.app
