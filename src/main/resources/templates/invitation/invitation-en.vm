@@ -9,10 +9,9 @@
 
 <p>Your journey towards exceptional personal growth starts today. Here's how you can embark:</p>
 
-<p>For your first login, <b>set up your password</b> <a href="$appUrl" target="_blank"> here: </a></p>
-
-<p>For subsequent logins, you can access TopLeader at this URL:  <a href="$appUrl" target="_blank"> $appUrl</a></p>
-<p><b>Username:</b>> Use your email address.</p>
+<p>For your first login, set up your password <a href="$passwordLink" target="_blank"> here</a> </p>
+<p>For subsequent logins, you can access TopLeader at this URL: <a href="$appUrl" target="_blank"> $appUrl</a></p>
+<p><b>Username:</b> Use your email address.</p>
 
 <p>We've designed TopLeader with YOU in mind, ensuring every step you take here is towards a brighter, better future. Embrace the wealth of knowledge, tips, and tools waiting for you and watch as they transform your world.</p>
 

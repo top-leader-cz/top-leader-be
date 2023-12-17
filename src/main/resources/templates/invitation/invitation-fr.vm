@@ -13,6 +13,10 @@
 <p>Nom d'utilisateur: Utilisez votre adresse e-mail.</p>
 <p>Mot de passe: Veuillez définir votre propre mot de passe lors de votre première connexion.</p>
 
+<p>Pour votre première connexion, configurez votre mot de passe <a href="$passwordLink" target="_blank">ici</a> </p>
+<p>Pour les connexions suivantes, vous pouvez accéder à TopLeader à cette URL: <a href="$appUrl" target="_blank"> $appUrl</a></p>
+<p><b>Nom d'utilisateur:</b> Utilisez votre adresse e-mail.</p>
+
 <p>TopLeader a été conçu en pensant à VOUS, garantissant que chaque étape que vous franchissez ici vous mène vers un avenir plus radieux et meilleur. Profitez de la richesse des connaissances, des astuces et des outils qui vous attendent et voyez comment ils transforment votre monde.</p>
 
 <p>Merci d'avoir choisi TopLeader. Envolez-vous vers de nouveaux sommets ensemble! 🚀</p>

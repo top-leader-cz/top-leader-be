@@ -9,9 +9,10 @@
 
 <p>Vaše cesta k mimořádnému osobnímu rozvoji začíná dnes. Zde je návod, jak začít:</p>
 
-<p><a href="$appUrl" target="_blank">Přihlaste se zde</a></p>
-<p>Uživatelské jméno: Použijte svou e-mailovou adresu.</p>
-<p>Heslo: Prosím, nastavte si své vlastní unikátní heslo při prvním přihlášení.</p>
+
+<p>Pro vaše první přihlášení si nastavte heslo<a href="$passwordLink" target="_blank"> zde</a> </p>
+<p>Pro další přihlášení můžete přistupovat k TopLeader na této URL: <a href="$appUrl" target="_blank"> $appUrl</a></p>
+<p><b>Uživatelské jméno:</b> Použijte svoji emailovou adresu.</p>
 
 <p>TopLeader byl navržen s MYŠLENKOU NA VÁS, aby každý váš krok zde směřoval k jasnější a lepší budoucnosti. Vstřebávejte bohatství znalostí, tipů a nástrojů, které na vás čekají, a sledujte, jak transformují váš svět.</p>
 
