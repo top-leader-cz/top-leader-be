@@ -152,7 +152,7 @@ class CoachClientControllerIT extends IntegrationTest {
                         "email": "user4",
                         "firstName": "Dan",
                         "lastName": "Aaa",
-                        "isTrial": true
+                        "isTrial": false
                     }
                     """
                 ))

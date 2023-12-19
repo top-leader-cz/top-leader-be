@@ -46,6 +46,10 @@ public class CreditService {
             .orElseThrow();
         final var user = userRepository.findById(username).orElseThrow();
 
+        if (coach.equals(user.getFreeCoach())) {
+            return true;
+        }
+
         return Optional.ofNullable(user.getScheduledCredit()).orElse(0) + coachRate <= Optional.ofNullable(user.getCredit()).orElse(0);
     }
 
