@@ -111,7 +111,7 @@ class AdminViewControllerIT extends IntegrationTest {
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
         Assertions.assertThat(body)
                 .contains("John UpdatedDoe,")
-                .contains("http://app-test-url/#/api/public/set-password/")
+                .contains("http://app-test-ur=\r\nl/#/api/public/set-password/")
                 .contains("Unlock Your ");
 
         Assertions.assertThat(userRepository.findById("user4")).isNotEmpty();

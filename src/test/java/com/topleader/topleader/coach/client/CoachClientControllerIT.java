@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.coach.client;
 
+import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.notification.Notification;
 import com.topleader.topleader.notification.NotificationRepository;
@@ -11,8 +12,10 @@ import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.user.token.TokenRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -45,6 +48,9 @@ class CoachClientControllerIT extends IntegrationTest {
 
     @Autowired
     private NotificationRepository notificationRepository;
+
+    @Autowired
+    private TokenRepository tokenRepository;
 
     @Test
     @WithMockUser(username = "coach", authorities = "COACH")
@@ -174,5 +180,52 @@ class CoachClientControllerIT extends IntegrationTest {
         assertThat(user.getCoach(), is("coach"));
         assertThat(user.getFreeCoach(), is("coach"));
         assertThat(user.getStatus(), is(User.Status.PENDING));
+    }
+    @Test
+    @WithMockUser(username = "coach", authorities = "COACH")
+    void testInviteTrialUserEndpoint() throws Exception {
+
+        mvc.perform(post("/api/latest/coach-clients")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "email": "user4",
+                        "firstName": "Dan",
+                        "lastName": "Aaa",
+                        "isTrial": true
+                    }
+                    """
+                ))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+            .andExpect(content().json("""
+                {
+                  "username": "user4",
+                  "firstName": "Dan",
+                  "lastName": "Aaa",
+                  "lastSession": null,
+                  "nextSession": null
+                }
+                """))
+        ;
+
+        final var user = userRepository.findById("user4").orElseThrow();
+
+        assertThat(user.getCoach(), is("coach"));
+        assertThat(user.getFreeCoach(), is("coach"));
+        assertThat(user.getStatus(), is(User.Status.AUTHORIZED));
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        var body = GreenMailUtil.getBody(receivedMessage);
+        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("user4");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
+        Assertions.assertThat(body)
+            .contains("Dan Aaa,")
+            .contains("http://app-test-ur=\r\nl/#/api/public/set-password/")
+            .contains("Unlock Your ");
+
+        Assertions.assertThat(tokenRepository.findAll()).isNotEmpty();
     }
 }

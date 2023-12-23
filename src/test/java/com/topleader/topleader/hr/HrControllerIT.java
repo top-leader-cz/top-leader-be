@@ -32,6 +32,8 @@ class HrControllerIT extends IntegrationTest {
                 """
                     [
                       {
+                        "firstName": "John",
+                        "lastName": "Doe",
                         "username": "hrUser",
                         "coach": "Coach1",
                         "credit": 100,
@@ -41,6 +43,8 @@ class HrControllerIT extends IntegrationTest {
                         "state": "PENDING"
                       },
                       {
+                        "firstName": "Alice",
+                        "lastName": "Smith",
                         "username": "user1",
                         "coach": "Coach2",
                         "credit": 50,
@@ -65,6 +69,8 @@ class HrControllerIT extends IntegrationTest {
                 """
                     [
                       {
+                        "firstName": "Alice",
+                        "lastName": "Smith",
                         "username": "user1",
                         "coach": "Coach2",
                         "credit": 50,
