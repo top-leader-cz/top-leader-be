@@ -1,7 +1,7 @@
 insert into users (username, password, status, time_zone)
 values ('user', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', 'UTC');
-insert into users (username, password, status, time_zone)
-values ('user2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', 'UTC');
+insert into users (username, password, status, time_zone, locale)
+values ('user2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', 'UTC', 'en');
 insert into users (username, password, status, time_zone, coach, credit, scheduled_credit)
 values ('user_with_coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', 'UTC', 'coach', 400, 400);
 insert into users (username, password, status, first_name, last_name, time_zone)

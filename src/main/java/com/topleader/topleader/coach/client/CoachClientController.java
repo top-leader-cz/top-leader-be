@@ -105,16 +105,17 @@ public class CoachClientController {
                 .setCredit(0)
                 .setTimeZone(coach.getTimeZone())
                 .setRequestedBy(user.getUsername())
+                .setLocale(request.locale())
                 .setStatus(Boolean.TRUE.equals(request.isTrial) ? User.Status.AUTHORIZED : User.Status.PENDING));
 
         if (Boolean.TRUE.equals(request.isTrial)) {
-            invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser, request.local()));
+            invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser, request.locale()));
         }
 
         return CoachClientDto.from(createdUser);
     }
 
-    public record UserInvitationRequestDto(@NotEmpty String email, @NotEmpty String firstName, @NotEmpty String lastName, Boolean isTrial, String local) {
+    public record UserInvitationRequestDto(@NotEmpty String email, @NotEmpty String firstName, @NotEmpty String lastName, Boolean isTrial, String locale) {
     }
 
     public record CoachClientDto(

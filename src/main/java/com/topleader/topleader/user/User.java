@@ -65,6 +65,8 @@ public class User {
 
     private String freeCoach;
 
+    private String locale;
+
     public enum Authority {
         USER,
         COACH,

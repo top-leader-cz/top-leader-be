@@ -76,6 +76,7 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.values", hasSize(0)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
             .andExpect(jsonPath("$.notes", nullValue()))
+            .andExpect(jsonPath("$.locale", nullValue()))
         ;
     }
 
@@ -94,6 +95,30 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
             .andExpect(jsonPath("$.notes", is("cool note")))
+            .andExpect(jsonPath("$.locale", is("en")))
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    void setLocaleTest() throws Exception {
+
+        mvc.perform(post("/api/latest/user-info/locale")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "locale": "fr"
+                     }
+                                        """)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.username", is("user")))
+            .andExpect(jsonPath("$.timeZone", is("UTC")))
+            .andExpect(jsonPath("$.strengths", hasSize(0)))
+            .andExpect(jsonPath("$.values", hasSize(0)))
+            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+            .andExpect(jsonPath("$.notes", nullValue()))
+            .andExpect(jsonPath("$.locale", is("fr")))
         ;
     }
 

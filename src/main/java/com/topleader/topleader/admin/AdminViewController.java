@@ -136,6 +136,7 @@ public class AdminViewController {
             user.setCoach(coach);
             Optional.ofNullable(credit).ifPresent(user::setCredit);
             user.setFreeCoach(freeCoach);
+            Optional.ofNullable(locale).ifPresent(user::setLocale);
             return user;
         }
     }
@@ -163,6 +164,7 @@ public class AdminViewController {
                     .setIsTrial(isTrial)
                     .setAuthorities(authorities)
                     .setRequestedBy(requestedBy)
+                    .setLocale(locale)
                     .setStatus(User.Status.PENDING);
         }
     }

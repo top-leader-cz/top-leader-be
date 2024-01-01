@@ -8,8 +8,10 @@ import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -69,7 +71,7 @@ public class HrController {
     @Transactional
     @PostMapping
     public HrUserDto inviteUser(
-        @AuthenticationPrincipal UserDetails user, @RequestBody UserInvitationRequestDto request
+        @AuthenticationPrincipal UserDetails user, @Valid @RequestBody UserInvitationRequestDto request
     ) {
 
         final var hrUser = userRepository.findById(user.getUsername()).orElseThrow();
@@ -95,9 +97,11 @@ public class HrController {
                 .setCredit(0)
                 .setTimeZone(hrUser.getTimeZone())
                 .setRequestedBy(user.getUsername())
-                .setStatus(User.Status.PENDING));
+                .setStatus(User.Status.PENDING)
+                .setLocale(request.locale())
+        );
 
-        invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser, null));
+        invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser, request.locale()));
 
         return HrUserDto.from(createdUser);
     }
@@ -133,15 +137,15 @@ public class HrController {
         );
     }
 
-    public record UserInvitationRequestDto(@NotEmpty String email, @NotEmpty String firstName, @NotEmpty String lastName, Boolean isTrial
-
-    ) {
+    public record UserInvitationRequestDto(@NotEmpty String email, @NotEmpty String firstName, @NotEmpty String lastName, Boolean isTrial,
+                                           @Pattern(regexp = "[a-z]{2}") String locale) {
     }
 
     public record CreditRequestDto(@NotNull Integer credit) {
     }
 
-    public record HrUserDto(String firstName, String lastName, String username, String coach, Integer credit, Integer requestedCredit, Integer scheduledCredit, Integer paidCredit, User.Status state) {
+    public record HrUserDto(String firstName, String lastName, String username, String coach, Integer credit, Integer requestedCredit, Integer scheduledCredit, Integer paidCredit,
+                            User.Status state) {
 
         public static List<HrUserDto> from(List<User> users) {
             return users.stream().map(HrUserDto::from).toList();

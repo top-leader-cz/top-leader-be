@@ -56,6 +56,7 @@ public class UserController {
                 .setAuthorities(request.authorities())
                 .setTimeZone(request.timeZone())
                 .setRequestedBy(loggedUser.getUsername())
+                .setLocale(request.locale())
                 .setStatus(request.status());
 
         if (isHr(loggedUser)) {
@@ -102,6 +103,7 @@ public class UserController {
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());
         user.setTimeZone(request.timeZone());
+        user.setLocale(request.locale());
         user.setAuthorities(request.authorities());
 
         final var updatedUser = userDetailService.save(user);

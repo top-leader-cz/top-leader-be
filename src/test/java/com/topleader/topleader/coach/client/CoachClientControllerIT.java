@@ -158,7 +158,8 @@ class CoachClientControllerIT extends IntegrationTest {
                         "email": "user4",
                         "firstName": "Dan",
                         "lastName": "Aaa",
-                        "isTrial": false
+                        "isTrial": false,
+                        "locale": "en"
                     }
                     """
                 ))
@@ -180,6 +181,7 @@ class CoachClientControllerIT extends IntegrationTest {
         assertThat(user.getCoach(), is("coach"));
         assertThat(user.getFreeCoach(), is("coach"));
         assertThat(user.getStatus(), is(User.Status.PENDING));
+        assertThat(user.getLocale(), is("en"));
     }
     @Test
     @WithMockUser(username = "coach", authorities = "COACH")

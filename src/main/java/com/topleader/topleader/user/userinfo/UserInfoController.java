@@ -15,6 +15,7 @@ import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -64,6 +65,17 @@ public class UserInfoController {
         return UserInfoDto.from(
             userInfoService.find(user.getUsername()),
             userRepository.findById(user.getUsername()).orElseThrow()
+        );
+    }
+
+    @PostMapping("/locale")
+    public UserInfoDto setLocale(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetLocaleRequestDto request) {
+        return UserInfoDto.from(
+            userInfoService.find(user.getUsername()),
+            userRepository.findById(user.getUsername())
+                .map(u -> u.setLocale(request.locale()))
+                .map(userRepository::save)
+                .orElseThrow()
         );
     }
 
@@ -179,7 +191,7 @@ public class UserInfoController {
             scheduledSessionService.scheduleSession(new ScheduledSession()
                 .setPaid(true)
                 .setPrivate(true)
-                .setTime(request.time())
+                .setTime(shiftedTime)
                 .setUsername(user.getUsername())
             ),
             Optional.empty()
@@ -203,6 +215,10 @@ public class UserInfoController {
     }
 
     public record SetNotesRequestDto(String notes) {
+
+    }
+
+    public record SetLocaleRequestDto(@Pattern(regexp = "[a-z]{2}") String locale) {
 
     }
 
@@ -237,7 +253,8 @@ public class UserInfoController {
         List<String> values,
         List<String> areaOfDevelopment,
         String notes,
-        String coach
+        String coach,
+        String locale
     ) {
         public static UserInfoDto from(UserInfo info, User user) {
             return new UserInfoDto(
@@ -248,7 +265,8 @@ public class UserInfoController {
                 info.getValues(),
                 info.getAreaOfDevelopment(),
                 info.getNotes(),
-                user.getCoach()
+                user.getCoach(),
+                user.getLocale()
             );
         }
     }
