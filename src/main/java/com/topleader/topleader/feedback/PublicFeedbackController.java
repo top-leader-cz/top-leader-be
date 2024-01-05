@@ -58,9 +58,6 @@ public class PublicFeedbackController {
                             .setLastName(newUser.getLastName())
                             .setCompany(newUser.getCompany())
                             .setHrEmail(newUser.getHrEmail()));
-                    if(!username.equals(newUser.getEmail()));{
-                        userDetailService.delete(username);
-                    }
                 });
 
     }
