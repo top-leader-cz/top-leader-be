@@ -91,9 +91,12 @@ public class UserController {
 
         if (isHr(loggedUser)) {
             final var hr = userRepository.findById(loggedUser.getUsername()).orElseThrow();
-            userRepository.findById(username)
-                .filter(u -> Objects.equals(hr.getCompanyId(), u.getCompanyId()))
-                .orElseThrow(() -> new ApiValidationException(NOT_PART_OF_COMPANY, "username", username, "User is not part of any company"));
+            final var userInTheSameCompany = userRepository.findById(username)
+                .filter(u -> Objects.equals(hr.getCompanyId(), u.getCompanyId()));
+
+            if(userInTheSameCompany.isEmpty()) {
+                throw new ApiValidationException(NOT_PART_OF_COMPANY, "username", username, "User is not part of any company");
+            }
         }
 
         final var user = userDetailService.getUser(username)

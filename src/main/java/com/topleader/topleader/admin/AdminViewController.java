@@ -74,8 +74,7 @@ public class AdminViewController {
     @PostMapping("/users")
     public void createUser(@AuthenticationPrincipal UserDetails u, @RequestBody @Valid CreateUserRequestDto userRequest) {
         final var user = userRepository.save(userRequest.toUser(u.getUsername()));
-        var oldStatus = user.getStatus();
-        if (sendInvite(oldStatus, userRequest.status)) {
+        if (sendInvite(User.Status.PENDING, userRequest.status)) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, userRequest.locale()));
         }
     }
@@ -165,7 +164,7 @@ public class AdminViewController {
                     .setAuthorities(authorities)
                     .setRequestedBy(requestedBy)
                     .setLocale(locale)
-                    .setStatus(User.Status.PENDING);
+                    .setStatus(status);
         }
     }
 
