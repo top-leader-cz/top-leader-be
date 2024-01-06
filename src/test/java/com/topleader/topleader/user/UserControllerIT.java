@@ -57,7 +57,7 @@ class UserControllerIT extends IntegrationTest {
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("jakub.svezi@dummy.com");
-        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Odemkněte svůj potenciál s TopLeader!");
         Assertions.assertThat(body)
             .contains("Jakub Svezi,")
             .contains("http://app-test-url/#/api/public/set-password/")
@@ -116,7 +116,7 @@ class UserControllerIT extends IntegrationTest {
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("jakub.svezi@dummy.com");
-        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Odemkněte svůj potenciál s TopLeader!");
         Assertions.assertThat(body).contains("Jakub1 Svezi2,").contains("http://app-test-url/#/api/public/set-password/");
 
         Assertions.assertThat(userRepository.findById("jakub.svezi@dummy.com")).isNotEmpty();
