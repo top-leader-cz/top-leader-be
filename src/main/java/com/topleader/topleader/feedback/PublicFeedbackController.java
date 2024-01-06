@@ -10,9 +10,10 @@ import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
-import org.springframework.security.access.annotation.Secured;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/public/latest/feedback")
 @RequiredArgsConstructor
@@ -40,7 +41,8 @@ public class PublicFeedbackController {
 
     @PostMapping("/{formId}/{username}/{token}")
     public void submitForm(@PathVariable long formId, @PathVariable String username, @PathVariable String token,
-                                      @RequestBody @Valid FeedbackSubmitRequest request) {
+                           @RequestBody @Valid FeedbackSubmitRequest request) {
+        log.info("submition answers for respondent: [{}] ", username);
         var recipient = feedbackService.validateRecipientIfValid(formId, username, token);
         feedbackService.submitForm(FeedbackSubmitRequest.toAnswers(request, formId, recipient), username);
     }
@@ -48,18 +50,32 @@ public class PublicFeedbackController {
 
     @PostMapping("/request-access/{formId}/{username}/{token}")
     public void newUser(@PathVariable long formId, @PathVariable String username, @PathVariable String token,
-                                   @RequestBody @Valid NewUser newUser) {
+                        @RequestBody @Valid NewUser newUser) {
+        log.info("Receiving respondent form. Respondent: [{}] ", username);
         feedbackService.validateRecipientIfSubmitted(formId, username, token);
         userDetailService.getUser(username)
-                .ifPresent(u ->{
+                .ifPresentOrElse(u -> {
+                    log.info("Updating respondent: [{}] ", username);
                     userDetailService.save(u.setStatus(User.Status.PENDING)
                             .setUsername(newUser.getEmail())
                             .setFirstName(newUser.getFirstName())
                             .setLastName(newUser.getLastName())
                             .setCompany(newUser.getCompany())
                             .setHrEmail(newUser.getHrEmail()));
-                });
+                }, () -> newUser(newUser, username));
 
+    }
+
+
+    private void newUser(NewUser newUser, String username) {
+        log.info("Creating respondent: [{}] ", username);
+        userDetailService.save(new User().setStatus(User.Status.PENDING)
+                .setUsername(newUser.getEmail())
+                .setUsername(username)
+                .setFirstName(newUser.getFirstName())
+                .setLastName(newUser.getLastName())
+                .setCompany(newUser.getCompany())
+                .setHrEmail(newUser.getHrEmail()));
     }
 
 }

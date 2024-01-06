@@ -26,7 +26,7 @@ public class FeedbackController {
     @GetMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormDto getForm(@PathVariable long id) {
-        return FeedbackFormDto.of(feedbackService.fetchForm(id));
+        return FeedbackFormDto.witAnswer(feedbackService.fetchForm(id));
     }
 
     @Transactional
@@ -52,6 +52,7 @@ public class FeedbackController {
 
     @PutMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
+    @Transactional
     public FeedbackFormDto updateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
         var form = feedbackService.saveForm(FeedbackFormRequest.toForm(request).setId(id));
         feedbackService.sendFeedbacks(getFeedbackData(request, form));
@@ -71,6 +72,8 @@ public class FeedbackController {
         return new FeedbackData().setLocale(request.getLocale())
                 .setValidTo(request.getValidTo())
                 .setFormId(form.getId())
+                .setFirstName(form.getUser().getFirstName())
+                .setLastName(form.getUser().getLastName())
                 .setRecipients(form.getRecipients().stream()
                         .map(r -> new FeedbackData.Recipient(byUsername.get(r.getRecipient()).id(), r.getRecipient(), r.getToken()))
                         .collect(Collectors.toList()));

@@ -11,6 +11,7 @@ import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -84,7 +85,7 @@ public class CoachClientController {
     @Secured("COACH")
     @PostMapping
     public CoachClientDto inviteUser(
-        @AuthenticationPrincipal UserDetails user, @RequestBody UserInvitationRequestDto request
+        @AuthenticationPrincipal UserDetails user, @RequestBody @Valid UserInvitationRequestDto request
     ) {
 
         final var coach = userRepository.findById(user.getUsername()).orElseThrow();
@@ -115,7 +116,7 @@ public class CoachClientController {
         return CoachClientDto.from(createdUser);
     }
 
-    public record UserInvitationRequestDto(@NotEmpty String email, @NotEmpty String firstName, @NotEmpty String lastName, Boolean isTrial, String locale) {
+    public record UserInvitationRequestDto(@NotEmpty String email, @NotEmpty String firstName, @NotEmpty String lastName, Boolean isTrial, @NotEmpty String locale) {
     }
 
     public record CoachClientDto(

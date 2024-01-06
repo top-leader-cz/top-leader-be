@@ -4,16 +4,38 @@
   "description": "test description",
   "username": "jakub.svezi@dummy.com",
   "validTo": "2060-12-12T00:00:00",
+  "firstName":"Jakub",
+  "lastName":"Svezi",
   "questions": [
     {
       "key": "question.key.1",
       "type": "PARAGRAPH",
-      "required": true
+      "required": true,
+      "answers": [
+        {
+          "answer": "answer 11",
+          "recipient": "pepa@cerny.cz"
+        },
+        {
+          "answer": "answer 21",
+          "recipient": "ilja@bily.cz"
+        }
+      ]
     },
     {
       "key": "question.key.2",
       "type": "PARAGRAPH",
-      "required": false
+      "required": false,
+      "answers": [
+        {
+          "answer": "answer 12",
+          "recipient": "pepa@cerny.cz"
+        },
+        {
+          "answer": "answer 22",
+          "recipient": "ilja@bily.cz"
+        }
+      ]
     }
   ],
   "recipients": [

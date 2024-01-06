@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html>
+<body>
 <p>Betreff: Ihre wertvolle Rückmeldung für [Name]'s Entwicklung auf TopLeader erbeten</p>
 
 <p>Hallo,</p>
@@ -18,4 +21,6 @@
 
 <p>Mit freundlichen Grüßen,</p>
 
-<p>Top-leader Team</p>
+<p>$firstName $lastName</p>
+</body>
+</html>

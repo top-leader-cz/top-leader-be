@@ -4,16 +4,20 @@
   "description": "new test description",
   "username": "jakub.svezi@dummy.com",
   "validTo": "2023-12-12T00:00:00",
+  "firstName":"Jakub",
+  "lastName":"Svezi",
   "questions": [
     {
       "key": "question.key.1",
       "type": "PARAGRAPH",
-      "required": false
+      "required": false,
+      "answers": []
     },
     {
       "key": "question.key.2",
       "type": "SCALE",
-      "required": true
+      "required": true,
+      "answers": []
     }
   ],
   "recipients": [
