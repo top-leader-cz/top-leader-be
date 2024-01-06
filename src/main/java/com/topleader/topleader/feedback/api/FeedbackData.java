@@ -20,6 +20,10 @@ public class FeedbackData {
 
     private String locale;
 
+    private String firstName;
+
+    private String lastName;
+
     public record Recipient(Long id, String recipient, String token) {}
 
 

@@ -34,6 +34,12 @@ public class InvitationService {
     @Value("${top-leader.default-locale}")
     private String defaultLocale;
 
+    private static final Map<String, String> subjects = Map.of(
+            "en", "Unlock Your Potential with TopLeader!",
+            "cs", "Odemkněte svůj potenciál s TopLeader!",
+            "fr", "Débloquez Votre Potentiel avec TopLeader!",
+            "de", "Entfesseln Sie Ihr Potenzial mit TopLeader!");
+
     public void sendInvite(UserInvitationRequestDto request) {
         log.info("Sending invitation for: [{}]", request.username());
         var token = tokenService.generateToken();
@@ -41,7 +47,7 @@ public class InvitationService {
         var params = Map.of("firstName", request.firstName(), "lastName", request.lastName(), "appUrl", appUrl, "passwordLink", setPasswordUrl);
         var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(request.locale()));
         tokenService.saveToken(new Token().setToken(token).setUsername(request.username()).setType(Token.Type.SET_PASSWORD));
-        emailService.sendEmail(request.username(), "Unlock Your Potential with TopLeader!", emailBody);
+        emailService.sendEmail(request.username(), subjects.getOrDefault(request.locale(), defaultLocale), emailBody);
 
     }
 
