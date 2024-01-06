@@ -303,6 +303,8 @@ class AdminViewControllerIT extends IntegrationTest {
         mvc.perform(delete("/api/latest/admin/users/user1"))
                 .andExpect(status().isOk());
 
+
+        Assertions.assertThat(userRepository.findById("user1")).isEmpty();
     }
 
 }
