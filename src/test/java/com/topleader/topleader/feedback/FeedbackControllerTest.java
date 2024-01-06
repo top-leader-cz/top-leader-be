@@ -81,14 +81,14 @@ class FeedbackControllerTest extends IntegrationTest {
         var receivedMessage = greenMail.getReceivedMessages()[0];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("pepa@cerny.cz");
-        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for pepa@cerny.cz Growth on TopLeader");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(body).contains("http://app-test-url/#/feedback/2/pepa@cerny.cz/");
 
 
         receivedMessage = greenMail.getReceivedMessages()[1];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("ilja@bily.cz");
-        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for ilja@bily.cz Growth on TopLeader");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
 
 
         Assertions.assertThat(userRepository.findAll()).hasSize(3);
@@ -122,11 +122,11 @@ class FeedbackControllerTest extends IntegrationTest {
         var receivedMessage = greenMail.getReceivedMessages()[0];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("mala@mela.cz");
-        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for mala@mela.cz Growth on TopLeader");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
 
         receivedMessage = greenMail.getReceivedMessages()[1];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("kuku@kuku.cz");
-        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for kuku@kuku.cz Growth on TopLeader");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
 
         Assertions.assertThat(userRepository.findAll()).hasSize(3);
         Assertions.assertThat(userRepository.findById("mala@mela.cz").orElseThrow())

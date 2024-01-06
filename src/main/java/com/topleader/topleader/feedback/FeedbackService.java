@@ -32,9 +32,10 @@ import static com.topleader.topleader.util.common.CommonUtils.TOP_LEADER_FORMATT
 public class FeedbackService {
 
     private static final Map<String, String> subjects = Map.of(
-            "en", "Your Valuable Feedback Requested for %s Growth on TopLeader",
-            "cs", "Žádost o Vaši cennou zpětnou vazbu pro %s na platformě TopLeader",
-            "fr", "Demande de Votre Précieux Retour sur les Progrès de %s sur TopLeader");
+            "en", "Your Valuable Feedback Requested for %s %s Growth on TopLeader",
+            "cs", "Žádost o Vaši cennou zpětnou vazbu pro %s %s na platformě TopLeader",
+            "fr", "Demande de Votre Précieux Retour sur les Progrès de %s %s sur TopLeader",
+            "de", "Ihre wertvolle Rückmeldung für %s %s's Entwicklung auf TopLeader erbeten");
 
     private final FeedbackFormRepository feedbackFormRepository;
 
@@ -107,9 +108,10 @@ public class FeedbackService {
                 .filter(r -> r.id() == null)
                 .forEach(r -> {
                     var feedbackLink = String.format("%s/#/feedback/%s/%s/%s", appUrl, data.getFormId(), r.recipient(), r.token());
-                    var params = Map.of("validTo", data.getValidTo().format(TOP_LEADER_FORMATTER), "link", feedbackLink);
+                    var params = Map.of("validTo", data.getValidTo().format(TOP_LEADER_FORMATTER),
+                            "link", feedbackLink);
                     var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(data.getLocale()));
-                    var subject = String.format(subjects.get(data.getLocale()), r.recipient());
+                         var subject = String.format(subjects.get(data.getLocale()), data.getFirstName(), data.getLastName());
 
                     var newUser = UserUtils.fromEmail(r.recipient())
                             .setAuthorities(Set.of(User.Authority.RESPONDENT))

@@ -72,6 +72,8 @@ public class FeedbackController {
         return new FeedbackData().setLocale(request.getLocale())
                 .setValidTo(request.getValidTo())
                 .setFormId(form.getId())
+                .setFirstName(form.getUser().getFirstName())
+                .setLastName(form.getUser().getLastName())
                 .setRecipients(form.getRecipients().stream()
                         .map(r -> new FeedbackData.Recipient(byUsername.get(r.getRecipient()).id(), r.getRecipient(), r.getToken()))
                         .collect(Collectors.toList()));
