@@ -9,10 +9,6 @@
 
 <p>Votre voyage vers une croissance personnelle exceptionnelle commence aujourd'hui. Voici comment débuter :</p>
 
-<p><a href="$appUrl" target="_blank">Connectez-vous ici</a></p>
-<p>Nom d'utilisateur: Utilisez votre adresse e-mail.</p>
-<p>Mot de passe: Veuillez définir votre propre mot de passe lors de votre première connexion.</p>
-
 <p>Pour votre première connexion, configurez votre mot de passe <a href="$passwordLink" target="_blank">ici</a> </p>
 <p>Pour les connexions suivantes, vous pouvez accéder à TopLeader à cette URL: <a href="$appUrl" target="_blank"> $appUrl</a></p>
 <p><b>Nom d'utilisateur:</b> Utilisez votre adresse e-mail.</p>

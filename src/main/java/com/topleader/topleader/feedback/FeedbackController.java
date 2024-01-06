@@ -38,6 +38,7 @@ public class FeedbackController {
 
     @PostMapping
     @Secured({"ADMIN", "HR", "COACH", "USER"})
+    @Transactional
     public FeedbackFormDto createForm(@RequestBody @Valid FeedbackFormRequest request) {
        var form = saveForm(request);
        feedbackService.sendFeedbacks(getFeedbackData(request, form));
