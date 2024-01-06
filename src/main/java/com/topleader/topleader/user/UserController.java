@@ -57,7 +57,8 @@ public class UserController {
                 .setTimeZone(request.timeZone())
                 .setRequestedBy(loggedUser.getUsername())
                 .setLocale(request.locale())
-                .setStatus(request.status());
+                .setStatus(request.status())
+                .setLocale(request.locale());
 
         if (isHr(loggedUser)) {
             final var hrUser = userRepository.findById(loggedUser.getUsername()).orElseThrow();
@@ -80,68 +81,6 @@ public class UserController {
         }
         return UserDto.fromUser(saved);
     }
-
-    @Secured({"ADMIN", "HR"})
-    @PutMapping("/{username}")
-    public UserDto updateUser(
-        @AuthenticationPrincipal UserDetails loggedUser,
-        @PathVariable String username,
-        @RequestBody @Valid UpdateUserRequest request
-    ) {
-
-        if (isHr(loggedUser)) {
-            final var hr = userRepository.findById(loggedUser.getUsername()).orElseThrow();
-            final var userInTheSameCompany = userRepository.findById(username)
-                .filter(u -> Objects.equals(hr.getCompanyId(), u.getCompanyId()));
-
-            if(userInTheSameCompany.isEmpty()) {
-                throw new ApiValidationException(NOT_PART_OF_COMPANY, "username", username, "User is not part of any company");
-            }
-        }
-
-        final var user = userDetailService.getUser(username)
-            .orElseThrow(() -> new UsernameNotFoundException(username));
-        final var oldStatus = user.getStatus();
-        user.setStatus(request.status);
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setTimeZone(request.timeZone());
-        user.setLocale(request.locale());
-        user.setAuthorities(request.authorities());
-
-        final var updatedUser = userDetailService.save(user);
-
-        if (sendInvite(oldStatus, request.status())) {
-            invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, request.locale()));
-        }
-
-        return UserDto.fromUser(updatedUser);
-    }
-
-    public record UpdateUserRequest(
-        @NotEmpty
-        String firstName,
-
-        @NotEmpty
-        String lastName,
-
-        String username,
-
-        @NotNull
-        User.Status status,
-
-        @NotEmpty
-        String timeZone,
-
-        @NotEmpty
-        Set<User.Authority> authorities,
-
-        @Pattern(regexp = "[a-z]{2}")
-        String locale
-
-    ) {
-    }
-
 
     public record AddUserRequest(
         @NotEmpty
