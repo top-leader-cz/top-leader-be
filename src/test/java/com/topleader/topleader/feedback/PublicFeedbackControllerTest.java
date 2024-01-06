@@ -54,7 +54,7 @@ public class PublicFeedbackControllerTest extends IntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
-        var expected = TestUtils.readFileAsString("feedback/json/get-form-response.json");
+        var expected = TestUtils.readFileAsString("feedback/json/public-get-form-response.json");
 
         TestUtils.assertJsonEquals(result, expected);
 
@@ -93,9 +93,9 @@ public class PublicFeedbackControllerTest extends IntegrationTest {
                 .andExpect(status().isOk());
 
         Assertions.assertThat(userRepository.findAll()).hasSize(2);
-        Assertions.assertThat(userRepository.findById("pepa.cerny@seznam.cz").get())
+        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
                 .extracting("username", "firstName", "lastName", "authorities", "status", "company", "hrEmail")
-                .containsExactly("pepa.cerny@seznam.cz", "Pepa", "Cerny", Set.of(RESPONDENT), PENDING, "test company", "test.hr@email.com");
+                .containsExactly("pepa@cerny.cz", "Pepa", "Cerny", Set.of(RESPONDENT), PENDING, "test company", "test.hr@email.com");
     }
 
 

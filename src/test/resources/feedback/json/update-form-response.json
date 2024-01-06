@@ -8,12 +8,14 @@
     {
       "key": "question.key.1",
       "type": "SCALE",
-      "required": true
+      "required": true,
+      "answers": []
     },
     {
       "key": "question.key.2",
       "type": "PARAGRAPH",
-      "required": false
+      "required": false,
+      "answers": []
     }
   ],
   "recipients": [

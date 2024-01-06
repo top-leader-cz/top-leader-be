@@ -27,11 +27,8 @@ class FeedbackControllerTest extends IntegrationTest {
     @Autowired
     UserRepository userRepository;
 
-
-
-
     @Test
-    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/feedback-answers.sql"})
     @WithMockUser(username = "user", authorities = "USER")
     void getForm() throws Exception {
         var result = mvc.perform(get("/api/latest/feedback/1"))

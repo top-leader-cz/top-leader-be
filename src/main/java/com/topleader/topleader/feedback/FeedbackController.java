@@ -26,7 +26,7 @@ public class FeedbackController {
     @GetMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormDto getForm(@PathVariable long id) {
-        return FeedbackFormDto.of(feedbackService.fetchForm(id));
+        return FeedbackFormDto.witAnswer(feedbackService.fetchForm(id));
     }
 
     @Transactional
