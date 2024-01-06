@@ -17,8 +17,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -295,4 +294,15 @@ class AdminViewControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content[0].hrs").value("user3"));
     }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    @Sql(scripts = {"/sql/admin/admin-view-data.sql", "/sql/admin/admin-feedback.sql" })
+    void deleteUser() throws Exception {
+
+        mvc.perform(delete("/api/latest/admin/users/user1"))
+                .andExpect(status().isOk());
+
+    }
+
 }

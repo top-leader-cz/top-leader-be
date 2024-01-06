@@ -7,6 +7,7 @@ import com.topleader.topleader.credit.CreditService;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
@@ -27,12 +28,7 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.topleader.topleader.util.user.UserDetailUtils.sendInvite;
 import static java.util.function.Predicate.not;
@@ -47,13 +43,13 @@ import static java.util.function.Predicate.not;
 @AllArgsConstructor
 public class AdminViewController {
 
-    private final UserRepository userRepository;
-
     private final AdminViewRepository repository;
 
     private final InvitationService invitationService;
 
     private final CreditService creditService;
+
+    private final UserDetailService userDetailService;
 
     @Secured("ADMIN")
     @GetMapping("/users")
@@ -73,7 +69,7 @@ public class AdminViewController {
     @Secured("ADMIN")
     @PostMapping("/users")
     public void createUser(@AuthenticationPrincipal UserDetails u, @RequestBody @Valid CreateUserRequestDto userRequest) {
-        final var user = userRepository.save(userRequest.toUser(u.getUsername()));
+        final var user = userDetailService.save(userRequest.toUser(u.getUsername()));
         if (sendInvite(User.Status.PENDING, userRequest.status)) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, userRequest.locale()));
         }
@@ -84,7 +80,7 @@ public class AdminViewController {
     @PostMapping("/users/{username}")
     public void createUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequestDto userRequest) {
 
-        userRepository.findById(username)
+        userDetailService.getUser(username)
                 .map(user -> {
                     var oldStatus = user.getStatus();
                     var updatedUser = userRequest.updateUser(user);
@@ -94,7 +90,7 @@ public class AdminViewController {
                     return user;
                 })
                 .ifPresentOrElse(
-                        userRepository::save,
+                        userDetailService::save,
                         () -> {
                             throw new NotFoundException();
                         }
@@ -107,6 +103,13 @@ public class AdminViewController {
     @PostMapping("/users/{username}/confirm-requested-credits")
     public void topUpCredits(@PathVariable String username) {
         creditService.topUpCredit(username);
+    }
+
+
+    @Secured("ADMIN")
+    @DeleteMapping("/users/{username}")
+    public void createUser(@PathVariable String username) {
+         userDetailService.delete(username);
     }
 
 
