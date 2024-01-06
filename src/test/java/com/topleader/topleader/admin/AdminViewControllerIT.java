@@ -172,7 +172,8 @@ class AdminViewControllerIT extends IntegrationTest {
                       "paidCredit": 0,
                       "requestedBy": "god",
                       "hrs": "hr1, hr2",
-                      "isTrial": true
+                      "isTrial": true,
+                      "locale": "en"
                     }
                   ],
                   "pageable": {

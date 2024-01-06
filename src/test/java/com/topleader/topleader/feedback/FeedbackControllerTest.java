@@ -89,6 +89,7 @@ class FeedbackControllerTest extends IntegrationTest {
         receivedMessage = greenMail.getReceivedMessages()[1];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("ilja@bily.cz");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
+        Assertions.assertThat(receivedMessage.getContent().toString()).contains("Jakub Svezi");
 
 
         Assertions.assertThat(userRepository.findAll()).hasSize(3);
@@ -123,6 +124,7 @@ class FeedbackControllerTest extends IntegrationTest {
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("mala@mela.cz");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
+        Assertions.assertThat(receivedMessage.getContent().toString()).contains("Jakub Svezi");
 
         receivedMessage = greenMail.getReceivedMessages()[1];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("kuku@kuku.cz");
@@ -132,6 +134,7 @@ class FeedbackControllerTest extends IntegrationTest {
         Assertions.assertThat(userRepository.findById("mala@mela.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("mala@mela.cz", "mala", "mala", Set.of(RESPONDENT), REQUESTED);
+        Assertions.assertThat(receivedMessage.getContent().toString()).contains("Jakub Svezi");
 
         Assertions.assertThat(userRepository.findById("kuku@kuku.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")

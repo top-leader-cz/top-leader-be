@@ -69,4 +69,6 @@ public class AdminView {
     private Boolean isTrial;
 
     private String freeCoach;
+
+    private String locale;
 }

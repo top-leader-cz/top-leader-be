@@ -109,7 +109,7 @@ public class FeedbackService {
                 .forEach(r -> {
                     var feedbackLink = String.format("%s/#/feedback/%s/%s/%s", appUrl, data.getFormId(), r.recipient(), r.token());
                     var params = Map.of("validTo", data.getValidTo().format(TOP_LEADER_FORMATTER),
-                            "link", feedbackLink);
+                            "link", feedbackLink, "firstName", data.getFirstName(), "lastName", data.getLastName());
                     var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(data.getLocale()));
                          var subject = String.format(subjects.get(data.getLocale()), data.getFirstName(), data.getLastName());
 

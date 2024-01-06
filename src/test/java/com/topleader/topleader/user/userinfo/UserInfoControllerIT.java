@@ -26,10 +26,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -78,7 +75,7 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.values", hasSize(0)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
             .andExpect(jsonPath("$.notes", nullValue()))
-            .andExpect(jsonPath("$.locale", nullValue()))
+            .andExpect(jsonPath("$.locale",is("en")))
         ;
     }
 
