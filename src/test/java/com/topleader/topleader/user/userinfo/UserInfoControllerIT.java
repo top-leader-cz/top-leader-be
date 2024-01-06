@@ -69,6 +69,8 @@ class UserInfoControllerIT extends IntegrationTest {
         mvc.perform(get("/api/latest/user-info"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user")))
+            .andExpect(jsonPath("$.firstName", is("Some")))
+            .andExpect(jsonPath("$.lastName", is("Dude")))
             .andExpect(jsonPath("$.timeZone", is("UTC")))
             .andExpect(jsonPath("$.userRoles", hasSize(1)))
             .andExpect(jsonPath("$.userRoles", hasItems("USER")))

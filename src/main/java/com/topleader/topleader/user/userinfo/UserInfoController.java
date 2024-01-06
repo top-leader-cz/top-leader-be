@@ -247,6 +247,8 @@ public class UserInfoController {
 
     public record UserInfoDto(
         String username,
+        String firstName,
+        String lastName,
         Set<User.Authority> userRoles,
         String timeZone,
         List<String> strengths,
@@ -259,6 +261,8 @@ public class UserInfoController {
         public static UserInfoDto from(UserInfo info, User user) {
             return new UserInfoDto(
                 info.getUsername(),
+                user.getFirstName(),
+                user.getLastName(),
                 user.getAuthorities(),
                 user.getTimeZone(),
                 info.getStrengths(),
