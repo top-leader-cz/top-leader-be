@@ -20,6 +20,10 @@ public class FeedbackFormDto {
 
     private String username;
 
+    private String firstName;
+
+    private String lastName;
+
     private LocalDateTime validTo;
 
     private List<QuestionDto> questions;
@@ -41,6 +45,8 @@ public class FeedbackFormDto {
         return new FeedbackFormDto()
                 .setTitle(feedbackForm.getTitle())
                 .setUsername(feedbackForm.getUser().getUsername())
+                .setFirstName(feedbackForm.getUser().getFirstName())
+                .setLastName(feedbackForm.getUser().getLastName())
                 .setDescription(feedbackForm.getDescription())
                 .setId(feedbackForm.getId())
                 .setValidTo(feedbackForm.getValidTo())

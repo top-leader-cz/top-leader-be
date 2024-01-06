@@ -52,6 +52,7 @@ public class FeedbackController {
 
     @PutMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
+    @Transactional
     public FeedbackFormDto updateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
         var form = feedbackService.saveForm(FeedbackFormRequest.toForm(request).setId(id));
         feedbackService.sendFeedbacks(getFeedbackData(request, form));

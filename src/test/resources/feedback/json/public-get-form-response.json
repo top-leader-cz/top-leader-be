@@ -4,6 +4,8 @@
   "description": "test description",
   "username": "jakub.svezi@dummy.com",
   "validTo": "2060-12-12T00:00:00",
+  "firstName":"Jakub",
+  "lastName":"Svezi",
   "questions": [
     {
       "key": "question.key.1",
