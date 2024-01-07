@@ -90,7 +90,7 @@ public class FeedbackService {
     @Transactional
     public Recipient validateRecipientIfValid(long formId, String recipient, String token) {
         return recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
-                .filter(r -> r.getForm().getValidTo().isBefore(LocalDateTime.now()) && !r.isSubmitted())
+                .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo().plusDays(1)) && !r.isSubmitted())
                 .orElseThrow(() -> new InvalidFormOrRecipientException(String
                         .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token)));
     }
@@ -98,7 +98,7 @@ public class FeedbackService {
     @Transactional
     public Recipient validateRecipientIfSubmitted(long formId, String recipient, String token) {
         return recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
-                .filter(r -> r.getForm().getValidTo().isBefore(LocalDateTime.now()) && r.isSubmitted())
+                .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo().plusDays(1)) && r.isSubmitted())
                 .orElseThrow(() -> new InvalidFormOrRecipientException(String
                         .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token)));
     }
