@@ -7,6 +7,7 @@ import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.util.common.CommonUtils;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.Data;
@@ -40,7 +41,7 @@ public class FeedbackFormRequest {
     @NotNull
     private List<RecipientDto> recipients;
 
-    @Pattern(regexp = "[a-z]{2}")
+    @NotEmpty
     private String locale;
 
     public static FeedbackForm toForm(FeedbackFormRequest request) {

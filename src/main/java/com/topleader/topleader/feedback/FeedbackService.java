@@ -1,5 +1,7 @@
 package com.topleader.topleader.feedback;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.email.VelocityService;
 import com.topleader.topleader.feedback.api.FeedbackData;
@@ -19,14 +21,15 @@ import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
-
 import static com.topleader.topleader.util.common.CommonUtils.TOP_LEADER_FORMATTER;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class FeedbackService {
@@ -50,6 +53,8 @@ public class FeedbackService {
     private final EmailService emailService;
 
     private final UserRepository userRepository;
+
+    private final ObjectMapper objectMapper;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -85,15 +90,17 @@ public class FeedbackService {
     @Transactional
     public Recipient validateRecipientIfValid(long formId, String recipient, String token) {
         return recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
-                .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo()) && !r.isSubmitted())
-                .orElseThrow(() -> new InvalidFormOrRecipientException("Recipient or form is invalid!"));
+                .filter(r -> r.getForm().getValidTo().isBefore(LocalDateTime.now()) && !r.isSubmitted())
+                .orElseThrow(() -> new InvalidFormOrRecipientException(String
+                        .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token)));
     }
 
     @Transactional
     public Recipient validateRecipientIfSubmitted(long formId, String recipient, String token) {
         return recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
-                .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo()) && r.isSubmitted())
-                .orElseThrow(() -> new InvalidFormOrRecipientException("Recipient or form is invalid!"));
+                .filter(r -> r.getForm().getValidTo().isBefore(LocalDateTime.now()) && r.isSubmitted())
+                .orElseThrow(() -> new InvalidFormOrRecipientException(String
+                        .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token)));
     }
 
     @Transactional
@@ -111,7 +118,7 @@ public class FeedbackService {
                     var params = Map.of("validTo", data.getValidTo().format(TOP_LEADER_FORMATTER),
                             "link", feedbackLink, "firstName", data.getFirstName(), "lastName", data.getLastName());
                     var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(data.getLocale()));
-                         var subject = String.format(subjects.get(data.getLocale()), data.getFirstName(), data.getLastName());
+                         var subject = String.format(subjects.getOrDefault(data.getLocale(), defaultLocale), data.getFirstName(), data.getLastName());
 
                     var newUser = UserUtils.fromEmail(r.recipient())
                             .setAuthorities(Set.of(User.Authority.RESPONDENT))

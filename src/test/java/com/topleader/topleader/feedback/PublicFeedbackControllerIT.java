@@ -9,20 +9,18 @@ import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Set;
 
 import static com.topleader.topleader.user.User.Authority.RESPONDENT;
-import static com.topleader.topleader.user.User.Authority.USER;
 import static com.topleader.topleader.user.User.Status.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-public class PublicFeedbackControllerTest extends IntegrationTest {
+public class PublicFeedbackControllerIT extends IntegrationTest {
 
     @Autowired
     FeedbackFormAnswerRepository feedbackFormAnswerRepository;

@@ -4,9 +4,7 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
-import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.user.UserRepository;
-import jakarta.transaction.Transactional;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +18,7 @@ import static com.topleader.topleader.user.User.Status.REQUESTED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class FeedbackControllerTest extends IntegrationTest {
+class FeedbackControllerIT extends IntegrationTest {
 
     @Autowired
     FeedbackFormRepository repository;
