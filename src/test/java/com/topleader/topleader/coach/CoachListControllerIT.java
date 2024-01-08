@@ -173,13 +173,13 @@ class CoachListControllerIT extends IntegrationTest {
 
         coachAvailabilityRepository.save(
             new CoachAvailability()
-                .setUsername("coach1")
+                .setUsername("coach2")
                 .setDateTimeFrom(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(8, 0)))
                 .setDateTimeTo(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(10, 0)))
                 .setRecurring(false)
         );
 
-        mvc.perform(post("/api/latest/coaches/coach1/schedule")
+        mvc.perform(post("/api/latest/coaches/coach2/schedule")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(String.format("""
                     {
@@ -218,7 +218,7 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(creditHistory, hasSize(0));
     }
     @Test
-    @WithMockUser("no-credit-user")
+    @WithMockUser("no-credit-user-free-coach")
     void scheduleEventNoCreditFreeCoachTest() throws Exception {
 
         final var scheduleTime = LocalDateTime.of(
@@ -252,10 +252,10 @@ class CoachListControllerIT extends IntegrationTest {
         final var session = sessions.get(0);
 
         assertThat(session.getCoachUsername(), is("coach3"));
-        assertThat(session.getUsername(), is("no-credit-user"));
+        assertThat(session.getUsername(), is("no-credit-user-free-coach"));
         assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findById("no-credit-user").orElseThrow();
+        final var user = userRepository.findById("no-credit-user-free-coach").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(400));
         assertThat(user.getCredit(), is(400));

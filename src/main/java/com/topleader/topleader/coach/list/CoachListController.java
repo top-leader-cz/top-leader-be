@@ -48,11 +48,14 @@ import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFields
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
+import static com.topleader.topleader.exception.ErrorCodeConstants.DIFFERENT_COACH_NOT_PERMITTED;
 import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_ENOUGH_CREDITS;
 import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
 import static com.topleader.topleader.exception.ErrorCodeConstants.TIME_NOT_AVAILABLE;
+import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
 import static org.springframework.data.jpa.domain.Specification.allOf;
+import static org.springframework.util.StringUtils.hasText;
 
 
 /**
@@ -80,6 +83,16 @@ public class CoachListController {
         @PathVariable String username,
         @RequestBody ScheduleSessionRequest request
     ) {
+        final var userInDb = userRepository.findById(user.getUsername()).orElseThrow();
+
+        if (hasText(userInDb.getCoach()) && !userInDb.getCoach().equals(username)) {
+            throw new ApiValidationException(DIFFERENT_COACH_NOT_PERMITTED, "username", username, "Cannot schedule a session with a different coach then already picked");
+        }
+
+        if (isNull(userInDb.getCoach())) {
+            userRepository.save(userInDb.setCoach(username));
+        }
+
         scheduleSession(user.getUsername(), username, request.time());
     }
 

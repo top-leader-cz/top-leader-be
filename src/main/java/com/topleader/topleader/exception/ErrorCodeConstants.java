@@ -28,6 +28,8 @@ public final class ErrorCodeConstants {
 
     public static final String NOT_EMPTY = "field.cannot.be.empty";
 
+    public static final String DIFFERENT_COACH_NOT_PERMITTED = "different.coach.not.permitted";
+
 
 
 }
