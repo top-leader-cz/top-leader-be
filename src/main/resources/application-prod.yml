@@ -11,4 +11,4 @@ spring:
         enableIamAuth: false
         sslmode: disable
 top-leader:
-  app-url: https://toplead.app
+  app-url: https://topleaderplatform.io
