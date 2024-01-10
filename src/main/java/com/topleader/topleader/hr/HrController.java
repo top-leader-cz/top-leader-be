@@ -3,11 +3,14 @@
  */
 package com.topleader.topleader.hr;
 
+import com.topleader.topleader.admin.AdminView;
+import com.topleader.topleader.admin.AdminViewRepository;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.util.transaction.TransactionService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -23,7 +26,6 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,15 +53,19 @@ public class HrController {
 
     private final InvitationService invitationService;
 
+    private final AdminViewRepository adminViewRepository;
+
+    private final TransactionService transactionService;
+
 
     @Secured({"HR", "USER"})
     @GetMapping
     public List<HrUserDto> listUsers(@AuthenticationPrincipal UserDetails user) {
 
-        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow();
+        final var dbUser = adminViewRepository.findById(user.getUsername()).orElseThrow();
 
         if (isHr(user)) {
-            return Optional.ofNullable(dbUser.getCompanyId()).map(userRepository::findAllByCompanyId).map(HrUserDto::from).orElseGet(() -> {
+            return Optional.ofNullable(dbUser.getCompanyId()).map(adminViewRepository::findAllByCompanyId).map(HrUserDto::from).orElseGet(() -> {
                 log.info("User {} is not part of any company. Returning an empty list.", user.getUsername()); return List.of();
             });
         }
@@ -68,7 +74,6 @@ public class HrController {
     }
 
     @Secured("HR")
-    @Transactional
     @PostMapping
     public HrUserDto inviteUser(
         @AuthenticationPrincipal UserDetails user, @Valid @RequestBody UserInvitationRequestDto request
@@ -86,39 +91,42 @@ public class HrController {
         }
 
 
-        final var createdUser = userRepository.save(
-            new User()
-                .setUsername(request.email())
-                .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
-                .setFirstName(request.firstName())
-                .setLastName(request.lastName())
-                .setCompanyId(companyId)
-                .setAuthorities(Set.of(User.Authority.USER))
-                .setCredit(0)
-                .setTimeZone(hrUser.getTimeZone())
-                .setRequestedBy(user.getUsername())
-                .setStatus(User.Status.PENDING)
-                .setLocale(request.locale())
+        final var createdUser = transactionService.execute(() -> userRepository.save(
+                new User()
+                    .setUsername(request.email())
+                    .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
+                    .setFirstName(request.firstName())
+                    .setLastName(request.lastName())
+                    .setCompanyId(companyId)
+                    .setAuthorities(Set.of(User.Authority.USER))
+                    .setCredit(0)
+                    .setTimeZone(hrUser.getTimeZone())
+                    .setRequestedBy(user.getUsername())
+                    .setStatus(User.Status.PENDING)
+                    .setLocale(request.locale())
+            )
         );
 
         invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser, request.locale()));
 
-        return HrUserDto.from(createdUser);
+        return HrUserDto.from(adminViewRepository.findById(request.email()).orElseThrow());
     }
 
     @Secured({"HR", "USER"})
-    @Transactional
     @PostMapping("/{username}/credit-request")
     public HrUserDto requestCredits(
         @AuthenticationPrincipal UserDetails user, @PathVariable String username, @RequestBody CreditRequestDto request
     ) {
 
         if (user.getUsername().equalsIgnoreCase(username)) {
+            transactionService.execute(() -> userRepository.findById(user.getUsername())
+                .map(u -> u.setRequestedCredit(request.credit()))
+                .map(userRepository::save)
+                .orElseThrow(NotFoundException::new)
+            );
+
             return HrUserDto.from(
-                userRepository.findById(user.getUsername())
-                    .map(u -> u.setRequestedCredit(request.credit()))
-                    .map(userRepository::save)
-                    .orElseThrow(NotFoundException::new)
+                adminViewRepository.findById(username).orElseThrow()
             );
         }
 
@@ -128,12 +136,15 @@ public class HrController {
 
         final var companyId = userRepository.findById(user.getUsername()).map(User::getCompanyId).orElseThrow(NotFoundException::new);
 
+        transactionService.execute(() -> userRepository.findById(username)
+            .filter(u -> companyId.equals(u.getCompanyId()))
+            .map(u -> u.setRequestedCredit(request.credit()))
+            .map(userRepository::save)
+            .orElseThrow(NotFoundException::new)
+        );
+
         return HrUserDto.from(
-            userRepository.findById(username)
-                .filter(u -> companyId.equals(u.getCompanyId()))
-                .map(u -> u.setRequestedCredit(request.credit()))
-                .map(userRepository::save)
-                .orElseThrow(NotFoundException::new)
+            adminViewRepository.findById(username).orElseThrow()
         );
     }
 
@@ -144,19 +155,31 @@ public class HrController {
     public record CreditRequestDto(@NotNull Integer credit) {
     }
 
-    public record HrUserDto(String firstName, String lastName, String username, String coach, Integer credit, Integer requestedCredit, Integer scheduledCredit, Integer paidCredit,
-                            User.Status state) {
+    public record HrUserDto(
+        String firstName,
+        String lastName,
+        String username,
+        String coach,
+        String coachFirstName,
+        String coachLastName,
+        Integer credit,
+        Integer requestedCredit,
+        Integer scheduledCredit,
+        Integer paidCredit,
+        User.Status state) {
 
-        public static List<HrUserDto> from(List<User> users) {
+        public static List<HrUserDto> from(List<AdminView> users) {
             return users.stream().map(HrUserDto::from).toList();
         }
 
-        public static HrUserDto from(User user) {
+        public static HrUserDto from(AdminView user) {
             return new HrUserDto(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getUsername(),
                 user.getCoach(),
+                user.getCoachFirstName(),
+                user.getCoachLastName(),
                 user.getCredit(),
                 user.getRequestedCredit(),
                 user.getScheduledCredit(),

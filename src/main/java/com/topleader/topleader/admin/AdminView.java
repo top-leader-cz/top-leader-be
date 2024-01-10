@@ -62,6 +62,8 @@ public class AdminView {
 
     private Integer paidCredit;
 
+    private Integer scheduledCredit;
+
     private String hrs;
 
     private String requestedBy;
