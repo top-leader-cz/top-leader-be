@@ -54,9 +54,23 @@ public class MessageController {
         messageService.sendMessage(user.getUsername(), requestDto.userTo(), requestDto.messageData());
     }
 
-    public record UserChatInfoDto(String username, Long unreadMessageCount, String lastMessage) {
+    public record UserChatInfoDto(
+        String username,
+        Long unreadMessageCount,
+        String lastMessage,
+        LocalDateTime createdAt,
+        String firstName,
+        String lastName
+    ) {
         public static UserChatInfoDto from(MessageService.ChatInfoDto chat) {
-            return new UserChatInfoDto(chat.username(), chat.unreadMessageCount(), chat.lastMessage());
+            return new UserChatInfoDto(
+                chat.username(),
+                chat.unreadMessageCount(),
+                chat.lastMessage(),
+                chat.createdAt(),
+                chat.firstName(),
+                chat.LastName()
+            );
         }
     }
 

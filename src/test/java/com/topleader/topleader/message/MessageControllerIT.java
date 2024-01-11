@@ -71,6 +71,7 @@ class MessageControllerIT extends IntegrationTest {
 
         assertThat(lastMessage.getMessageData(), is("hello there :-)"));
     }
+
     @Test
     @WithMockUser(username = "user1", roles = "USER")
     void testSendMessageNotExistentChat() throws Exception {
@@ -117,10 +118,24 @@ class MessageControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
             .andDo(print())
             .andExpect(content().json("""
-                [
-                {"username":"user2","unreadMessageCount":1,"lastMessage":"Im doing well, thanks ! "},
-                {"username":"user3","unreadMessageCount":1,"lastMessage":"Hello from user1 to user3"}
-                ]
+                    [
+                      {
+                        "username": "user2",
+                        "unreadMessageCount": 1,
+                        "lastMessage": "Im doing well, thanks ! ",
+                        "createdAt": "2023-08-01T10:10:00",
+                        "firstName": "Bad",
+                        "lastName": "user2"
+                      },
+                      {
+                        "username": "user3",
+                        "unreadMessageCount": 1,
+                        "lastMessage": "Hello from user1 to user3",
+                        "createdAt": "2023-08-01T11:01:00",
+                        "firstName": "No",
+                        "lastName": "user3"
+                      }
+                    ]
                 """));
     }
 

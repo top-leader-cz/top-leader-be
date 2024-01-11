@@ -6,8 +6,12 @@ package com.topleader.topleader.message;
 import com.topleader.topleader.notification.Notification;
 import com.topleader.topleader.notification.NotificationService;
 import com.topleader.topleader.notification.context.MessageNotificationContext;
+import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -37,6 +41,8 @@ public class MessageService {
 
     private final NotificationService notificationService;
 
+    private final UserRepository userRepository;
+
     public List<ChatInfoDto> getUserChatInfo(String username) {
 
         final var allChats = userChatRepository.findAllForUser(username).stream()
@@ -49,6 +55,14 @@ public class MessageService {
                     .collect(toMap(Message::getChatId, Function.identity()))
             ).orElse(Map.of());
 
+        final var userZoneId = userRepository.findById(username)
+            .map(User::getTimeZone)
+            .map(ZoneId::of)
+            .orElse(ZoneId.systemDefault());
+
+        final var userInfos = userRepository.findAllById(allChats.keySet()).stream()
+            .collect(toMap(User::getUsername, UserInfoDto::from));
+
         final var unreadCountMap = messageRepository.getUnreadMessagesCount(username).stream()
             .collect(toMap(UnreadMessagesCount::getUserFrom, UnreadMessagesCount::getUnread));
 
@@ -57,7 +71,11 @@ public class MessageService {
                 e.getKey(),
                 unreadCountMap.getOrDefault(e.getKey(), 0L),
                 lastMessages.get(e.getValue()).getMessageData(),
-                lastMessages.get(e.getValue()).getCreatedAt()
+                lastMessages.get(e.getValue()).getCreatedAt().atZone(userZoneId)
+                    .withZoneSameInstant(ZoneOffset.UTC)
+                    .toLocalDateTime(),
+                userInfos.getOrDefault(e.getKey(), UserInfoDto.EMPTY).firstName(),
+                userInfos.getOrDefault(e.getKey(), UserInfoDto.EMPTY).lastName()
             ))
             .toList();
     }
@@ -101,7 +119,7 @@ public class MessageService {
             new NotificationService.CreateNotificationRequest(
                 addressee,
                 Notification.Type.MESSAGE,
-                 new MessageNotificationContext()
+                new MessageNotificationContext()
                     .setFromUser(username)
                     .setMessage(messageData)
             )
@@ -113,6 +131,20 @@ public class MessageService {
         messageRepository.setAllUserMessagesAsDisplayed(username, addressee);
     }
 
-    public record ChatInfoDto(String username, Long unreadMessageCount, String lastMessage, LocalDateTime createdAt) {
+    public record ChatInfoDto(
+        String username,
+        Long unreadMessageCount,
+        String lastMessage,
+        LocalDateTime createdAt,
+        String firstName,
+        String LastName
+    ) {
+    }
+
+    public record UserInfoDto(String firstName, String lastName) {
+        public static UserInfoDto EMPTY = new UserInfoDto(null, null);
+        public static UserInfoDto from(User u) {
+            return new UserInfoDto(u.getFirstName(), u.getLastName());
+        }
     }
 }

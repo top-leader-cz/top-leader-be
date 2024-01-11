@@ -1,3 +1,9 @@
+insert into users (username, coach, password, time_zone, first_name, last_name)
+values ('user1', 'coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'UTC', 'Cool', 'user1'),
+       ('user2', 'coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'UTC', 'Bad', 'user2'),
+       ('user3', 'coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'UTC', 'No', 'user3')
+;
+
 INSERT INTO user_chat(chat_id, user1, user2)
 VALUES (nextval('chat_id_seq'), 'user1', 'user2'),
        (nextval('chat_id_seq'), 'user3', 'user2'),
