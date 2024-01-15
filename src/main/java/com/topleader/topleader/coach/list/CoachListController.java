@@ -9,7 +9,6 @@ import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
-import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 import com.topleader.topleader.util.page.PageDto;
@@ -18,7 +17,6 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +50,7 @@ import static com.topleader.topleader.exception.ErrorCodeConstants.DIFFERENT_COA
 import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_ENOUGH_CREDITS;
 import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
 import static com.topleader.topleader.exception.ErrorCodeConstants.TIME_NOT_AVAILABLE;
+import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
 import static org.springframework.data.jpa.domain.Specification.allOf;
@@ -109,10 +108,7 @@ public class CoachListController {
     }
 
     private void scheduleSession(String clientName, String coachName, LocalDateTime time) {
-        final var userZoneId = userRepository.findById(coachName)
-            .map(User::getTimeZone)
-            .map(ZoneId::of)
-            .orElseThrow();
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(coachName));
 
         final var shiftedTime = time
             .atZone(userZoneId)
@@ -155,10 +151,7 @@ public class CoachListController {
         @RequestParam LocalDateTime from,
         @RequestParam LocalDateTime to
     ) {
-        final var userZoneId = userRepository.findById(username)
-            .map(User::getTimeZone)
-            .map(ZoneId::of)
-            .orElseThrow();
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
 
         final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
             .map(ScheduledSession::getTime)

@@ -3,14 +3,12 @@
  */
 package com.topleader.topleader.coach.availability;
 
-import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
@@ -24,6 +22,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 
 
 /**
@@ -133,10 +133,7 @@ public class CoachAvailabilityService {
     @Transactional
     public void setNonRecurringAvailability(String username, CoachAvailabilityController.SetNonrecurringRequestDto request) {
 
-        final var userZoneId = userRepository.findById(username)
-            .map(User::getTimeZone)
-            .map(ZoneId::of)
-            .orElseThrow();
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
 
         final var from = request.timeFrame().from()
             .atZone(userZoneId)
@@ -194,10 +191,7 @@ public class CoachAvailabilityService {
 
     @Transactional
     public void setRecurringAvailability(String username, List<CoachAvailabilityController.ReoccurringEventDto> events) {
-        final var userZoneId = userRepository.findById(username)
-            .map(User::getTimeZone)
-            .map(ZoneId::of)
-            .orElseThrow();
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
 
         final var shiftedEvents = events.stream()
             .map(e -> {

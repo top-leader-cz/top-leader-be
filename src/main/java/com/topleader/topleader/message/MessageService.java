@@ -10,7 +10,6 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
@@ -22,6 +21,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toMap;
 
@@ -55,10 +55,7 @@ public class MessageService {
                     .collect(toMap(Message::getChatId, Function.identity()))
             ).orElse(Map.of());
 
-        final var userZoneId = userRepository.findById(username)
-            .map(User::getTimeZone)
-            .map(ZoneId::of)
-            .orElse(ZoneId.systemDefault());
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
 
         final var userInfos = userRepository.findAllById(allChats.keySet()).stream()
             .collect(toMap(User::getUsername, UserInfoDto::from));

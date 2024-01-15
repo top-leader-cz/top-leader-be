@@ -1,6 +1,9 @@
 package com.topleader.topleader.util.common.user;
 
 import com.topleader.topleader.user.User;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.util.Optional;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -18,5 +21,11 @@ public class UserUtils {
         user.setFirstName(names[0]);
         user.setLastName(names[0]);
         return user;
+    }
+
+    public static ZoneId getUserTimeZoneId(Optional<User> user) {
+        return user.map(User::getTimeZone)
+            .map(ZoneId::of)
+            .orElse(ZoneOffset.UTC);
     }
 }

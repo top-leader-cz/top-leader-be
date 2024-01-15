@@ -4,7 +4,6 @@
 package com.topleader.topleader.coach.availability;
 
 import com.topleader.topleader.exception.ApiValidationException;
-import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +11,6 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
@@ -28,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.FIELD_OUTSIDE_OF_FRAME;
 import static com.topleader.topleader.exception.ErrorCodeConstants.MORE_THEN_24_EVENT;
+import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 
 
 /**
@@ -48,11 +47,7 @@ public class CoachAvailabilityController {
         @AuthenticationPrincipal UserDetails user,
         @Valid EventFilterDto filterDto
     ) {
-        final var userZoneId = userRepository.findById(user.getUsername())
-            .map(User::getTimeZone)
-            .map(ZoneId::of)
-            .orElseThrow();
-
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
 
         final var from = filterDto.from().atZone(userZoneId).withZoneSameInstant(ZoneOffset.UTC);
         final var to = filterDto.to().atZone(userZoneId).withZoneSameInstant(ZoneOffset.UTC);
@@ -88,10 +83,7 @@ public class CoachAvailabilityController {
     @Secured("COACH")
     @GetMapping("/recurring")
     public List<ReoccurringEventDto> getRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user) {
-        final var userZoneId = userRepository.findById(user.getUsername())
-            .map(User::getTimeZone)
-            .map(ZoneId::of)
-            .orElseThrow();
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
 
         return coachAvailabilityService.getReoccurring(user.getUsername()).stream()
             .map(e ->

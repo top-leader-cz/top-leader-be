@@ -18,7 +18,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
@@ -39,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
+import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.nonNull;
 import static java.util.stream.Collectors.toMap;
 
@@ -173,10 +173,7 @@ public class UserInfoController {
 
         final var time = request.time();
 
-        final var userZoneId = userRepository.findById(user.getUsername())
-            .map(User::getTimeZone)
-            .map(ZoneId::of)
-            .orElseThrow();
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
 
         final var shiftedTime = time
             .atZone(userZoneId)
