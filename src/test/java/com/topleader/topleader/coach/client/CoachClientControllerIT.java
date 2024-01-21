@@ -124,7 +124,7 @@ class CoachClientControllerIT extends IntegrationTest {
                     "nextSession": "%s"
                   }
                 ]
-                """, nextSessionTimeClient1.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), nextSessionTimeClient2.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))));
+                """, nextSessionTimeClient1, nextSessionTimeClient2)));
     }
 
     @Test

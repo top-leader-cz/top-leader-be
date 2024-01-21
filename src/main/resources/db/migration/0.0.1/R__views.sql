@@ -21,8 +21,8 @@ SELECT concat(c.username, '_', u.username) AS id,
        u.last_name AS client_last_name,
        ls.last_session,
        ns.next_session
-FROM users c
-         LEFT JOIN users u ON c.username::text = u.coach::text
+FROM users u
+         LEFT JOIN coach c ON u.coach::text = c.username::text
          LEFT JOIN ( SELECT scheduled_session.username,
                             scheduled_session.coach_username,
                             max(scheduled_session."time") AS last_session
@@ -35,5 +35,4 @@ FROM users c
                      FROM scheduled_session
                      WHERE scheduled_session."time" >= now()
                      GROUP BY scheduled_session.username, scheduled_session.coach_username) ns ON ns.username::text = u.username::text AND ns.coach_username::text = c.username::text
-
-where u.username is not null;
+where coach is not null
