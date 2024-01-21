@@ -14,6 +14,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.token.TokenRepository;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -122,7 +124,7 @@ class CoachClientControllerIT extends IntegrationTest {
                     "nextSession": "%s"
                   }
                 ]
-                """, nextSessionTimeClient1, nextSessionTimeClient2)));
+                """, nextSessionTimeClient1.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME), nextSessionTimeClient2.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME))));
     }
 
     @Test
@@ -230,5 +232,20 @@ class CoachClientControllerIT extends IntegrationTest {
             .contains("Unlock Your ");
 
         Assertions.assertThat(tokenRepository.findAll()).isNotEmpty();
+    }
+
+    @Test
+    @WithMockUser(username = "coach", authorities = "COACH")
+    @Sql(scripts = "/sql/coach/coach-empty.sql")
+    void findClientsEmpty() throws Exception {
+
+        final var now = LocalDateTime.now().withNano(0);
+
+        final var nextSessionTimeClient1 = now.plusHours(1L);
+        final var nextSessionTimeClient2 = now.plusHours(1L).plusMinutes(10);
+        mvc.perform(get("/api/latest/coach-clients"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json(String.format("[]", nextSessionTimeClient1, nextSessionTimeClient2)));
     }
 }
