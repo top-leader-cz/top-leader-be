@@ -97,7 +97,7 @@ class HrControllerIT extends IntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                        "email": "user4",
+                        "email": "user4@gmail.com",
                         "firstName": "Dan",
                         "lastName": "Aaa",
                         "isTrial": true,
@@ -107,7 +107,7 @@ class HrControllerIT extends IntegrationTest {
                 ))
             .andExpect(status().isOk())
             .andExpect(content().contentType("application/json"))
-            .andExpect(content().json("{\"username\":\"user4\",\"coach\":null,\"credit\":0,\"requestedCredit\":null,\"state\":\"PENDING\"}"))
+            .andExpect(content().json("{\"username\":\"user4@gmail.com\",\"coach\":null,\"credit\":0,\"requestedCredit\":null,\"state\":\"PENDING\"}"))
         ;
     }
 

@@ -157,7 +157,7 @@ class CoachClientControllerIT extends IntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                        "email": "user4",
+                        "email": "user4@gmail.com",
                         "firstName": "Dan",
                         "lastName": "Aaa",
                         "isTrial": false,
@@ -165,11 +165,12 @@ class CoachClientControllerIT extends IntegrationTest {
                     }
                     """
                 ))
+            .andDo(print())
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(content().json("""
                 {
-                  "username": "user4",
+                  "username": "user4@gmail.com",
                   "firstName": "Dan",
                   "lastName": "Aaa",
                   "lastSession": null,
@@ -178,7 +179,7 @@ class CoachClientControllerIT extends IntegrationTest {
                 """))
         ;
 
-        final var user = userRepository.findById("user4").orElseThrow();
+        final var user = userRepository.findById("user4@gmail.com").orElseThrow();
 
         assertThat(user.getCoach(), is("coach"));
         assertThat(user.getFreeCoach(), is("coach"));
@@ -193,7 +194,7 @@ class CoachClientControllerIT extends IntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                        "email": "user4",
+                        "email": "user4@gmail.com",
                         "firstName": "Dan",
                         "lastName": "Aaa",
                         "isTrial": true,
@@ -205,7 +206,7 @@ class CoachClientControllerIT extends IntegrationTest {
             .andExpect(content().contentType(MediaType.APPLICATION_JSON))
             .andExpect(content().json("""
                 {
-                  "username": "user4",
+                  "username": "user4@gmail.com",
                   "firstName": "Dan",
                   "lastName": "Aaa",
                   "lastSession": null,
@@ -214,7 +215,7 @@ class CoachClientControllerIT extends IntegrationTest {
                 """))
         ;
 
-        final var user = userRepository.findById("user4").orElseThrow();
+        final var user = userRepository.findById("user4@gmail.com").orElseThrow();
 
         assertThat(user.getCoach(), is("coach"));
         assertThat(user.getFreeCoach(), is("coach"));
@@ -224,7 +225,7 @@ class CoachClientControllerIT extends IntegrationTest {
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("user4");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("user4@gmail.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
         Assertions.assertThat(body)
             .contains("Dan Aaa,")

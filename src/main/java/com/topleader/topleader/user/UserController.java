@@ -3,6 +3,7 @@ package com.topleader.topleader.user;
 
 import com.topleader.topleader.exception.ApiValidationException;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -50,15 +51,15 @@ public class UserController {
 
         var user = new User();
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
-                .setUsername(request.username())
-                .setFirstName(request.firstName())
-                .setLastName(request.lastName())
-                .setAuthorities(request.authorities())
-                .setTimeZone(request.timeZone())
-                .setRequestedBy(loggedUser.getUsername())
-                .setLocale(request.locale())
-                .setStatus(request.status())
-                .setLocale(request.locale());
+            .setUsername(request.username())
+            .setFirstName(request.firstName())
+            .setLastName(request.lastName())
+            .setAuthorities(request.authorities())
+            .setTimeZone(request.timeZone())
+            .setRequestedBy(loggedUser.getUsername())
+            .setLocale(request.locale())
+            .setStatus(request.status())
+            .setLocale(request.locale());
 
         if (isHr(loggedUser)) {
             final var hrUser = userRepository.findById(loggedUser.getUsername()).orElseThrow();
@@ -95,7 +96,7 @@ public class UserController {
             final var userInTheSameCompany = userRepository.findById(username)
                 .filter(u -> Objects.equals(hr.getCompanyId(), u.getCompanyId()));
 
-            if(userInTheSameCompany.isEmpty()) {
+            if (userInTheSameCompany.isEmpty()) {
                 throw new ApiValidationException(NOT_PART_OF_COMPANY, "username", username, "User is not part of any company");
             }
         }
@@ -155,6 +156,7 @@ public class UserController {
         Set<User.Authority> authorities,
 
         @NotEmpty
+        @Email
         String username,
 
         @NotEmpty

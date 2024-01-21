@@ -12,6 +12,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -116,7 +117,7 @@ public class CoachClientController {
         return CoachClientDto.from(createdUser);
     }
 
-    public record UserInvitationRequestDto(@NotEmpty String email, @NotEmpty String firstName, @NotEmpty String lastName, Boolean isTrial, @NotEmpty String locale) {
+    public record UserInvitationRequestDto(@Email @NotEmpty String email, @NotEmpty String firstName, @NotEmpty String lastName, Boolean isTrial, @NotEmpty String locale) {
     }
 
     public record CoachClientDto(

@@ -1,22 +1,19 @@
 package com.topleader.topleader.feedback.api;
 
-import com.topleader.topleader.feedback.FeedbackController;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
 import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.util.common.CommonUtils;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import lombok.Data;
-import lombok.experimental.Accessors;
-
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
+import lombok.Data;
+import lombok.experimental.Accessors;
 
 @Data
 @Accessors(chain = true)
@@ -30,6 +27,7 @@ public class FeedbackFormRequest {
     private String description;
 
     @NotNull
+    @Email
     private String username;
 
     @NotNull
