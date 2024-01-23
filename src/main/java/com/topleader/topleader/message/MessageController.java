@@ -78,8 +78,8 @@ public class MessageController {
     public record MessageRequestDto(
         @NotBlank
         String userTo,
-        @Size(min = 1, message = "{validation.name.message.size.too_short}")
-        @Size(max = 3000, message = "{validation.name.message.size.too_long}")
+        @Size(min = 1, message = "Message length needs to be at least 1 character")
+        @Size(max = 3000, message = "Message length can be max 3000 characters")
         String messageData
     ) {
     }
