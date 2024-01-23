@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.message;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
@@ -49,7 +50,7 @@ public class MessageController {
     @PostMapping
     public void sendMessage(
         @AuthenticationPrincipal UserDetails user,
-        @RequestBody MessageRequestDto requestDto
+        @Valid @RequestBody MessageRequestDto requestDto
     ) {
         messageService.sendMessage(user.getUsername(), requestDto.userTo(), requestDto.messageData());
     }
@@ -77,7 +78,8 @@ public class MessageController {
     public record MessageRequestDto(
         @NotBlank
         String userTo,
-        @Size(max = 900)
+        @Size(min = 1, message = "{validation.name.message.size.too_short}")
+        @Size(max = 3000, message = "{validation.name.message.size.too_long}")
         String messageData
     ) {
     }
