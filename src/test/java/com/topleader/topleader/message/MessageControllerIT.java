@@ -4,9 +4,7 @@
 package com.topleader.topleader.message;
 
 import com.topleader.topleader.IntegrationTest;
-
 import java.util.Comparator;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -44,27 +42,27 @@ class MessageControllerIT extends IntegrationTest {
     void testSendMessage() throws Exception {
 
         mvc.perform(post("/api/latest/messages")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "userTo": "user2",
-                                    "messageData": "hello there :-)"
-                                }
-                                """)
-                )
-                .andExpect(status().isOk())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "userTo": "user2",
+                        "messageData": "hello there :-)"
+                    }
+                    """)
+            )
+            .andExpect(status().isOk())
         ;
 
         final var messages = messageRepository.findAll(Example.of(
-                new Message()
-                        .setUserFrom("user1")
-                        .setUserTo("user2")
+            new Message()
+                .setUserFrom("user1")
+                .setUserTo("user2")
         ));
 
         assertThat(messages, hasSize(3));
 
         final var latestMessage = messages.stream()
-                .max(Comparator.comparing(Message::getCreatedAt));
+            .max(Comparator.comparing(Message::getCreatedAt));
 
         assertThat(latestMessage.isPresent(), is(true));
         assertThat(latestMessage.get().getMessageData(), is("hello there :-)"));
@@ -79,21 +77,21 @@ class MessageControllerIT extends IntegrationTest {
     void testSendMessageNotExistentChat() throws Exception {
 
         mvc.perform(post("/api/latest/messages")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "userTo": "user4",
-                                    "messageData": "hello there :-)"
-                                }
-                                """)
-                )
-                .andExpect(status().isOk())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "userTo": "user4",
+                        "messageData": "hello there :-)"
+                    }
+                    """)
+            )
+            .andExpect(status().isOk())
         ;
 
         final var messages = messageRepository.findAll(Example.of(
-                new Message()
-                        .setUserFrom("user1")
-                        .setUserTo("user4")
+            new Message()
+                .setUserFrom("user1")
+                .setUserTo("user4")
         ));
 
         assertThat(messages, hasSize(1));
@@ -106,7 +104,7 @@ class MessageControllerIT extends IntegrationTest {
 
 
         final var lastMessage = messageRepository.findById(
-                lastMessageRepository.findById(chat.get().getChatId()).orElseThrow().getMessageId()
+            lastMessageRepository.findById(chat.get().getChatId()).orElseThrow().getMessageId()
         ).orElseThrow();
 
         assertThat(lastMessage.getMessageData(), is("hello there :-)"));
@@ -117,28 +115,28 @@ class MessageControllerIT extends IntegrationTest {
     void testGetUserChatInfo() throws Exception {
 
         mvc.perform(get("/api/latest/messages"))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andExpect(content().json("""
-                            [
-                              {
-                                "username": "user2",
-                                "unreadMessageCount": 1,
-                                "lastMessage": "Im doing well, thanks ! ",
-                                "createdAt": "2023-08-01T10:10:00",
-                                "firstName": "Bad",
-                                "lastName": "user2"
-                              },
-                              {
-                                "username": "user3",
-                                "unreadMessageCount": 1,
-                                "lastMessage": "Hello from user1 to user3",
-                                "createdAt": "2023-08-01T11:01:00",
-                                "firstName": "No",
-                                "lastName": "user3"
-                              }
-                            ]
-                        """));
+            .andExpect(status().isOk())
+            .andDo(print())
+            .andExpect(content().json("""
+                    [
+                      {
+                        "username": "user2",
+                        "unreadMessageCount": 1,
+                        "lastMessage": "Im doing well, thanks ! ",
+                        "createdAt": "2023-08-01T10:10:00",
+                        "firstName": "Bad",
+                        "lastName": "user2"
+                      },
+                      {
+                        "username": "user3",
+                        "unreadMessageCount": 1,
+                        "lastMessage": "Hello from user1 to user3",
+                        "createdAt": "2023-08-01T11:01:00",
+                        "firstName": "No",
+                        "lastName": "user3"
+                      }
+                    ]
+                """));
     }
 
     @Test
@@ -146,64 +144,64 @@ class MessageControllerIT extends IntegrationTest {
     void testGetUserChat() throws Exception {
 
         mvc.perform(get("/api/latest/messages/user2")
-                        .param("sort", "createdAt,asc")
-                )
-                .andExpect(status().isOk())
-                .andExpect(content().json("""
-                        {
-                           "content": [
-                             {
-                               "id": 1,
-                               "username": "user1",
-                               "addressee": "user2",
-                               "messageData": "Hello from user1 to user2",
-                               "displayed": true,
-                               "createdAt": "2023-08-01T10:00:00"
-                             },
-                             {
-                               "id": 2,
-                               "username": "user2",
-                               "addressee": "user1",
-                               "messageData": "Hi there! How are you?",
-                               "displayed": false,
-                               "createdAt": "2023-08-01T10:05:00"
-                             },
-                             {
-                               "id": 3,
-                               "username": "user1",
-                               "addressee": "user2",
-                               "messageData": "Im doing well, thanks ! ",
-                               "displayed": true,
-                               "createdAt": "2023-08-01T10:10:00"
-                             }
-                           ],
-                           "pageable": {
-                             "sort": {
-                               "empty": false,
-                               "sorted": true,
-                               "unsorted": false
-                             },
-                             "offset": 0,
-                             "pageNumber": 0,
-                             "pageSize": 20,
-                             "paged": true,
-                             "unpaged": false
-                           },
-                           "totalPages": 1,
-                           "totalElements": 3,
-                           "last": true,
-                           "size": 20,
-                           "number": 0,
-                           "sort": {
-                             "empty": false,
-                             "sorted": true,
-                             "unsorted": false
-                           },
-                           "numberOfElements": 3,
-                           "first": true,
-                           "empty": false
-                         }
-                        """));
+                .param("sort", "createdAt,asc")
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().json("""
+                {
+                   "content": [
+                     {
+                       "id": 1,
+                       "username": "user1",
+                       "addressee": "user2",
+                       "messageData": "Hello from user1 to user2",
+                       "displayed": true,
+                       "createdAt": "2023-08-01T10:00:00"
+                     },
+                     {
+                       "id": 2,
+                       "username": "user2",
+                       "addressee": "user1",
+                       "messageData": "Hi there! How are you?",
+                       "displayed": false,
+                       "createdAt": "2023-08-01T10:05:00"
+                     },
+                     {
+                       "id": 3,
+                       "username": "user1",
+                       "addressee": "user2",
+                       "messageData": "Im doing well, thanks ! ",
+                       "displayed": true,
+                       "createdAt": "2023-08-01T10:10:00"
+                     }
+                   ],
+                   "pageable": {
+                     "sort": {
+                       "empty": false,
+                       "sorted": true,
+                       "unsorted": false
+                     },
+                     "offset": 0,
+                     "pageNumber": 0,
+                     "pageSize": 20,
+                     "paged": true,
+                     "unpaged": false
+                   },
+                   "totalPages": 1,
+                   "totalElements": 3,
+                   "last": true,
+                   "size": 20,
+                   "number": 0,
+                   "sort": {
+                     "empty": false,
+                     "sorted": true,
+                     "unsorted": false
+                   },
+                   "numberOfElements": 3,
+                   "first": true,
+                   "empty": false
+                 }
+                """));
     }
 
     @Test
@@ -221,20 +219,20 @@ class MessageControllerIT extends IntegrationTest {
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(content().json("""
-                     [
-                       {
-                         "errorCode": "Size",
-                         "fields": [
-                           {
-                             "name": "messageData",
-                             "value": ""
-                           }
-                         ],
-                         "errorMessage": "{validation.name.message.size.too_short}"
-                       }
-                     ]
-                                        """));
-        ;
-
+                    [
+                      {
+                        "errorCode": "Size",
+                        "fields": [
+                          {
+                            "name": "messageData",
+                            "value": ""
+                          }
+                        ],
+                        "errorMessage": "{validation.name.message.size.too_short}"
+                      }
+                    ]
+        
+                """));
     }
+
 }
