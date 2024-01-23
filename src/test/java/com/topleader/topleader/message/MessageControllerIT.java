@@ -203,4 +203,36 @@ class MessageControllerIT extends IntegrationTest {
                  }
                 """));
     }
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void testValidationSendMessage() throws Exception {
+
+        mvc.perform(post("/api/latest/messages")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "userTo": "user2",
+                                    "messageData": ""
+                                }
+                                """)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json("""
+                    [
+                      {
+                        "errorCode": "Size",
+                        "fields": [
+                          {
+                            "name": "messageData",
+                            "value": ""
+                          }
+                        ],
+                        "errorMessage": "{validation.name.message.size.too_short}"
+                      }
+                    ]
+        
+                """));
+    }
+
 }
