@@ -18,5 +18,7 @@ import lombok.experimental.Accessors;
 @JsonTypeName(NotificationContext.MESSAGE_CONTEXT)
 public class MessageNotificationContext implements NotificationContext {
     private String fromUser;
+    private String fromUserFirstName;
+    private String fromUserLastName;
     private String message;
 }
