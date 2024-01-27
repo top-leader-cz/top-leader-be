@@ -48,8 +48,8 @@ public final class CoachJpaSpecificationUtils {
 
     public static Specification<CoachListView> nameStartsWith(String name) {
         return (root, query, criteriaBuilder) -> criteriaBuilder.or(
-            criteriaBuilder.like(root.get("firstName"), name + "%"),
-            criteriaBuilder.like(root.get("lastName"), name + "%")
+            criteriaBuilder.like(criteriaBuilder.lower(root.get("firstName")), name.toLowerCase() + "%"),
+            criteriaBuilder.like(criteriaBuilder.lower(root.get("lastName")), name.toLowerCase() + "%")
         );
     }
 }
