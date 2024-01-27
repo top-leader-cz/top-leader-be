@@ -1,16 +1,15 @@
 package com.topleader.topleader.feedback;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.email.VelocityService;
+import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.feedback.api.FeedbackData;
 import com.topleader.topleader.feedback.api.FeedbackFormDto;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.FeedbackFormAnswer;
 import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
-import com.topleader.topleader.feedback.exception.InvalidFormOrRecipientException;
 import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
@@ -27,6 +26,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static com.topleader.topleader.exception.ErrorCodeConstants.FROM_ALREADY_SUBMITTED;
 import static com.topleader.topleader.util.common.CommonUtils.TOP_LEADER_FORMATTER;
 
 @Slf4j
@@ -53,8 +54,6 @@ public class FeedbackService {
     private final EmailService emailService;
 
     private final UserRepository userRepository;
-
-    private final ObjectMapper objectMapper;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -91,15 +90,15 @@ public class FeedbackService {
     public Recipient validateRecipientIfValid(long formId, String recipient, String token) {
         return recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
                 .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo().plusDays(1)) && !r.isSubmitted())
-                .orElseThrow(() -> new InvalidFormOrRecipientException(String
+                .orElseThrow(() -> new ApiValidationException(FROM_ALREADY_SUBMITTED, "user", recipient, String
                         .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token)));
     }
 
     @Transactional
-    public Recipient validateRecipientIfSubmitted(long formId, String recipient, String token) {
-        return recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
+    public void validateRecipientIfSubmitted(long formId, String recipient, String token) {
+        recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
                 .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo().plusDays(1)) && r.isSubmitted())
-                .orElseThrow(() -> new InvalidFormOrRecipientException(String
+                .orElseThrow(() -> new ApiValidationException(FROM_ALREADY_SUBMITTED, "user", recipient, String
                         .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token)));
     }
 

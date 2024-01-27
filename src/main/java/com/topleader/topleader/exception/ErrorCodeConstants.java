@@ -30,6 +30,7 @@ public final class ErrorCodeConstants {
 
     public static final String DIFFERENT_COACH_NOT_PERMITTED = "different.coach.not.permitted";
 
+    public static final String FROM_ALREADY_SUBMITTED = "form.already.submitted";
 
 
 }
