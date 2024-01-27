@@ -1,5 +1,6 @@
 package com.topleader.topleader.user;
 
+import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,7 +18,7 @@ public class UserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        var user = userRepository.findById(username)
+        var user = userRepository.findById(username.toLowerCase(Locale.ROOT))
                 .orElseThrow(() -> new UsernameNotFoundException(username));
 
         return User.withUsername(user.getUsername())

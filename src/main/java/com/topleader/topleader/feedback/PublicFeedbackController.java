@@ -8,6 +8,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -70,7 +71,7 @@ public class PublicFeedbackController {
     private void newUser(NewUser newUser, String username) {
         log.info("Creating respondent: [{}] ", username);
         userDetailService.save(new User().setStatus(User.Status.PENDING)
-                .setUsername(newUser.getEmail())
+                .setUsername(newUser.getEmail().toLowerCase(Locale.ROOT))
                 .setUsername(username)
                 .setFirstName(newUser.getFirstName())
                 .setLastName(newUser.getLastName())

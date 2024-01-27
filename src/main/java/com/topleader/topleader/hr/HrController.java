@@ -17,6 +17,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -94,7 +95,7 @@ public class HrController {
 
         final var createdUser = transactionService.execute(() -> userRepository.save(
                 new User()
-                    .setUsername(request.email())
+                    .setUsername(request.email().toLowerCase(Locale.ROOT))
                     .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
                     .setFirstName(request.firstName())
                     .setLastName(request.lastName())

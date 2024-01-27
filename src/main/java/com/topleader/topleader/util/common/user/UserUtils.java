@@ -3,6 +3,7 @@ package com.topleader.topleader.util.common.user;
 import com.topleader.topleader.user.User;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.Locale;
 import java.util.Optional;
 import lombok.experimental.UtilityClass;
 
@@ -12,7 +13,7 @@ public class UserUtils {
     public User fromEmail(String email) {
         var split = email.split("@");
         var names = split[0].split("\\.");
-        var user = new User().setUsername(email);
+        var user = new User().setUsername(email.toLowerCase(Locale.ROOT));
         if(names.length == 2) {
             user.setFirstName(names[0]);
             user.setLastName(names[1]);
