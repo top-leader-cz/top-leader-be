@@ -1,0 +1,31 @@
+{
+  "title": "new-from",
+  "description": "new test description",
+  "username": "jakub.svezi@dummy.com",
+  "validTo": "2023-12-12T00:00:00",
+  "questions": [
+    {
+      "key": "new question",
+      "type": "PARAGRAPH",
+      "required": false
+    },
+    {
+      "key": "question.key.2",
+      "type": "SCALE",
+      "required": true
+    }
+  ],
+  "recipients": [
+    {
+      "id": null,
+      "username": "pepa@cerny.cz",
+      "submitted": false
+    },
+    {
+      "id": null,
+      "username": "ilja@bily.cz",
+      "submitted": false
+    }
+  ],
+  "locale": "en"
+}

@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.*;
 import static com.topleader.topleader.util.common.CommonUtils.TOP_LEADER_FORMATTER;
+import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
@@ -81,6 +82,10 @@ public class FeedbackService {
     @Transactional
     public FeedbackForm saveForm(FeedbackForm form) {
         return feedbackFormRepository.save(form);
+    }
+
+    public void updateQuestions(List<Question> questions) {
+        questionRepository.saveAll(questions);
     }
 
     public void deleteForm(long id) {

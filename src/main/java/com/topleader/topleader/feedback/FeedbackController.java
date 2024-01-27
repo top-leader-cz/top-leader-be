@@ -4,6 +4,7 @@ package com.topleader.topleader.feedback;
 import com.topleader.topleader.feedback.api.*;
 
 import com.topleader.topleader.feedback.entity.FeedbackForm;
+import com.topleader.topleader.feedback.entity.Question;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,10 +47,17 @@ public class FeedbackController {
     }
 
     private FeedbackForm saveForm(FeedbackFormRequest request) {
+        feedbackService.updateQuestions(toQuestions(request.getQuestions()));
         var form = feedbackService.saveForm(FeedbackFormRequest.toSimpleForm(request));
         return feedbackService.saveForm(FeedbackFormRequest.toForm(request.setId(form.getId())));
     }
 
+    private List<Question> toQuestions(List<QuestionDto> questions) {
+        return questions
+                .stream()
+                .map(q -> new Question().setKey(q.key()))
+                .collect(Collectors.toList());
+    }
 
     @PutMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})

@@ -1,0 +1,35 @@
+{
+  "id": 2,
+  "title": "new-from",
+  "description": "new test description",
+  "username": "jakub.svezi@dummy.com",
+  "validTo": "2023-12-12T00:00:00",
+  "firstName":"Jakub",
+  "lastName":"Svezi",
+  "questions": [
+    {
+      "key": "new question",
+      "type": "PARAGRAPH",
+      "required": false,
+      "answers": []
+    },
+    {
+      "key": "question.key.2",
+      "type": "SCALE",
+      "required": true,
+      "answers": []
+    }
+  ],
+  "recipients": [
+    {
+      "id": 3,
+      "username": "pepa@cerny.cz",
+      "submitted": false
+    },
+    {
+      "id": 4,
+      "username": "ilja@bily.cz",
+      "submitted": false
+    }
+  ]
+}
