@@ -228,7 +228,7 @@ class MessageControllerIT extends IntegrationTest {
                             "value": ""
                           }
                         ],
-                        "errorMessage": "{validation.name.message.size.too_short}"
+                        "errorMessage": "Message length needs to be at least 1 character"
                       }
                     ]
         
