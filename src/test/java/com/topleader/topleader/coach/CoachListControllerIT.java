@@ -475,7 +475,7 @@ class CoachListControllerIT extends IntegrationTest {
                 .content("""
                     {
                         "page": {},
-                        "name": "Mich"
+                        "name": "mich"
                     }
                     """)
             )
