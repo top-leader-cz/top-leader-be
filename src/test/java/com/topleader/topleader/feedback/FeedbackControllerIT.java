@@ -103,6 +103,41 @@ class FeedbackControllerIT extends IntegrationTest {
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
     @WithMockUser(username = "user", authorities = "USER")
+    void createFormNewQuestion() throws Exception {
+        var result = mvc.perform(post("/api/latest/feedback")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.readFileAsString("feedback/json/new-form-new-question-request.json")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("feedback/json/new-form-new-question-response.json");
+
+        TestUtils.assertJsonEquals(result, expected);
+   }
+
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/custom-questions.sql"})
+    @WithMockUser(username = "user", authorities = "USER")
+    void createFormNewQuestionAlreadyExits() throws Exception {
+        var result = mvc.perform(post("/api/latest/feedback")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.readFileAsString("feedback/json/new-form-new-question-request.json")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("feedback/json/new-form-new-question-response.json");
+
+        TestUtils.assertJsonEquals(result, expected);
+    }
+
+
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @WithMockUser(username = "user", authorities = "USER")
     void updateForm() throws Exception {
       var result = mvc.perform(put("/api/latest/feedback/1")
                         .contentType(MediaType.APPLICATION_JSON)
