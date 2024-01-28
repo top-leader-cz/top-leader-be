@@ -16,6 +16,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -97,7 +98,7 @@ public class CoachClientController {
 
         final var createdUser = userRepository.save(
             new User()
-                .setUsername(request.email())
+                .setUsername(request.email().toLowerCase(Locale.ROOT))
                 .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .setFirstName(request.firstName())
                 .setLastName(request.lastName())

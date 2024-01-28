@@ -8,6 +8,7 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import java.util.Locale;
 import java.util.Set;
 
 import org.assertj.core.api.Assertions;
@@ -57,7 +58,7 @@ class AdminViewControllerIT extends IntegrationTest {
     @WithMockUser(username = "admin", authorities = "ADMIN")
     void testCreateUser() throws Exception {
         final var createUserRequestDto = new AdminViewController.CreateUserRequestDto(
-            "newuser", "John", "Doe", "UTC", 1L,
+            "NewUser@gmail.com", "John", "Doe", "UTC", 1L,
             true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "en"
         );
 
@@ -66,9 +67,9 @@ class AdminViewControllerIT extends IntegrationTest {
                 .content(objectMapper.writeValueAsString(createUserRequestDto)))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("newuser").orElseThrow();
+        final var fetchedUser = userRepository.findById("newuser@gmail.com").orElseThrow();
         assertThat(fetchedUser).isNotNull();
-        assertThat(fetchedUser.getUsername()).isEqualTo(createUserRequestDto.username());
+        assertThat(fetchedUser.getUsername()).isEqualTo(createUserRequestDto.username().toLowerCase(Locale.ROOT));
         assertThat(fetchedUser.getFirstName()).isEqualTo(createUserRequestDto.firstName());
         assertThat(fetchedUser.getLastName()).isEqualTo(createUserRequestDto.lastName());
         assertThat(fetchedUser.getTimeZone()).isEqualTo(createUserRequestDto.timeZone());

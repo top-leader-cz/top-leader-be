@@ -112,12 +112,16 @@ public class MessageService {
                 .setMessageId(message.getId())
         );
 
+        final var user = userRepository.findById(username).orElseThrow();
+
         notificationService.addNotification(
             new NotificationService.CreateNotificationRequest(
                 addressee,
                 Notification.Type.MESSAGE,
                 new MessageNotificationContext()
-                    .setFromUser(username)
+                    .setFromUser(user.getUsername())
+                    .setFromUserFirstName(user.getFirstName())
+                    .setFromUserLastName(user.getLastName())
                     .setMessage(messageData)
             )
         );

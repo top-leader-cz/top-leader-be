@@ -11,6 +11,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -49,7 +50,7 @@ public class FeedbackFormRequest {
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername()));
+                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)));
 
         var feedbackFormQuestion = request.getQuestions().stream()
                 .map(q -> {
@@ -84,7 +85,7 @@ public class FeedbackFormRequest {
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername()));
+                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)));
     }
 
 }

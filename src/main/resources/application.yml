@@ -36,6 +36,9 @@ spring:
   jackson:
     date-format: "yyyy-MM-dd'T'HH:mm:ss"
 
+  session:
+    jdbc:
+      initialize-schema: never
 
 top-leader:
   app-url: http://localhost:8080

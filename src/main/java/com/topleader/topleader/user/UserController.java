@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -51,7 +52,7 @@ public class UserController {
 
         var user = new User();
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
-            .setUsername(request.username())
+            .setUsername(request.username().toLowerCase(Locale.ROOT))
             .setFirstName(request.firstName())
             .setLastName(request.lastName())
             .setAuthorities(request.authorities())

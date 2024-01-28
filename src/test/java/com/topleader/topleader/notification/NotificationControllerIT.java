@@ -50,6 +50,8 @@ class NotificationControllerIT extends IntegrationTest {
                       "context": {
                         "type": "MESSAGE",
                         "fromUser": "sender1",
+                        "fromUserFirstName": "sender1FirstName",
+                        "fromUserLastName": "sender1LastName",
                         "message": "Notification 1"
                       },
                       "createdAt": "2023-08-01T10:00:00"

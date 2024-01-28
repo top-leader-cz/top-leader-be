@@ -1,7 +1,7 @@
 -- Create test notifications for user "testuser1"
 INSERT INTO notification (id, username, type, read, context, created_at)
 VALUES
-    (nextVal('notification_id_seq'), 'testuser1', 'MESSAGE', false, '{"type": "MESSAGE","fromUser": "sender1", "message": "Notification 1"}', '2023-08-01 10:00:00'),
+    (nextVal('notification_id_seq'), 'testuser1', 'MESSAGE', false, '{"type": "MESSAGE","fromUser": "sender1", "fromUserFirstName": "sender1FirstName", "fromUserLastName": "sender1LastName", "message": "Notification 1"}', '2023-08-01 10:00:00'),
     (nextVal('notification_id_seq'), 'testuser1', 'MESSAGE', true, '{"type": "MESSAGE","fromUser": "sender2", "message": "Notification 2"}', '2023-08-01 11:00:00'),
     (nextVal('notification_id_seq'), 'testuser1', 'MESSAGE', false, '{"type": "MESSAGE","fromUser": "sender3", "message": "Notification 3"}', '2023-08-01 12:00:00');
 
