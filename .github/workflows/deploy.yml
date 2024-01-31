@@ -63,6 +63,9 @@ jobs:
       - name: Install app-engine-java
         run: gcloud components install app-engine-java
 
+      - name: Use deprecated
+        run: gcloud config set app/use_deprecated_preparation True
+
 #
 #      - name: Deploy with Maven
 ##        run: mvn package -Dmaven.test.skip=true
