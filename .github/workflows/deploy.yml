@@ -16,7 +16,6 @@ on:
 
 jobs:
   build:
-    if: github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -61,10 +60,10 @@ jobs:
 #          version: '>= 445.0.0'
 
 
-
-      - name: Deploy with Maven
-#        run: mvn package -Dmaven.test.skip=true
-        run: mvn clean package  --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
+#
+#      - name: Deploy with Maven
+##        run: mvn package -Dmaven.test.skip=true
+#        run: mvn clean package  --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
 
 #      - name: Upload .jar to Bucket
 #        uses: google-github-actions/upload-cloud-storage@v1
