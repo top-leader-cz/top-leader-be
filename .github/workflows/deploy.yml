@@ -21,7 +21,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Set up JDK 17
+    - name: Set up JDK 21
       uses: actions/setup-java@v3
       with:
         java-version: '21'
@@ -39,14 +39,14 @@ jobs:
       - uses: actions/checkout@v3
       - uses: 73h/gae-app-yaml-replace-env-variables@v0.3
         with:
-          app_yaml_path: src/main/appengine/app.yaml
+          app_yaml_path: src/main/appengine/app-qa.yaml
         env:
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
 
       - name: Deploy top-leader-be
         uses: actions/setup-java@v3
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: maven
 
@@ -64,7 +64,7 @@ jobs:
 
       - name: Deploy with Maven
 #        run: mvn package -Dmaven.test.skip=true
-        run: mvn package --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
+        run: mvn clean package  --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
 
 #      - name: Upload .jar to Bucket
 #        uses: google-github-actions/upload-cloud-storage@v1
