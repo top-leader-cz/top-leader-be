@@ -55,11 +55,13 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-#      - name: Set up Cloud SDK
-#        uses: google-github-actions/setup-gcloud@v1
-#        with:
-#          version: '>= 445.0.0'
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: '>= 445.0.0'
 
+      - name: Install app-engine-java
+        run: gcloud components install app-engine-java
 
 #
 #      - name: Deploy with Maven
