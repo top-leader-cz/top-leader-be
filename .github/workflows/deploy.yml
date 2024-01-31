@@ -86,8 +86,6 @@ jobs:
 #      - name: ls 2
 #        run: ls target
 
-      - name: Install app-engine-java
-        run: sudo apt-get install google-cloud-sdk-app-engine-java
 #
       - name: App Deploy
         run: gcloud app deploy --project=topleader-394306 --appyaml=src/main/appengine/app-qa.yaml --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
