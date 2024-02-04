@@ -3,20 +3,29 @@
  */
 package com.topleader.topleader.message;
 
+import com.topleader.topleader.email.EmailService;
+import com.topleader.topleader.email.VelocityService;
 import com.topleader.topleader.notification.Notification;
 import com.topleader.topleader.notification.NotificationService;
 import com.topleader.topleader.notification.context.MessageNotificationContext;
+import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.user.token.Token;
+import com.topleader.topleader.user.token.TokenService;
 import jakarta.transaction.Transactional;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,6 +42,12 @@ import static java.util.stream.Collectors.toMap;
 @AllArgsConstructor
 public class MessageService {
 
+    private static final Map<String, String> subjects = Map.of(
+            "en", "New Message Alert on TopLeader Platform",
+            "cs", "Nová zpráva na platformě TopLeader",
+            "fr", "Alerte Nouveau Message sur la Plateforme TopLeader",
+            "de", "Neue Nachrichtenbenachrichtigung auf der TopLeader Plattform");
+
     private final MessageRepository messageRepository;
 
     private final UserChatRepository userChatRepository;
@@ -42,6 +57,16 @@ public class MessageService {
     private final NotificationService notificationService;
 
     private final UserRepository userRepository;
+
+    private final VelocityService velocityService;
+
+    private final EmailService emailService;
+
+    @Value("${top-leader.app-url}")
+    private String appUrl;
+
+    @Value("${top-leader.default-locale}")
+    private String defaultLocale;
 
     public List<ChatInfoDto> getUserChatInfo(String username) {
 
@@ -128,6 +153,22 @@ public class MessageService {
     public void markAllMessagesAsDisplayed(String username) {
         messageRepository.setAllUserMessagesAsDisplayed(username);
     }
+
+    public void processNotDisplayedMessages() {
+        var usersToNotify = messageRepository.findUnDisplayedMoreThenFourHours(LocalDateTime.now().minusHours(4));
+        usersToNotify.forEach(user ->
+                userRepository.findById(user).ifPresent(userToNotify -> {
+                    var params = Map.of("firstName", userToNotify.getFirstName(), "lastName", userToNotify.getLastName(), "link", appUrl);
+                    var emailBody = velocityService.getMessage(new HashMap<>(params), userToNotify.getLocale());
+                    emailService.sendEmail(userToNotify.getUsername(), subjects.getOrDefault(userToNotify.getLocale(), defaultLocale), emailBody);
+                })
+        );
+    }
+
+    public String parseTemplateName(String locale) {
+        return "templates/invitation/invitation-" + locale + ".vm";
+    }
+
 
     public record ChatInfoDto(
         String username,

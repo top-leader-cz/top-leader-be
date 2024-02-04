@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.message;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,5 +24,10 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     @Query("select m.userFrom as userFrom, count(*) as unread from Message m where m.userTo = :username and m.displayed = false group by m.userFrom")
     List<UnreadMessagesCount> getUnreadMessagesCount(String username);
+
+
+    @Query("select m.userTo from Message m  where  m.createdAt < :interval group by m.userTo")
+    List<String> findUnDisplayedMoreThenFourHours(LocalDateTime interval);
+
 
 }
