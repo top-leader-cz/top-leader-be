@@ -162,7 +162,7 @@ public class MessageService {
     }
 
     public void processNotDisplayedMessages() {
-        var usersToNotify = messageRepository.findUnDisplayedMoreThenFourHours(LocalDateTime.now().minusHours(4));
+        var usersToNotify = messageRepository.findUndisplayed();
         log.info("User to receive message display notifications: {}", usersToNotify);
         usersToNotify.forEach(user ->
                 userRepository.findById(user).ifPresent(userToNotify -> {
