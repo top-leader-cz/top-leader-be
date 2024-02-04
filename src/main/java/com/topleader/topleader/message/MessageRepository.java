@@ -22,6 +22,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     Page<Message> findAllByChatId(Long chatId, Pageable pageable);
 
 
+    @Modifying
     @Query("update Message set displayed = true where userTo = :username")
     void setAllUserMessagesAsDisplayed(String username);
 

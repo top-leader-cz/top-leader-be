@@ -5,6 +5,9 @@ package com.topleader.topleader.message;
 
 import com.topleader.topleader.IntegrationTest;
 import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Example;
@@ -53,11 +56,9 @@ class MessageControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
         ;
 
-        final var messages = messageRepository.findAll(Example.of(
-            new Message()
-                .setUserFrom("user1")
-                .setUserTo("user2")
-        ));
+        final var messages = messageRepository.findAll().stream()
+                .filter(m -> m.getUserFrom().equals("user1") && m.getUserTo().equals("user2"))
+                .collect(Collectors.toList());
 
         assertThat(messages, hasSize(3));
 
