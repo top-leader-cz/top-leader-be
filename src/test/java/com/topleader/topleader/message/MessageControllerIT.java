@@ -163,7 +163,7 @@ class MessageControllerIT extends IntegrationTest {
                        "username": "user2",
                        "addressee": "user1",
                        "messageData": "Hi there! How are you?",
-                       "displayed": false,
+                       "displayed": true,
                        "createdAt": "2023-08-01T10:05:00"
                      },
                      {
@@ -171,7 +171,7 @@ class MessageControllerIT extends IntegrationTest {
                        "username": "user1",
                        "addressee": "user2",
                        "messageData": "Im doing well, thanks ! ",
-                       "displayed": true,
+                       "displayed": false,
                        "createdAt": "2023-08-01T10:10:00"
                      }
                    ],
