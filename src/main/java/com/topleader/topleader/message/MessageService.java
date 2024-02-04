@@ -3,6 +3,8 @@
  */
 package com.topleader.topleader.message;
 
+import com.topleader.topleader.email.EmailService;
+import com.topleader.topleader.email.VelocityService;
 import com.topleader.topleader.notification.Notification;
 import com.topleader.topleader.notification.NotificationService;
 import com.topleader.topleader.notification.context.MessageNotificationContext;
@@ -11,12 +13,15 @@ import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,9 +34,16 @@ import static java.util.stream.Collectors.toMap;
 /**
  * @author Daniel Slavik
  */
+@Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class MessageService {
+
+    private static final Map<String, String> subjects = Map.of(
+            "en", "New Message Alert on TopLeader Platform",
+            "cs", "Nová zpráva na platformě TopLeader",
+            "fr", "Alerte Nouveau Message sur la Plateforme TopLeader",
+            "de", "Neue Nachrichtenbenachrichtigung auf der TopLeader Plattform");
 
     private final MessageRepository messageRepository;
 
@@ -42,6 +54,20 @@ public class MessageService {
     private final NotificationService notificationService;
 
     private final UserRepository userRepository;
+
+    private final VelocityService velocityService;
+
+    private final EmailService emailService;
+
+    @Value("${top-leader.app-url}")
+    private String appUrl;
+
+    @Value("${top-leader.default-locale}")
+    private String defaultLocale;
+
+    @Value("${top-leader.supported-invitations}")
+    private List<String> supportedInvitations;
+
 
     public List<ChatInfoDto> getUserChatInfo(String username) {
 
@@ -79,12 +105,9 @@ public class MessageService {
 
     @Transactional
     public Page<Message> findUserMessages(String username, String addressee, Pageable pageable) {
-
+        markAllMessagesAsDisplayed(username);
         return userChatRepository.findUserChat(username, addressee)
-            .map(userChat -> {
-                markAllMessagesAsDisplayed(username, addressee);
-                return messageRepository.findAllByChatId(userChat.getChatId(), pageable);
-            })
+            .map(userChat -> messageRepository.findAllByChatId(userChat.getChatId(), pageable))
             .orElse(Page.empty());
     }
 
@@ -103,7 +126,7 @@ public class MessageService {
                 .setUserTo(addressee)
                 .setMessageData(messageData)
                 .setCreatedAt(time)
-                .setDisplayed(true)
+                .setDisplayed(false)
         );
 
         lastMessageRepository.save(
@@ -128,8 +151,29 @@ public class MessageService {
 
     }
 
-    public void markAllMessagesAsDisplayed(String username, String addressee) {
-        messageRepository.setAllUserMessagesAsDisplayed(username, addressee);
+    public void markAllMessagesAsDisplayed(String username) {
+        messageRepository.setAllUserMessagesAsDisplayed(username);
+    }
+
+    public void processNotDisplayedMessages() {
+        var usersToNotify = messageRepository.findUndisplayed();
+        log.info("User to receive message display notifications: {}", usersToNotify);
+        usersToNotify.forEach(user ->
+                userRepository.findById(user).ifPresent(userToNotify -> {
+                    var params = Map.of("firstName", userToNotify.getFirstName(), "lastName", userToNotify.getLastName(), "link", appUrl);
+                    var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(userToNotify.getLocale()));
+                    emailService.sendEmail(userToNotify.getUsername(), subjects.getOrDefault(userToNotify.getLocale(), defaultLocale), emailBody);
+                })
+        );
+        messageRepository.setNotified(usersToNotify);
+    }
+
+    public String parseTemplateName(String locale) {
+        return "templates/message/notification-" +parseLocale(locale) + ".vm";
+    }
+
+    public String parseLocale(String locale) {
+        return supportedInvitations.contains(locale) ? locale : defaultLocale;
     }
 
     public record ChatInfoDto(
