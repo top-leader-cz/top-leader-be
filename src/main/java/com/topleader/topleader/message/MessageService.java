@@ -71,6 +71,10 @@ public class MessageService {
     @Value("${top-leader.default-locale}")
     private String defaultLocale;
 
+    @Value("${top-leader.supported-invitations}")
+    private List<String> supportedInvitations;
+
+
     public List<ChatInfoDto> getUserChatInfo(String username) {
 
         final var allChats = userChatRepository.findAllForUser(username).stream()
@@ -167,12 +171,16 @@ public class MessageService {
                     emailService.sendEmail(userToNotify.getUsername(), subjects.getOrDefault(userToNotify.getLocale(), defaultLocale), emailBody);
                 })
         );
+        messageRepository.setNotified(usersToNotify);
     }
 
     public String parseTemplateName(String locale) {
-        return "templates/message/notification-" + locale + ".vm";
+        return "templates/message/notification-" +parseLocale(locale) + ".vm";
     }
 
+    public String parseLocale(String locale) {
+        return supportedInvitations.contains(locale) ? locale : defaultLocale;
+    }
 
     public record ChatInfoDto(
         String username,

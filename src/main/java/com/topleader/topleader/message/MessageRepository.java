@@ -5,6 +5,8 @@ package com.topleader.topleader.message;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
+import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -18,7 +20,8 @@ import org.springframework.data.jpa.repository.Query;
 public interface MessageRepository extends JpaRepository<Message, Long> {
 
     Page<Message> findAllByChatId(Long chatId, Pageable pageable);
-    @Modifying
+
+
     @Query("update Message set displayed = true where userTo = :username")
     void setAllUserMessagesAsDisplayed(String username);
 
@@ -26,8 +29,13 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<UnreadMessagesCount> getUnreadMessagesCount(String username);
 
 
-    @Query("select m.userTo from Message m  where m.displayed = false and m.createdAt < :interval group by m.userTo")
+    @Query("select m.userTo from Message m  where m.displayed = false  and m.notified = false and m.createdAt < :interval group by m.userTo")
     List<String> findUnDisplayedMoreThenFourHours(LocalDateTime interval);
+
+    @Modifying
+    @Transactional
+    @Query("update Message m set m.notified = true where m.userTo in(:username)")
+    void setNotified(List<String> username);
 
 
 }

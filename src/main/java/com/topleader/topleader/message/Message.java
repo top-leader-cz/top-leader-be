@@ -48,5 +48,7 @@ public class Message {
 
     private LocalDateTime createdAt;
 
+    private boolean notified;
+
 
 }
