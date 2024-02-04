@@ -18,8 +18,8 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
 
     Page<Message> findAllByChatId(Long chatId, Pageable pageable);
     @Modifying
-    @Query("update Message set displayed = true where userFrom = :username and userTo = :addressee")
-    void setAllUserMessagesAsDisplayed(String username, String addressee);
+    @Query("update Message set displayed = true where userTo = :username")
+    void setAllUserMessagesAsDisplayed(String username);
 
     @Query("select m.userFrom as userFrom, count(*) as unread from Message m where m.userTo = :username and m.displayed = false group by m.userFrom")
     List<UnreadMessagesCount> getUnreadMessagesCount(String username);

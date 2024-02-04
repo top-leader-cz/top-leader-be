@@ -79,12 +79,9 @@ public class MessageService {
 
     @Transactional
     public Page<Message> findUserMessages(String username, String addressee, Pageable pageable) {
-
+        markAllMessagesAsDisplayed(username);
         return userChatRepository.findUserChat(username, addressee)
-            .map(userChat -> {
-                markAllMessagesAsDisplayed(username, addressee);
-                return messageRepository.findAllByChatId(userChat.getChatId(), pageable);
-            })
+            .map(userChat -> messageRepository.findAllByChatId(userChat.getChatId(), pageable))
             .orElse(Page.empty());
     }
 
@@ -103,7 +100,7 @@ public class MessageService {
                 .setUserTo(addressee)
                 .setMessageData(messageData)
                 .setCreatedAt(time)
-                .setDisplayed(true)
+                .setDisplayed(false)
         );
 
         lastMessageRepository.save(
@@ -128,8 +125,8 @@ public class MessageService {
 
     }
 
-    public void markAllMessagesAsDisplayed(String username, String addressee) {
-        messageRepository.setAllUserMessagesAsDisplayed(username, addressee);
+    public void markAllMessagesAsDisplayed(String username) {
+        messageRepository.setAllUserMessagesAsDisplayed(username);
     }
 
     public record ChatInfoDto(
