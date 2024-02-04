@@ -25,6 +25,8 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -38,8 +40,9 @@ import static java.util.stream.Collectors.toMap;
 /**
  * @author Daniel Slavik
  */
+@Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class MessageService {
 
     private static final Map<String, String> subjects = Map.of(
@@ -156,17 +159,18 @@ public class MessageService {
 
     public void processNotDisplayedMessages() {
         var usersToNotify = messageRepository.findUnDisplayedMoreThenFourHours(LocalDateTime.now().minusHours(4));
+        log.info("User to receive message display notifications: {}", usersToNotify);
         usersToNotify.forEach(user ->
                 userRepository.findById(user).ifPresent(userToNotify -> {
                     var params = Map.of("firstName", userToNotify.getFirstName(), "lastName", userToNotify.getLastName(), "link", appUrl);
-                    var emailBody = velocityService.getMessage(new HashMap<>(params), userToNotify.getLocale());
+                    var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(userToNotify.getLocale()));
                     emailService.sendEmail(userToNotify.getUsername(), subjects.getOrDefault(userToNotify.getLocale(), defaultLocale), emailBody);
                 })
         );
     }
 
     public String parseTemplateName(String locale) {
-        return "templates/invitation/invitation-" + locale + ".vm";
+        return "templates/message/notification-" + locale + ".vm";
     }
 
 

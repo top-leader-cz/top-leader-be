@@ -3,6 +3,7 @@ package com.topleader.topleader.message;
 import com.topleader.topleader.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -10,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
+@Sql(scripts = "/sql/messages/messages-test.sql")
 public class MessageJobControllerIT extends IntegrationTest {
 
     @Test

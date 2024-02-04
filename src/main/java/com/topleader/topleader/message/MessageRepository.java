@@ -26,7 +26,7 @@ public interface MessageRepository extends JpaRepository<Message, Long> {
     List<UnreadMessagesCount> getUnreadMessagesCount(String username);
 
 
-    @Query("select m.userTo from Message m  where  m.createdAt < :interval group by m.userTo")
+    @Query("select m.userTo from Message m  where m.displayed = false and m.createdAt < :interval group by m.userTo")
     List<String> findUnDisplayedMoreThenFourHours(LocalDateTime interval);
 
 
