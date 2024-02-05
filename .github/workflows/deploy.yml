@@ -5,17 +5,18 @@
 # They are provided by a third-party and are governed by
 # separate terms of service, privacy policy, and support
 # documentation.
-
 name: Build/Deploy top-leader-be
+
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main", "deploy-test" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "deploy-test" ]
 
 jobs:
   build:
+    if: github.ref != 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -24,27 +25,28 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: '21'
-        distribution: 'temurin'
+        distribution: 'corretto'
         cache: maven
 
     - name: Build with Maven
       run: mvn -B verify --file pom.xml
 
   deploy:
-#    needs: [ build ]
-    if: github.ref == 'refs/heads/main'
+#    needs: build
+    #    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
     steps:
       - uses: actions/checkout@v4
       - uses: 73h/gae-app-yaml-replace-env-variables@v0.3
         with:
-          app_yaml_path: src/main/appengine/app-qa.yaml
+          app_yaml_path: src/main/appengine/qa/app.yaml
         env:
-          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
+          SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD_QA }}
+          SPRING_MAIL_PASSWORD: ${{ secrets.SPRING_MAIL_PASSWORD }}
 
       - name: Deploy top-leader-be
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -56,42 +58,17 @@ jobs:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
         with:
           version: '>= 445.0.0'
 
       - name: Install app-engine-java
         run: gcloud components install app-engine-java
 
-      - name: Use deprecated
-        run: gcloud config set app/use_deprecated_preparation True
+      - name:  gcloud config set storage/use_gsutil true
+        run:  gcloud config set storage/use_gsutil true
 
-#
-#      - name: Deploy with Maven
-##        run: mvn package -Dmaven.test.skip=true
-#        run: mvn clean package  --file pom.xml -Dmaven.test.skip=true appengine:deploy -Dapp.deploy.projectId=topleader-394306 -Dapp.deploy.version=$(git rev-parse --short "$GITHUB_SHA")
-
-#      - name: Upload .jar to Bucket
-#        uses: google-github-actions/upload-cloud-storage@v1
-#        with:
-#          path: target
-#          destination: top-leader-be-deploy/top-leader.jar
-#
-#      - name: Upload app.yaml to Bucket
-#        uses: google-github-actions/upload-cloud-storage@v1
-#        with:
-#          path: src/main/appengine/app.yaml
-#          destination: top-leader-be-deploy
-
-#      - name: ls 1
-#        run: pwd & ls -l
-#
-#      - name: ls 2
-#        run: ls target
-
-#
-      - name: App Deploy
-        run: gcloud app deploy --project=topleader-394306 --appyaml=src/main/appengine/app-qa.yaml --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
-#
-#
-#gcloud app deploy --appyaml=top-leader/app.yaml --version=test-top78
+#      - name: App Deploy
+#        run: gcloud app deploy --project=topleader-394306 --appyaml=src/main/appengine/qa/app.yaml --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
+      - name: Deploy with Maven
+        run: mvn clean package appengine:deploy -Dapp.stage.appEngineDirectory=src/main/appengine/qa -Dgcloud.verbosity=debug -Dpromote -Dmaven.test.skip=true -e
