@@ -2,7 +2,7 @@
 <html>
 <body>
 <p>Vážený/á <b>$firstName $lastName,</b></p>
-<p>obdrželi jste novou zprávu na platformě TopLeader. Můžete se přihlásit k vašemu účtu TopLeader prostřednictvím tohoto <p><a href="$link" target="_blank">LINK</a></p>, abyste si zprávu přečetli a odpověděli.</p>
+<p>Obdrželi jste novou zprávu na platformě TopLeader. Můžete se přihlásit k vašemu účtu TopLeader prostřednictvím tohoto <a href="$link" target="_blank">LINK</a>, abyste si zprávu přečetli a odpověděli.</p>
 
 <p>S pozdravem, Tým TopLeader</p>
 </body>
