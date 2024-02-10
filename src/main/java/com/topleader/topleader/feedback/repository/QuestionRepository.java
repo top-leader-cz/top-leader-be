@@ -9,5 +9,5 @@ import java.util.List;
 public interface QuestionRepository extends JpaRepository<Question, Long> {
 
     @Query("SELECT q FROM fb_question q WHERE q.defaultQuestion = true")
-    List<Question> getOptions();
+    List<Question> getDefaultOptions();
 }

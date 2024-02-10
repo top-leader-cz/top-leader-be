@@ -4,6 +4,7 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
+import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.user.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -11,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+
 import java.util.Set;
 
 import static com.topleader.topleader.user.User.Authority.RESPONDENT;
@@ -25,6 +27,9 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    QuestionRepository questionRepository;
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/feedback-answers.sql"})
@@ -74,6 +79,8 @@ class FeedbackControllerIT extends IntegrationTest {
 
         TestUtils.assertJsonEquals(result, expected);
 
+        Assertions.assertThat(questionRepository.getDefaultOptions()).hasSize(2);
+
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(2);
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
@@ -114,6 +121,7 @@ class FeedbackControllerIT extends IntegrationTest {
 
         var expected = TestUtils.readFileAsString("feedback/json/new-form-new-question-response.json");
 
+        Assertions.assertThat(questionRepository.getDefaultOptions()).hasSize(2);
         TestUtils.assertJsonEquals(result, expected);
    }
 
@@ -129,6 +137,7 @@ class FeedbackControllerIT extends IntegrationTest {
                 .getResponse()
                 .getContentAsString();
 
+        Assertions.assertThat(questionRepository.getDefaultOptions()).hasSize(2);
         var expected = TestUtils.readFileAsString("feedback/json/new-form-new-question-response.json");
 
         TestUtils.assertJsonEquals(result, expected);
@@ -150,6 +159,7 @@ class FeedbackControllerIT extends IntegrationTest {
         var expected = TestUtils.readFileAsString("feedback/json/update-form-response.json");
 
         TestUtils.assertJsonEquals(result, expected);
+        Assertions.assertThat(questionRepository.getDefaultOptions()).hasSize(2);
 
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(2);
 

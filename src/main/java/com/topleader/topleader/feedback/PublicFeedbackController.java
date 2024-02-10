@@ -27,7 +27,7 @@ public class PublicFeedbackController {
     @Transactional
     @GetMapping("/options")
     public FeedbackFormOptions getOptions() {
-        return FeedbackFormOptions.of(feedbackService.fetchQuestions());
+        return FeedbackFormOptions.of(feedbackService.fetchOptions());
     }
 
 

@@ -63,8 +63,8 @@ public class FeedbackService {
     @Value("${top-leader.default-locale}")
     private String defaultLocale;
 
-    public List<Question> fetchQuestions() {
-        return questionRepository.getOptions();
+    public List<Question> fetchOptions() {
+        return questionRepository.getDefaultOptions();
     }
 
     public FeedbackForm fetchForm(long id) {
