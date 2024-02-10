@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+
 @RestController
 @RequestMapping("/api/latest/feedback")
 @RequiredArgsConstructor
@@ -47,15 +48,17 @@ public class FeedbackController {
     }
 
     private FeedbackForm saveForm(FeedbackFormRequest request) {
-        feedbackService.updateQuestions(toQuestions(request.getQuestions()));
+        var defaultKeys = feedbackService.fetchOptions().stream().map(Question::getKey)
+                .collect(Collectors.toList());
+        feedbackService.updateQuestions(toQuestions(request.getQuestions(), defaultKeys));
         var form = feedbackService.saveForm(FeedbackFormRequest.toSimpleForm(request));
         return feedbackService.saveForm(FeedbackFormRequest.toForm(request.setId(form.getId())));
     }
 
-    private List<Question> toQuestions(List<QuestionDto> questions) {
+    private List<Question> toQuestions(List<QuestionDto> questions, List<String> defaultKeys) {
         return questions
                 .stream()
-                .map(q -> new Question().setKey(q.key()))
+                .map(q -> new Question().setKey(q.key()).setDefaultQuestion(defaultKeys.contains(q.key())))
                 .collect(Collectors.toList());
     }
 

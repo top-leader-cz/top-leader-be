@@ -7,11 +7,8 @@
     {
       "key": "question.key.2",
       "type": "PARAGRAPH"
-    },
-    {
-      "key": "question.key.3",
-      "type": "PARAGRAPH"
     }
+
   ],
   "scales": [
     "scale.1",

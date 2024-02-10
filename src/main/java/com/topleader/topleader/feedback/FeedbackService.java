@@ -1,6 +1,5 @@
 package com.topleader.topleader.feedback;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.email.VelocityService;
 import com.topleader.topleader.exception.ApiValidationException;
@@ -29,7 +28,6 @@ import java.util.*;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.FROM_ALREADY_SUBMITTED;
 import static com.topleader.topleader.util.common.CommonUtils.TOP_LEADER_FORMATTER;
-import static java.util.stream.Collectors.toList;
 
 @Slf4j
 @Service
@@ -65,8 +63,8 @@ public class FeedbackService {
     @Value("${top-leader.default-locale}")
     private String defaultLocale;
 
-    public List<Question> fetchQuestions() {
-        return questionRepository.findAll();
+    public List<Question> fetchOptions() {
+        return questionRepository.getDefaultOptions();
     }
 
     public FeedbackForm fetchForm(long id) {
