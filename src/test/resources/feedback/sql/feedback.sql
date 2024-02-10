@@ -1,14 +1,14 @@
 insert into users (username, first_name, last_name, password, time_zone, status)
 values ('jakub.svezi@dummy.com', 'Jakub', 'Svezi','$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO',  'Europe/Prague', 'PENDING');
 
-insert into fb_question (key)
-values ('question.key.1');
+insert into fb_question (key, default_question)
+values ('question.key.1', true);
 
-insert into fb_question (key)
-values ('question.key.2');
+insert into fb_question (key, default_question)
+values ('question.key.2', true);
 
-insert into fb_question (key)
-values ('question.key.3');
+insert into fb_question (key, default_question)
+values ('question.key.3', false);
 
 insert into feedback_form(id, title, description, username, valid_to, created_at)
 values (nextval('feedback_form_id_seq'), 'test-from', 'test description', 'jakub.svezi@dummy.com','2060-12-12', '2023-10-12');
