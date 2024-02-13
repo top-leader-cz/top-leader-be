@@ -19,7 +19,7 @@ public class UserInsight {
 
     private String animalSpiritGuide;
 
-    private String leaderShipTip;
+    private String leadershipTip;
 
     private String personalGrowthTip;
 }

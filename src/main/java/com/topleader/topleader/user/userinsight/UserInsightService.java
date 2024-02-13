@@ -23,7 +23,7 @@ public class UserInsightService {
         var user = userRepository.findById(username).orElseThrow();
         userInsightRepository.findById(username).ifPresent(userInsight -> {
             userInsight.setLeadershipStyleAnalysis(aiClient.findLeaderShipStyle(user.getLocale(), strengths, values));
-            userInsight.setAnimalSpiritGuide(aiClient.findLeaderShipStyle(user.getLocale(), strengths, values));
+            userInsight.setAnimalSpiritGuide(aiClient.findAnimalSpirit(user.getLocale(), strengths, values));
             userInsightRepository.save(userInsight);
         });
     }

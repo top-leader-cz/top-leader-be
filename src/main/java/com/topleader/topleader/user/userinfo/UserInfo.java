@@ -48,10 +48,4 @@ public class UserInfo {
     @Column(length = 2000)
     private String lastReflection;
 
-    @Column(length = 2000)
-    private String leadershipStyleAnalysis;
-
-
-
-
 }
