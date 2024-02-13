@@ -7,10 +7,10 @@ spring:
       enabled: true
   ai:
     openai:
-      api-key: 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
-#      chat:
-#        options:
-#          model: gpt-3.5-turbo
+      api-key: dummy-token
+      chat:
+        options:
+          model: gpt-3.5-turbo
   datasource:
     url: jdbc:postgresql://localhost:5432/top_leader
     username: root
