@@ -1,7 +1,5 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.user.userinfo;
+
 
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
@@ -10,6 +8,7 @@ import com.topleader.topleader.history.data.ValuesStoredData;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
