@@ -46,7 +46,7 @@ public class UserInsightService {
 
     public UserInsight generateTips(String username) {
         var user = userRepository.findById(username).orElseThrow();
-        var userInfo = userInfoRepository.findById(username).orElseThrow();
+        var userInfo = userInfoRepository.findById(username).orElse(new UserInfo());
         var strengths = userInfo.getTopStrengths();
         var values = userInfo.getValues();
 

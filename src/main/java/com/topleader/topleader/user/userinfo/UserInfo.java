@@ -6,6 +6,7 @@ package com.topleader.topleader.user.userinfo;
 import com.topleader.topleader.util.converter.SetConverter;
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,13 +30,13 @@ public class UserInfo {
     private String username;
 
     @Convert(converter = SetConverter.class)
-    private List<String> strengths;
+    private List<String> strengths = new ArrayList<>();
 
     @Convert(converter = SetConverter.class)
-    private List<String> values;
+    private List<String> values = new ArrayList<>();;
 
     @Convert(converter = SetConverter.class)
-    private List<String> areaOfDevelopment;
+    private List<String> areaOfDevelopment = new ArrayList<>();;
 
     private String notes;
 

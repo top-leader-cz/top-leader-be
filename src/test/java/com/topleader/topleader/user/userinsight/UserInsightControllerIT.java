@@ -1,6 +1,7 @@
 package com.topleader.topleader.user.userinsight;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.ChatClient;
@@ -20,6 +21,9 @@ class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
     ChatClient chatClient;
+
+    @Autowired
+    UserInfoRepository userInfoRepository;
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
@@ -53,6 +57,30 @@ class UserInsightControllerIT extends IntegrationTest {
                           {
                             "leadershipTip": "leadershipTip-response",
                             "personalGrowthTip": "personalGrowthTip-response"
+                         }
+                        """))
+                .andExpect(status().isOk());
+
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/user_insight/user-insight.sql"})
+    void generateTipsNoStrengthsAndValues() throws Exception {
+        userInfoRepository.deleteAll();
+        var leaderShipQuery  = String.format(LEADERSHIP_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
+        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
+
+        var personalGrowthQuery  = String.format(PERSONAL_GROWTH_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
+        Mockito.when(chatClient.call(personalGrowthQuery)).thenReturn("personalGrowthTip-response");
+
+
+        mvc.perform(get("/api/latest/user-insight/generate-tips"))
+                .andDo(print())
+                .andExpect(content().json("""
+                          {
+                            "leadershipTip": null,
+                            "personalGrowthTip": null
                          }
                         """))
                 .andExpect(status().isOk());
