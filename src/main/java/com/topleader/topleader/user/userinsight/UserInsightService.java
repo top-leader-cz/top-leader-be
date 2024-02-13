@@ -22,12 +22,13 @@ public class UserInsightService {
 
     public void setUserInsight(UserInfo userInfo) {
         var strengthSize = userInfo.getStrengths().size();
-        var strengths = userInfo.getStrengths().subList(0, Math.max(5, strengthSize));
+        var strengths = userInfo.getStrengths().subList(0, strengthSize > 5 ? 5 : strengthSize);
         var values = userInfo.getValues();
         var username = userInfo.getUsername();
 
         var user = userRepository.findById(username).orElseThrow();
         var userInsight = userInsightRepository.findById(username).orElse(new UserInsight());
+        userInsight.setUsername(username);
         userInsight.setLeadershipStyleAnalysis(aiClient.findLeaderShipStyle(user.getLocale(), strengths, values));
         userInsight.setAnimalSpiritGuide(aiClient.findAnimalSpirit(user.getLocale(), strengths, values));
         userInsightRepository.save(userInsight);

@@ -454,8 +454,8 @@ class UserInfoControllerIT extends IntegrationTest {
         var leaderShipQuery  = String.format(LEADERSHIP_STYLE_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
 
-        var animalQuery  = String.format(ANIMAL_SPIRIT_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever","concentrated","connector"), List.of("patriotism"), "en");
-        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("animal-response");
+        var animalQuery  = String.format(ANIMAL_SPIRIT_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
+        Mockito.when(chatClient.call(animalQuery)).thenReturn("animal-response");
 
         mvc.perform(post("/api/latest/user-info/values")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -470,10 +470,6 @@ class UserInfoControllerIT extends IntegrationTest {
         Assertions.assertThat(userInsightRepository.findAll())
                 .extracting("leadershipStyleAnalysis", "animalSpiritGuide")
                 .containsExactly(new Tuple("leadership-response", "animal-response"));
-
-
-
-
 
     }
 }
