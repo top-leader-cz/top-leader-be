@@ -24,7 +24,6 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.flywaydb.core.internal.util.CollectionsUtils;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.CollectionUtils;
@@ -101,7 +100,7 @@ public class UserInfoController {
     public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
         var userInfo = userInfoService.setValues(user.getUsername(), request.data());
         if(shouldQueryAi(userInfo)) {
-            userInsightService.setLeadershipStyleAnalysis(user.getUsername(),  userInfo.getStrengths(), userInfo.getValues());
+            userInsightService.setUserInsight(userInfo);
         }
         return UserInfoDto.from(
             userInfo,
