@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 
 @Data
 @Entity
@@ -19,4 +21,6 @@ public class UserInsight {
     private String leadershipTip;
 
     private String personalGrowthTip;
+
+    private LocalDateTime tipsGeneratedAt;
 }

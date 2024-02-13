@@ -48,4 +48,9 @@ public class UserInfo {
     @Column(length = 2000)
     private String lastReflection;
 
+    public List<String> getTopStrengths() {
+        var strengthSize = strengths.size();
+        return  strengths.subList(0, strengthSize > 5 ? 5 : strengthSize);
+    }
+
 }

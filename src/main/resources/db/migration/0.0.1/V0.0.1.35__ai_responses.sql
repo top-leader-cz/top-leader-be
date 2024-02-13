@@ -4,6 +4,7 @@ create table user_insight (
     leadership_style_analysis text,
     animal_spirit_guide text,
     leadership_tip text,
-    personal_growth_tip text
+    personal_growth_tip text,
+    tips_generated_at timestamp
 
 );

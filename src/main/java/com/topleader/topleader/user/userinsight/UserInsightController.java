@@ -14,11 +14,20 @@ public class UserInsightController {
 
 
     @GetMapping
-    public UserInsightDto setValues(@AuthenticationPrincipal UserDetails user) {
+    public UserInsightDto getInsight(@AuthenticationPrincipal UserDetails user) {
         var userInsight = userInsightService.getInsight(user.getUsername()).orElseThrow();
         return new UserInsightDto(userInsight.getLeadershipStyleAnalysis(), userInsight.getAnimalSpiritGuide());
     }
 
+    @GetMapping("/generate-tips")
+    public TipsDto generateTips(@AuthenticationPrincipal UserDetails user) {
+        var userInsight = userInsightService.generateTips(user.getUsername());
+        return new TipsDto(userInsight.getLeadershipTip(), userInsight.getPersonalGrowthTip());
+    }
+
     public record UserInsightDto(String leaderShipStyleAnalysis, String animalSpiritGuide) {
+    }
+
+    public record TipsDto(String leadershipTip, String personalGrowthTip) {
     }
 }
