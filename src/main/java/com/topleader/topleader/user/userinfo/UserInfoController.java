@@ -89,9 +89,14 @@ public class UserInfoController {
 
     @PostMapping("/strengths")
     public UserInfoDto setStrengths(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
+        var userInfo = userInfoService.setStrengths(user.getUsername(), request.data());
+        if (shouldQueryAi(userInfo)) {
+            userInsightService.setUserInsight(userInfo);
+        }
+
         return UserInfoDto.from(
-            userInfoService.setStrengths(user.getUsername(), request.data()),
-            userRepository.findById(user.getUsername()).orElseThrow()
+                userInfo,
+                userRepository.findById(user.getUsername()).orElseThrow()
         );
     }
 
@@ -102,6 +107,7 @@ public class UserInfoController {
         if(shouldQueryAi(userInfo)) {
             userInsightService.setUserInsight(userInfo);
         }
+
         return UserInfoDto.from(
             userInfo,
             userRepository.findById(user.getUsername()).orElseThrow()
