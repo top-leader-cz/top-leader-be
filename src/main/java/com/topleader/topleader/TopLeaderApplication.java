@@ -3,6 +3,8 @@ package com.topleader.topleader;
 import java.time.ZoneOffset;
 import java.util.TimeZone;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.ai.chat.ChatClient;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -27,5 +29,9 @@ public class TopLeaderApplication {
     public String legacyHealthCheck() {
         return "App ok";
     }
+
+
+
+
 
 }

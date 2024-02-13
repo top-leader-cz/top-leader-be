@@ -5,6 +5,12 @@ spring:
   threads:
     virtual:
       enabled: true
+  ai:
+    openai:
+      api-key: dummy-token
+      chat:
+        options:
+          model: gpt-3.5-turbo
   datasource:
     url: jdbc:postgresql://localhost:5432/top_leader
     username: root

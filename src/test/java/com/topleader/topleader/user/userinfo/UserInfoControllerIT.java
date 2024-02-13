@@ -19,12 +19,20 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+
+import com.topleader.topleader.user.userinsight.UserInsightRepository;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.ai.chat.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
+import static com.topleader.topleader.ai.AiClient.ANIMAL_SPIRIT_QUERY;
+import static com.topleader.topleader.ai.AiClient.LEADERSHIP_STYLE_QUERY;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,6 +66,12 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Autowired
     private CreditHistoryRepository creditHistoryRepository;
+
+    @Autowired
+    ChatClient chatClient;
+
+    @Autowired
+    UserInsightRepository userInsightRepository;
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
@@ -430,5 +444,32 @@ class UserInfoControllerIT extends IntegrationTest {
         final var creditHistory = creditHistoryRepository.findAll();
 
         assertThat(creditHistory, hasSize(0));
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/user_insight/user-insight_user-info.sql"})
+    void aiQuery() throws Exception {
+
+        var leaderShipQuery  = String.format(LEADERSHIP_STYLE_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
+        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
+
+        var animalQuery  = String.format(ANIMAL_SPIRIT_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
+        Mockito.when(chatClient.call(animalQuery)).thenReturn("animal-response");
+
+        mvc.perform(post("/api/latest/user-info/values")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                        "data": ["patriotism"]
+                     }
+                                        """)
+                )
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(userInsightRepository.findAll())
+                .extracting("leadershipStyleAnalysis", "animalSpiritGuide")
+                .containsExactly(new Tuple("leadership-response", "animal-response"));
+
     }
 }

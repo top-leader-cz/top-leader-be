@@ -12,6 +12,7 @@ import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.user.userinsight.UserInsightService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -19,16 +20,13 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -58,6 +56,8 @@ public class UserInfoController {
     private final NotificationService notificationService;
 
     private final ScheduledSessionService scheduledSessionService;
+
+    private final UserInsightService userInsightService;
 
 
     @GetMapping
@@ -89,17 +89,27 @@ public class UserInfoController {
 
     @PostMapping("/strengths")
     public UserInfoDto setStrengths(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
+        var userInfo = userInfoService.setStrengths(user.getUsername(), request.data());
+        if (shouldQueryAi(userInfo)) {
+            userInsightService.setUserInsight(userInfo);
+        }
+
         return UserInfoDto.from(
-            userInfoService.setStrengths(user.getUsername(), request.data()),
-            userRepository.findById(user.getUsername()).orElseThrow()
+                userInfo,
+                userRepository.findById(user.getUsername()).orElseThrow()
         );
     }
 
 
     @PostMapping("/values")
     public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
+        var userInfo = userInfoService.setValues(user.getUsername(), request.data());
+        if(shouldQueryAi(userInfo)) {
+            userInsightService.setUserInsight(userInfo);
+        }
+
         return UserInfoDto.from(
-            userInfoService.setValues(user.getUsername(), request.data()),
+            userInfo,
             userRepository.findById(user.getUsername()).orElseThrow()
         );
     }
@@ -279,5 +289,9 @@ public class UserInfoController {
     }
 
     public record SetCoachRequestDto(String coach) {
+    }
+
+    private boolean shouldQueryAi(UserInfo userInfo) {
+        return !CollectionUtils.isEmpty(userInfo.getValues()) && !CollectionUtils.isEmpty(userInfo.getStrengths());
     }
 }
