@@ -5,11 +5,14 @@ package com.topleader.topleader.coach.list;
 
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
+import com.topleader.topleader.email.EmailService;
+import com.topleader.topleader.email.VelocityService;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.user.token.Token;
 import com.topleader.topleader.util.image.ImageUtil;
 import com.topleader.topleader.util.page.PageDto;
 import jakarta.transaction.Transactional;
@@ -18,12 +21,12 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -60,10 +63,17 @@ import static org.springframework.util.StringUtils.hasText;
 /**
  * @author Daniel Slavik
  */
+@Slf4j
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 @RequestMapping("/api/latest/coaches")
 public class CoachListController {
+
+    private static final Map<String, String> subjects = Map.of(
+            "en", "New Booking Alert on TopLeader",
+            "cs", "Upozornění na novou rezervaci na TopLeader",
+            "fr", "Alerte de nouvelle réservation sur TopLeader",
+            "de", "Neue Buchungsalarm auf TopLeader");
 
     private final CoachImageRepository coachImageRepository;
 
@@ -74,6 +84,21 @@ public class CoachListController {
     private final ScheduledSessionService scheduledSessionService;
 
     private final UserRepository userRepository;
+
+    private final EmailService emailService;
+
+    private final VelocityService velocityService;
+
+
+    @Value("${top-leader.app-url}")
+    private String appUrl;
+
+    @Value("${top-leader.supported-invitations}")
+    private List<String> supportedInvitations;
+
+    @Value("${top-leader.default-locale}")
+    private String defaultLocale;
+
 
     @Transactional
     @PostMapping("/{username}/schedule")
@@ -128,7 +153,6 @@ public class CoachListController {
         if (scheduledSessionService.isAlreadyScheduled(coachName, shiftedTime)) {
             throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", time.toString(), "Time " + time + " is not available");
         }
-
         if (!scheduledSessionService.isPossibleToSchedule(clientName, coachName)) {
             throw new ApiValidationException(NOT_ENOUGH_CREDITS, "user", clientName, "User does not have enough credit");
         }
@@ -143,6 +167,20 @@ public class CoachListController {
                 .setPaid(coachName.equalsIgnoreCase(user.getFreeCoach()))
                 .setPrivate(false)
         );
+
+        log.info("Sending reservation alert for: [{}]", coachName);
+        var params = Map.of("firstName", user.getFirstName(), "lastName", user.getLastName(), "link", appUrl);
+        var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(user.getLocale()));
+
+        emailService.sendEmail(clientName, subjects.getOrDefault(user.getLocale(), defaultLocale), emailBody);
+    }
+
+    public String parseTemplateName(String locale) {
+        return "templates/reservation/reservation-" + parseLocale(locale) + ".vm";
+    }
+
+    public String parseLocale(String locale) {
+        return supportedInvitations.contains(locale) ? locale : defaultLocale;
     }
 
     @GetMapping("/{username}/availability")

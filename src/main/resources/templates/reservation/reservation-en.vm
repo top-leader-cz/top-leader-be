@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>Dear <b>$firstName $lastName</b>,</p>
+
+<p>Great news! Someone has booked a session with you on the TopLeader platform. Please log in to view the details and prepare for your upcoming session.</p>
+
+<p>To access your account, please click <a href="$link" target="_blank">here</a></p>
+
+<p>Looking forward to seeing the impact you'll make!</p>
+
+<p>Best regards, The TopLeader Team</p>
+
+</body>
+</html>
