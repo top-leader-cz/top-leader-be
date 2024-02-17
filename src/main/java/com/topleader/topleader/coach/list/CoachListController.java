@@ -172,7 +172,7 @@ public class CoachListController {
         var params = Map.of("firstName", user.getFirstName(), "lastName", user.getLastName(), "link", appUrl);
         var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(user.getLocale()));
 
-        emailService.sendEmail(clientName, subjects.getOrDefault(user.getLocale(), defaultLocale), emailBody);
+        emailService.sendEmail(coachName, subjects.getOrDefault(user.getLocale(), defaultLocale), emailBody);
     }
 
     public String parseTemplateName(String locale) {
