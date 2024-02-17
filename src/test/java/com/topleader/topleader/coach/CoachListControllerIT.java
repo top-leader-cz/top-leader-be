@@ -117,6 +117,7 @@ class CoachListControllerIT extends IntegrationTest {
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(body).contains("http://app-test-url");
+        Assertions.assertThat(body).contains("<b>John Doe</b>");
     }
 
     @Test
@@ -177,6 +178,7 @@ class CoachListControllerIT extends IntegrationTest {
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(body).contains("http://app-test-url");
+        Assertions.assertThat(body).contains("<b>John Doe</b>");
     }
 
     @Test

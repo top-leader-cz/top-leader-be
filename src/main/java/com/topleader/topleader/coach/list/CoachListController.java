@@ -49,10 +49,7 @@ import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFields
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
-import static com.topleader.topleader.exception.ErrorCodeConstants.DIFFERENT_COACH_NOT_PERMITTED;
-import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_ENOUGH_CREDITS;
-import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
-import static com.topleader.topleader.exception.ErrorCodeConstants.TIME_NOT_AVAILABLE;
+import static com.topleader.topleader.exception.ErrorCodeConstants.*;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
@@ -169,10 +166,12 @@ public class CoachListController {
         );
 
         log.info("Sending reservation alert for: [{}]", coachName);
-        var params = Map.of("firstName", user.getFirstName(), "lastName", user.getLastName(), "link", appUrl);
-        var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(user.getLocale()));
+        var coach = userRepository.findById(coachName)
+                .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", time.toString(), "Coach not found " + coachName));
+        var params = Map.of("firstName", coach.getFirstName(), "lastName", coach.getLastName(), "link", appUrl);
+        var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(coach.getLocale()));
 
-        emailService.sendEmail(coachName, subjects.getOrDefault(user.getLocale(), defaultLocale), emailBody);
+        emailService.sendEmail(coachName, subjects.getOrDefault(coach.getLocale(), defaultLocale), emailBody);
     }
 
     public String parseTemplateName(String locale) {

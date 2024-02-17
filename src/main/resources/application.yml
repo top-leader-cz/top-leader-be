@@ -7,7 +7,7 @@ spring:
       enabled: true
   ai:
     openai:
-      api-key: dummy-token
+      api-key: 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
       chat:
         options:
           model: gpt-3.5-turbo
