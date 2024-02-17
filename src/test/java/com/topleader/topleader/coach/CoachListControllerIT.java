@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.coach;
 
+import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.coach.availability.CoachAvailability;
 import com.topleader.topleader.coach.availability.CoachAvailabilityRepository;
@@ -18,6 +19,8 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.TemporalAdjusters;
+
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -107,6 +110,13 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(creditHistoryEvent.getCredit(), is(110));
         assertThat(creditHistoryEvent.getUsername(), is("user"));
         assertThat(creditHistoryEvent.getType(), is(CreditHistory.Type.SCHEDULED));
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("user");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
+        var body = GreenMailUtil.getBody(receivedMessage);
+        Assertions.assertThat(body).contains("http://app-test-url");
     }
 
     @Test
@@ -160,6 +170,13 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(creditHistoryEvent.getCredit(), is(110));
         assertThat(creditHistoryEvent.getUsername(), is("user"));
         assertThat(creditHistoryEvent.getType(), is(CreditHistory.Type.SCHEDULED));
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("user");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
+        var body = GreenMailUtil.getBody(receivedMessage);
+        Assertions.assertThat(body).contains("http://app-test-url");
     }
 
     @Test
