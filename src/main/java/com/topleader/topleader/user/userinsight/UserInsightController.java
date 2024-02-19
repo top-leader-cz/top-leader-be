@@ -15,7 +15,7 @@ public class UserInsightController {
 
     @GetMapping
     public UserInsightDto getInsight(@AuthenticationPrincipal UserDetails user) {
-        var userInsight = userInsightService.getInsight(user.getUsername()).orElseThrow();
+        var userInsight = userInsightService.getInsight(user.getUsername()).orElse(new UserInsight());
         return new UserInsightDto(userInsight.getLeadershipStyleAnalysis(), userInsight.getAnimalSpiritGuide());
     }
 
