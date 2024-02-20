@@ -7,7 +7,7 @@ spring:
       enabled: true
   ai:
     openai:
-      api-key: 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
+      api-key: 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
       chat:
         options:
           model: gpt-3.5-turbo

@@ -2,12 +2,14 @@ package com.topleader.topleader.ai;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.ChatClient;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AiClient {
@@ -23,19 +25,22 @@ public class AiClient {
     private final ChatClient chatClient;
 
     public String findLeaderShipStyle(String locale, List<String> strengths, List<String> values) {
+        log.info("Finding leadership style for strengths: {} and values: {} locale: {}", strengths, values, locale);
         return chatClient.call(String.format(LEADERSHIP_STYLE_QUERY, strengths, values, locale));
-
     }
 
     public String findAnimalSpirit(String locale, List<String> strengths, List<String> values) {
+        log.info("Finding animal spirit for strengths: {} and values: {} locale: {}", strengths, values, locale);
         return chatClient.call(String.format(ANIMAL_SPIRIT_QUERY, strengths, values, locale));
     }
 
     public String findLeadershipTip(String locale, List<String> strengths, List<String> values) {
+        log.info("Finding leadership tip for strengths: {} and values: {} locale: {}", strengths, values, locale);
         return chatClient.call(String.format(LEADERSHIP_TIP_QUERY, strengths, values, locale));
     }
 
     public String findPersonalGrowthTip(String locale, List<String> strengths, List<String> values) {
+        log.info("Finding personal growth for strengths: {} and values: {} locale: {}", strengths, values, locale);
         return chatClient.call(String.format(PERSONAL_GROWTH_TIP_QUERY, strengths, values, locale));
     }
 }

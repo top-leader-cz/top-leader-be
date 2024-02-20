@@ -45,10 +45,10 @@ class UserInsightControllerIT extends IntegrationTest {
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/user-insight.sql"})
     void generateTips() throws Exception {
-        var leaderShipQuery  = String.format(LEADERSHIP_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
+        var leaderShipQuery  = String.format(LEADERSHIP_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
-        var personalGrowthQuery  = String.format(PERSONAL_GROWTH_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
+        var personalGrowthQuery  = String.format(PERSONAL_GROWTH_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(personalGrowthQuery)).thenReturn("personalGrowthTip-response");
 
         mvc.perform(get("/api/latest/user-insight/generate-tips"))

@@ -5,8 +5,12 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.Locale;
 import java.util.Optional;
-import lombok.experimental.UtilityClass;
 
+import io.vavr.control.Try;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @UtilityClass
 public class UserUtils {
 
@@ -28,5 +32,24 @@ public class UserUtils {
         return user.map(User::getTimeZone)
             .map(ZoneId::of)
             .orElse(ZoneOffset.UTC);
+    }
+
+    public  String localeToLanguage(String locale) {
+        return Try.of(() -> Languages.valueOf(locale).language)
+                .onFailure(e -> log.warn("Locale do not exist, defaulting to English. Locale: {}", locale))
+                .getOrElse(Languages.en.language);
+    }
+
+    public enum Languages {
+        fr("French"),
+        cs("Czech"),
+        de("German"),
+        en("English");
+
+        public final String language;
+
+        Languages(String language) {
+            this.language = language;
+        }
     }
 }

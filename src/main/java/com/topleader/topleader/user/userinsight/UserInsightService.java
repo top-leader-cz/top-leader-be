@@ -5,6 +5,7 @@ import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
+import com.topleader.topleader.util.common.user.UserUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -35,8 +36,8 @@ public class UserInsightService {
         var user = userRepository.findById(username).orElseThrow();
         var userInsight = userInsightRepository.findById(username).orElse(new UserInsight());
         userInsight.setUsername(username);
-        userInsight.setLeadershipStyleAnalysis(aiClient.findLeaderShipStyle(user.getLocale(), strengths, values));
-        userInsight.setAnimalSpiritGuide(aiClient.findAnimalSpirit(user.getLocale(), strengths, values));
+        userInsight.setLeadershipStyleAnalysis(aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
+        userInsight.setAnimalSpiritGuide(aiClient.findAnimalSpirit(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
         userInsightRepository.save(userInsight);
     }
 
@@ -54,8 +55,8 @@ public class UserInsightService {
         var userInsight = userInsightRepository.findById(username).orElse(new UserInsight());
         if(hasFilledOutStrengthsAndValues(userInfo) && shouldGenerateTips(userInsight) ) {
             userInsight.setUsername(username);
-            userInsight.setLeadershipTip(aiClient.findLeadershipTip(locale, strengths, values));
-            userInsight.setPersonalGrowthTip(aiClient.findPersonalGrowthTip(locale, strengths, values));
+            userInsight.setLeadershipTip(aiClient.findLeadershipTip(UserUtils.localeToLanguage(locale), strengths, values));
+            userInsight.setPersonalGrowthTip(aiClient.findPersonalGrowthTip(UserUtils.localeToLanguage(locale), strengths, values));
             userInsight.setTipsGeneratedAt(LocalDateTime.now());
             return userInsightRepository.save(userInsight);
         }
@@ -70,5 +71,6 @@ public class UserInsightService {
     private boolean hasFilledOutStrengthsAndValues(UserInfo userInfo) {
         return !CollectionUtils.isEmpty(userInfo.getStrengths()) && !CollectionUtils.isEmpty(userInfo.getValues());
     }
+
 
 }
