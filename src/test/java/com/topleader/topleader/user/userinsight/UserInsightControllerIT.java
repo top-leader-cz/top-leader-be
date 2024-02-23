@@ -2,6 +2,8 @@ package com.topleader.topleader.user.userinsight;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
+import org.assertj.core.api.Assertions;
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.ChatClient;
@@ -25,6 +27,9 @@ class UserInsightControllerIT extends IntegrationTest {
     @Autowired
     UserInfoRepository userInfoRepository;
 
+    @Autowired
+    UserInsightRepository userInsightRepository;
+
     @Test
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/user-insight.sql"})
@@ -33,9 +38,11 @@ class UserInsightControllerIT extends IntegrationTest {
                 .andDo(print())
                 .andExpect(content().json("""
                           {
-                            "leaderShipStyleAnalysis": "leadership-response",
-                            "animalSpiritGuide": "animal-response"
-                         }
+                          "personalGrowthTip":{"text":null,"isPending":false},
+                          "leaderShipStyle":{"text":"leadership-response","isPending":false},
+                          "animalSpirit":{"text":"animal-response","isPending":false},
+                          "leadershipTip":{"text":null,"isPending":false}
+                          }
                         """))
                 .andExpect(status().isOk());
 
@@ -45,21 +52,19 @@ class UserInsightControllerIT extends IntegrationTest {
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/user-insight.sql"})
     void generateTips() throws Exception {
-        var leaderShipQuery  = String.format(LEADERSHIP_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
+        var leaderShipQuery = String.format(LEADERSHIP_TIP_QUERY, List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
-        var personalGrowthQuery  = String.format(PERSONAL_GROWTH_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
+        var personalGrowthQuery = String.format(PERSONAL_GROWTH_TIP_QUERY, List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(personalGrowthQuery)).thenReturn("personalGrowthTip-response");
 
         mvc.perform(get("/api/latest/user-insight/generate-tips"))
                 .andDo(print())
-                .andExpect(content().json("""
-                          {
-                            "leadershipTip": "leadershipTip-response",
-                            "personalGrowthTip": "personalGrowthTip-response"
-                         }
-                        """))
                 .andExpect(status().isOk());
+
+        Assertions.assertThat(userInsightRepository.findAll())
+                .extracting(UserInsight::getLeadershipTip, UserInsight::getPersonalGrowthTip)
+                .containsExactly(new Tuple("leadershipTip-response", "personalGrowthTip-response"));
 
     }
 
@@ -68,22 +73,20 @@ class UserInsightControllerIT extends IntegrationTest {
     @Sql(scripts = {"/user_insight/user-insight.sql"})
     void generateTipsNoStrengthsAndValues() throws Exception {
         userInfoRepository.deleteAll();
-        var leaderShipQuery  = String.format(LEADERSHIP_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
+        var leaderShipQuery = String.format(LEADERSHIP_TIP_QUERY, List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
-        var personalGrowthQuery  = String.format(PERSONAL_GROWTH_TIP_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "en");
+        var personalGrowthQuery = String.format(PERSONAL_GROWTH_TIP_QUERY, List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
         Mockito.when(chatClient.call(personalGrowthQuery)).thenReturn("personalGrowthTip-response");
 
 
         mvc.perform(get("/api/latest/user-insight/generate-tips"))
-                .andDo(print())
-                .andExpect(content().json("""
-                          {
-                            "leadershipTip": null,
-                            "personalGrowthTip": null
-                         }
-                        """))
                 .andExpect(status().isOk());
+
+
+        Assertions.assertThat(userInsightRepository.findAll())
+                .extracting(UserInsight::getLeadershipTip, UserInsight::getPersonalGrowthTip)
+                .containsExactly(new Tuple(null, null));
 
     }
 

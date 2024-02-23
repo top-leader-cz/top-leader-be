@@ -3,12 +3,14 @@ package com.topleader.topleader.user.userinsight;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
+import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 
 
 @Data
 @Entity
+@Accessors(chain = true)
 public class UserInsight {
 
     @Id
@@ -16,11 +18,17 @@ public class UserInsight {
 
     private String leadershipStyleAnalysis;
 
+    private boolean leadershipPending;
+
     private String animalSpiritGuide;
+
+    private boolean animalSpiritPending;
 
     private String leadershipTip;
 
     private String personalGrowthTip;
+
+    private boolean dailyTipsPending;
 
     private LocalDateTime tipsGeneratedAt;
 }

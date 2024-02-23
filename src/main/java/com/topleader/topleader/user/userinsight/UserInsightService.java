@@ -8,6 +8,7 @@ import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import com.topleader.topleader.util.common.user.UserUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -28,7 +29,8 @@ public class UserInsightService {
     private final AiClient aiClient;
 
 
-    public void setUserInsight(UserInfo userInfo) {
+   @Async
+   public void setUserInsight(UserInfo userInfo) {
         var strengths = userInfo.getTopStrengths();
         var values = userInfo.getValues();
         var username = userInfo.getUsername();
@@ -36,31 +38,36 @@ public class UserInsightService {
         var user = userRepository.findById(username).orElseThrow();
         var userInsight = userInsightRepository.findById(username).orElse(new UserInsight());
         userInsight.setUsername(username);
-        userInsight.setLeadershipStyleAnalysis(aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
-        userInsight.setAnimalSpiritGuide(aiClient.findAnimalSpirit(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
-        userInsightRepository.save(userInsight);
+        var savedUserInsight = userInsightRepository.save(userInsight.setLeadershipPending(true).setAnimalSpiritPending(true));
+        savedUserInsight.setLeadershipStyleAnalysis(aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
+        savedUserInsight.setAnimalSpiritGuide(aiClient.findAnimalSpirit(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
+        savedUserInsight.setLeadershipPending(false);
+        savedUserInsight.setAnimalSpiritPending(false);
+        userInsightRepository.save(savedUserInsight);
     }
 
     public Optional<UserInsight> getInsight(String username) {
         return userInsightRepository.findById(username);
     }
 
-    public UserInsight generateTips(String username) {
-        var user = userRepository.findById(username).orElseThrow();
+    @Async
+    public void generateTips(String username) {
         var userInfo = userInfoRepository.findById(username).orElse(new UserInfo());
-        var strengths = userInfo.getTopStrengths();
-        var values = userInfo.getValues();
-
-        var locale = user.getLocale();
         var userInsight = userInsightRepository.findById(username).orElse(new UserInsight());
-        if(hasFilledOutStrengthsAndValues(userInfo) && shouldGenerateTips(userInsight) ) {
-            userInsight.setUsername(username);
-            userInsight.setLeadershipTip(aiClient.findLeadershipTip(UserUtils.localeToLanguage(locale), strengths, values));
-            userInsight.setPersonalGrowthTip(aiClient.findPersonalGrowthTip(UserUtils.localeToLanguage(locale), strengths, values));
-            userInsight.setTipsGeneratedAt(LocalDateTime.now());
-            return userInsightRepository.save(userInsight);
+
+        if (hasFilledOutStrengthsAndValues(userInfo) && shouldGenerateTips(userInsight)) {
+            var savedUserInsight = userInsightRepository.save(userInsight.setDailyTipsPending(true));
+            var user = userRepository.findById(username).orElseThrow();
+            var strengths = userInfo.getTopStrengths();
+            var values = userInfo.getValues();
+            var locale = user.getLocale();
+            savedUserInsight.setUsername(username);
+            savedUserInsight.setLeadershipTip(aiClient.findLeadershipTip(UserUtils.localeToLanguage(locale), strengths, values));
+            savedUserInsight.setPersonalGrowthTip(aiClient.findPersonalGrowthTip(UserUtils.localeToLanguage(locale), strengths, values));
+            savedUserInsight.setTipsGeneratedAt(LocalDateTime.now());
+            savedUserInsight.setDailyTipsPending(false);
+            userInsightRepository.save(savedUserInsight);
         }
-        return userInsight;
     }
 
     private boolean shouldGenerateTips(UserInsight userInsight) {
