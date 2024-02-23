@@ -50,4 +50,6 @@ public class Coach {
     private LocalDate experienceSince;
 
     private String rate;
+
+    private String linkedinProfile;
 }

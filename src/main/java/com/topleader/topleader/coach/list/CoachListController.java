@@ -262,7 +262,9 @@ public class CoachListController {
 
         String timeZone,
 
-        String webLink
+        String webLink,
+
+        String linkedinProfile
 
 
     ) {
@@ -278,7 +280,8 @@ public class CoachListController {
                 toExperience(c.getExperienceSince()),
                 c.getRate(),
                 c.getTimeZone(),
-                c.getWebLink()
+                c.getWebLink(),
+                c.getLinkedinProfile()
             );
         }
 
