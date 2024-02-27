@@ -19,10 +19,10 @@ public class UserInsightController {
     public Map<String, InsightItem> getInsight(@AuthenticationPrincipal UserDetails user) {
         var userInsight = userInsightService.getInsight(user.getUsername()).orElse(new UserInsight());
         return Map.of(
-                "leaderShipStyle", new InsightItem(userInsight.getLeadershipStyleAnalysis(), false),
-                "animalSpirit", new InsightItem(userInsight.getAnimalSpiritGuide(), false),
-                "leadershipTip", new InsightItem(userInsight.getLeadershipTip(), false),
-                "personalGrowthTip", new InsightItem(userInsight.getPersonalGrowthTip(), false)
+                "leaderShipStyle", new InsightItem(userInsight.getLeadershipStyleAnalysis(), userInsight.isLeadershipPending()),
+                "animalSpirit", new InsightItem(userInsight.getAnimalSpiritGuide(), userInsight.isAnimalSpiritPending()),
+                "leadershipTip", new InsightItem(userInsight.getLeadershipTip(), userInsight.isDailyTipsPending()),
+                "personalGrowthTip", new InsightItem(userInsight.getPersonalGrowthTip(), userInsight.isDailyTipsPending())
         );
     }
 
