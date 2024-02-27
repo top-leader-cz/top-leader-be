@@ -198,23 +198,27 @@ public class CoachController {
         @NotNull
         String rate,
 
-        String timeZone
+        String timeZone,
+
+        String linkedinProfile
     ) {
-        public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, Set.of(), Set.of(), null, null, null);
+        public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, Set.of(), Set.of(), null, null, null, null);
 
         public static CoachDto from(CoachListView c) {
             return new CoachDto(
-                c.getPublicProfile(),
-                c.getFirstName(),
-                c.getLastName(),
-                c.getEmail(),
-                c.getWebLink(),
-                c.getBio(),
-                c.getLanguages(),
-                c.getFields(),
-                c.getExperienceSince(),
-                c.getRate(),
-                c.getTimeZone()
+                    c.getPublicProfile(),
+                    c.getFirstName(),
+                    c.getLastName(),
+                    c.getEmail(),
+                    c.getWebLink(),
+                    c.getBio(),
+                    c.getLanguages(),
+                    c.getFields(),
+                    c.getExperienceSince(),
+                    c.getRate(),
+                    c.getTimeZone(),
+                    c.getLinkedinProfile()
+
             );
         }
 
@@ -235,7 +239,8 @@ public class CoachController {
                 .setLanguages(languages)
                 .setFields(fields)
                 .setExperienceSince(experienceSince)
-                .setRate(rate);
+                .setRate(rate)
+                .setLinkedinProfile(linkedinProfile);
         }
 
     }

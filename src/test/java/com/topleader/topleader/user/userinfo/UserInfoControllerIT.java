@@ -449,7 +449,7 @@ class UserInfoControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/user-insight_user-info.sql"})
-    void aiQuery() throws Exception {
+    void setUserInsight() throws Exception {
 
         var leaderShipQuery  = String.format(LEADERSHIP_STYLE_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");

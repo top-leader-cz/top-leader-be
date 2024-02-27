@@ -60,4 +60,8 @@ public class CoachListView {
     private LocalDate experienceSince;
 
     private String rate;
+
+    @Column(length = 1000)
+    private String linkedinProfile;
+
 }

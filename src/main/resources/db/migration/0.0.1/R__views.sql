@@ -35,4 +35,21 @@ FROM users u
                      FROM scheduled_session
                      WHERE scheduled_session."time" >= now()
                      GROUP BY scheduled_session.username, scheduled_session.coach_username) ns ON ns.username::text = u.username::text AND ns.coach_username::text = c.username::text
-where coach is not null
+where coach is not null;
+
+
+create or replace view coach_list_view as
+select c.username,
+       u.first_name,
+       u.last_name,
+       c.bio,
+       c.email,
+       c.experience_since,
+       c.public_profile,
+       c.rate,
+       c.web_link,
+       u.time_zone,
+       c.linkedin_profile
+from coach c
+         left join users u on c.username = u.username
+;

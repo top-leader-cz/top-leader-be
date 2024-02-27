@@ -518,6 +518,7 @@ class CoachListControllerIT extends IntegrationTest {
         final var exp = LocalDate.now().getYear() - 2019;
 
         mvc.perform(get("/api/latest/coaches/coach3"))
+                .andDo(print())
             .andExpect(jsonPath("$.username", is("coach3")))
             .andExpect(jsonPath("$.firstName", is("Michael")))
             .andExpect(jsonPath("$.lastName", is("Johnson")))
@@ -526,6 +527,7 @@ class CoachListControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.experience", is(exp)))
             .andExpect(jsonPath("$.rate", is("$$$")))
             .andExpect(jsonPath("$.webLink", is("http://some_video3")))
+            .andExpect(jsonPath("$.linkedinProfile", is("http://linkac")))
         ;
     }
 }

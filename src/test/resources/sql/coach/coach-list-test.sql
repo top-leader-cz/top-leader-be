@@ -9,11 +9,11 @@ VALUES ('user', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 
        ('no-credit-user', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC', 'coach2', 400, 400, 'coach3', 'cs'),
        ('no-credit-user-free-coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC', 'coach3', 400, 400, 'coach3', 'cs');
 
-INSERT INTO coach (username, public_profile, email, web_link, bio, experience_since, rate)
-VALUES ('coach1', true, 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$'),
-       ('coach2', true, 'jane.smith@example.com', 'http://some_video2', 'Passionate about coaching', '2017-05-15', '$$'),
-       ('coach3', true, 'michael.johnson@example.com', 'http://some_video3', 'Certified fitness coach', '2019-09-10', '$$$'),
-       ('coach4', false, 'michael.johnson@example.com', 'http://some_video4', 'Certified fitness coach', '2019-09-10', '$$$');
+INSERT INTO coach (username, public_profile, email, web_link, bio, experience_since, rate, linkedin_profile)
+VALUES ('coach1', true, 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$', null),
+       ('coach2', true, 'jane.smith@example.com', 'http://some_video2', 'Passionate about coaching', '2017-05-15', '$$', null),
+       ('coach3', true, 'michael.johnson@example.com', 'http://some_video3', 'Certified fitness coach', '2019-09-10', '$$$', 'http://linkac'),
+       ('coach4', false, 'michael.johnson@example.com', 'http://some_video4', 'Certified fitness coach', '2019-09-10', '$$$', null);
 
 INSERT INTO coach_languages (coach_username, languages)
 VALUES ('coach1', 'English'),
