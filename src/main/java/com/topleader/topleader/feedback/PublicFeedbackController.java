@@ -1,5 +1,6 @@
 package com.topleader.topleader.feedback;
 
+import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.feedback.api.FeedbackFormDto;
 import com.topleader.topleader.feedback.api.FeedbackFormOptions;
 import com.topleader.topleader.feedback.api.FeedbackSubmitRequest;
@@ -8,6 +9,8 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
+
+import java.time.LocalDateTime;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +26,8 @@ public class PublicFeedbackController {
     private final FeedbackService feedbackService;
 
     private final UserDetailService userDetailService;
+
+    private final EmailService emailService;
 
     @Transactional
     @GetMapping("/options")
@@ -65,6 +70,8 @@ public class PublicFeedbackController {
                             .setHrEmail(newUser.getHrEmail()));
                 }, () -> newUser(newUser, username));
 
+        var body = String.format("Username: %s Timestamp: %s", username,  LocalDateTime.now());
+        emailService.sendEmail("info@topleader.io", "New Pending user in the TopLeader platform", body);
     }
 
 

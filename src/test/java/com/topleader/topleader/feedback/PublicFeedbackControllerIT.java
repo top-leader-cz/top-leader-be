@@ -1,5 +1,6 @@
 package com.topleader.topleader.feedback;
 
+import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
@@ -94,6 +95,13 @@ public class PublicFeedbackControllerIT extends IntegrationTest {
         Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
                 .extracting("username", "firstName", "lastName", "authorities", "status", "company", "hrEmail")
                 .containsExactly("pepa@cerny.cz", "Pepa", "Cerny", Set.of(RESPONDENT), PENDING, "test company", "test.hr@email.com");
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("info@topleader.io");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("New Pending user in the TopLeader platform");
+        var body = GreenMailUtil.getBody(receivedMessage);
+        Assertions.assertThat(body).contains("Username: pepa@cerny.cz");
     }
 
 

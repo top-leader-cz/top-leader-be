@@ -5,6 +5,7 @@ package com.topleader.topleader.hr;
 
 import com.topleader.topleader.admin.AdminView;
 import com.topleader.topleader.admin.AdminViewRepository;
+import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
@@ -16,6 +17,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -58,6 +61,8 @@ public class HrController {
     private final AdminViewRepository adminViewRepository;
 
     private final TransactionService transactionService;
+
+    private final EmailService emailService;
 
 
     @Secured({"HR", "USER"})
@@ -127,6 +132,8 @@ public class HrController {
                 .orElseThrow(NotFoundException::new)
             );
 
+            var body = String.format("Username: %s Amount: %s Timestamp: %s", username, request.credit(), LocalDateTime.now());
+            emailService.sendEmail("info@topleader.io", "Credits requested in the TopLeader platform", body);
             return HrUserDto.from(
                 adminViewRepository.findById(username).orElseThrow()
             );
@@ -145,9 +152,14 @@ public class HrController {
             .orElseThrow(NotFoundException::new)
         );
 
+        var body = String.format("Hr: %s for username: %s Amount: %s Timestamp: %s", user.getUsername(),  username, request.credit(), LocalDateTime.now());
+        emailService.sendEmail("info@topleader.io", "Credits requested in the TopLeader platform", body);
+
         return HrUserDto.from(
             adminViewRepository.findById(username).orElseThrow()
         );
+
+
     }
 
     public record UserInvitationRequestDto(@Email @NotEmpty String email, @NotEmpty String firstName, @NotEmpty String lastName, Boolean isTrial,

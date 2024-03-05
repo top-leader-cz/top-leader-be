@@ -3,7 +3,9 @@
  */
 package com.topleader.topleader.hr;
 
+import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -127,6 +129,13 @@ class HrControllerIT extends IntegrationTest {
             .andExpect(content().contentType("application/json"))
             .andExpect(content().json("{\"username\":\"user1\",\"coach\":\"Coach2\",\"credit\":50,\"requestedCredit\":1000,\"state\":\"AUTHORIZED\"}"))
         ;
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("info@topleader.io");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Credits requested in the TopLeader platform");
+        var body = GreenMailUtil.getBody(receivedMessage);
+        Assertions.assertThat(body).contains("Hr: hrUser for username: user1 Amount: 1000");
     }
 
     @Test
@@ -161,5 +170,12 @@ class HrControllerIT extends IntegrationTest {
             .andExpect(content().contentType("application/json"))
             .andExpect(content().json("{\"username\":\"user1\",\"coach\":\"Coach2\",\"credit\":50,\"requestedCredit\":1000,\"state\":\"AUTHORIZED\"}"))
         ;
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("info@topleader.io");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Credits requested in the TopLeader platform");
+        var body = GreenMailUtil.getBody(receivedMessage);
+        Assertions.assertThat(body).contains("Username: user1 Amount: 1000");
     }
 }
