@@ -31,8 +31,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
-import static com.topleader.topleader.ai.AiClient.ANIMAL_SPIRIT_QUERY;
-import static com.topleader.topleader.ai.AiClient.LEADERSHIP_STYLE_QUERY;
+import static com.topleader.topleader.ai.AiClient.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -449,13 +448,16 @@ class UserInfoControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/user-insight_user-info.sql"})
-    void setUserInsight() throws Exception {
+    void setUserValues() throws Exception {
 
         var leaderShipQuery  = String.format(LEADERSHIP_STYLE_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
 
         var animalQuery  = String.format(ANIMAL_SPIRIT_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(animalQuery)).thenReturn("animal-response");
+
+        var worldLeaderPersona  = String.format(WORLD_LEADER_PERSONA, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
+        Mockito.when(chatClient.call(worldLeaderPersona)).thenReturn("world-leader-response");
 
         mvc.perform(post("/api/latest/user-info/values")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -468,8 +470,38 @@ class UserInfoControllerIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         Assertions.assertThat(userInsightRepository.findAll())
-                .extracting("leadershipStyleAnalysis", "animalSpiritGuide")
-                .containsExactly(new Tuple("leadership-response", "animal-response"));
+                .extracting("leadershipStyleAnalysis", "animalSpiritGuide", "worldLeaderPersona")
+                .containsExactly(new Tuple("leadership-response", "animal-response", "world-leader-response"));
+
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/user_insight/user-insight_user-info.sql"})
+    void setUserStrength() throws Exception {
+
+        var leaderShipQuery  = String.format(LEADERSHIP_STYLE_QUERY, List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
+        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
+
+        var animalQuery  = String.format(ANIMAL_SPIRIT_QUERY, List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
+        Mockito.when(chatClient.call(animalQuery)).thenReturn("animal-response");
+
+        var worldLeaderPersona  = String.format(WORLD_LEADER_PERSONA, List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
+        Mockito.when(chatClient.call(worldLeaderPersona)).thenReturn("world-leader-response");
+
+        mvc.perform(post("/api/latest/user-info/strengths")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                    {
+                        "data": ["selfBeliever"]
+                     }
+                                        """)
+                )
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(userInsightRepository.findAll())
+                .extracting("leadershipStyleAnalysis", "animalSpiritGuide", "worldLeaderPersona")
+                .containsExactly(new Tuple("leadership-response", "animal-response", "world-leader-response"));
 
     }
 }

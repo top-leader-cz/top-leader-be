@@ -20,6 +20,7 @@ public class UserInsightController {
         var userInsight = userInsightService.getInsight(user.getUsername()).orElse(new UserInsight());
         return Map.of(
                 "leaderShipStyle", new InsightItem(userInsight.getLeadershipStyleAnalysis(), userInsight.isLeadershipPending()),
+                "leaderPersona", new InsightItem(userInsight.getWorldLeaderPersona(), userInsight.isLeadershipPending()),
                 "animalSpirit", new InsightItem(userInsight.getAnimalSpiritGuide(), userInsight.isAnimalSpiritPending()),
                 "leadershipTip", new InsightItem(userInsight.getLeadershipTip(), userInsight.isDailyTipsPending()),
                 "personalGrowthTip", new InsightItem(userInsight.getPersonalGrowthTip(), userInsight.isDailyTipsPending())

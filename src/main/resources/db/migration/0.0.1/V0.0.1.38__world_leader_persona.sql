@@ -1,0 +1,1 @@
+alter table user_insight add column world_leader_persona text null;

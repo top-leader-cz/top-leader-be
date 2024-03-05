@@ -40,6 +40,7 @@ class UserInsightControllerIT extends IntegrationTest {
                           {
                           "personalGrowthTip":{"text":null,"isPending":false},
                           "leaderShipStyle":{"text":"leadership-response","isPending":false},
+                          "leaderPersona":{"text": "world-leader-persona","isPending":false},
                           "animalSpirit":{"text":"animal-response","isPending":false},
                           "leadershipTip":{"text":null,"isPending":false}
                           }

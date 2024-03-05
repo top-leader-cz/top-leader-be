@@ -22,6 +22,8 @@ public class AiClient {
 
     public static final String PERSONAL_GROWTH_TIP_QUERY = "Create a 'Personal Growth Tip' within 500 characters, tailored to a user whose top strengths are %s, and key values include %s. The fact should be related to these strengths and values, offering unique and interesting insights into how they can be leveraged in leadership and self-improvement. Aim for the content to be specific, engaging, and directly relevant to the user's personal development profile. The text is to be in %s language. Use second person when addressing the user.";
 
+    public static final String WORLD_LEADER_PERSONA = "Given a user's top 5 strengths: %s, and key values: %s, identify a famous world leader who exemplifies similar characteristics. Provide a brief overview of the leader's key leadership traits, their main achievements, and how their approach aligns with the user's profile. Additionally, suggest a video, article, or book that offers deeper insight into how this leader utilized their strengths and values to achieve success. The text is to be in %s language. Use the second person when addressing the user. Keep the text under 600 characters.";
+
     private final ChatClient chatClient;
 
     public String findLeaderShipStyle(String locale, List<String> strengths, List<String> values) {
@@ -43,4 +45,10 @@ public class AiClient {
         log.info("Finding personal growth for strengths: {} and values: {} locale: {}", strengths, values, locale);
         return chatClient.call(String.format(PERSONAL_GROWTH_TIP_QUERY, strengths, values, locale));
     }
+
+    public String findLeaderPersona(String locale, List<String> strengths, List<String> values) {
+        log.info("Finding leader persona for strengths: {} and values: {} locale: {}", strengths, values, locale);
+        return chatClient.call(String.format(WORLD_LEADER_PERSONA, strengths, values, locale));
+    }
 }
+

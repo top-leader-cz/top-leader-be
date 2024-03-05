@@ -18,6 +18,8 @@ public class UserInsight {
 
     private String leadershipStyleAnalysis;
 
+    private String worldLeaderPersona;
+
     private boolean leadershipPending;
 
     private String animalSpiritGuide;

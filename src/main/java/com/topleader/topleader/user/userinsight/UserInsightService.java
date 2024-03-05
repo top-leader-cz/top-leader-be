@@ -15,6 +15,7 @@ import org.springframework.util.CollectionUtils;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -29,8 +30,8 @@ public class UserInsightService {
     private final AiClient aiClient;
 
 
-   @Async
-   public void setUserInsight(UserInfo userInfo) {
+    @Async
+    public void setUserInsight(UserInfo userInfo) {
         var strengths = userInfo.getTopStrengths();
         var values = userInfo.getValues();
         var username = userInfo.getUsername();
@@ -39,8 +40,14 @@ public class UserInsightService {
         var userInsight = userInsightRepository.findById(username).orElse(new UserInsight());
         userInsight.setUsername(username);
         var savedUserInsight = userInsightRepository.save(userInsight.setLeadershipPending(true).setAnimalSpiritPending(true));
-        savedUserInsight.setLeadershipStyleAnalysis(aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
-        savedUserInsight.setAnimalSpiritGuide(aiClient.findAnimalSpirit(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
+        var leaderShip = CompletableFuture.supplyAsync(() -> aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
+        var animalSpirit = CompletableFuture.supplyAsync(() -> aiClient.findAnimalSpirit(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
+        var leaderPersona = CompletableFuture.supplyAsync(() -> aiClient.findLeaderPersona(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
+        CompletableFuture.allOf(leaderShip, animalSpirit, leaderPersona).join();
+
+        savedUserInsight.setLeadershipStyleAnalysis(leaderShip.resultNow());
+        savedUserInsight.setAnimalSpiritGuide(animalSpirit.resultNow());
+        savedUserInsight.setWorldLeaderPersona(leaderPersona.resultNow());
         savedUserInsight.setLeadershipPending(false);
         savedUserInsight.setAnimalSpiritPending(false);
         userInsightRepository.save(savedUserInsight);
