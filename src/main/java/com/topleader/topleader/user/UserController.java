@@ -1,12 +1,15 @@
 package com.topleader.topleader.user;
 
 
+import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.exception.ApiValidationException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
+
+import java.time.LocalDateTime;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.EMAIL_USED;
 import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
+import static com.topleader.topleader.user.User.Status.PENDING;
 import static com.topleader.topleader.util.user.UserDetailUtils.isHr;
 import static com.topleader.topleader.util.user.UserDetailUtils.sendInvite;
 
@@ -45,6 +49,8 @@ public class UserController {
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final EmailService emailService;
 
     @Secured({"ADMIN", "HR"})
     @PostMapping
@@ -78,9 +84,14 @@ public class UserController {
         }
 
         var saved = userDetailService.save(user);
-        if (sendInvite(User.Status.PENDING, request.status())) {
+        if (sendInvite(PENDING, request.status())) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, request.locale()));
         }
+        if(PENDING == request.status()) {
+            var body = String.format("Username: %s Timestamp: %s", request.username(),  LocalDateTime.now());
+            emailService.sendEmail("info@topleader.io", "New Pending user in the TopLeader platform", body);
+        }
+
         return UserDto.fromUser(saved);
     }
 
