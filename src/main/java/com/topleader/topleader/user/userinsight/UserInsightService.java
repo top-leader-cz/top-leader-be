@@ -43,11 +43,11 @@ public class UserInsightService {
         var leaderShip = CompletableFuture.supplyAsync(() -> aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
         var animalSpirit = CompletableFuture.supplyAsync(() -> aiClient.findAnimalSpirit(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
         var leaderPersona = CompletableFuture.supplyAsync(() -> aiClient.findLeaderPersona(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
-        CompletableFuture.allOf(leaderShip, animalSpirit, leaderPersona).join();
 
-        savedUserInsight.setLeadershipStyleAnalysis(leaderShip.resultNow());
-        savedUserInsight.setAnimalSpiritGuide(animalSpirit.resultNow());
-        savedUserInsight.setWorldLeaderPersona(leaderPersona.resultNow());
+        savedUserInsight.setLeadershipStyleAnalysis(leaderShip.join());
+        savedUserInsight.setAnimalSpiritGuide(animalSpirit.join());
+        savedUserInsight.setWorldLeaderPersona(leaderPersona.join());
+
         savedUserInsight.setLeadershipPending(false);
         savedUserInsight.setAnimalSpiritPending(false);
         userInsightRepository.save(savedUserInsight);
