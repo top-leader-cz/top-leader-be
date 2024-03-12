@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.coach.client;
 
+import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.notification.Notification;
 import com.topleader.topleader.notification.NotificationService;
@@ -34,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.EMAIL_USED;
+import static com.topleader.topleader.user.User.Status.PENDING;
 
 
 /**
@@ -54,6 +56,8 @@ public class CoachClientController {
     private final InvitationService invitationService;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final EmailService emailService;
 
     @Secured("COACH")
     @GetMapping
@@ -113,8 +117,10 @@ public class CoachClientController {
 
         if (Boolean.TRUE.equals(request.isTrial)) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(createdUser, request.locale()));
+        } else {
+            var body = String.format("Username: %s Timestamp: %s", request.email(),  LocalDateTime.now());
+            emailService.sendEmail("info@topleader.io", "New Pending user in the TopLeader platform", body);
         }
-
         return CoachClientDto.from(createdUser);
     }
 
