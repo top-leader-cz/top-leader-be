@@ -26,6 +26,20 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 @EnableWebSecurity
 public class WebSecurityConfig {
 
+
+    @Bean
+    public SecurityFilterChain googleSync(HttpSecurity http) throws Exception {
+        http
+            .securityMatcher("/login/google")
+            .authorizeHttpRequests(requests ->
+                requests.anyRequest().permitAll()
+            )
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(AbstractHttpConfigurer::disable)
+        ;
+        return http.build();
+    }
+
     @Bean
     public SecurityFilterChain protectedChain(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
         http

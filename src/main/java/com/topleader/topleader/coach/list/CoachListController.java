@@ -12,7 +12,6 @@ import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.user.token.Token;
 import com.topleader.topleader.util.image.ImageUtil;
 import com.topleader.topleader.util.page.PageDto;
 import jakarta.transaction.Transactional;
@@ -21,9 +20,13 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +52,11 @@ import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFields
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
-import static com.topleader.topleader.exception.ErrorCodeConstants.*;
+import static com.topleader.topleader.exception.ErrorCodeConstants.DIFFERENT_COACH_NOT_PERMITTED;
+import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_ENOUGH_CREDITS;
+import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
+import static com.topleader.topleader.exception.ErrorCodeConstants.TIME_NOT_AVAILABLE;
+import static com.topleader.topleader.exception.ErrorCodeConstants.USER_NOT_FOUND;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
@@ -102,6 +109,7 @@ public class CoachListController {
     public void scheduleSession(
         @AuthenticationPrincipal UserDetails user,
         @PathVariable String username,
+        @RequestParam(name = "useFreeBusy", required = false, defaultValue = "false") Boolean useFreeBusy,
         @RequestBody ScheduleSessionRequest request
     ) {
         final var userInDb = userRepository.findById(user.getUsername()).orElseThrow();
@@ -114,22 +122,23 @@ public class CoachListController {
             userRepository.save(userInDb.setCoach(username));
         }
 
-        scheduleSession(user.getUsername(), username, request.time());
+        scheduleSession(user.getUsername(), username, request.time(), useFreeBusy);
     }
 
     @Transactional
     @PostMapping("/schedule")
     public void scheduleSession(
         @AuthenticationPrincipal UserDetails user,
+        @RequestParam(name = "useFreeBusy", required = false, defaultValue = "false") Boolean useFreeBusy,
         @RequestBody ScheduleSessionRequest request
     ) {
 
         final var coachName = userRepository.findById(user.getUsername()).orElseThrow().getCoach();
 
-        scheduleSession(user.getUsername(), coachName, request.time());
+        scheduleSession(user.getUsername(), coachName, request.time(), useFreeBusy);
     }
 
-    private void scheduleSession(String clientName, String coachName, LocalDateTime time) {
+    private void scheduleSession(String clientName, String coachName, LocalDateTime time, Boolean useFreeBusy) {
         final var userZoneId = getUserTimeZoneId(userRepository.findById(coachName));
 
         final var shiftedTime = time
@@ -141,7 +150,7 @@ public class CoachListController {
             throw new ApiValidationException(SESSION_IN_PAST, "time", time.toString(), "Not possible to schedule session in past.");
         }
 
-        final var possibleStartDates = coachAvailabilityService.getAvailabilitySplitIntoHours(coachName, shiftedTime.minusDays(1), shiftedTime.plusDays(1));
+        final var possibleStartDates = coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(coachName, shiftedTime.minusDays(1), shiftedTime.plusDays(1), useFreeBusy);
 
         if (!possibleStartDates.contains(shiftedTime)) {
             throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", time.toString(), "Time " + time + " is not available");
@@ -185,6 +194,7 @@ public class CoachListController {
     @GetMapping("/{username}/availability")
     public List<LocalDateTime> getCoachAvailability(
         @PathVariable String username,
+        @RequestParam(name = "useFreeBusy", required = false, defaultValue = "false") Boolean useFreeBusy,
         @RequestParam LocalDateTime from,
         @RequestParam LocalDateTime to
     ) {
@@ -194,7 +204,7 @@ public class CoachListController {
             .map(ScheduledSession::getTime)
             .collect(Collectors.toSet());
 
-        return coachAvailabilityService.getAvailabilitySplitIntoHours(username, from, to).stream()
+        return coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, from, to, useFreeBusy).stream()
             .filter(not(scheduledEvents::contains))
             .map(d -> d.atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId).toLocalDateTime())
             .sorted()

@@ -3,6 +3,8 @@
  */
 package com.topleader.topleader.coach.availability;
 
+import com.topleader.topleader.google.GoogleCalendarService;
+import com.topleader.topleader.google.SyncEvent;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.DayOfWeek;
@@ -35,6 +37,8 @@ public class CoachAvailabilityService {
 
     private final CoachAvailabilityRepository coachAvailabilityRepository;
 
+    private final GoogleCalendarService googleCalendarService;
+
     private final UserRepository userRepository;
 
     public List<CoachAvailability> getNonReoccurringByTimeFrame(String username, LocalDateTime from, LocalDateTime to) {
@@ -43,6 +47,38 @@ public class CoachAvailabilityService {
 
     public List<CoachAvailability> getReoccurring(String username) {
         return coachAvailabilityRepository.findAllByUsernameAndRecurringIsTrue(username);
+    }
+
+    public Set<LocalDateTime> getAvailabilitySplitIntoHoursFiltered(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
+
+        final var googleEvents = googleCalendarService.getUserEvents(username, from, to, testFreeBusy);
+
+        if (googleEvents.isEmpty()) {
+            return getAvailabilitySplitIntoHours(username, from, to);
+        }
+
+        return getAvailabilitySplitIntoHours(username, from, to).stream()
+            .filter(isNotInsideOf(googleEvents))
+            .collect(Collectors.toSet());
+    }
+
+    private static Predicate<LocalDateTime> isNotInsideOf(List<SyncEvent> googleEvents) {
+        return time -> googleEvents.stream().noneMatch(isInsideOf(time));
+    }
+
+    private static Predicate<SyncEvent> isInsideOf(LocalDateTime startTime) {
+        return googleEvent -> {
+            final var endTime = startTime.plusHours(1);
+
+            if (startTime.isBefore(googleEvent.getStartDate()) && endTime.isBefore(googleEvent.getStartDate())) {
+                return false;
+            }
+
+            if (startTime.isAfter(googleEvent.getEndDate()) && endTime.isAfter(googleEvent.getEndDate())) {
+                return false;
+            }
+            return true;
+        };
     }
 
     public Set<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
@@ -58,7 +94,7 @@ public class CoachAvailabilityService {
                             }
 
                             if (dayMap.containsKey(e.getDayFrom()) && (LocalDateTime.of(dayMap.get(e.getDayFrom()), e.getTimeFrom()).isAfter(to))) {
-                                    return false;
+                                return false;
                             }
 
                             return !dayMap.containsKey(e.getDayTo()) || (!LocalDateTime.of(dayMap.get(e.getDayTo()), e.getTimeTo()).isBefore(from));
