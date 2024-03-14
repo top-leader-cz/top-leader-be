@@ -51,6 +51,7 @@ public class UserInsightService {
         savedUserInsight.setLeadershipPending(false);
         savedUserInsight.setAnimalSpiritPending(false);
         userInsightRepository.save(savedUserInsight);
+        generateTips(username);
     }
 
     public Optional<UserInsight> getInsight(String username) {
