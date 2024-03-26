@@ -4,11 +4,18 @@
 package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.ai.AiPrompt;
+import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import java.time.LocalDate;
+import java.util.List;
+
+import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.ai.chat.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -37,6 +44,14 @@ class UserSessionControllerIT extends IntegrationTest {
 
     @Autowired
     private UserActionStepRepository userActionStepRepository;
+
+
+    @Autowired
+    ChatClient chatClient;
+
+    @Autowired
+    AiPromptService aiPromptService;
+
 
     @Test
     @WithMockUser("user2")
@@ -154,5 +169,17 @@ class UserSessionControllerIT extends IntegrationTest {
         assertThat(userActionSteps.get(0).getChecked(), is(false));
         assertThat(userActionSteps.get(0).getLabel(), is("do not lose"));
         assertThat(userActionSteps.get(0).getDate(), is(LocalDate.parse("2023-08-15")));
+    }
+
+    @Test
+    @WithMockUser("user2")
+    void generateLongTermGoal() throws Exception {
+//        var leaderShipQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LONG_TERM_GOALS),  '["s1","s2"]', '["v1","v2"]'"en");
+//        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
+
+        mvc.perform(post("/api/latest/user-sessions/generate-long-term-goal"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is("generated-long-term-goal")))
+        ;
     }
 }

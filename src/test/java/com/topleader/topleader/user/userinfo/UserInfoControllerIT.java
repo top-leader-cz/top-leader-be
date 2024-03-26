@@ -1,6 +1,8 @@
 package com.topleader.topleader.user.userinfo;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.ai.AiPrompt;
+import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.credit.history.CreditHistory;
 import com.topleader.topleader.credit.history.CreditHistoryRepository;
 import com.topleader.topleader.history.DataHistory;
@@ -31,7 +33,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
-import static com.topleader.topleader.ai.AiClient.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -71,6 +72,9 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Autowired
     UserInsightRepository userInsightRepository;
+
+    @Autowired
+    AiPromptService aiPromptService;
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
@@ -447,16 +451,16 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
-    @Sql(scripts = {"/user_insight/user-insight_user-info.sql"})
+    @Sql(scripts = {"/user_insight/user-insight_user-info.sql", "/user_insight/ai-prompt.sql"})
     void setUserValues() throws Exception {
 
-        var leaderShipQuery  = String.format(LEADERSHIP_STYLE_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
+        var leaderShipQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_STYLE), List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
 
-        var animalQuery  = String.format(ANIMAL_SPIRIT_QUERY, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
+        var animalQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ANIMAL_SPIRIT), List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(animalQuery)).thenReturn("animal-response");
 
-        var worldLeaderPersona  = String.format(WORLD_LEADER_PERSONA, List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
+        var worldLeaderPersona  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.WORLD_LEADER_PERSONA), List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(worldLeaderPersona)).thenReturn("world-leader-response");
 
         mvc.perform(post("/api/latest/user-info/values")
@@ -477,16 +481,16 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
-    @Sql(scripts = {"/user_insight/user-insight_user-info.sql"})
+    @Sql(scripts = {"/user_insight/user-insight_user-info.sql", "/user_insight/ai-prompt.sql"})
     void setUserStrength() throws Exception {
 
-        var leaderShipQuery  = String.format(LEADERSHIP_STYLE_QUERY, List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
+        var leaderShipQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_STYLE), List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
 
-        var animalQuery  = String.format(ANIMAL_SPIRIT_QUERY, List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
+        var animalQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ANIMAL_SPIRIT), List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
         Mockito.when(chatClient.call(animalQuery)).thenReturn("animal-response");
 
-        var worldLeaderPersona  = String.format(WORLD_LEADER_PERSONA, List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
+        var worldLeaderPersona  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.WORLD_LEADER_PERSONA), List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
         Mockito.when(chatClient.call(worldLeaderPersona)).thenReturn("world-leader-response");
 
         mvc.perform(post("/api/latest/user-info/strengths")
