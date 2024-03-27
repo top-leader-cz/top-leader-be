@@ -1,6 +1,9 @@
 package com.topleader.topleader.user.userinsight;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.ai.AiPrompt;
+import com.topleader.topleader.ai.AiPromptRepository;
+import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
@@ -30,6 +33,9 @@ class UserInsightControllerIT extends IntegrationTest {
     @Autowired
     UserInsightRepository userInsightRepository;
 
+    @Autowired
+    AiPromptService aiPromptService;
+
     @Test
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/user-insight.sql"})
@@ -51,12 +57,12 @@ class UserInsightControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
-    @Sql(scripts = {"/user_insight/user-insight.sql"})
+    @Sql(scripts = {"/user_insight/user-insight.sql", "/user_insight/ai-prompt.sql"})
     void generateTips() throws Exception {
-        var leaderShipQuery = String.format(LEADERSHIP_TIP_QUERY, List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
+        var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
-        var personalGrowthQuery = String.format(PERSONAL_GROWTH_TIP_QUERY, List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
+        var personalGrowthQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(personalGrowthQuery)).thenReturn("personalGrowthTip-response");
 
         mvc.perform(get("/api/latest/user-insight/generate-tips"))
@@ -71,13 +77,13 @@ class UserInsightControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
-    @Sql(scripts = {"/user_insight/user-insight.sql"})
+    @Sql(scripts = {"/user_insight/user-insight.sql", "/user_insight/ai-prompt.sql"})
     void generateTipsNoStrengthsAndValues() throws Exception {
         userInfoRepository.deleteAll();
-        var leaderShipQuery = String.format(LEADERSHIP_TIP_QUERY, List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
+        var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
-        var personalGrowthQuery = String.format(PERSONAL_GROWTH_TIP_QUERY, List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
+        var personalGrowthQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
         Mockito.when(chatClient.call(personalGrowthQuery)).thenReturn("personalGrowthTip-response");
 
 
