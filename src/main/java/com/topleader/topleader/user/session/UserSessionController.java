@@ -5,6 +5,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoService;
+import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
@@ -46,17 +47,17 @@ public class UserSessionController {
     }
 
     @PostMapping("/generate-long-term-goal")
-    public String generateLongTermGoal(@AuthenticationPrincipal UserDetails user, @RequestBody String goal) {
+    public String generateLongTermGoal(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
         var userInfo = userInfoService.find(user.getUsername());
         var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale("en")).getLocale();
-        return aiClient.findLongTermGoal(locale, userInfo.getStrengths(), userInfo.getValues(), goal);
+        return aiClient.findLongTermGoal(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment());
     }
 
     @PostMapping("/generate-action-steps")
     public String generateActionStep(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
         var userInfo = userInfoService.find(user.getUsername());
         var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale("en")).getLocale();
-        return aiClient.findActionsSteps(locale, userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal());
+        return aiClient.findActionsSteps(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal());
     }
 
     public  record ActionSteps(String areaOfDevelopment, String longTermGoal) {

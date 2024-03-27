@@ -9,6 +9,7 @@ import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
+
 import java.time.LocalDate;
 import java.util.List;
 
@@ -29,6 +30,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -36,7 +38,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author Daniel Slavik
  */
-@Sql(scripts = "/sql/user_info/session/user-session.sql")
+@Sql(scripts = {"/sql/user_info/session/user-session.sql", "/sql/user_info/session/ai-prompt.sql"})
 class UserSessionControllerIT extends IntegrationTest {
 
     @Autowired
@@ -57,19 +59,19 @@ class UserSessionControllerIT extends IntegrationTest {
     @WithMockUser("user2")
     void getUserSessionData() throws Exception {
         mvc.perform(get("/api/latest/user-sessions"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
-            .andExpect(jsonPath("$.longTermGoal", is("some cool goal")))
-            .andExpect(jsonPath("$.motivation", is("I wanna be cool")))
-            .andExpect(jsonPath("$.lastReflection", is("I am cool")))
-            .andExpect(jsonPath("$.actionSteps", hasSize(2)))
-            .andExpect(jsonPath("$.actionSteps[0].label", is("action 1")))
-            .andExpect(jsonPath("$.actionSteps[0].date", is("2023-08-14")))
-            .andExpect(jsonPath("$.actionSteps[0].checked", is(true)))
-            .andExpect(jsonPath("$.actionSteps[1].label", is("action 2")))
-            .andExpect(jsonPath("$.actionSteps[1].date", is("2023-08-15")))
-            .andExpect(jsonPath("$.actionSteps[1].checked", is(false)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
+                .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
+                .andExpect(jsonPath("$.longTermGoal", is("some cool goal")))
+                .andExpect(jsonPath("$.motivation", is("I wanna be cool")))
+                .andExpect(jsonPath("$.lastReflection", is("I am cool")))
+                .andExpect(jsonPath("$.actionSteps", hasSize(2)))
+                .andExpect(jsonPath("$.actionSteps[0].label", is("action 1")))
+                .andExpect(jsonPath("$.actionSteps[0].date", is("2023-08-14")))
+                .andExpect(jsonPath("$.actionSteps[0].checked", is(true)))
+                .andExpect(jsonPath("$.actionSteps[1].label", is("action 2")))
+                .andExpect(jsonPath("$.actionSteps[1].date", is("2023-08-15")))
+                .andExpect(jsonPath("$.actionSteps[1].checked", is(false)))
         ;
     }
 
@@ -77,11 +79,11 @@ class UserSessionControllerIT extends IntegrationTest {
     @WithMockUser()
     void getEmptyUserSessionData() throws Exception {
         mvc.perform(get("/api/latest/user-sessions"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
-            .andExpect(jsonPath("$.longTermGoal", nullValue()))
-            .andExpect(jsonPath("$.motivation", nullValue()))
-            .andExpect(jsonPath("$.actionSteps", hasSize(0)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+                .andExpect(jsonPath("$.longTermGoal", nullValue()))
+                .andExpect(jsonPath("$.motivation", nullValue()))
+                .andExpect(jsonPath("$.actionSteps", hasSize(0)))
         ;
     }
 
@@ -89,26 +91,26 @@ class UserSessionControllerIT extends IntegrationTest {
     @WithMockUser
     void setEmptyUserSessionData() throws Exception {
         mvc.perform(post("/api/latest/user-sessions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                       "areaOfDevelopment": ["a1", "a2"],
-                       "longTermGoal": "win",
-                       "motivation": "you can do it!",
-                       "actionSteps": [{"label": "do not lose", "date": "2023-08-15"}]
-                    }
-                    """)
-            )
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
-            .andExpect(jsonPath("$.longTermGoal", is("win")))
-            .andExpect(jsonPath("$.motivation", is("you can do it!")))
-            .andExpect(jsonPath("$.lastReflection", nullValue()))
-            .andExpect(jsonPath("$.actionSteps", hasSize(1)))
-            .andExpect(jsonPath("$.actionSteps[0].label", is("do not lose")))
-            .andExpect(jsonPath("$.actionSteps[0].date", is("2023-08-15")))
-            .andExpect(jsonPath("$.actionSteps[0].checked", is(false)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                   "areaOfDevelopment": ["a1", "a2"],
+                                   "longTermGoal": "win",
+                                   "motivation": "you can do it!",
+                                   "actionSteps": [{"label": "do not lose", "date": "2023-08-15"}]
+                                }
+                                """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
+                .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
+                .andExpect(jsonPath("$.longTermGoal", is("win")))
+                .andExpect(jsonPath("$.motivation", is("you can do it!")))
+                .andExpect(jsonPath("$.lastReflection", nullValue()))
+                .andExpect(jsonPath("$.actionSteps", hasSize(1)))
+                .andExpect(jsonPath("$.actionSteps[0].label", is("do not lose")))
+                .andExpect(jsonPath("$.actionSteps[0].date", is("2023-08-15")))
+                .andExpect(jsonPath("$.actionSteps[0].checked", is(false)))
         ;
 
         final var historyData = dataHistoryRepository.findAllByUsernameAndType("user", DataHistory.Type.USER_SESSION);
@@ -130,25 +132,25 @@ class UserSessionControllerIT extends IntegrationTest {
     @WithMockUser("user2")
     void setUserSessionData() throws Exception {
         mvc.perform(post("/api/latest/user-sessions")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                       "areaOfDevelopment": ["a1", "a2"],
-                       "longTermGoal": "win",
-                       "motivation": "you can do it!",
-                       "actionSteps": [{"label": "do not lose", "date": "2023-08-15"}]
-                    }
-                    """)
-            )
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
-            .andExpect(jsonPath("$.longTermGoal", is("win")))
-            .andExpect(jsonPath("$.motivation", is("you can do it!")))
-            .andExpect(jsonPath("$.actionSteps", hasSize(1)))
-            .andExpect(jsonPath("$.actionSteps[0].label", is("do not lose")))
-            .andExpect(jsonPath("$.actionSteps[0].date", is("2023-08-15")))
-            .andExpect(jsonPath("$.actionSteps[0].checked", is(false)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                   "areaOfDevelopment": ["a1", "a2"],
+                                   "longTermGoal": "win",
+                                   "motivation": "you can do it!",
+                                   "actionSteps": [{"label": "do not lose", "date": "2023-08-15"}]
+                                }
+                                """)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
+                .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
+                .andExpect(jsonPath("$.longTermGoal", is("win")))
+                .andExpect(jsonPath("$.motivation", is("you can do it!")))
+                .andExpect(jsonPath("$.actionSteps", hasSize(1)))
+                .andExpect(jsonPath("$.actionSteps[0].label", is("do not lose")))
+                .andExpect(jsonPath("$.actionSteps[0].date", is("2023-08-15")))
+                .andExpect(jsonPath("$.actionSteps[0].checked", is(false)))
         ;
 
         final var historyData = dataHistoryRepository.findAllByUsernameAndType("user2", DataHistory.Type.USER_SESSION);
@@ -174,12 +176,41 @@ class UserSessionControllerIT extends IntegrationTest {
     @Test
     @WithMockUser("user2")
     void generateLongTermGoal() throws Exception {
-//        var leaderShipQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LONG_TERM_GOALS),  '["s1","s2"]', '["v1","v2"]'"en");
-//        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
-
-        mvc.perform(post("/api/latest/user-sessions/generate-long-term-goal"))
+        var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LONG_TERM_GOALS),
+                List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "English");
+        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("generated-long-term-goal");
+        mvc.perform(post("/api/latest/user-sessions/generate-long-term-goal")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                   "areaOfDevelopment": "area-of-development"
+                                }
+                                """)
+                )
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", is("generated-long-term-goal")))
+        ;
+    }
+
+    @Test
+    @WithMockUser("user2")
+    void generateActionsSteps() throws Exception {
+        var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ACTIONS_STEPS),
+                List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "generated-long-term-goal", "English");
+        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("generated-actions-steps");
+        mvc.perform(post("/api/latest/user-sessions/generate-action-steps")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                   "areaOfDevelopment": "area-of-development",
+                                    "longTermGoal": "generated-long-term-goal"
+                                }
+                                """)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", is("generated-actions-steps")))
         ;
     }
 }

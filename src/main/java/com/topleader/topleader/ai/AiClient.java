@@ -52,10 +52,10 @@ public class AiClient {
         return chatClient.call(String.format(prompt, strengths, values, locale));
     }
 
-    public String findLongTermGoal(String locale, List<String> strengths, List<String> values, String areaOfDevelopment) {
-        log.info("Finding long term goal for strengths: {} and values: {} locale: {} longTermGoal: {}", strengths, values, locale, areaOfDevelopment);
+    public String findLongTermGoal(String locale, List<String> strengths, List<String> values, String development) {
+        log.info("Finding long term goal for strengths: {} and values: {} locale: {} longTermGoal: {}", strengths, values, locale, development);
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.LONG_TERM_GOALS);
-        return chatClient.call(String.format(prompt, strengths, values, areaOfDevelopment, locale));
+        return chatClient.call(String.format(prompt, strengths, values, development, locale));
     }
 
     public String findActionsSteps(String locale, List<String> strengths, List<String> values, String areaOfDevelopment, String longTermGoal) {
