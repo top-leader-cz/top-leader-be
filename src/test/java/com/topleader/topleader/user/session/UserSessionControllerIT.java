@@ -178,7 +178,7 @@ class UserSessionControllerIT extends IntegrationTest {
     void generateLongTermGoal() throws Exception {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LONG_TERM_GOALS),
                 List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "English");
-        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("generated-long-term-goal");
+        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("1. generated-long-term-goal-a. 2. generated-long-term-goal-b.");
         mvc.perform(post("/api/latest/user-sessions/generate-long-term-goal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -189,7 +189,8 @@ class UserSessionControllerIT extends IntegrationTest {
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", is("generated-long-term-goal")))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$", hasItems("generated-long-term-goal-a.", "generated-long-term-goal-b.")))
         ;
     }
 
@@ -198,7 +199,7 @@ class UserSessionControllerIT extends IntegrationTest {
     void generateActionsSteps() throws Exception {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ACTIONS_STEPS),
                 List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "generated-long-term-goal", "English");
-        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("generated-actions-steps");
+        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("1. generated-actions-steps-a. 2. generated-actions-steps-b.");
         mvc.perform(post("/api/latest/user-sessions/generate-action-steps")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -210,7 +211,8 @@ class UserSessionControllerIT extends IntegrationTest {
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", is("generated-actions-steps")))
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$", hasItems("generated-actions-steps-a.", "generated-actions-steps-b.")))
         ;
     }
 }

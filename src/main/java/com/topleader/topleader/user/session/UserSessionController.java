@@ -9,11 +9,16 @@ import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -40,36 +45,46 @@ public class UserSessionController {
 
     @PostMapping
     public UserSessionDto createUserSession(
-        @AuthenticationPrincipal UserDetails user,
-        @RequestBody @Valid UserSessionRequest request
+            @AuthenticationPrincipal UserDetails user,
+            @RequestBody @Valid UserSessionRequest request
     ) {
         return userSessionService.setUserSession(user.getUsername(), request);
     }
 
     @PostMapping("/generate-long-term-goal")
-    public String generateLongTermGoal(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
+    public Collection<String> generateLongTermGoal(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
         var userInfo = userInfoService.find(user.getUsername());
         var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale("en")).getLocale();
-        return aiClient.findLongTermGoal(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment());
+        return split(aiClient.findLongTermGoal(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment()));
     }
 
     @PostMapping("/generate-action-steps")
-    public String generateActionStep(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
+    public Collection<String> generateActionStep(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
         var userInfo = userInfoService.find(user.getUsername());
         var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale("en")).getLocale();
-        return aiClient.findActionsSteps(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal());
+        return split(aiClient.findActionsSteps(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal()));
     }
 
-    public  record ActionSteps(String areaOfDevelopment, String longTermGoal) {
+    private Collection<String> split(String data) {
+        return Arrays.stream(data
+                .split("[0-9]."))
+                .sequential()
+                .map(String::trim)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.toSet());
+    }
+
+
+    public record ActionSteps(String areaOfDevelopment, String longTermGoal) {
 
     }
 
     public record UserSessionDto(
-        List<String> areaOfDevelopment,
-        String longTermGoal,
-        String motivation,
-        List<ActionStepDto> actionSteps,
-        String lastReflection
+            List<String> areaOfDevelopment,
+            String longTermGoal,
+            String motivation,
+            List<ActionStepDto> actionSteps,
+            String lastReflection
     ) {
     }
 
@@ -78,13 +93,13 @@ public class UserSessionController {
 
 
     public record UserSessionRequest(
-        @NotEmpty
-        List<String> areaOfDevelopment,
-        @Size(min = 1, max = 1000)
-        String longTermGoal,
-        @Size(min = 1, max = 2000)
-        String motivation,
-        List<NewActionStepDto> actionSteps
+            @NotEmpty
+            List<String> areaOfDevelopment,
+            @Size(min = 1, max = 1000)
+            String longTermGoal,
+            @Size(min = 1, max = 2000)
+            String motivation,
+            List<NewActionStepDto> actionSteps
     ) {
     }
 
