@@ -65,9 +65,9 @@ public class UserSessionController {
         return split(aiClient.findActionsSteps(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal()));
     }
 
-    private Collection<String> split(String data) {
+    Collection<String> split(String data) {
         return Arrays.stream(data
-                .split("[0-9]."))
+                .split("[0-9]\\."))
                 .sequential()
                 .map(String::trim)
                 .filter(StringUtils::isNotBlank)
