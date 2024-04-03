@@ -11,6 +11,36 @@ from users u
          left join (select string_agg(username, ', ') as hrs, company_id from users where authorities like '%"HR"%' group by company_id) hr_cu
                    on hr_cu.company_id = u.company_id;
 
+drop view if exists hr_view;
+create view hr_view as
+select u.username,
+       u.first_name,
+       u.last_name,
+       u.coach,
+       u.credit,
+       u.requested_credit,
+       u.scheduled_credit,
+       u.sum_requested_credit,
+       u.paid_credit,
+       u.company_id,
+       cu.first_name as coach_first_name,
+       cu.last_name  as coach_last_name
+from users u
+         left join users cu on u.coach = cu.username
+         left join (select string_agg(username, ', ') as hrs, company_id
+                    from users
+                    where authorities like '%"HR"%'
+                    group by company_id) hr_c
+                   on hr_c.company_id = u.company_id;
+
+drop view if exists manager_view;
+create view manager_view as
+select u.username,
+       u.first_name,
+       u.last_name,
+       u.company_id
+from users  u
+where authorities like '%"MANAGER"%';
 
 drop view if exists coach_client_view;
 create view coach_client_view as

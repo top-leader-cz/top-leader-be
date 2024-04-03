@@ -93,8 +93,8 @@ public class PublicFeedbackControllerIT extends IntegrationTest {
 
         Assertions.assertThat(userRepository.findAll()).hasSize(2);
         Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
-                .extracting("username", "firstName", "lastName", "authorities", "status", "company", "hrEmail")
-                .containsExactly("pepa@cerny.cz", "Pepa", "Cerny", Set.of(RESPONDENT), PENDING, "test company", "test.hr@email.com");
+                .extracting("username", "firstName", "lastName", "authorities", "status",  "hrEmail")
+                .containsExactly("pepa@cerny.cz", "Pepa", "Cerny", Set.of(RESPONDENT), PENDING, "test.hr@email.com");
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");

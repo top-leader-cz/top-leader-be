@@ -107,6 +107,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
         assertThat(userInfoRepository.findById("user2").orElseThrow().getLastReflection(), is("you can do it!"));
 
+        Thread.sleep(100);
         Assertions.assertThat(userInsightRepository.findAll())
                 .extracting("personalGrowthTip")
                 .contains("action-goal-response");

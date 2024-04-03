@@ -74,7 +74,6 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getLastName()).isEqualTo(createUserRequestDto.lastName());
         assertThat(fetchedUser.getTimeZone()).isEqualTo(createUserRequestDto.timeZone());
         assertThat(fetchedUser.getCompanyId()).isEqualTo(createUserRequestDto.companyId());
-        assertThat(fetchedUser.getIsTrial()).isEqualTo(createUserRequestDto.isTrial());
         assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(createUserRequestDto.authorities());
 
     }
@@ -97,7 +96,6 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getLastName()).isEqualTo(updatedUser.lastName());
         assertThat(fetchedUser.getTimeZone()).isEqualTo(updatedUser.timeZone());
         assertThat(fetchedUser.getCompanyId()).isEqualTo(updatedUser.companyId());
-        assertThat(fetchedUser.getIsTrial()).isEqualTo(updatedUser.isTrial());
         assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(updatedUser.authorities());
         assertThat(fetchedUser.getCoach()).isEqualTo(updatedUser.coach());
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
@@ -134,7 +132,6 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getLastName()).isEqualTo(updatedUser.lastName());
         assertThat(fetchedUser.getTimeZone()).isEqualTo(updatedUser.timeZone());
         assertThat(fetchedUser.getCompanyId()).isNull();
-        assertThat(fetchedUser.getIsTrial()).isEqualTo(updatedUser.isTrial());
         assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(updatedUser.authorities());
         assertThat(fetchedUser.getCoach()).isNull();
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
@@ -173,7 +170,6 @@ class AdminViewControllerIT extends IntegrationTest {
                       "paidCredit": 0,
                       "requestedBy": "god",
                       "hrs": "hr1, hr2",
-                      "isTrial": true,
                       "locale": "en"
                     }
                   ],
@@ -259,15 +255,6 @@ class AdminViewControllerIT extends IntegrationTest {
                 .param("requestedCredit", "50"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.content[0].requestedCredit").value(50));
-    }
-
-    @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
-    void testFilterByIsTrial() throws Exception {
-        mvc.perform(get("/api/latest/admin/users")
-                .param("isTrial", "true"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.content[0].isTrial").value(true));
     }
 
     @Test

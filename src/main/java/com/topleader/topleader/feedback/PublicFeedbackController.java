@@ -72,7 +72,6 @@ public class PublicFeedbackController {
                             .setUsername(newUser.getEmail())
                             .setFirstName(newUser.getFirstName())
                             .setLastName(newUser.getLastName())
-                            .setCompany(newUser.getCompany())
                             .setHrEmail(newUser.getHrEmail()));
                 }, () -> newUser(newUser, username));
 
@@ -92,7 +91,6 @@ public class PublicFeedbackController {
                 .setUsername(username)
                 .setFirstName(newUser.getFirstName())
                 .setLastName(newUser.getLastName())
-                .setCompany(newUser.getCompany())
                 .setHrEmail(newUser.getHrEmail()));
     }
 
