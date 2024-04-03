@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.FROM_ALREADY_SUBMITTED;
+import static com.topleader.topleader.user.User.Status.*;
 import static com.topleader.topleader.util.common.CommonUtils.TOP_LEADER_FORMATTER;
 
 @Slf4j
@@ -120,15 +121,24 @@ public class FeedbackService {
                     var params = Map.of("validTo", data.getValidTo().format(TOP_LEADER_FORMATTER),
                             "link", feedbackLink, "firstName", data.getFirstName(), "lastName", data.getLastName());
                     var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(data.getLocale()));
-                         var subject = String.format(subjects.getOrDefault(data.getLocale(), defaultLocale), data.getFirstName(), data.getLastName());
+                    var subject = String.format(subjects.getOrDefault(data.getLocale(), defaultLocale), data.getFirstName(), data.getLastName());
 
-                    var newUser = UserUtils.fromEmail(r.recipient())
-                            .setAuthorities(Set.of(User.Authority.RESPONDENT))
-                            .setStatus(User.Status.REQUESTED);
-                    userRepository.save(newUser);
+                    var testedUser = userRepository.findById(r.recipient()).orElse(new User());
+                    if (!skipUpdate(testedUser)) {
+                        var newUser = UserUtils.fromEmail(r.recipient())
+                                .setAuthorities(Set.of(User.Authority.RESPONDENT))
+                                .setStatus(User.Status.REQUESTED);
+                        userRepository.save(newUser);
+                    }
+
                     emailService.sendEmail(r.recipient(), subject, body);
                 });
     }
+
+    boolean skipUpdate(User u) {
+        return AUTHORIZED == u.getStatus() || PAID == u.getStatus() || PENDING == u.getStatus();
+    }
+
 
     public String parseTemplateName(String locale) {
         return "templates/feedback/feedback-" + parseLocale(locale) + ".vm";
