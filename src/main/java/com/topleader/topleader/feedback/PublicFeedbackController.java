@@ -17,6 +17,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import static com.topleader.topleader.user.User.Status.*;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/public/latest/feedback")
@@ -41,7 +43,10 @@ public class PublicFeedbackController {
     public FeedbackFormDto getForm(@PathVariable long formId, @PathVariable String username, @PathVariable String token) {
         feedbackService.validateRecipientIfValid(formId, username, token);
         userDetailService.getUser(username)
-                .ifPresent(u -> userDetailService.save(u.setStatus(User.Status.VIEWED)));
+                .ifPresent(u -> {
+                    if (skipUpdate(u)) return;
+                    userDetailService.save(u.setStatus(User.Status.VIEWED));
+                });
         return FeedbackFormDto.of(feedbackService.fetchForm(formId));
     }
 
@@ -61,6 +66,7 @@ public class PublicFeedbackController {
         feedbackService.validateRecipientIfSubmitted(formId, username, token);
         userDetailService.getUser(username)
                 .ifPresentOrElse(u -> {
+                    if (skipUpdate(u)) return;
                     log.info("Updating respondent: [{}] ", username);
                     userDetailService.save(u.setStatus(User.Status.PENDING)
                             .setUsername(newUser.getEmail())
@@ -72,6 +78,10 @@ public class PublicFeedbackController {
 
         var body = String.format("Username: %s Timestamp: %s", username,  LocalDateTime.now());
         emailService.sendEmail("info@topleader.io", "New Pending user in the TopLeader platform", body);
+    }
+
+    boolean skipUpdate(User u) {
+        return AUTHORIZED == u.getStatus() || PAID == u.getStatus() || PENDING == u.getStatus();
     }
 
 
