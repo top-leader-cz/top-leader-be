@@ -54,3 +54,16 @@ top-leader:
   supported-invitations: en, cs, fr, de
   default-locale: en
   default-from: top-leader
+
+google:
+  application-name: "qa.topleaderplatform.io"
+  client:
+    client-id: 572595541175-n58eajajt5iqc5rsn25rv2mt8iejojsi.apps.googleusercontent.com
+    client-secret: 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
+    access-token-uri: https://www.googleapis.com/oauth2/v3/token
+    user-authorization-uri: https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent
+    client-authentication-scheme: query
+    redirectUri: http://localhost:8080/login/google
+  resource:
+    user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo
+    prefer-token-info: true
