@@ -1,6 +1,7 @@
 package com.topleader.topleader.user;
 
 import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,14 +31,18 @@ public class UserDetailService implements UserDetailsService {
     }
 
 
-
-
     public Optional<com.topleader.topleader.user.User> getUser(String username) {
         return userRepository.findById(username);
     }
+
     public com.topleader.topleader.user.User save(com.topleader.topleader.user.User user) {
-       return userRepository.save(user);
+        return userRepository.save(user);
     }
+
+    public com.topleader.topleader.user.User find(String username) {
+        return userRepository.findById(username).orElse(com.topleader.topleader.user.User.empty());
+    }
+
     public void delete(String username) {
         userRepository.deleteById(username);
     }

@@ -83,7 +83,7 @@ class UserInsightControllerIT extends IntegrationTest {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
-        var personalGrowthQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
+        var personalGrowthQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ACTIONS_STEPS), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
         Mockito.when(chatClient.call(personalGrowthQuery)).thenReturn("personalGrowthTip-response");
 
 

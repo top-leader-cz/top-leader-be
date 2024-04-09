@@ -17,13 +17,13 @@ public class UserInsightController {
 
     @GetMapping
     public Map<String, InsightItem> getInsight(@AuthenticationPrincipal UserDetails user) {
-        var userInsight = userInsightService.getInsight(user.getUsername()).orElse(new UserInsight());
+        var userInsight = userInsightService.getInsight(user.getUsername());
         return Map.of(
                 "leaderShipStyle", new InsightItem(userInsight.getLeadershipStyleAnalysis(), userInsight.isLeadershipPending()),
                 "leaderPersona", new InsightItem(userInsight.getWorldLeaderPersona(), userInsight.isLeadershipPending()),
                 "animalSpirit", new InsightItem(userInsight.getAnimalSpiritGuide(), userInsight.isAnimalSpiritPending()),
                 "leadershipTip", new InsightItem(userInsight.getLeadershipTip(), userInsight.isDailyTipsPending()),
-                "personalGrowthTip", new InsightItem(userInsight.getPersonalGrowthTip(), userInsight.isDailyTipsPending())
+                "personalGrowthTip", new InsightItem(userInsight.getPersonalGrowthTip(), false)
         );
     }
 

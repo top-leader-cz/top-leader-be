@@ -3,16 +3,21 @@
  */
 package com.topleader.topleader.user.session;
 
+import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
+import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoService;
+import com.topleader.topleader.user.userinsight.UserInsightService;
+import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,10 +35,15 @@ public class UserSessionService {
 
     private final UserInfoService userInfoService;
 
+    private final UserDetailService userDetailService;
+
     private final UserActionStepRepository userActionStepRepository;
 
     private final DataHistoryRepository dataHistoryRepository;
 
+    private final UserInsightService userInsightService;
+
+    private final AiClient aiClient;
 
     @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
@@ -47,6 +57,9 @@ public class UserSessionService {
             Optional.ofNullable(request.checked()).orElse(Set.of()),
             Optional.ofNullable(request.newActionSteps()).orElse(List.of()));
 
+
+        CompletableFuture.runAsync(() -> generateActionGoals(username, userActionSteps));
+
         final var actualActionSteps = saveActionSteps(userActionSteps);
 
         Optional.ofNullable(request.areaOfDevelopment())
@@ -58,6 +71,7 @@ public class UserSessionService {
             request.reflection(),
             actualActionSteps);
     }
+
 
 
     public UserSessionController.UserSessionDto getUserSession(String username) {
@@ -81,8 +95,27 @@ public class UserSessionService {
         return convertToUserSession(userInfo, userActionSteps);
     }
 
+    private void generateActionGoals(String username, List<UserActionStep> userActionSteps) {
+        var user = userDetailService.find(username);
+        var userInfo = userInfoService.find(username);
+        var userInsight = userInsightService.getInsight(username);
+        userInsight.setUsername(username);
+        userInsight.setActionGoalsPending(true);
+        userInsightService.save(userInsight);
 
-    private List<UserActionStep> prepareActualActionSteps(
+        userInsight.setPersonalGrowthTip(aiClient.findActionGoal(
+                UserUtils.localeToLanguage(user.getLocale()),
+                userInfo.getStrengths(),
+                userInfo.getValues(),
+                SessionUtils.getDevelopments(userInfo.getAreaOfDevelopment()),
+                userInfo.getLongTermGoal(),
+                userActionSteps.stream().filter(step -> !step.getChecked()).map(UserActionStep::getLabel).toList()));
+        userInsight.setActionGoalsPending(false);
+
+        userInsightService.save(userInsight);
+    }
+
+    private List<UserActionStep>  prepareActualActionSteps(
         String username,
         List<UserActionStep> existingActionSteps,
         Set<Long> checked,

@@ -1,0 +1,1 @@
+alter table user_insight add column if not exists action_goals_pending boolean default false;
