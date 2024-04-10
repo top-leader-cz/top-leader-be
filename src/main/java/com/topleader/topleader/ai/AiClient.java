@@ -1,16 +1,13 @@
 package com.topleader.topleader.ai;
 
 
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.ChatClient;
 import org.springframework.stereotype.Component;
 
-import javax.swing.text.html.parser.Entity;
+import java.text.MessageFormat;
 import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 
 @Slf4j
@@ -40,10 +37,10 @@ public class AiClient {
         return chatClient.call(String.format(prompt, strengths, values, locale));
     }
 
-    public String findPersonalGrowthTip(String locale, List<String> strengths, List<String> values) {
+    public String findActionGoal(String locale, List<String> strengths, List<String> values, List<String> development, String longTermGoal, List<String> actionsSteps) {
         log.info("Finding personal growth for strengths: {} and values: {} locale: {}", strengths, values, locale);
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP);
-        return chatClient.call(String.format(prompt, strengths, values, locale));
+        return chatClient.call(MessageFormat.format(prompt, strengths, values, development, longTermGoal, actionsSteps, locale));
     }
 
     public String findLeaderPersona(String locale, List<String> strengths, List<String> values) {

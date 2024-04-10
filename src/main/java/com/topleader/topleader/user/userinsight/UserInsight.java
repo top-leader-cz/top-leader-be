@@ -33,4 +33,6 @@ public class UserInsight {
     private boolean dailyTipsPending;
 
     private LocalDateTime tipsGeneratedAt;
+
+    private boolean actionGoalsPending;
 }

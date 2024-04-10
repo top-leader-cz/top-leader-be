@@ -62,16 +62,13 @@ class UserInsightControllerIT extends IntegrationTest {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
-        var personalGrowthQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatClient.call(personalGrowthQuery)).thenReturn("personalGrowthTip-response");
-
         mvc.perform(get("/api/latest/user-insight/generate-tips"))
                 .andDo(print())
                 .andExpect(status().isOk());
 
         Assertions.assertThat(userInsightRepository.findAll())
                 .extracting(UserInsight::getLeadershipTip, UserInsight::getPersonalGrowthTip)
-                .containsExactly(new Tuple("leadershipTip-response", "personalGrowthTip-response"));
+                .containsExactly(new Tuple("leadershipTip-response", null));
 
     }
 
@@ -82,10 +79,6 @@ class UserInsightControllerIT extends IntegrationTest {
         userInfoRepository.deleteAll();
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
-
-        var personalGrowthQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
-        Mockito.when(chatClient.call(personalGrowthQuery)).thenReturn("personalGrowthTip-response");
-
 
         mvc.perform(get("/api/latest/user-insight/generate-tips"))
                 .andExpect(status().isOk());

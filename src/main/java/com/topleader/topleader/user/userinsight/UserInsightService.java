@@ -54,8 +54,12 @@ public class UserInsightService {
         generateTips(username);
     }
 
-    public Optional<UserInsight> getInsight(String username) {
-        return userInsightRepository.findById(username);
+    public UserInsight getInsight(String username) {
+        return userInsightRepository.findById(username).orElse(new UserInsight());
+    }
+
+    public UserInsight save(UserInsight userInsight) {
+        return userInsightRepository.save(userInsight);
     }
 
     @Async
@@ -71,7 +75,6 @@ public class UserInsightService {
             var locale = user.getLocale();
             savedUserInsight.setUsername(username);
             savedUserInsight.setLeadershipTip(aiClient.findLeadershipTip(UserUtils.localeToLanguage(locale), strengths, values));
-            savedUserInsight.setPersonalGrowthTip(aiClient.findPersonalGrowthTip(UserUtils.localeToLanguage(locale), strengths, values));
             savedUserInsight.setTipsGeneratedAt(LocalDateTime.now());
             savedUserInsight.setDailyTipsPending(false);
             userInsightRepository.save(savedUserInsight);

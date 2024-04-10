@@ -67,6 +67,19 @@ public class User {
 
     private String locale;
 
+    public static User empty() {
+        return new User()
+            .setUsername("")
+            .setFirstName("")
+            .setLastName("")
+            .setTimeZone("")
+            .setCompanyId(0L)
+            .setIsTrial(false)
+            .setAuthorities(Set.of())
+            .setStatus(Status.PENDING)
+            .setLocale("en");
+    }
+
     public enum Authority {
         USER,
         COACH,

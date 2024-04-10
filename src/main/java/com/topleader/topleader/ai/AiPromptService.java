@@ -14,10 +14,8 @@ public class AiPromptService {
     private final AiPromptRepository aiPromptRepository;
 
     public String getPrompt(AiPrompt.PromptType promptType) {
-        List<AiPrompt> all = aiPromptRepository.findAll();
-
         return aiPromptRepository.findById(promptType)
-                .orElseThrow(() -> new RuntimeException("Prompt not found"))
+                .orElseThrow(() -> new EntityNotFoundException("Prompt not found"))
                 .getValue();
     }
 }
