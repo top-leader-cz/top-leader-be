@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -58,7 +59,7 @@ public class UserSessionService {
             Optional.ofNullable(request.newActionSteps()).orElse(List.of()));
 
 
-        CompletableFuture.runAsync(() -> generateActionGoals(username, userActionSteps));
+        Executors.newVirtualThreadPerTaskExecutor().submit(() -> generateActionGoals(username, userActionSteps));
 
         final var actualActionSteps = saveActionSteps(userActionSteps);
 

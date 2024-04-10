@@ -4,12 +4,21 @@
 package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.ai.AiPrompt;
+import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import java.time.LocalDate;
+import java.util.List;
+
+import com.topleader.topleader.user.userinsight.UserInsight;
+import com.topleader.topleader.user.userinsight.UserInsightRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.ai.chat.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -19,8 +28,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -28,7 +36,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * @author Daniel Slavik
  */
-@Sql(scripts = "/sql/user_info/session/user-session.sql")
+@Sql(scripts = {"/sql/user_info/session/user-session.sql", "/user_session/action_goals.sql"})
 class UserSessionReflectionControllerIT extends IntegrationTest {
 
     @Autowired
@@ -40,22 +48,36 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     @Autowired
     private UserInfoRepository userInfoRepository;
 
+    @Autowired
+    UserInsightRepository userInsightRepository;
+
+    @Autowired
+    AiPromptService aiPromptService;
+
+
+    @Autowired
+    ChatClient chatClient;
+
+
     @Test
     @WithMockUser("user2")
     void setUserSessionReflectionData() throws Exception {
+        var actionGoal = "test [s1, s2] test [v1, v2] test [Unknown development area, Unknown development area] test [do not lose] test English test {6}";
+        Mockito.when(chatClient.call(actionGoal)).thenReturn("action-goal-response");
+
         mvc.perform(post("/api/latest/user-sessions-reflection")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                       "areaOfDevelopment": ["b1", "b2"],
-                       "longTermGoal": "newGoal",
-                       "reflection": "you can do it!",
-                       "checked": [2],
-                       "newActionSteps": [{"label": "do not lose", "date": "2023-08-15"}]
-                    }
-                    """)
-            )
-            .andExpect(status().isOk())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                   "areaOfDevelopment": ["b1", "b2"],
+                                   "longTermGoal": "newGoal",
+                                   "reflection": "you can do it!",
+                                   "checked": [2],
+                                   "newActionSteps": [{"label": "do not lose", "date": "2023-08-15"}]
+                                }
+                                """)
+                )
+                .andExpect(status().isOk())
 
         ;
 
@@ -84,6 +106,11 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
         assertThat(action2Step.getDate(), is(LocalDate.parse("2023-08-15")));
 
         assertThat(userInfoRepository.findById("user2").orElseThrow().getLastReflection(), is("you can do it!"));
+
+        Assertions.assertThat(userInsightRepository.findAll())
+                .extracting("personalGrowthTip")
+                .contains("action-goal-response");
+
     }
 
 }

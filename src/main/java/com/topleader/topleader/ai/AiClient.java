@@ -37,10 +37,10 @@ public class AiClient {
         return chatClient.call(String.format(prompt, strengths, values, locale));
     }
 
-    public String findActionGoal(String locale, List<String> strengths, List<String> values, List<String> development, String longTermGoal, List<String> actionsGoals) {
+    public String findActionGoal(String locale, List<String> strengths, List<String> values, List<String> development, String longTermGoal, List<String> actionsSteps) {
         log.info("Finding personal growth for strengths: {} and values: {} locale: {}", strengths, values, locale);
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP);
-        return chatClient.call(MessageFormat.format(prompt, strengths, values, development, longTermGoal, actionsGoals, locale));
+        return chatClient.call(MessageFormat.format(prompt, strengths, values, development, longTermGoal, actionsSteps, locale));
     }
 
     public String findLeaderPersona(String locale, List<String> strengths, List<String> values) {
