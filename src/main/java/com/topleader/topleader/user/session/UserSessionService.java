@@ -106,7 +106,7 @@ public class UserSessionService {
 
         userInsight.setPersonalGrowthTip(aiClient.findActionGoal(
                 UserUtils.localeToLanguage(user.getLocale()),
-                userInfo.getStrengths(),
+                userInfo.getTopStrengths(),
                 userInfo.getValues(),
                 SessionUtils.getDevelopments(userInfo.getAreaOfDevelopment()),
                 userInfo.getLongTermGoal(),
