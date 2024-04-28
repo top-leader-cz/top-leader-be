@@ -279,6 +279,10 @@ public class GoogleCalendarService {
         return syncEventRepository.findAllByUsernameAndStartDateAndEndDateBetween(username, startDate, endDate);
     }
 
+    public Optional<GoogleCalendarSyncInfo> getSyncInfoForUser(String username) {
+        return calendarSyncInfoRepository.findById(username);
+    }
+
     @FunctionalInterface
     private interface SyncProcessor {
         void process() throws GeneralSecurityException, IOException;
