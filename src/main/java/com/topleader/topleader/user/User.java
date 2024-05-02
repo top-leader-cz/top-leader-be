@@ -62,7 +62,7 @@ public class User {
 
     private String locale;
 
-    @ManyToMany(cascade = { CascadeType.ALL })
+    @ManyToMany(cascade = { CascadeType.MERGE })
     @JoinTable(
             joinColumns = { @JoinColumn(name = "user_username") },
             inverseJoinColumns = { @JoinColumn(name = "manager_username") }

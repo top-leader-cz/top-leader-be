@@ -111,11 +111,7 @@ public class HrController {
                 .setLocale(request.locale())
                 .setPosition(request.position());
 
-        if(request.isManager()) {
-            user.getAuthorities().add(User.Authority.MANAGER);
-        }
-
-        if (isHr(loggedUser)) {
+         if (isHr(loggedUser)) {
             final var hrUser = userDetailService.getUser(loggedUser.getUsername()).orElseThrow();
 
             final var companyId = Optional.of(hrUser).map(User::getCompanyId).orElseThrow(() ->
@@ -171,11 +167,6 @@ public class HrController {
         user.setAuthorities(request.authorities());
         user.setPosition(request.position());
 
-
-        if(request.isManager()) {
-            user.getAuthorities().add(User.Authority.MANAGER);
-        }
-
         var updatedUser = processUser(user, request);
 
         if (sendInvite(oldStatus, request.status())) {
@@ -224,11 +215,13 @@ public class HrController {
     }
 
     User processUser(User user, UserRequest request) {
-        var saved = userDetailService.save(user);
+        if(request.isManager()) {
+            user.getAuthorities().add(User.Authority.MANAGER);
+        }
 
         if (StringUtils.isNotBlank(request.manager())) {
-            saved.setManagers(Set.of(new User().setUsername(request.manager())));
+            user.setManagers(Set.of(userDetailService.find(request.manager())));
         }
-        return userDetailService.save(saved);
+        return userDetailService.save(user);
     }
 }
