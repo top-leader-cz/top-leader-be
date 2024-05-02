@@ -133,7 +133,6 @@ public class AdminViewController {
             Optional.ofNullable(lastName).ifPresent(user::setLastName);
             Optional.ofNullable(timeZone).ifPresent(user::setTimeZone);
             user.setCompanyId(companyId);
-            Optional.ofNullable(isTrial).ifPresent(user::setIsTrial);
             Optional.ofNullable(authorities).ifPresent(user::setAuthorities);
             Optional.ofNullable(status).ifPresent(user::setStatus);
             user.setCoach(coach);
@@ -164,7 +163,6 @@ public class AdminViewController {
                     .setLastName(lastName)
                     .setTimeZone(timeZone)
                     .setCompanyId(companyId)
-                    .setIsTrial(isTrial)
                     .setAuthorities(authorities)
                     .setRequestedBy(requestedBy)
                     .setLocale(locale)

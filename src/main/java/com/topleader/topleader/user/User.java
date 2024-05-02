@@ -1,12 +1,9 @@
 package com.topleader.topleader.user;
 
+import com.topleader.topleader.user.manager.Manager;
+import jakarta.persistence.*;
 
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -57,15 +54,20 @@ public class User {
 
     private String requestedBy;
 
-    private Boolean isTrial;
-
-    private String company;
+    private String position;
 
     private String hrEmail;
 
     private String freeCoach;
 
     private String locale;
+
+    @ManyToMany(cascade = { CascadeType.MERGE })
+    @JoinTable(
+            joinColumns = { @JoinColumn(name = "user_username") },
+            inverseJoinColumns = { @JoinColumn(name = "manager_username") }
+    )
+    Set<User> managers = new HashSet<>();
 
     public static User empty() {
         return new User()
@@ -74,18 +76,18 @@ public class User {
             .setLastName("")
             .setTimeZone("")
             .setCompanyId(0L)
-            .setIsTrial(false)
             .setAuthorities(Set.of())
             .setStatus(Status.PENDING)
             .setLocale("en");
     }
 
     public enum Authority {
+        RESPONDENT,
         USER,
+        MANAGER,
         COACH,
         HR,
         ADMIN,
-        RESPONDENT
     }
 
     public enum Status {
