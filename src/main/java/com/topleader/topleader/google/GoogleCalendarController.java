@@ -10,7 +10,10 @@ import java.io.IOException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,37 +35,36 @@ public class GoogleCalendarController {
 
     private final GoogleCalendarService calendarService;
 
-    private final GoogleCalendarApiClientFactory googleCalendarApiClientFactory;
-
     @Value("${google.client.redirectUri}")
     private String redirectURI;
 
 
     @GetMapping("/login/google")
-    public RedirectView googleConnectionStatus() {
-        return new RedirectView(authorize());
+    public RedirectView googleConnectionStatus(
+        @AuthenticationPrincipal UserDetails u
+    ) {
+        return new RedirectView(authorize(u.getUsername()));
     }
 
-    @GetMapping(value = "/login/google", params = "code")
-    public RedirectView oauth2Callback(@RequestParam(value = "code") String code) throws IOException {
+    @GetMapping(value = "/login/google", params = {"code", "state"})
+    public RedirectView oauth2Callback(
+        @RequestParam(value = "code") String code,
+        @RequestParam(value = "state") String state
+        ) throws IOException {
 
         final var response = flow.newTokenRequest(code).setRedirectUri(redirectURI).execute();
 
-        final var userinfo = googleCalendarApiClientFactory.prepareOauthClient(response)
-            .userinfo()
-            .v2()
-            .me()
-            .get()
-            .execute();
+        final var userEmail = new String(Base64.decodeBase64(state));
 
-        calendarService.startInitCalendarSynchronize(userinfo.getEmail(), response);
+        calendarService.storeTokenInfo(userEmail, response);
 
         return new RedirectView("/sync-success");
     }
 
-    private String authorize() {
+    private String authorize(String username) {
         return flow.newAuthorizationUrl()
             .setRedirectUri(redirectURI)
+            .setApprovalPrompt("force")
             .setAccessType("offline")
             .setScopes(Set.of(
                 Oauth2Scopes.OPENID,
@@ -70,6 +72,7 @@ public class GoogleCalendarController {
                 CalendarScopes.CALENDAR_EVENTS_READONLY,
                 CalendarScopes.CALENDAR_READONLY
             ))
+            .setState(Base64.encodeBase64String(username.getBytes()))
             .build();
     }
 }

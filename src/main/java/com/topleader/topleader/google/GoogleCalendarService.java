@@ -44,6 +44,26 @@ public class GoogleCalendarService {
 
     private final TransactionService transactionService;
 
+    public void storeTokenInfo(String username, TokenResponse tokenResponse) {
+        log.info("Storing token info for user {} token info: {}", username, tokenResponse);
+
+        transactionService.execute(() -> {
+            final var info = calendarSyncInfoRepository.findById(username)
+                .orElseGet(() -> new GoogleCalendarSyncInfo()
+                    .setUsername(username)
+                );
+            info
+                .setStatus(GoogleCalendarSyncInfo.Status.OK)
+                .setLastSync(LocalDateTime.now())
+                .setRefreshToken(tokenResponse.getRefreshToken())
+                .setSyncToken(null);
+            calendarSyncInfoRepository.save(info);
+            syncEventRepository.deleteAllByUsername(username);
+        });
+
+        log.info("Storing token info for user {}", username);
+    }
+
     @Async
     public void startInitCalendarSynchronize(String username, TokenResponse tokenResponse) {
         log.info("Starting initial event synchronization for user {}", username);
