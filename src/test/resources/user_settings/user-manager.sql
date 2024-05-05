@@ -1,0 +1,1 @@
+insert into users_managers (user_username, manager_username) values ('jakub.svezi@dummy.com', 'jakub.manager@dummy.com');

@@ -32,4 +32,10 @@ public class Company {
     private Long id;
 
     private String name;
+
+    private String businessStrategy;
+
+    public static Company empty() {
+        return new Company();
+    }
 }
