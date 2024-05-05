@@ -62,7 +62,11 @@ public class User {
 
     private String locale;
 
-    @ManyToMany(cascade = { CascadeType.MERGE })
+    private String aspiredCompetency;
+
+    private String aspiredPosition;
+
+    @ManyToMany
     @JoinTable(
             joinColumns = { @JoinColumn(name = "user_username") },
             inverseJoinColumns = { @JoinColumn(name = "manager_username") }
