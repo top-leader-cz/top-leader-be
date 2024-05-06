@@ -26,12 +26,7 @@ select u.username,
        cu.first_name as coach_first_name,
        cu.last_name  as coach_last_name
 from users u
-         left join users cu on u.coach = cu.username
-         left join (select string_agg(username, ', ') as hrs, company_id
-                    from users
-                    where authorities like '%"HR"%'
-                    group by company_id) hr_c
-                   on hr_c.company_id = u.company_id;
+         left join users cu on u.coach = cu.username;
 
 drop view if exists manager_view;
 create view manager_view as
