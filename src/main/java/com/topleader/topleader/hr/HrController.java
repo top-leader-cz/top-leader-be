@@ -220,7 +220,7 @@ public class HrController {
         }
 
         if (StringUtils.isNotBlank(request.manager())) {
-            user.setManagers(Set.of(userDetailService.find(request.manager())));
+            user.setManagers(Set.of(new User().setUsername(request.manager())));
         }
         return userDetailService.save(user);
     }
