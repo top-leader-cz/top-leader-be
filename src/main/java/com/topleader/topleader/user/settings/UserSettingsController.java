@@ -11,6 +11,7 @@ import com.topleader.topleader.user.settings.domain.UserSettings;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,6 +59,7 @@ public class UserSettingsController {
 
     @Secured({"USER"})
     @PutMapping
+    @Transactional
     public UserSettings updateUserSetting(
         @AuthenticationPrincipal UserDetails loggedUser,
         @RequestBody @Valid UserSettingRequest request
@@ -67,7 +69,7 @@ public class UserSettingsController {
 
         user.setFirstName(request.getFirstName())
                 .setLastName(request.getLastName())
-                .setManagers(Set.of(new User().setUsername(request.getManager())))
+                .setManagers(new HashSet<>(Set.of(new User().setUsername(request.getManager()))))
                 .setPosition(request.getPosition())
                 .setAspiredPosition(request.getAspiredPosition())
                 .setAspiredCompetency(request.getAspiredCompetency());

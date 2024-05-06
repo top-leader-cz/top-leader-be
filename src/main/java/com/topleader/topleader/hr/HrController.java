@@ -96,6 +96,7 @@ public class HrController {
 
     @Secured({"HR"})
     @PostMapping
+    @Transactional
     public UserDto addUser(@AuthenticationPrincipal UserDetails loggedUser, @RequestBody @Valid AddUserRequest request) {
 
         var user = new User();
@@ -140,6 +141,7 @@ public class HrController {
 
     @Secured({"HR", "USER"})
     @PutMapping("/{username}")
+    @Transactional
     public UserDto updateUser(
             @AuthenticationPrincipal UserDetails loggedUser,
             @PathVariable String username,
@@ -220,7 +222,7 @@ public class HrController {
         }
 
         if (StringUtils.isNotBlank(request.manager())) {
-            user.setManagers(Set.of(new User().setUsername(request.manager())));
+            user.setManagers(new HashSet<>(Set.of(new User().setUsername(request.manager()))));
         }
         return userDetailService.save(user);
     }
