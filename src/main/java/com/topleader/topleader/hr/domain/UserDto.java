@@ -14,7 +14,7 @@ public record UserDto(
         Set<User.Authority> authorities,
         String position,
         String manager,
-        boolean isManger
+        boolean isManager
  ) {
     public static UserDto fromUser(User user) {
         return new UserDto(

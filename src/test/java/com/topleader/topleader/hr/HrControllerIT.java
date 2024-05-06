@@ -120,7 +120,7 @@ class HrControllerIT extends IntegrationTest {
                 "authorities":["USER","MANAGER"],
                 "position": "dummy position",
                 "manager":null,
-                "isManger":true
+                "isManager":true
                 }                               
                 """));
     }
@@ -269,12 +269,12 @@ class HrControllerIT extends IntegrationTest {
                 .andExpect(content().json("""
                         [
                         {"username":"manager.one@dummy.com",
-                        "fistName":"manager",
+                        "firstName":"manager",
                         "lastName":"one"
                         },
                         {
                         "username":"manager.two@dummy.com",
-                        "fistName":"manager",
+                        "firstName":"manager",
                         "lastName":"two"
                         }
                         ]                       

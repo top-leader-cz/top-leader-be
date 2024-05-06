@@ -78,12 +78,12 @@ class UserSettingsControllerIT extends IntegrationTest {
                 .andExpect(content().json("""
                         [
                         {"username":"manager.one@dummy.com",
-                        "fistName":"manager",
+                        "firstName":"manager",
                         "lastName":"one"
                         },
                         {
                         "username":"manager.two@dummy.com",
-                        "fistName":"manager",
+                        "firstName":"manager",
                         "lastName":"two"
                         }
                         ]                       
