@@ -234,7 +234,7 @@ class HrControllerIT extends IntegrationTest {
                    "status": "PAID",
                    "locale": "cs",
                    "manager": "manager.one@dummy.com",
-                  "position": "test position"
+                   "position": "test position"
                 }
                 """)).andExpect(status().isOk()).andExpect(jsonPath("$.username", is("jakub.svezi@dummy.com"))).andExpect(jsonPath("$.firstName", is("Jakub1"))).andExpect(jsonPath("$.lastName", is("Svezi2"))).andExpect(jsonPath("$.timeZone", is("Europe/Paris"))).andExpect(jsonPath("$.status", is("PAID"))).andExpect(jsonPath("$.position", is("test position")));
 

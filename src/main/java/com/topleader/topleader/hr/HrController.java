@@ -127,7 +127,7 @@ public class HrController {
             throw new ApiValidationException(EMAIL_USED, "username", request.username(), "Already used");
         }
 
-        var saved = processUser(user, request);
+        var saved = managerService.processUser(user, request);
         if (sendInvite(PENDING, request.status())) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, request.locale()));
         }
@@ -169,7 +169,7 @@ public class HrController {
         user.setAuthorities(request.authorities());
         user.setPosition(request.position());
 
-        var updatedUser = processUser(user, request);
+        var updatedUser = managerService.processUser(user, request);
 
         if (sendInvite(oldStatus, request.status())) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, request.locale()));
@@ -216,14 +216,5 @@ public class HrController {
         return CreditsDto.from(hrService.findByUsername(username));
     }
 
-    User processUser(User user, UserRequest request) {
-        if(request.isManager()) {
-            user.getAuthorities().add(User.Authority.MANAGER);
-        }
 
-        if (StringUtils.isNotBlank(request.manager())) {
-            user.setManagers(new HashSet<>(Set.of(new User().setUsername(request.manager()))));
-        }
-        return userDetailService.save(user);
-    }
 }
