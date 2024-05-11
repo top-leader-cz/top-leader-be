@@ -3,7 +3,6 @@
  */
 package com.topleader.topleader.credit;
 
-import com.topleader.topleader.google.GoogleCalendarService;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,19 +23,10 @@ public class CreditController {
 
     private final ScheduledSessionService scheduledSessionService;
 
-    private final GoogleCalendarService googleCalendarService;
-
     @PostMapping("/payments")
     @Secured({"JOB"})
     public void processPayments() {
         log.info("Triggering payment processing");
         scheduledSessionService.processPayments();
-    }
-
-    @PostMapping("/google-sync")
-    @Secured({"JOB"})
-    public void processGoogleSync() {
-        log.info("Triggering google sync job");
-        googleCalendarService.startIncrementalSync();
     }
 }

@@ -3,14 +3,12 @@
  */
 package com.topleader.topleader.google;
 
-import com.google.api.client.auth.oauth2.TokenResponse;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;
 import com.google.api.client.http.HttpRequestInitializer;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.services.calendar.Calendar;
-import com.google.api.services.oauth2.Oauth2;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import lombok.RequiredArgsConstructor;
@@ -44,33 +42,7 @@ public class GoogleCalendarApiClientFactory {
         this.jsonFactory = GsonFactory.getDefaultInstance();
     }
 
-    public Calendar prepareCalendarClient(TokenResponse tokenResponse) {
-
-        return prepareCalendarClient(
-            new GoogleCredential.Builder()
-                .setTransport(transport)
-                .setJsonFactory(jsonFactory)
-                .setClientSecrets(clientId, clientSecret)
-                .setTokenServerEncodedUrl(TOKEN_SERVER_URL)
-                .build()
-                .setFromTokenResponse(tokenResponse)
-        );
-    }
-
     public Calendar prepareCalendarClient(String refreshToken) {
-
-        return prepareCalendarClient(
-            new GoogleCredential.Builder()
-                .setTransport(transport)
-                .setJsonFactory(jsonFactory)
-                .setClientSecrets(clientId, clientSecret)
-                .setTokenServerEncodedUrl(TOKEN_SERVER_URL)
-                .build()
-                .setRefreshToken(refreshToken)
-        );
-    }
-
-    public Calendar prepareFreeBusyClient(String refreshToken) {
 
         return prepareCalendarClient(
             new GoogleCredential.Builder()
@@ -93,23 +65,5 @@ public class GoogleCalendarApiClientFactory {
             .setApplicationName(applicationName)
             .build();
     }
-
-    public Oauth2 prepareOauthClient(TokenResponse tokenResponse) {
-
-        return new Oauth2.Builder(
-            transport,
-            jsonFactory,
-            new GoogleCredential.Builder()
-                .setTransport(transport)
-                .setJsonFactory(jsonFactory)
-                .setClientSecrets(clientId, clientSecret)
-                .setTokenServerEncodedUrl(TOKEN_SERVER_URL)
-                .build()
-                .setFromTokenResponse(tokenResponse)
-        )
-            .setApplicationName(applicationName)
-            .build();
-    }
-
 
 }
