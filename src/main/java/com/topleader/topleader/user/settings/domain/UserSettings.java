@@ -12,7 +12,7 @@ public class UserSettings {
     private String username;
     private String firstName;
     private String lastName;
-    private Long companyId;
+    private String company;
     private String manager;
     private String position;
     private String businessStrategy;
@@ -24,7 +24,6 @@ public class UserSettings {
                 .setUsername(user.getUsername())
                 .setFirstName(user.getFirstName())
                 .setLastName(user.getLastName())
-                .setCompanyId(user.getCompanyId())
                 .setManager(user.getManagers().stream().findFirst().map(User::getUsername).orElse(null))
                 .setPosition(user.getPosition())
                 .setAspiredCompetency(user.getAspiredCompetency())

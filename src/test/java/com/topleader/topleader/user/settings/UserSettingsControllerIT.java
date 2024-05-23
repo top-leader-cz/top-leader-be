@@ -56,7 +56,7 @@ class UserSettingsControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.firstName", is("Jakub")))
                 .andExpect(jsonPath("$.lastName", is("Svezi")))
                 .andExpect(jsonPath("$.position", is("test position")))
-                .andExpect(jsonPath("$.companyId", is(1)))
+                .andExpect(jsonPath("$.company", is("Dummy Company")))
                 .andExpect(jsonPath("$.businessStrategy", is("Dummy business strategy")))
                 .andExpect(jsonPath("$.manager", is("jakub.manager@dummy.com")))
                 .andExpect(jsonPath("$.aspiredCompetency", is("aspired competency")))

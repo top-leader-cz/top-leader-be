@@ -22,9 +22,10 @@ public class UserSettingsService {
         var user = userDetailService.getUser(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
 
-        var userSettings =  UserSettings.fromUser(user);
-        if(userSettings.getCompanyId() != null) {
-            var company = settingsRepository.findById(userSettings.getCompanyId()).orElse(Company.empty());
+        var userSettings = UserSettings.fromUser(user);
+        if (user.getCompanyId() != null) {
+            var company = settingsRepository.findById(user.getCompanyId()).orElse(Company.empty());
+            userSettings.setCompany(company.getName());
             userSettings.setBusinessStrategy(company.getBusinessStrategy());
         }
         return userSettings;
