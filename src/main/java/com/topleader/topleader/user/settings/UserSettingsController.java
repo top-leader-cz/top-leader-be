@@ -4,7 +4,6 @@ package com.topleader.topleader.user.settings;
 import com.topleader.topleader.hr.domain.ManagerDto;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
-import com.topleader.topleader.user.manager.Manager;
 import com.topleader.topleader.user.manager.ManagerService;
 import com.topleader.topleader.user.settings.domain.UserSettingRequest;
 import com.topleader.topleader.user.settings.domain.UserSettings;
@@ -76,4 +75,6 @@ public class UserSettingsController {
 
         return UserSettings.fromUser(userDetailService.save(user));
     }
+
+
 }
