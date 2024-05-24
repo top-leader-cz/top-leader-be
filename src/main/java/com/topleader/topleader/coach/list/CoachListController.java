@@ -109,7 +109,6 @@ public class CoachListController {
     public void scheduleSession(
         @AuthenticationPrincipal UserDetails user,
         @PathVariable String username,
-        @RequestParam(name = "useFreeBusy", required = false, defaultValue = "false") Boolean useFreeBusy,
         @RequestBody ScheduleSessionRequest request
     ) {
         final var userInDb = userRepository.findById(user.getUsername()).orElseThrow();
@@ -122,20 +121,19 @@ public class CoachListController {
             userRepository.save(userInDb.setCoach(username));
         }
 
-        scheduleSession(user.getUsername(), username, request.time(), useFreeBusy);
+        scheduleSession(user.getUsername(), username, request.time(), true);
     }
 
     @Transactional
     @PostMapping("/schedule")
     public void scheduleSession(
         @AuthenticationPrincipal UserDetails user,
-        @RequestParam(name = "useFreeBusy", required = false, defaultValue = "false") Boolean useFreeBusy,
         @RequestBody ScheduleSessionRequest request
     ) {
 
         final var coachName = userRepository.findById(user.getUsername()).orElseThrow().getCoach();
 
-        scheduleSession(user.getUsername(), coachName, request.time(), useFreeBusy);
+        scheduleSession(user.getUsername(), coachName, request.time(), true);
     }
 
     private void scheduleSession(String clientName, String coachName, LocalDateTime time, Boolean useFreeBusy) {
@@ -194,7 +192,6 @@ public class CoachListController {
     @GetMapping("/{username}/availability")
     public List<LocalDateTime> getCoachAvailability(
         @PathVariable String username,
-        @RequestParam(name = "useFreeBusy", required = false, defaultValue = "false") Boolean useFreeBusy,
         @RequestParam LocalDateTime from,
         @RequestParam LocalDateTime to
     ) {
@@ -204,7 +201,7 @@ public class CoachListController {
             .map(ScheduledSession::getTime)
             .collect(Collectors.toSet());
 
-        return coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, from, to, useFreeBusy).stream()
+        return coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, from, to, true).stream()
             .filter(not(scheduledEvents::contains))
             .map(d -> d.atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId).toLocalDateTime())
             .sorted()

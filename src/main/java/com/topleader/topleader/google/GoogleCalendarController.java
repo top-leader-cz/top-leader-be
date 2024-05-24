@@ -58,7 +58,7 @@ public class GoogleCalendarController {
 
         calendarService.storeTokenInfo(userEmail, response);
 
-        return new RedirectView("/sync-success");
+        return new RedirectView("/#/sync-success");
     }
 
     private String authorize(String username) {
@@ -69,7 +69,6 @@ public class GoogleCalendarController {
             .setScopes(Set.of(
                 Oauth2Scopes.OPENID,
                 Oauth2Scopes.USERINFO_EMAIL,
-                CalendarScopes.CALENDAR_EVENTS_READONLY,
                 CalendarScopes.CALENDAR_READONLY
             ))
             .setState(Base64.encodeBase64String(username.getBytes()))

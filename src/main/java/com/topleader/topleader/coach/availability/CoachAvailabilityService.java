@@ -4,7 +4,6 @@
 package com.topleader.topleader.coach.availability;
 
 import com.topleader.topleader.google.GoogleCalendarService;
-import com.topleader.topleader.google.SyncEvent;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.DayOfWeek;
@@ -62,19 +61,20 @@ public class CoachAvailabilityService {
             .collect(Collectors.toSet());
     }
 
-    private static Predicate<LocalDateTime> isNotInsideOf(List<SyncEvent> googleEvents) {
+    private static Predicate<LocalDateTime> isNotInsideOf(List<GoogleCalendarService.SyncEvent> googleEvents) {
         return time -> googleEvents.stream().noneMatch(isInsideOf(time));
     }
 
-    private static Predicate<SyncEvent> isInsideOf(LocalDateTime startTime) {
+    private static Predicate<GoogleCalendarService.SyncEvent> isInsideOf(LocalDateTime startTime) {
         return googleEvent -> {
-            final var endTime = startTime.plusHours(1);
+            final var endTime = startTime.plusMinutes(59);
+            final var startTimeWithBuffer = startTime.plusMinutes(1);
 
-            if (startTime.isBefore(googleEvent.getStartDate()) && endTime.isBefore(googleEvent.getStartDate())) {
+            if (startTimeWithBuffer.isBefore(googleEvent.startDate()) && endTime.isBefore(googleEvent.startDate())) {
                 return false;
             }
 
-            if (startTime.isAfter(googleEvent.getEndDate()) && endTime.isAfter(googleEvent.getEndDate())) {
+            if (startTimeWithBuffer.isAfter(googleEvent.endDate()) && endTime.isAfter(googleEvent.endDate())) {
                 return false;
             }
             return true;
