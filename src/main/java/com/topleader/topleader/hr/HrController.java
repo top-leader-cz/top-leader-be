@@ -56,7 +56,7 @@ public class HrController {
 
     private final ManagerService managerService;
 
-    @Secured({"HR", "USER"})
+    @Secured({"HR"})
     @GetMapping
     public List<CreditsDto> listUsers(@AuthenticationPrincipal UserDetails user) {
 
@@ -72,14 +72,14 @@ public class HrController {
         return List.of(CreditsDto.from(dbUser));
     }
 
-    @Secured({"HR", "USER"})
+    @Secured({"HR"})
     @GetMapping("/{username}")
     @Transactional
     public UserDto getUser(@PathVariable String username) {
         return UserDto.fromUser(userDetailService.find(username));
     }
 
-    @Secured({"HR", "USER"})
+    @Secured({"HR"})
     @GetMapping("/managers")
     @Transactional
     public List<ManagerDto> listManagers(@AuthenticationPrincipal UserDetails user) {
@@ -108,18 +108,17 @@ public class HrController {
                 .setLocale(request.locale())
                 .setStatus(request.status())
                 .setLocale(request.locale())
-                .setPosition(request.position());
+                .setPosition(request.position())
+                .setAspiredCompetency(request.aspiredCompetency());
 
-         if (isHr(loggedUser)) {
-            final var hrUser = userDetailService.getUser(loggedUser.getUsername()).orElseThrow();
+        final var hrUser = userDetailService.getUser(loggedUser.getUsername()).orElseThrow();
 
-            final var companyId = Optional.of(hrUser).map(User::getCompanyId).orElseThrow(() ->
-                    new ApiValidationException(NOT_PART_OF_COMPANY, "user", hrUser.getUsername(), "User is not part of any company")
-            );
+        final var companyId = Optional.of(hrUser).map(User::getCompanyId).orElseThrow(() ->
+                new ApiValidationException(NOT_PART_OF_COMPANY, "user", hrUser.getUsername(), "User is not part of any company")
+        );
 
-            user.setCompanyId(companyId)
-                    .setCredit(0);
-        }
+        user.setCompanyId(companyId)
+                .setCredit(0);
 
         if (userDetailService.getUser(request.username()).isPresent()) {
             throw new ApiValidationException(EMAIL_USED, "username", request.username(), "Already used");
@@ -137,7 +136,7 @@ public class HrController {
         return UserDto.fromUser(saved);
     }
 
-    @Secured({"HR", "USER"})
+    @Secured({"HR"})
     @PutMapping("/{username}")
     @Transactional
     public UserDto updateUser(
@@ -146,14 +145,13 @@ public class HrController {
             @RequestBody @Valid UpdateUserRequest request
     ) {
 
-        if (isHr(loggedUser)) {
-            final var hr = userDetailService.getUser(loggedUser.getUsername()).orElseThrow();
-            final var userInTheSameCompany = userDetailService.getUser(username)
-                    .filter(u -> Objects.equals(hr.getCompanyId(), u.getCompanyId()));
 
-            if (userInTheSameCompany.isEmpty()) {
-                throw new ApiValidationException(NOT_PART_OF_COMPANY, "username", username, "User is not part of any company");
-            }
+        final var hr = userDetailService.getUser(loggedUser.getUsername()).orElseThrow();
+        final var userInTheSameCompany = userDetailService.getUser(username)
+                .filter(u -> Objects.equals(hr.getCompanyId(), u.getCompanyId()));
+
+        if (userInTheSameCompany.isEmpty()) {
+            throw new ApiValidationException(NOT_PART_OF_COMPANY, "username", username, "User is not part of any company");
         }
 
         final var user = userDetailService.getUser(username)
@@ -166,6 +164,7 @@ public class HrController {
         user.setLocale(request.locale());
         user.setAuthorities(request.authorities());
         user.setPosition(request.position());
+        user.setAspiredCompetency(request.aspiredCompetency());
 
         var updatedUser = managerService.processUser(user, request);
 
@@ -177,7 +176,7 @@ public class HrController {
     }
 
 
-    @Secured({"HR", "USER"})
+    @Secured({"HR"})
     @PostMapping("/{username}/credit-request")
     public CreditsDto requestCredits(
             @AuthenticationPrincipal UserDetails user, @PathVariable String username, @RequestBody CreditRequestDto request

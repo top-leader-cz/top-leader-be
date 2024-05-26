@@ -86,43 +86,24 @@ class HrControllerIT extends IntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "user1", authorities = "USER")
-    void testListUsersNoHrEndpoint() throws Exception {
-
-        mvc.perform(get("/api/latest/hr-users")).andExpect(status().isOk()).andExpect(content().contentType("application/json")).andExpect(content().json("""
-                [
-                  {
-                    "firstName": "Alice",
-                    "lastName": "Smith",
-                    "username": "user1",
-                    "coach": "Coach2",
-                    "coachFirstName": "Coach",
-                    "coachLastName": "Borek",
-                    "credit": 50,
-                    "requestedCredit": 10,
-                    "scheduledCredit": 20
-                  }
-                ]
-                """));
-    }
-
-    @Test
     @Sql(scripts = {"/sql/user/user-test.sql", "/sql/user/user-manager.sql"})
-    @WithMockUser(username = "manager.one@dummy.com", authorities = "USER")
+    @WithMockUser(username = "manager.one@dummy.com", authorities = "HR")
     void getUser() throws Exception {
         mvc.perform(get("/api/latest/hr-users/manager.one@dummy.com")).andExpect(status().isOk()).andExpect(content().contentType("application/json")).andDo(print()).andExpect(content().json("""
-                {
-                "username":"manager.one@dummy.com",
-                "firstName":"manager",
-                "lastName":"one",
-                "timeZone":"Europe/Prague",
-                "status":"AUTHORIZED",
-                "authorities":["USER","MANAGER"],
-                "position": "dummy position",
-                "manager":null,
-                "isManager":true
-                }                               
-                """));
+                                {
+                                "username":"manager.one@dummy.com",
+                                "firstName":"manager",
+                                "lastName":"one",
+                                "timeZone":"Europe/Prague",
+                                "status":"AUTHORIZED",
+                                "authorities":["USER","MANAGER"],
+                                "position": "dummy position",
+                                "manager":null,
+                                "isManager":true,
+                                "aspiredCompetency": "test competency"
+                                }
+                                """));
+
     }
 
     @Test
@@ -155,24 +136,6 @@ class HrControllerIT extends IntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "user1", authorities = "USER")
-    void testRequestCreditsToHimself() throws Exception {
-
-        mvc.perform(post("/api/latest/hr-users/user1/credit-request").contentType(MediaType.APPLICATION_JSON).content("""
-                {
-                    "credit": 1000
-                }
-                """)).andExpect(status().isOk()).andExpect(content().contentType("application/json")).andExpect(content().json("{\"username\":\"user1\",\"coach\":\"Coach2\",\"credit\":50,\"requestedCredit\":1000}"));
-
-        var receivedMessage = greenMail.getReceivedMessages()[0];
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("info@topleader.io");
-        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Credits requested in the TopLeader platform");
-        var body = GreenMailUtil.getBody(receivedMessage);
-        Assertions.assertThat(body).contains("Username: user1 Amount: 1000");
-    }
-
-    @Test
     @WithMockUser(username = "hrUser", authorities = "HR")
     void addUser() throws Exception {
         mvc.perform(post("/api/latest/hr-users").contentType(MediaType.APPLICATION_JSON).content("""
@@ -185,9 +148,19 @@ class HrControllerIT extends IntegrationTest {
                    "timeZone": "Europe/Prague",
                    "status": "AUTHORIZED",
                    "isManager": true,
-                   "position": "test position"
+                   "position": "test position",
+                   "aspiredCompetency" : "created competency"
                 }
-                """)).andExpect(status().isOk()).andExpect(jsonPath("$.username", is("jakub.svezi@dummy.com"))).andExpect(jsonPath("$.firstName", is("Jakub"))).andExpect(jsonPath("$.lastName", is("Svezi"))).andExpect(jsonPath("$.timeZone", is("Europe/Prague"))).andExpect(jsonPath("$.status", is("AUTHORIZED"))).andExpect(jsonPath("$.authorities", hasItems("USER"))).andExpect(jsonPath("$.position", is("test position")));
+                """)).andExpect(status()
+                .isOk())
+                .andExpect(jsonPath("$.username", is("jakub.svezi@dummy.com")))
+                .andExpect(jsonPath("$.firstName", is("Jakub")))
+                .andExpect(jsonPath("$.lastName", is("Svezi")))
+                .andExpect(jsonPath("$.timeZone", is("Europe/Prague")))
+                .andExpect(jsonPath("$.status", is("AUTHORIZED")))
+                .andExpect(jsonPath("$.authorities", hasItems("USER")))
+                .andExpect(jsonPath("$.position", is("test position")))
+                .andExpect(jsonPath("$.aspiredCompetency", is("created competency")));
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
@@ -222,10 +195,10 @@ class HrControllerIT extends IntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "user", authorities = "USER")
-    @Sql(scripts = {"/sql/user/user-test.sql", "/sql/user/user-manager.sql"})
+    @WithMockUser(username = "hrUser", authorities = "HR")
+    @Sql(scripts = {"/sql/user/user-test.sql", "/sql/hr/hr-users.sql", "/sql/user/user-manager.sql"})
     void updateUser() throws Exception {
-        mvc.perform(put("/api/latest/hr-users/jakub.svezi@dummy.com").contentType(MediaType.APPLICATION_JSON).content("""
+        mvc.perform(put("/api/latest/hr-users/hrUser").contentType(MediaType.APPLICATION_JSON).content("""
                    {
                    "firstName": "Jakub1",
                    "lastName": "Svezi2",
@@ -234,32 +207,38 @@ class HrControllerIT extends IntegrationTest {
                    "status": "PAID",
                    "locale": "cs",
                    "manager": "manager.one@dummy.com",
-                   "position": "test position"
+                   "position": "test position",
+                   "aspiredCompetency" : "updated competency"
                 }
-                """)).andExpect(status().isOk()).andExpect(jsonPath("$.username", is("jakub.svezi@dummy.com"))).andExpect(jsonPath("$.firstName", is("Jakub1"))).andExpect(jsonPath("$.lastName", is("Svezi2"))).andExpect(jsonPath("$.timeZone", is("Europe/Paris"))).andExpect(jsonPath("$.status", is("PAID"))).andExpect(jsonPath("$.position", is("test position")));
+                """)).andExpect(status().isOk())
+                .andExpect(jsonPath("$.username", is("hrUser")))
+                .andExpect(jsonPath("$.firstName", is("Jakub1")))
+                .andExpect(jsonPath("$.lastName", is("Svezi2")))
+                .andExpect(jsonPath("$.timeZone", is("Europe/Paris")))
+                .andExpect(jsonPath("$.status", is("PAID")))
+                .andExpect(jsonPath("$.position", is("test position")))
+                .andExpect(jsonPath("$.aspiredCompetency", is("updated competency")));
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("jakub.svezi@dummy.com");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("hrUser");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Odemkněte svůj potenciál s TopLeader!");
         Assertions.assertThat(body).contains("Jakub1 Svezi2,").contains("http://app-test-url/#/api/public/set-password/");
 
-        Assertions.assertThat(userRepository.findById("jakub.svezi@dummy.com")).isNotEmpty();
-
-        Assertions.assertThat(userRepository.findById("jakub.svezi@dummy.com")).isNotEmpty();
+        Assertions.assertThat(userRepository.findById("hrUser")).isNotEmpty();
 
         var transactionTemplate = new TransactionTemplate(transactionManager);
         transactionTemplate.executeWithoutResult(status -> {
-            Assertions.assertThat(userRepository.findById("jakub.svezi@dummy.com").get().getManagers()).extracting("username").containsExactly("manager.one@dummy.com");
+            Assertions.assertThat(userRepository.findById("hrUser").get().getManagers()).extracting("username").containsExactly("manager.one@dummy.com");
         });
 
     }
 
     @Test
     @Sql(scripts = {"/sql/user/user-test.sql", "/sql/user/user-manager.sql"})
-    @WithMockUser(username = "user.one@dummy.com", authorities = "USER")
+    @WithMockUser(username = "user.one@dummy.com", authorities = "HR")
     void listManagers() throws Exception {
         mvc.perform(get("/api/latest/hr-users/managers"))
                 .andExpect(status().isOk())

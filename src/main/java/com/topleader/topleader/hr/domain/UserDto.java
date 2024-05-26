@@ -14,7 +14,8 @@ public record UserDto(
         Set<User.Authority> authorities,
         String position,
         String manager,
-        boolean isManager
+        boolean isManager,
+        String aspiredCompetency
  ) {
     public static UserDto fromUser(User user) {
         return new UserDto(
@@ -26,7 +27,8 @@ public record UserDto(
                 user.getAuthorities(),
                 user.getPosition(),
                 user.getManagers().stream().findFirst().map(User::getUsername).orElse(null),
-                user.getAuthorities().contains(User.Authority.MANAGER)
+                user.getAuthorities().contains(User.Authority.MANAGER),
+                user.getAspiredCompetency()
         );
      }
 }

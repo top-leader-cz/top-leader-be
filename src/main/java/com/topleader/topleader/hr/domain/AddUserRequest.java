@@ -34,7 +34,9 @@ public record AddUserRequest(
 
         boolean isManager,
 
-        String position
+        String position,
+
+        String aspiredCompetency
 
 ) implements UserRequest {
 }
