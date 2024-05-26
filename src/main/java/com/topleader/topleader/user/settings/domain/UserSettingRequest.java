@@ -17,4 +17,5 @@ public class UserSettingRequest {
     private String position;
     private String aspiredCompetency;
     private String aspiredPosition;
+    private String businessStrategy;
 }

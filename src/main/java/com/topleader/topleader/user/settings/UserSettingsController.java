@@ -1,6 +1,9 @@
 package com.topleader.topleader.user.settings;
 
 
+import com.topleader.topleader.company.CompanyController;
+import com.topleader.topleader.company.CompanyService;
+import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.hr.domain.ManagerDto;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
@@ -12,6 +15,7 @@ import jakarta.validation.Valid;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +27,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+
+import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
+import static com.topleader.topleader.util.user.UserDetailUtils.isHr;
 
 
 @Slf4j
@@ -36,6 +43,8 @@ public class UserSettingsController {
     private final UserSettingsService settingsService;
 
     private final ManagerService managerService;
+
+    private final CompanyService companyService;
 
     @Secured({"USER"})
     @GetMapping("/managers")
@@ -67,11 +76,20 @@ public class UserSettingsController {
          var user = userDetailService.getUser(loggedUser.getUsername())
             .orElseThrow(() -> new UsernameNotFoundException(loggedUser.getUsername()));
 
+
+        if (isHr(loggedUser)) {
+           Optional.ofNullable(user.getCompanyId()).ifPresentOrElse(
+                companyId -> companyService.setCompanyBusinessStrategy(companyId, request.getBusinessStrategy()),
+                () -> log.info("User {} is not part of any company. Cannot update business strategy.", loggedUser.getUsername()
+            ));
+        }
+
         user.setFirstName(request.getFirstName())
                 .setLastName(request.getLastName())
                 .setPosition(request.getPosition())
                 .setAspiredPosition(request.getAspiredPosition())
                 .setAspiredCompetency(request.getAspiredCompetency());
+
 
         if (StringUtils.isNotBlank(request.getManager())) {
             user.setManagers(new HashSet<>(Set.of(new User().setUsername(request.getManager()))));
