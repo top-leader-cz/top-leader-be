@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -68,10 +69,13 @@ public class UserSettingsController {
 
         user.setFirstName(request.getFirstName())
                 .setLastName(request.getLastName())
-                .setManagers(new HashSet<>(Set.of(new User().setUsername(request.getManager()))))
                 .setPosition(request.getPosition())
                 .setAspiredPosition(request.getAspiredPosition())
                 .setAspiredCompetency(request.getAspiredCompetency());
+
+        if (StringUtils.isNotBlank(request.getManager())) {
+            user.setManagers(new HashSet<>(Set.of(new User().setUsername(request.getManager()))));
+        }
 
         return UserSettings.fromUser(userDetailService.save(user));
     }
