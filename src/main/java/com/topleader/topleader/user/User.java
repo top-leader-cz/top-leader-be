@@ -1,6 +1,5 @@
 package com.topleader.topleader.user;
 
-import com.topleader.topleader.user.manager.Manager;
 import jakarta.persistence.*;
 
 import java.util.HashSet;

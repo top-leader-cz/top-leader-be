@@ -55,7 +55,10 @@ class HrControllerIT extends IntegrationTest {
     @WithMockUser(username = "hrUser", authorities = "HR")
     void testListUsersEndpoint() throws Exception {
 
-        mvc.perform(get("/api/latest/hr-users")).andExpect(status().isOk()).andExpect(content().contentType("application/json")).andExpect(content().json("""
+        mvc.perform(get("/api/latest/hr-users"))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType("application/json"))
+            .andExpect(content().json("""
                 [
                   {
                     "firstName": "John",
@@ -68,6 +71,9 @@ class HrControllerIT extends IntegrationTest {
                     "requestedCredit": 0,
                     "scheduledCredit": 10,
                     "paidCredit": 111,
+                    "longTermGoal": null,
+                    "areaOfDevelopment": [],
+                    "strengths": []
                   },
                   {
                     "firstName": "Alice",
@@ -80,6 +86,17 @@ class HrControllerIT extends IntegrationTest {
                     "requestedCredit": 10,
                     "scheduledCredit": 20,
                     "paidCredit": 222,
+                    "longTermGoal": "Goal1",
+                    "areaOfDevelopment": [
+                      "aod"
+                    ],
+                    "strengths": [
+                      "s1",
+                      "s2",
+                      "s3",
+                      "s4",
+                      "s5"
+                    ]
                   }
                 ]
                 """));
