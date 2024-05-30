@@ -1,7 +1,6 @@
 package com.topleader.topleader.hr.domain;
 
 import com.topleader.topleader.hr.HrView;
-import com.topleader.topleader.user.User;
 
 import java.util.List;
 
@@ -15,7 +14,10 @@ public record CreditsDto(
         Integer credit,
         Integer requestedCredit,
         Integer scheduledCredit,
-        Integer paidCredit
+        Integer paidCredit,
+        String longTermGoal,
+        List<String> areaOfDevelopment,
+        List<String> strengths
 ) {
 
     public static List<CreditsDto> from(List<HrView> users) {
@@ -33,6 +35,10 @@ public record CreditsDto(
                 user.getCredit(),
                 user.getRequestedCredit(),
                 user.getScheduledCredit(),
-                user.getPaidCredit());
+                user.getPaidCredit(),
+                user.getLongTermGoal(),
+                user.getAreaOfDevelopment(),
+                user.getTopStrengths()
+        );
     }
 }
