@@ -182,8 +182,49 @@
         </repository>
     </repositories>
 
+    <profiles>
+        <profile>
+            <id>native</id>
+            <properties>
+                <spring.profiles.active>qa</spring.profiles.active>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.graalvm.buildtools</groupId>
+                        <artifactId>native-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>build-native</id>
+                                <goals>
+                                    <goal>compile-no-fork</goal>
+                                </goals>
+                                <phase>package</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <buildArgs>
+                                <arg>--initialize-at-build-time=org.slf4j.helpers</arg>
+                            </buildArgs>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 
     <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.graalvm.buildtools</groupId>
+                    <artifactId>native-maven-plugin</artifactId>
+                    <configuration>
+                        <skipNativeTests>true</skipNativeTests>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
         <finalName>top-leader</finalName>
         <plugins>
             <plugin>
