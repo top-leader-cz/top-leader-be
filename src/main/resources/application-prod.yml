@@ -17,3 +17,8 @@ spring:
         sslmode: disable
 top-leader:
   app-url: https://topleaderplatform.io
+
+google:
+  application-name: "topleaderplatform.io"
+  client:
+    redirectUri: https://topleaderplatform.io/login/google
