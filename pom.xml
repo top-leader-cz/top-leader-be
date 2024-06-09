@@ -5,7 +5,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.2</version>
+        <version>3.3.0</version>
         <!--		<relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
     </parent>
     <groupId>com.topleader</groupId>
@@ -85,6 +85,10 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
 
         <dependency>
@@ -205,6 +209,7 @@
                         <configuration>
                             <buildArgs>
                                 <arg>--initialize-at-build-time=org.slf4j.helpers</arg>
+                                <arg>--initialize-at-build-time=org.apache.commons.logging.LogFactory</arg>
                             </buildArgs>
                         </configuration>
                     </plugin>
