@@ -109,7 +109,10 @@ public class FeedbackService {
     @Transactional
     public List<FeedbackFormAnswer> submitForm(List<FeedbackFormAnswer> answers, String username) {
         userRepository.findById(username)
-                .ifPresent(u -> userRepository.save(u.setStatus(User.Status.SUBMITTED)));
+                .ifPresent(u -> {
+                    if (skipUpdate(u)) return;
+                    userRepository.save(u.setStatus(User.Status.SUBMITTED));
+                });
         return feedbackFormAnswerRepository.saveAll(answers);
     }
 
