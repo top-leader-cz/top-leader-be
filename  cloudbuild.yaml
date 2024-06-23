@@ -1,4 +1,6 @@
 steps:
-  - name: qa build
+  - name: 'vegardit/graalvm-maven:latest-java21'
+    args:
+      - clean
+      - verify
     entrypoint: mvn
-    args: [clean, package, -Dnative, -DskipTests]
