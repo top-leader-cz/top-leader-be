@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>Liebe/r  <b>$firstName $lastName</b>,</p>
+
+<p>Gute Nachrichten! Sie haben erfolgreich eine Coaching-Sitzung auf der TopLeader-Plattform gebucht. Bitte loggen Sie sich ein, um die Details einzusehen und sich auf Ihre bevorstehende Sitzung vorzubereiten.</p>
+
+<p>Datum und Uhrzeit der Sitzung: <b>$time</b></p>
+
+<p>Um auf Ihr Konto und die Details der Sitzung zuzugreifen, klicken Sie bitte hier: <a href="$link" target="_blank">here</a></p>
+
+<p>Wir freuen uns darauf, Sie bei Ihrer Entwicklung zu unterstützen!</p>
+
+<p>Mit freundlichen Grüßen,</p>
+<p>Das TopLeader-Team</p>
+
+</body>
+</html>

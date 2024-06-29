@@ -77,4 +77,8 @@ public class ScheduledSessionService {
                 }
             });
     }
+
+    public Optional<ScheduledSession> getSessionData(Long sessionId) {
+        return scheduledSessionRepository.findById(sessionId);
+    }
 }

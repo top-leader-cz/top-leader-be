@@ -7,6 +7,7 @@ import com.topleader.topleader.coach.list.CoachListView;
 import com.topleader.topleader.coach.list.CoachListViewRepository;
 import com.topleader.topleader.coach.rate.CoachRate;
 import com.topleader.topleader.coach.rate.CoachRateRepository;
+import com.topleader.topleader.email.EmailTemplateService;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
@@ -66,6 +67,8 @@ public class CoachController {
     private final UserRepository userRepository;
 
     private final TransactionService transactionService;
+
+    private final EmailTemplateService emailTemplateService;
 
     private final CoachRateRepository coachRateRepository;
 
@@ -150,6 +153,7 @@ public class CoachController {
             throw new NotFoundException();
         }
 
+        emailTemplateService.sendCancelAlertEmail(sessionId);
         sessionService.cancelSession(sessionId);
     }
 

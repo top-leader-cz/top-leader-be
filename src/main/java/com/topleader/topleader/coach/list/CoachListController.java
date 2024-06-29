@@ -5,10 +5,11 @@ package com.topleader.topleader.coach.list;
 
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
+import com.topleader.topleader.coach.rate.CoachRateRepository;
+import com.topleader.topleader.email.EmailTemplateService;
+import com.topleader.topleader.coach.rate.CoachRate;
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
-import com.topleader.topleader.email.EmailService;
-import com.topleader.topleader.email.VelocityService;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
@@ -24,16 +25,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -60,7 +58,6 @@ import static com.topleader.topleader.exception.ErrorCodeConstants.DIFFERENT_COA
 import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_ENOUGH_CREDITS;
 import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
 import static com.topleader.topleader.exception.ErrorCodeConstants.TIME_NOT_AVAILABLE;
-import static com.topleader.topleader.exception.ErrorCodeConstants.USER_NOT_FOUND;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
@@ -77,12 +74,6 @@ import static org.springframework.util.StringUtils.hasText;
 @RequestMapping("/api/latest/coaches")
 public class CoachListController {
 
-    private static final Map<String, String> subjects = Map.of(
-        "en", "New Booking Alert on TopLeader",
-        "cs", "Upozornění na novou rezervaci na TopLeader",
-        "fr", "Alerte de nouvelle réservation sur TopLeader",
-        "de", "Neue Buchungsalarm auf TopLeader");
-
     private final CoachImageRepository coachImageRepository;
 
     private final CoachListViewRepository coachListViewRepository;
@@ -93,11 +84,11 @@ public class CoachListController {
 
     private final UserRepository userRepository;
 
-    private final EmailService emailService;
-
-    private final VelocityService velocityService;
+    private final EmailTemplateService emailTemplateService;
 
     private final CompanyRepository companyRepository;
+
+    private final CoachRateRepository coachRateRepository;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -168,7 +159,7 @@ public class CoachListController {
 
         final var user = userRepository.findById(clientName).orElseThrow();
 
-        scheduledSessionService.scheduleSession(
+        final var session = scheduledSessionService.scheduleSession(
             new ScheduledSession()
                 .setUsername(clientName)
                 .setCoachUsername(coachName)
@@ -177,21 +168,7 @@ public class CoachListController {
                 .setPrivate(false)
         );
 
-        log.info("Sending reservation alert for: [{}]", coachName);
-        var coach = userRepository.findById(coachName)
-            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", time.toString(), "Coach not found " + coachName));
-        var params = Map.of("firstName", coach.getFirstName(), "lastName", coach.getLastName(), "link", appUrl);
-        var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(coach.getLocale()));
-
-        emailService.sendEmail(coachName, subjects.getOrDefault(coach.getLocale(), defaultLocale), emailBody);
-    }
-
-    public String parseTemplateName(String locale) {
-        return "templates/reservation/reservation-" + parseLocale(locale) + ".vm";
-    }
-
-    public String parseLocale(String locale) {
-        return supportedInvitations.contains(locale) ? locale : defaultLocale;
+        emailTemplateService.sendBookingAlertEmail(session.getId());
     }
 
     @GetMapping("/{username}/availability")

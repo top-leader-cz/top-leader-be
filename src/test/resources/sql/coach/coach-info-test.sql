@@ -2,10 +2,10 @@ insert into users (username, password, status)
 values ('no_coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED');
 insert into users (username, password, status, authorities, time_zone)
 values ('coach_no_info', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'Europe/Prague');
-insert into users (username, password, status, authorities, first_name, last_name, time_zone)
-values ('coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'firstName', 'lastName', 'Europe/Prague');
-insert into users (username, password, status, authorities, first_name, last_name)
-values ('user1', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER"]', 'user1FirstName', 'user1lastName');
+insert into users (username, password, status, authorities, first_name, last_name, time_zone, locale)
+values ('coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'firstName', 'lastName', 'Europe/Prague', 'en');
+insert into users (username, password, status, authorities, first_name, last_name, locale)
+values ('user1', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER"]', 'user1FirstName', 'user1lastName', 'en');
 insert into users (username, password, status, authorities, first_name, last_name)
 values ('user2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER"]', 'user2FirstName', 'user2lastName');
 insert into users (username, password, status, authorities, first_name, last_name)
