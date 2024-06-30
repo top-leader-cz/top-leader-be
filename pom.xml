@@ -188,10 +188,13 @@
 
     <profiles>
         <profile>
-            <id>native</id>
+            <id>qa</id>
             <properties>
-                <spring.profiles.active>qa</spring.profiles.active>
+                <env>qa</env>
             </properties>
+        </profile>
+        <profile>
+            <id>native</id>
             <build>
                 <plugins>
                     <plugin>
