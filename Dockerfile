@@ -17,9 +17,9 @@ COPY pom.xml pom.xml
 
 COPY src src
 
-RUN export MAVEN_OPTS="-Xms12g -Xmx16g -XX:MaxDirectMemorySize=8192m"
+RUN mv src/main/resources/application-qa.yml src/main/resources/application.yml
 
-RUN export spring_profiles_active=qa
+RUN export MAVEN_OPTS="-Xms12g -Xmx16g -XX:MaxDirectMemorySize=8192m"
 
 RUN mvn clean package -Pnative -DskipTests -Dmaven.test.skip=true
 

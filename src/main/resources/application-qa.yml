@@ -1,19 +1,78 @@
 server:
-  port: {PORT}
+  port: 8080
+
 spring:
+  threads:
+    virtual:
+      enabled: true
   datasource:
-    username: top-leader
     hikari:
       data-source-properties:
         socketFactory: com.google.cloud.sql.postgres.SocketFactory
         cloudSqlInstance: topleader-394306:europe-west3:top-leader-db
         enableIamAuth: false
         sslmode: disable
+    username: top-leader
+    url: "jdbc:postgresql:///top_leader"
+    password: "past1520$A@B"
+  ai:
+    openai:
+      api-key: "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"
+      chat:
+        options:
+          model: gpt-3.5-turbo
+
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    placeholder-replacement: false
+    baseline-on-migrate: true
+    validate-on-migrate: true
+  mail:
+    username: "topleaderplatform@gmail.com"
+    password: "abeqnppzvjspgwnn"
+    host: smtp.gmail.com
+    port: 587
+    properties:
+      mail:
+        transport:
+          protocol: smtp
+        smtp:
+          starttls:
+            enable: true
+            required: true
+          auth: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+
+  jackson:
+    date-format: "yyyy-MM-dd'T'HH:mm:ss"
+
+  session:
+    jdbc:
+      initialize-schema: never
 
 top-leader:
   app-url: https://qa.topleaderplatform.io
+  supported-invitations: en, cs, fr, de
+  default-locale: en
+  default-from: top-leader
 
 google:
   application-name: "qa.topleaderplatform.io"
   client:
+    client-id: 572595541175-n58eajajt5iqc5rsn25rv2mt8iejojsi.apps.googleusercontent.com
+    client-secret: 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
+    access-token-uri: https://www.googleapis.com/oauth2/v3/token
+    user-authorization-uri: https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent
+    client-authentication-scheme: query
     redirectUri: https://qa.topleaderplatform.io/login/google
+  resource:
+    user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo
+    prefer-token-info: true
