@@ -3,7 +3,7 @@ package com.topleader.topleader.ai;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -15,7 +15,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AiClient {
 
-    private final ChatClient chatClient;
+    private final ChatModel chatClient;
 
     private final AiPromptService aiPromptService;
 

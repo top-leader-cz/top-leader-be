@@ -1,4 +1,9 @@
 spring:
+  ai:
+    openai:
+      chat:
+        options:
+          model: gpt-4o
   mail:
     host: 127.0.0.1
     port: 3025

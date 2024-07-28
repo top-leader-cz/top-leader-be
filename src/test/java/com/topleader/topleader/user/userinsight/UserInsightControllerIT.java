@@ -2,21 +2,19 @@ package com.topleader.topleader.user.userinsight;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.ai.AiPrompt;
-import com.topleader.topleader.ai.AiPromptRepository;
 import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.ai.chat.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 
-import static com.topleader.topleader.ai.AiClient.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -25,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
-    ChatClient chatClient;
+    ChatModel chatClient;
 
     @Autowired
     UserInfoRepository userInfoRepository;

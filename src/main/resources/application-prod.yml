@@ -6,7 +6,7 @@ spring:
     openai:
       chat:
         options:
-          model: gpt-4
+          model: gpt-4o
   datasource:
     username: top-leader-prod
     hikari:
