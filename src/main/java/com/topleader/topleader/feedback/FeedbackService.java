@@ -148,14 +148,15 @@ public class FeedbackService {
     @SneakyThrows
     @Transactional
     public void generateSummary(long formId) {
-        FeedbackForm form = feedbackFormRepository.getReferenceById(formId);
+        var form = feedbackFormRepository.getReferenceById(formId);
+        var user = form.getUser();
         var formDto = FeedbackFormDto.witAnswer(form);
         var questions = formDto.getQuestions().stream()
                 .collect(Collectors.toMap(QuestionDto::key, q -> q.answers().stream()
                         .map(AnswerRecipientDto::answer)
                         .collect(Collectors.toList())));
         if(formDto.allowSummary()) {
-            var summary =  objectMapper.readValue(aiClient.generateSummary("form", questions), Summary.class);
+            var summary =  objectMapper.readValue(aiClient.generateSummary(user.getLocale(), questions), Summary.class);
             summary.setResponses(formDto.getAnswersCount());
             form.setSummary(summary);
             feedbackFormRepository.save(form);
