@@ -1,12 +1,15 @@
 package com.topleader.topleader.util.common;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.feedback.api.FeedbackData;
+import io.vavr.collection.List;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -31,7 +34,8 @@ class JsonUtilsTest {
 
 
     @Test
-    void dataTest() {
+    void dataTest() throws JsonProcessingException {
+        String s = new ObjectMapper().writeValueAsString(Map.of("Test", List.of("1", "2", "3"), "test2", List.of("4", "5", "6")));
 //        String format1 = MessageFormat.format(getPrompt, "for", "jedna" , "dva");
 //        String format = MessageFormat.format(prompt, "dfsd","fds", "s", "k", "l", "d");
         var v = LocalDateTime.now().isBefore(LocalDateTime.parse("2024-01-06T00:00").plusDays(1));

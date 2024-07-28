@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 @Data
 @Accessors(chain = true)
 public class FeedbackFormDto {
+
+    private final static int SUMMARY_LIMIT = 5;
     private Long id;
 
     private String title;
@@ -29,6 +31,10 @@ public class FeedbackFormDto {
     private List<QuestionDto> questions;
 
     private List<RecipientDto> recipients;
+
+    private int summaryFor;
+
+    private Summary summary;
 
     public static FeedbackFormDto of(FeedbackForm feedbackForm) {
         var questions = feedbackForm.getQuestions().stream()
@@ -70,8 +76,18 @@ public class FeedbackFormDto {
                     .map(q -> new QuestionDto(q.key(), q.type(), q.required(), result.getOrDefault(q.key(), List.of())))
                     .collect(Collectors.toList()));
 
-
+            dto.setSummary(feedbackForm.getSummary());
             return dto;
         }
+
+    public long getAnswersCount() {
+        return recipients.stream()
+                .filter(RecipientDto::submitted)
+                .count();
+    }
+
+    public boolean allowSummary() {
+        return getAnswersCount() >= SUMMARY_LIMIT;
+    }
 }
 

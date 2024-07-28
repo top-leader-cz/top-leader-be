@@ -1,10 +1,11 @@
 package com.topleader.topleader.feedback;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.email.VelocityService;
 import com.topleader.topleader.exception.ApiValidationException;
-import com.topleader.topleader.feedback.api.FeedbackData;
-import com.topleader.topleader.feedback.api.FeedbackFormDto;
+import com.topleader.topleader.feedback.api.*;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.FeedbackFormAnswer;
 import com.topleader.topleader.feedback.entity.Question;
@@ -19,12 +20,14 @@ import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.FROM_ALREADY_SUBMITTED;
 import static com.topleader.topleader.user.User.Status.*;
@@ -54,6 +57,10 @@ public class FeedbackService {
     private final EmailService emailService;
 
     private final UserRepository userRepository;
+
+    private final AiClient aiClient;
+
+    private final ObjectMapper objectMapper;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -136,6 +143,23 @@ public class FeedbackService {
 
                     emailService.sendEmail(r.recipient(), subject, body);
                 });
+    }
+
+    @SneakyThrows
+    @Transactional
+    public void generateSummary(long formId) {
+        FeedbackForm form = feedbackFormRepository.getReferenceById(formId);
+        var formDto = FeedbackFormDto.witAnswer(form);
+        var questions = formDto.getQuestions().stream()
+                .collect(Collectors.toMap(QuestionDto::key, q -> q.answers().stream()
+                        .map(AnswerRecipientDto::answer)
+                        .collect(Collectors.toList())));
+        if(formDto.allowSummary()) {
+            var summary =  objectMapper.readValue(aiClient.generateSummary("form", questions), Summary.class);
+            summary.setResponses(formDto.getAnswersCount());
+            form.setSummary(summary);
+            feedbackFormRepository.save(form);
+        }
     }
 
     boolean skipUpdate(User u) {

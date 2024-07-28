@@ -56,6 +56,7 @@ public class PublicFeedbackController {
         log.info("submition answers for respondent: [{}] ", username);
         var recipient = feedbackService.validateRecipientIfValid(formId, username, token);
         feedbackService.submitForm(FeedbackSubmitRequest.toAnswers(request, formId, recipient), username);
+        feedbackService.generateSummary(formId);
     }
 
 
