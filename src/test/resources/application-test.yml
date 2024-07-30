@@ -17,4 +17,7 @@ spring:
 
 top-leader:
   app-url: http://app-test-url
+  feedback:
+    summary-limit: 1
+
 

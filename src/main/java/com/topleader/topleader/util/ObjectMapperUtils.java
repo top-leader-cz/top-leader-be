@@ -4,9 +4,9 @@
 package com.topleader.topleader.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.experimental.UtilityClass;
 
 
 /**
@@ -30,6 +30,14 @@ public final class ObjectMapperUtils {
     public static <T> T fromJsonString(String json, Class<T> clazz) {
         try {
             return OB.readValue(json, clazz);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static <T> T fromJsonString(String json, TypeReference<T> type) {
+        try {
+            return OB.readValue(json, type);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }

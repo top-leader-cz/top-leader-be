@@ -1,5 +1,6 @@
 package com.topleader.topleader.feedback;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.email.EmailService;
@@ -16,6 +17,9 @@ import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.util.common.FileUtils;
+import com.topleader.topleader.util.common.Translation;
+import com.topleader.topleader.util.common.TranslationUtils;
 import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -70,6 +74,9 @@ public class FeedbackService {
 
     @Value("${top-leader.default-locale}")
     private String defaultLocale;
+
+    @Value("${top-leader.feedback.summary-limit}")
+    private int summaryLimit;
 
     public List<Question> fetchOptions() {
         return questionRepository.getDefaultOptions();
@@ -151,13 +158,14 @@ public class FeedbackService {
         var form = feedbackFormRepository.getReferenceById(formId);
         var user = form.getUser();
         var formDto = FeedbackFormDto.witAnswer(form);
+        var translations = TranslationUtils.getTranslation();
         var questions = formDto.getQuestions().stream()
-                .collect(Collectors.toMap(QuestionDto::key, q -> q.answers().stream()
+                .collect(Collectors.toMap(q -> TranslationUtils.translate(q.key(), translations), q -> q.answers().stream()
                         .map(AnswerRecipientDto::answer)
                         .collect(Collectors.toList())));
-        if(formDto.allowSummary()) {
-            var summary =  objectMapper.readValue(aiClient.generateSummary(user.getLocale(), questions), Summary.class);
-            summary.setResponses(formDto.getAnswersCount());
+
+        if (formDto.allowSummary(summaryLimit)) {
+            var summary = objectMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class);
             form.setSummary(summary);
             feedbackFormRepository.save(form);
         }

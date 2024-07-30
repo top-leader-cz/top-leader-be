@@ -6,7 +6,6 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.SneakyThrows;
 
-import java.util.Set;
 
 @Converter
 public class SummaryConverter implements AttributeConverter<Summary, String> {
@@ -15,12 +14,12 @@ public class SummaryConverter implements AttributeConverter<Summary, String> {
     @SneakyThrows
     @Override
     public String convertToDatabaseColumn(Summary attribute) {
-        return MAPPER.writeValueAsString(attribute);
+        return attribute== null ? null : MAPPER.writeValueAsString(attribute);
     }
 
     @SneakyThrows
     @Override
     public Summary convertToEntityAttribute(String dbData) {
-        return MAPPER.readValue(dbData, Summary.class);
+        return dbData == null ?  null : MAPPER.readValue(dbData, Summary.class);
     }
 }

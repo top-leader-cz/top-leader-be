@@ -65,7 +65,7 @@ public class PublicFeedbackControllerIT extends IntegrationTest {
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/submit-feedback.sql"})
-    void createForm() throws Exception {
+    void submitForm() throws Exception {
          mvc.perform(post("/api/public/latest/feedback/1/pepa@cerny.cz/token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.readFileAsString("feedback/json/submit-form.json")))

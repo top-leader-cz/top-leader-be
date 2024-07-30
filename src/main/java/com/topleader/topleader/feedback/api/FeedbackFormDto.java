@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 @Accessors(chain = true)
 public class FeedbackFormDto {
 
-    private final static int SUMMARY_LIMIT = 5;
+
     private Long id;
 
     private String title;
@@ -86,8 +86,8 @@ public class FeedbackFormDto {
                 .count();
     }
 
-    public boolean allowSummary() {
-        return getAnswersCount() >= SUMMARY_LIMIT;
+    public boolean allowSummary(int summaryLimit) {
+        return getAnswersCount() >= summaryLimit;
     }
 }
 

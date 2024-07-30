@@ -6,5 +6,4 @@ import lombok.Data;
 public class Summary {
     private String strongAreas;
     private String areasOfImprovement;
-    private long responses;
 }
