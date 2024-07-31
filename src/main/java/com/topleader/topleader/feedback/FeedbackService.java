@@ -167,6 +167,7 @@ public class FeedbackService {
 
         if (formDto.allowSummary(summaryLimit)) {
             var summary = Try.of(() -> objectMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class))
+                    .onFailure(e -> log.info("Failed to generate summary for form: [{}] ", formId, e))
                             .getOrElse(new Summary());
             form.setSummary(summary);
             feedbackFormRepository.save(form);
