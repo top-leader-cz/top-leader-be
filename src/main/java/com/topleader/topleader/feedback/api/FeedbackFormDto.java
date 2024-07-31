@@ -1,8 +1,11 @@
 package com.topleader.topleader.feedback.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import lombok.Data;
 import lombok.experimental.Accessors;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +35,6 @@ public class FeedbackFormDto {
 
     private List<RecipientDto> recipients;
 
-    private int summaryFor;
-
     private Summary summary;
 
     public static FeedbackFormDto of(FeedbackForm feedbackForm) {
@@ -57,35 +58,38 @@ public class FeedbackFormDto {
                 .setId(feedbackForm.getId())
                 .setValidTo(feedbackForm.getValidTo())
                 .setQuestions(questions)
-                .setRecipients(recipients);
+                .setRecipients(recipients)
+                .setSummary(feedbackForm.getSummary());
     }
 
     public static FeedbackFormDto witAnswer(FeedbackForm feedbackForm) {
-       var dto =  of(feedbackForm);
+        var dto = of(feedbackForm);
 
         var result = new HashMap<String, List<AnswerRecipientDto>>();
         feedbackForm.getAnswers().forEach(a -> {
-                    result.compute(a.getQuestion().getKey(), (v, k) -> {
-                        var answers = result.getOrDefault(a.getQuestion().getKey(), new ArrayList<>());
-                        answers.add(new AnswerRecipientDto(a.getAnswer(), a.getRecipient().getRecipient()));
-                        return answers;
-                    });
-                });
+            result.compute(a.getQuestion().getKey(), (v, k) -> {
+                var answers = result.getOrDefault(a.getQuestion().getKey(), new ArrayList<>());
+                answers.add(new AnswerRecipientDto(a.getAnswer(), a.getRecipient().getRecipient()));
+                return answers;
+            });
+        });
 
-            dto.setQuestions(dto.getQuestions().stream()
-                    .map(q -> new QuestionDto(q.key(), q.type(), q.required(), result.getOrDefault(q.key(), List.of())))
-                    .collect(Collectors.toList()));
+        dto.setQuestions(dto.getQuestions().stream()
+                .map(q -> new QuestionDto(q.key(), q.type(), q.required(), result.getOrDefault(q.key(), List.of())))
+                .collect(Collectors.toList()));
 
-            dto.setSummary(feedbackForm.getSummary());
-            return dto;
-        }
+        dto.setSummary(feedbackForm.getSummary());
+        return dto;
+    }
 
+    @JsonIgnore
     public long getAnswersCount() {
         return recipients.stream()
                 .filter(RecipientDto::submitted)
                 .count();
     }
 
+    @JsonIgnore
     public boolean allowSummary(int summaryLimit) {
         return getAnswersCount() >= summaryLimit;
     }

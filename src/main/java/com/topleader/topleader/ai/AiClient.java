@@ -73,7 +73,7 @@ public class AiClient {
         log.info("Finding actions steps for results: {}  locale: {},", results, locale);
 
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.FEEDBACK_SUMMARY);
-        return chatClient.call(String.format(prompt, resultJson, locale));
+        return chatClient.call(MessageFormat.format(prompt, resultJson, locale));
 
     }
 }

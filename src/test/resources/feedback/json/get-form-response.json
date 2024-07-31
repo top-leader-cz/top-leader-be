@@ -49,5 +49,9 @@
       "username": "ilja@bily.cz",
       "submitted": false
     }
-  ]
+  ],
+  "summary": {
+    "strongAreas": "strongAreas",
+    "areasOfImprovement": "areasOfImprovement"
+  }
 }

@@ -3,11 +3,15 @@ package com.topleader.topleader.feedback;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
+import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
+import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.user.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
@@ -23,12 +27,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class PublicFeedbackControllerIT extends IntegrationTest {
 
+    private static final String PROMPT_QUERY = "test {\"What is your name?\":[\"answer test\"],\"What is your name?2\":[\"scale.2\"]} English";
+
+
     @Autowired
     FeedbackFormAnswerRepository feedbackFormAnswerRepository;
 
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    FeedbackFormRepository feedbackFormRepository;
+
+    @Autowired
+    ChatModel chatClient;
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
@@ -64,12 +76,25 @@ public class PublicFeedbackControllerIT extends IntegrationTest {
     }
 
     @Test
-    @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/submit-feedback.sql"})
+    @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/submit-feedback.sql", "/user_insight/ai-prompt.sql"})
     void submitForm() throws Exception {
+        Mockito.when(chatClient.call(Mockito.eq(PROMPT_QUERY))).thenReturn("""
+                 {
+                       "strongAreas" : "strong areas",
+                        "areasOfImprovement": "areas of improvement"
+                }
+                """);
+
          mvc.perform(post("/api/public/latest/feedback/1/pepa@cerny.cz/token")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.readFileAsString("feedback/json/submit-form.json")))
                 .andExpect(status().isOk());
+
+        feedbackFormRepository.findById(1L).ifPresent(f -> {
+            Assertions.assertThat(f.getSummary())
+                    .extracting("strongAreas", "areasOfImprovement")
+                    .containsExactly("strong areas", "areas of improvement");
+        });
 
         var answers = feedbackFormAnswerRepository.findAll();
 
