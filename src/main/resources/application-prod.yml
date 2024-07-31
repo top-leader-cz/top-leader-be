@@ -6,7 +6,7 @@ spring:
     openai:
       chat:
         options:
-          model: gpt-4
+          model: gpt-4o
   datasource:
     username: top-leader-prod
     hikari:
@@ -17,6 +17,8 @@ spring:
         sslmode: disable
 top-leader:
   app-url: https://topleaderplatform.io
+  feedback:
+    summary-limit: 5
 
 google:
   application-name: "topleaderplatform.io"

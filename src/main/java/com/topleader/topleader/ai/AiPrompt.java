@@ -23,7 +23,8 @@ public class AiPrompt {
         PERSONAL_GROWTH_TIP,
         WORLD_LEADER_PERSONA,
         LONG_TERM_GOALS,
-        ACTIONS_STEPS
+        ACTIONS_STEPS,
+        FEEDBACK_SUMMARY
     }
 
 }

@@ -36,5 +36,9 @@
       "username": "kuku@kuku.cz",
       "submitted": false
     }
-  ]
+  ],
+  "summary": {
+    "strongAreas": "strongAreas",
+    "areasOfImprovement": "areasOfImprovement"
+  }
 }

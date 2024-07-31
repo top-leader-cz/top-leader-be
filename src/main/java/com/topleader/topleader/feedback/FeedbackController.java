@@ -66,7 +66,10 @@ public class FeedbackController {
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     @Transactional
     public FeedbackFormDto updateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
-        var form = feedbackService.saveForm(FeedbackFormRequest.toForm(request).setId(id));
+        var savedForm = feedbackService.fetchForm(id);
+        var updatedForm = FeedbackFormRequest.toForm(request).setId(id);
+        updatedForm.setSummary(savedForm.getSummary());
+        var form = feedbackService.saveForm(updatedForm);
         feedbackService.sendFeedbacks(getFeedbackData(request, form));
         return feedbackService.toFeedbackFormDto(form);
     }

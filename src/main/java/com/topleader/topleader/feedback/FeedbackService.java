@@ -1,10 +1,12 @@
 package com.topleader.topleader.feedback;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.email.VelocityService;
 import com.topleader.topleader.exception.ApiValidationException;
-import com.topleader.topleader.feedback.api.FeedbackData;
-import com.topleader.topleader.feedback.api.FeedbackFormDto;
+import com.topleader.topleader.feedback.api.*;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.FeedbackFormAnswer;
 import com.topleader.topleader.feedback.entity.Question;
@@ -15,16 +17,22 @@ import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.util.common.FileUtils;
+import com.topleader.topleader.util.common.Translation;
+import com.topleader.topleader.util.common.TranslationUtils;
 import com.topleader.topleader.util.common.user.UserUtils;
+import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.FROM_ALREADY_SUBMITTED;
 import static com.topleader.topleader.user.User.Status.*;
@@ -55,6 +63,10 @@ public class FeedbackService {
 
     private final UserRepository userRepository;
 
+    private final AiClient aiClient;
+
+    private final ObjectMapper objectMapper;
+
     @Value("${top-leader.app-url}")
     private String appUrl;
 
@@ -63,6 +75,9 @@ public class FeedbackService {
 
     @Value("${top-leader.default-locale}")
     private String defaultLocale;
+
+    @Value("${top-leader.feedback.summary-limit}")
+    private int summaryLimit;
 
     public List<Question> fetchOptions() {
         return questionRepository.getDefaultOptions();
@@ -136,6 +151,26 @@ public class FeedbackService {
 
                     emailService.sendEmail(r.recipient(), subject, body);
                 });
+    }
+
+    @SneakyThrows
+    @Transactional
+    public void generateSummary(long formId) {
+        var form = feedbackFormRepository.getReferenceById(formId);
+        var user = form.getUser();
+        var formDto = FeedbackFormDto.witAnswer(form);
+        var translations = TranslationUtils.getTranslation();
+        var questions = formDto.getQuestions().stream()
+                .collect(Collectors.toMap(q -> TranslationUtils.translate(q.key(), translations), q -> q.answers().stream()
+                        .map(AnswerRecipientDto::answer)
+                        .collect(Collectors.toList())));
+
+        if (formDto.allowSummary(summaryLimit)) {
+            var summary = Try.of(() -> objectMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class))
+                            .getOrElse(new Summary());
+            form.setSummary(summary);
+            feedbackFormRepository.save(form);
+        }
     }
 
     boolean skipUpdate(User u) {

@@ -1,21 +1,25 @@
 package com.topleader.topleader.ai;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.Map;
 
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class AiClient {
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
-    private final ChatClient chatClient;
+    private final ChatModel chatClient;
 
     private final AiPromptService aiPromptService;
 
@@ -61,6 +65,16 @@ public class AiClient {
         log.info("Finding actions steps for strengths: {} and values: {} locale: {} longTermGoal: {}", strengths, values, locale, areaOfDevelopment);
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.ACTIONS_STEPS);
         return chatClient.call(String.format(prompt, strengths, values, areaOfDevelopment, longTermGoal, locale));
+    }
+
+    @SneakyThrows
+    public String generateSummary(String locale, Map<String, List<String>> results) {
+        var resultJson = MAPPER.writeValueAsString(results);
+        log.info("Finding actions steps for results: {}  locale: {},", results, locale);
+
+        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.FEEDBACK_SUMMARY);
+        return chatClient.call(MessageFormat.format(prompt, resultJson, locale));
+
     }
 }
 

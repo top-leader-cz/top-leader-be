@@ -13,10 +13,9 @@ import com.topleader.topleader.history.data.UserSessionStoredData;
 import java.time.LocalDate;
 import java.util.List;
 
-import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.ai.chat.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -49,7 +48,7 @@ class UserSessionControllerIT extends IntegrationTest {
 
 
     @Autowired
-    ChatClient chatClient;
+    ChatModel chatClient;
 
     @Autowired
     AiPromptService aiPromptService;

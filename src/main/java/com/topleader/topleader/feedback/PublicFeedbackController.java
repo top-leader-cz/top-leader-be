@@ -15,6 +15,7 @@ import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import static com.topleader.topleader.user.User.Status.*;
@@ -56,6 +57,7 @@ public class PublicFeedbackController {
         log.info("submition answers for respondent: [{}] ", username);
         var recipient = feedbackService.validateRecipientIfValid(formId, username, token);
         feedbackService.submitForm(FeedbackSubmitRequest.toAnswers(request, formId, recipient), username);
+        feedbackService.generateSummary(formId);
     }
 
 

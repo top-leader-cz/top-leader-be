@@ -4,21 +4,18 @@
 package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.ai.AiPrompt;
 import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import java.time.LocalDate;
-import java.util.List;
 
-import com.topleader.topleader.user.userinsight.UserInsight;
 import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.ai.chat.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -56,7 +53,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
 
     @Autowired
-    ChatClient chatClient;
+    ChatModel chatClient;
 
 
     @Test

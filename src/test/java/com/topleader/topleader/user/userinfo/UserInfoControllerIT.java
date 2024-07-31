@@ -27,7 +27,7 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.ai.chat.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -68,7 +68,7 @@ class UserInfoControllerIT extends IntegrationTest {
     private CreditHistoryRepository creditHistoryRepository;
 
     @Autowired
-    ChatClient chatClient;
+    ChatModel chatClient;
 
     @Autowired
     UserInsightRepository userInsightRepository;

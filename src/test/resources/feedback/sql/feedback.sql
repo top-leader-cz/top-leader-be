@@ -10,8 +10,8 @@ values ('question.key.2', true);
 insert into fb_question (key, default_question)
 values ('question.key.3', false);
 
-insert into feedback_form(id, title, description, username, valid_to, created_at)
-values (nextval('feedback_form_id_seq'), 'test-from', 'test description', 'jakub.svezi@dummy.com','2060-12-12', '2023-10-12');
+insert into feedback_form(id, title, description, username, valid_to, created_at, summary)
+values (nextval('feedback_form_id_seq'), 'test-from', 'test description', 'jakub.svezi@dummy.com','2060-12-12', '2023-10-12', '{"strongAreas": "strongAreas", "areasOfImprovement": "areasOfImprovement"}');
 
 insert into feedback_form_question(form_id, question_key, required, type)
 values (1, 'question.key.1', true, 'PARAGRAPH');

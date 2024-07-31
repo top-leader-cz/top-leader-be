@@ -1,18 +1,18 @@
 package com.topleader.topleader.feedback.entity;
 
 
+import com.topleader.topleader.feedback.api.Summary;
+import com.topleader.topleader.feedback.api.converter.SummaryConverter;
 import com.topleader.topleader.user.User;
+import com.topleader.topleader.util.converter.SetConverter;
 import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Entity
@@ -32,6 +32,9 @@ public class FeedbackForm {
     private LocalDateTime validTo;
 
     private LocalDateTime createdAt;
+
+    @Convert(converter = SummaryConverter.class)
+    private Summary summary;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "username")
