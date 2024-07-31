@@ -13,7 +13,7 @@ spring:
 top-leader:
   app-url: https://qa.topleaderplatform.io
   feedback:
-    summary-limit: 5
+    summary-limit: 1
 
 google:
   application-name: "qa.topleaderplatform.io"

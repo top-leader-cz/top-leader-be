@@ -1,0 +1,230 @@
+[
+  {
+    "Key": "question.consider-other-team-members",
+    "value": "Does the person consider other team members’ opinions before making a decision?"
+  },
+  {
+    "Key": "question.general.effectively-solve-problems",
+    "value": "Does the person effectively solve problems?"
+  },
+  {
+    "Key": "question.general.responsive-to-their-team",
+    "value": "Is the person responsive to their team’s needs and questions?"
+  },
+  {
+    "Key": "question.general.work-under-pressure-to-meet-deadlines",
+    "value": "Can the person work under pressure to meet deadlines?"
+  },
+  {
+    "Key": "question.general.clear-vision-that-aligns-with-the-organisation",
+    "value": "Does the person provide a clear vision that aligns with the organisation’s objectives?"
+  },
+  {
+    "Key": "question.leadership.provide-solutions",
+    "value": "Does the employee provide solutions to difficult customer problems?"
+  },
+  {
+    "Key": "question.leadership.demonstrating-leadership",
+    "value": "Is the employee demonstrating leadership on a daily basis?"
+  },
+  {
+    "Key": "question.leadership.accountability-for-the-work",
+    "value": "Does the employee take accountability for their work and carry it out meeting the deadline?"
+  },
+  {
+    "Key": "question.leadership.others-look-to-help",
+    "value": "Do other team members look to the employee to help them with their work?"
+  },
+  {
+    "Key": "question.leadership.duties-without-issues",
+    "value": "Does the employee carry out duties without issue?"
+  },
+  {
+    "Key": "question.leadership.bring-ideas",
+    "value": "Does the employee bring ideas to the table when problem-solving and Brainstorming?"
+  },
+  {
+    "Key": "question.leadership.supervise-work",
+    "value": "Does the employee supervise work to an effective level?"
+  },
+  {
+    "Key": "question.communication.listen-well",
+    "value": "Does this employee listen well to others’ suggestions?"
+  },
+  {
+    "Key": "question.communication.communicate-effectively",
+    "value": "Does the employee communicate effectively with customers/managers/peers?"
+  },
+  {
+    "Key": "question.communication.ask-for-more-information",
+    "value": "Does the employee ask for more information if they do not understand something?"
+  },
+  {
+    "Key": "question.communication.communicate-well-in-writing",
+    "value": "Does the employee communicate well in writing with good grammar and spelling?"
+  },
+  {
+    "Key": "question.communication.speak-clearly",
+    "value": "Does the employee speak in a clear and concise way?"
+  },
+  {
+    "Key": "question.communication.ideas-to-others",
+    "value": "Does the employee effectively communicate their ideas to others?"
+  },
+  {
+    "Key": "question.communication.opportunity-for-discussion",
+    "value": "Does the employee create opportunities for discussion and dialogue?"
+  },
+  {
+    "Key": "question.interpersonal.work-well-with-others",
+    "value": "Does this employee work well with others on tasks?"
+  },
+  {
+    "Key": "question.interpersonal.show-respect",
+    "value": "Does this employee show respect to others in their team?"
+  },
+  {
+    "Key": "question.interpersonal.manage-the-emotions",
+    "value": "Does the employee manage the emotions and keep them in check?"
+  },
+  {
+    "Key": "question.interpersonal.manage-the-stress",
+    "value": "Does the employee effectively manage their stress levels?"
+  },
+  {
+    "Key": "question.interpersonal.have-conflict-with-others",
+    "value": "Does the employee regularly have conflict with others?"
+  },
+  {
+    "Key": "question.interpersonal.exhibit-the-core-values",
+    "value": "Does the employee exhibit the core people values of the organisation?"
+  },
+  {
+    "Key": "question.interpersonal.collaborate-with-others",
+    "value": "Does the employee collaborate with others effectively in a team?"
+  },
+  {
+    "Key": "question.interpersonal.other-staff-will-turn-to",
+    "value": "Is this employee someone that other staff will turn to for advice?"
+  },
+  {
+    "Key": "question.problemsolving.suggest-useful-solutions",
+    "value": "Does the employee suggest useful solutions to a problem?"
+  },
+  {
+    "Key": "question.problemsolving.recognize-problem",
+    "value": "Does the employee recognise when there is a problem?"
+  },
+  {
+    "Key": "question.problemsolving.communicate-the-problem-to-others",
+    "value": "Does the employee effectively communicate the problem to others and bring them on board?"
+  },
+  {
+    "Key": "question.problemsolving.work-independently",
+    "value": "Is the employee able to work independently to fix a problem?"
+  },
+  {
+    "Key": "question.problemsolving.feel-confident-in-exploring-problem",
+    "value": "Does the employee feel confident in exploring problems without assistance?"
+  },
+  {
+    "Key": "question.problemsolving.provide-creative-solution",
+    "value": "Does the employee provide creative solutions to problems?"
+  },
+  {
+    "Key": "question.problemsolving.understand-the-impacts-and-dependencies",
+    "value": "Does the employee understand the impacts and dependencies of a problem?"
+  },
+  {
+    "Key": "question.organizational.know-goals",
+    "value": "Does the employee know about the organisation goals?"
+  },
+  {
+    "Key": "question.organizational.know-strategic-vision",
+    "value": "Does the employee know about the organisation’s strategic vision?"
+  },
+  {
+    "Key": "question.organizational.live-values",
+    "value": "Does the employee live the company values daily?"
+  },
+  {
+    "Key": "question.organizational.active-in-meetings",
+    "value": "Is the employee active in meetings?"
+  },
+  {
+    "Key": "question.organizational.recmmend-the-company",
+    "value": "Does the employee recommend the company to customers?"
+  },
+  {
+    "Key": "question.organizational.showing-engagement",
+    "value": "Is the employee showing engagement with the organisation goals?"
+  },
+  {
+    "Key": "question.organizational.provide-feedback-about-ideas",
+    "value": "Does the employee actively provide feedback about the organisation's ideas or activities?"
+  },
+  {
+    "Key": "question.motivation.appear-motivated-by-their-job",
+    "value": "Does the employee appear to be motivated by their job?"
+  },
+  {
+    "Key": "question.motivation.communicate-motivated",
+    "value": "Does the employee communicate that they are motivated with their job?"
+  },
+  {
+    "Key": "question.motivation.difficullt-to-motivate",
+    "value": "Is the employee difficult to motivate to do a task?"
+  },
+  {
+    "Key": "question.motivation.level-of-motivation",
+    "value": "What is the level of motivation that the employee shows?"
+  },
+  {
+    "Key": "question.general.work-in-respectful-manners",
+    "value": "Does the person work in a respectful manner to others?"
+  },
+  {
+    "Key": "question.motivation.share-their-work",
+    "value": "Is the employee motivated to independently share their work with others?"
+  },
+  {
+    "Key": "question.motivation.motivate-others",
+    "value": "Does the employee motivate others in a group task?"
+  },
+  {
+    "Key": "question.efficiency.complete-their-tasks",
+    "value": "Does the employee complete their tasks effectively?"
+  },
+  {
+    "Key": "question.efficiency.sense-of-collaboration",
+    "value": "Does the employee create a sense of collaboration when working with others?"
+  },
+  {
+    "Key": "question.efficiency.daily-work-effectively",
+    "value": "Does the employee deal with daily work tasks effectively?"
+  },
+  {
+    "Key": "question.efficiency.work-finished-right",
+    "value": "Is the employee’s work finished to the right level every time?"
+  },
+  {
+    "Key": "question.efficiency.work-on-time",
+    "value": "Does the employee complete their work on time?"
+  },
+  {
+    "Key": "question.efficiency.maintain-high-standards",
+    "value": "Does the employee maintain high standards in their work?"
+  },
+  {
+    "Key": "question.efficiency.exceed-expectations",
+    "value": "Does the employee exceed expectations with their work?"
+  },
+  {
+    "Key": "question.efficiency.improve-processes",
+    "value": "Does the employee improve processes to make them more effective?"
+  },
+  {
+    "Key": "question.problemsolving.effective-at-evaluating",
+    "value": "Is the employee effective at evaluating a problem?"
+  }
+]

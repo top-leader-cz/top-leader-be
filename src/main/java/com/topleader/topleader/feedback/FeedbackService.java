@@ -21,6 +21,7 @@ import com.topleader.topleader.util.common.FileUtils;
 import com.topleader.topleader.util.common.Translation;
 import com.topleader.topleader.util.common.TranslationUtils;
 import com.topleader.topleader.util.common.user.UserUtils;
+import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -165,7 +166,8 @@ public class FeedbackService {
                         .collect(Collectors.toList())));
 
         if (formDto.allowSummary(summaryLimit)) {
-            var summary = objectMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class);
+            var summary = Try.of(() -> objectMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class))
+                            .getOrElse(new Summary());
             form.setSummary(summary);
             feedbackFormRepository.save(form);
         }
