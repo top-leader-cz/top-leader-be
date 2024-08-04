@@ -4,11 +4,13 @@
 package com.topleader.topleader.company;
 
 import com.topleader.topleader.exception.ApiValidationException;
+import com.topleader.topleader.exception.NotFoundException;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -55,12 +57,34 @@ public class CompanyController {
 
     }
 
+    @PostMapping("/{company}")
+    @Secured("ADMIN")
+    public CompanyDto updateCompany(
+        @PathVariable String company,
+        @RequestBody UpdateCompanyRequest request
+    ) {
+
+        final var existingCompany = companyRepository.findByName(company)
+            .orElseThrow(NotFoundException::new);
+
+        return CompanyDto
+            .from(
+                companyRepository.save(
+                    existingCompany.setDefaultMaxCoachRate(request.defaultMaxCoachRate())
+                )
+            );
+
+    }
+
     public record CreateCompanyRequest(String name) {
     }
 
-    public record CompanyDto(Long id, String name) {
+    public record UpdateCompanyRequest(String defaultMaxCoachRate) {
+    }
+
+    public record CompanyDto(Long id, String name, String defaultMaxCoachRate) {
         public static CompanyDto from(Company c) {
-            return new CompanyDto(c.getId(), c.getName());
+            return new CompanyDto(c.getId(), c.getName(), c.getDefaultMaxCoachRate());
         }
     }
 }

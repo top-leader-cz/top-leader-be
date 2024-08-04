@@ -61,6 +61,8 @@ public class CoachListView {
 
     private String rate;
 
+    private Integer rateOrder;
+
     @Column(length = 1000)
     private String linkedinProfile;
 

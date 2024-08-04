@@ -142,6 +142,14 @@ public final class AdminViewSpecifications {
             criteriaBuilder.like(root.get("requestedBy"), "%" + requestedBy + "%"));
     }
 
+    public static Optional<Specification<AdminView>> maxCoachRateContains(String maxCoachRate) {
+        if (!StringUtils.hasText(maxCoachRate)) {
+            return Optional.empty(); // Empty filter, return empty Optional
+        }
+        return Optional.of((root, query, criteriaBuilder) ->
+            criteriaBuilder.like(root.get("maxCoachRate"), "%" + maxCoachRate + "%"));
+    }
+
     public static Optional<Specification<AdminView>> isTrialEquals(Boolean isTrial) {
         return Optional.ofNullable(isTrial)
             .map(r -> (root, query, criteriaBuilder) ->

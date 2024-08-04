@@ -35,6 +35,8 @@ public class Company {
 
     private String businessStrategy;
 
+    private String defaultMaxCoachRate;
+
     public static Company empty() {
         return new Company();
     }

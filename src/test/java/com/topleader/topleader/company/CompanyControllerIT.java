@@ -29,11 +29,13 @@ class CompanyControllerIT extends IntegrationTest {
                     [
                       {
                         "id": 1,
-                        "name": "company1"
+                        "name": "company1",
+                        "defaultMaxCoachRate": "$$$"
                       },
                       {
                         "id": 2,
-                        "name": "company2"
+                        "name": "company2",
+                        "defaultMaxCoachRate": "$$"
                       }
                     ]
                     """
@@ -88,6 +90,29 @@ class CompanyControllerIT extends IntegrationTest {
                         "errorMessage": "Company with this name already exists"
                       }
                     ]
+                    """
+            ));
+    }
+
+    @Test
+    @WithMockUser(authorities = "ADMIN")
+    void updateCompanyTest() throws Exception {
+        mvc.perform(post("/api/latest/companies/company1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "defaultMaxCoachRate": "$"
+                    }
+                    """)
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().json(
+                """
+                    {
+                        "id": 1,
+                        "name": "company1",
+                        "defaultMaxCoachRate": "$"
+                      }
                     """
             ));
     }

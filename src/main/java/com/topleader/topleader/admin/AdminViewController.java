@@ -126,7 +126,8 @@ public class AdminViewController {
             Integer credit,
             String freeCoach,
             @Pattern(regexp = "[a-z]{2}")
-            String locale
+            String locale,
+            String maxCoachRate
     ) {
         public User updateUser(User user) {
             Optional.ofNullable(firstName).ifPresent(user::setFirstName);
@@ -139,6 +140,7 @@ public class AdminViewController {
             Optional.ofNullable(credit).ifPresent(user::setCredit);
             user.setFreeCoach(freeCoach);
             Optional.ofNullable(locale).ifPresent(user::setLocale);
+            Optional.ofNullable(maxCoachRate).ifPresent(user::setMaxCoachRate);
             return user;
         }
     }
@@ -189,7 +191,8 @@ public class AdminViewController {
             String requestedBy,
             Boolean isTrial,
 
-            String freeCoach
+            String freeCoach,
+            String maxCoachRate
     ) {
 
         public List<Specification<AdminView>> toSpecifications() {
@@ -213,6 +216,7 @@ public class AdminViewController {
             AdminViewSpecifications.requestedByContains(requestedBy).ifPresent(specs::add);
             AdminViewSpecifications.isTrialEquals(isTrial).ifPresent(specs::add);
             AdminViewSpecifications.freeCoach(freeCoach).ifPresent(specs::add);
+            AdminViewSpecifications.maxCoachRateContains(maxCoachRate).ifPresent(specs::add);
 
             return specs;
         }

@@ -116,8 +116,9 @@ class CoachListControllerIT extends IntegrationTest {
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("coach1");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);
-        Assertions.assertThat(body).contains("http://app-test-url");
-        Assertions.assertThat(body).contains("<b>John Doe</b>");
+        Assertions.assertThat(body)
+            .contains("http://app-test-url")
+            .contains("<b>John Doe</b>");
     }
 
     @Test
@@ -177,8 +178,9 @@ class CoachListControllerIT extends IntegrationTest {
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("coach1");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);
-        Assertions.assertThat(body).contains("http://app-test-url");
-        Assertions.assertThat(body).contains("<b>John Doe</b>");
+        Assertions.assertThat(body)
+            .contains("http://app-test-url")
+            .contains("<b>John Doe</b>");
     }
 
     @Test
@@ -528,6 +530,24 @@ class CoachListControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.rate", is("$$$")))
             .andExpect(jsonPath("$.webLink", is("http://some_video3")))
             .andExpect(jsonPath("$.linkedinProfile", is("http://linkac")))
+        ;
+    }
+
+    @Test
+    @WithMockUser("user-with-filter")
+    void coachMaxRateTest() throws Exception {
+
+        mvc.perform(post("/api/latest/coaches")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "page": {}
+                    }
+                    """)
+            )
+                .andDo(print())
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.content", hasSize(1)))
         ;
     }
 }

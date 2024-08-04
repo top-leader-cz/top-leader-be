@@ -65,6 +65,8 @@ public class User {
 
     private String aspiredPosition;
 
+    private String maxCoachRate;
+
     @ManyToMany
     @JoinTable(
             joinColumns = { @JoinColumn(name = "user_username") },

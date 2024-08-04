@@ -5,12 +5,17 @@ package com.topleader.topleader.coach.list;
 
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
+import com.topleader.topleader.coach.rate.CoachRate;
+import com.topleader.topleader.coach.rate.CoachRateRepository;
+import com.topleader.topleader.company.Company;
+import com.topleader.topleader.company.CompanyRepository;
 import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.email.VelocityService;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 import com.topleader.topleader.util.page.PageDto;
@@ -27,6 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,10 +80,10 @@ import static org.springframework.util.StringUtils.hasText;
 public class CoachListController {
 
     private static final Map<String, String> subjects = Map.of(
-            "en", "New Booking Alert on TopLeader",
-            "cs", "Upozornění na novou rezervaci na TopLeader",
-            "fr", "Alerte de nouvelle réservation sur TopLeader",
-            "de", "Neue Buchungsalarm auf TopLeader");
+        "en", "New Booking Alert on TopLeader",
+        "cs", "Upozornění na novou rezervaci na TopLeader",
+        "fr", "Alerte de nouvelle réservation sur TopLeader",
+        "de", "Neue Buchungsalarm auf TopLeader");
 
     private final CoachImageRepository coachImageRepository;
 
@@ -92,6 +98,10 @@ public class CoachListController {
     private final EmailService emailService;
 
     private final VelocityService velocityService;
+
+    private final CompanyRepository companyRepository;
+
+    private final CoachRateRepository coachRateRepository;
 
 
     @Value("${top-leader.app-url}")
@@ -174,7 +184,7 @@ public class CoachListController {
 
         log.info("Sending reservation alert for: [{}]", coachName);
         var coach = userRepository.findById(coachName)
-                .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", time.toString(), "Coach not found " + coachName));
+            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", time.toString(), "Coach not found " + coachName));
         var params = Map.of("firstName", coach.getFirstName(), "lastName", coach.getLastName(), "link", appUrl);
         var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(coach.getLocale()));
 
@@ -227,12 +237,22 @@ public class CoachListController {
     }
 
     @PostMapping
-    public Page<CoachListDto> findCoaches(@RequestBody @Valid FilterRequest request) {
-        return findCoaches(request.toSpecification(), request.page().toPageable())
+    public Page<CoachListDto> findCoaches(
+        @AuthenticationPrincipal UserDetails user,
+        @RequestBody @Valid FilterRequest request
+    ) {
+
+        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow();
+
+        return findCoaches(
+            Stream.concat(maxRateFilter(dbUser).stream(), request.toSpecification().stream()).toList(),
+            request.page().toPageable()
+        )
             .map(CoachListDto::from);
     }
 
     private Page<CoachListView> findCoaches(List<Specification<CoachListView>> filter, Pageable page) {
+
         return coachListViewRepository.findAll(
             Optional.ofNullable(filter)
                 .filter(not(List::isEmpty))
@@ -243,9 +263,24 @@ public class CoachListController {
 
     }
 
+    private Optional<Specification<CoachListView>> maxRateFilter(User user) {
+        return Optional.ofNullable(user.getMaxCoachRate())
+            .or(() -> Optional.ofNullable(user.getCompanyId())
+                .flatMap(companyRepository::findById)
+                .map(Company::getDefaultMaxCoachRate)
+            ).flatMap(coachRateRepository::findById)
+            .map(CoachRate::getRateOrder)
+            .map(CoachListController::maxRatePrice);
+    }
+
     public static Specification<CoachListView> isProfilePublic() {
         return (root, query, criteriaBuilder) ->
             criteriaBuilder.isTrue(root.get("publicProfile"));
+    }
+
+    private static Specification<CoachListView> maxRatePrice(Integer maxRate) {
+        return (root, query, criteriaBuilder) ->
+            criteriaBuilder.lessThanOrEqualTo(root.get("rateOrder"), maxRate);
     }
 
     public record ScheduleSessionRequest(LocalDateTime time) {
