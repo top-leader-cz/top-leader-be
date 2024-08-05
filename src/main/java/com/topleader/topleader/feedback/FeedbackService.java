@@ -156,6 +156,7 @@ public class FeedbackService {
     @SneakyThrows
     @Transactional
     public void generateSummary(long formId) {
+        log.info("Generating summary for form: [{}]", formId);
         var form = feedbackFormRepository.getReferenceById(formId);
         var user = form.getUser();
         var formDto = FeedbackFormDto.witAnswer(form);
@@ -164,10 +165,11 @@ public class FeedbackService {
                 .collect(Collectors.toMap(q -> TranslationUtils.translate(q.key(), translations), q -> q.answers().stream()
                         .map(AnswerRecipientDto::answer)
                         .collect(Collectors.toList())));
+        log.info("Generating summary for form: [{}] with questions: [{}]", formId, questions);
 
         if (formDto.allowSummary(summaryLimit)) {
             var summary = Try.of(() -> objectMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class))
-                    .onFailure(e -> log.info("Failed to generate summary for form: [{}] ", formId, e))
+                    .onFailure(e -> log.error("Failed to generate summary for form: [{}] ", formId, e))
                             .getOrElse(new Summary());
             form.setSummary(summary);
             feedbackFormRepository.save(form);

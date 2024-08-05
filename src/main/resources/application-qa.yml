@@ -1,6 +1,11 @@
 server:
   port: {PORT}
 spring:
+  ai:
+    openai:
+      chat:
+        options:
+          model: gpt-4o
   datasource:
     username: top-leader
     hikari:

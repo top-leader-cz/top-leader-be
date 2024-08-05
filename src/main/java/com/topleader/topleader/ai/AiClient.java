@@ -69,12 +69,16 @@ public class AiClient {
 
     @SneakyThrows
     public String generateSummary(String locale, Map<String, List<String>> results) {
+        log.info("AI api call for summary {}  locale: {},", results, locale);
         var resultJson = MAPPER.writeValueAsString(results);
-        log.info("Finding actions steps for results: {}  locale: {},", results, locale);
-
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.FEEDBACK_SUMMARY);
-        return chatClient.call(MessageFormat.format(prompt, resultJson, locale));
 
+        var aiQuery = String.format(prompt, resultJson, locale);
+        log.debug("AI query for summary {}  locale: {},", aiQuery, locale);
+
+        var res =  chatClient.call(String.format(prompt, resultJson, locale));
+        log.info("Summary response: {},", res);
+        return res;
     }
 }
 
