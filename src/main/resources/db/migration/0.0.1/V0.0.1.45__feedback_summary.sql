@@ -12,3 +12,5 @@ please use json format like below
 
 Use first person when writing the summary.
 Use %s language. Do not translate json keys "strongAreas" and "areasOfImprovement" json keys');
+
+alter table feedback_form add column summary text;
