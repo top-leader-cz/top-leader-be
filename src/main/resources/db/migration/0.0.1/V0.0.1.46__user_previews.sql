@@ -10,4 +10,4 @@ return result as jon array in the format
   }
 ]');
 
-alter table user_insights add column user_previews text;
+alter table user_insight add column user_previews text;
