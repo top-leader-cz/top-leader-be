@@ -34,7 +34,7 @@ public class UserInsight {
 
     private LocalDateTime tipsGeneratedAt;
 
-    private String userPreview;
+    private String userPreviews;
 
     private boolean actionGoalsPending;
 }

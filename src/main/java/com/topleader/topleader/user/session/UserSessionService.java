@@ -132,13 +132,13 @@ public class UserSessionService {
                 SessionUtils.getDevelopments(userInfo.getAreaOfDevelopment()),
                 userInfo.getLongTermGoal(),
                 actionGoals));
-        userInsight.setUserPreview(handleUserPreview(username, actionGoals));
+        userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
         userInsight.setActionGoalsPending(false);
 
         userInsightService.save(userInsight);
     }
 
-    private String handleUserPreview(String username, List<String> actionGoals) {
+    public String handleUserPreview(String username, List<String> actionGoals) {
         var previews = Try.of(() -> objectMapper.readValue(aiClient.generateUserPreviews(username, actionGoals), new TypeReference<List<UserPreview>>() {
                 }))
                 .onFailure(e -> log.error("Failed to generate user preview for user: [{}] ", username, e))
@@ -151,7 +151,7 @@ public class UserSessionService {
                     p.setThumbnail(thumbnail);
                     return p;
                 })
-                .filter(p -> checkLink(p.getUrl())
+                .filter(p -> urlValid(p.getUrl())
                 ).toList();
 
         return Try.of(() -> objectMapper.writeValueAsString(filtered))
@@ -159,7 +159,7 @@ public class UserSessionService {
                 .getOrElse(() -> null);
     }
 
-    private boolean checkLink(String url) {
+    private boolean urlValid(String url) {
          return Try.of(() -> restTemplate.getForEntity(url, String.class))
                  .onFailure(e -> log.info("Failed to get url: [{}] ", url, e))
                  .getOrElse(() -> ResponseEntity.status(404).body("Not Found"))
