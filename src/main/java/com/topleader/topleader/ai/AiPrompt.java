@@ -24,7 +24,8 @@ public class AiPrompt {
         WORLD_LEADER_PERSONA,
         LONG_TERM_GOALS,
         ACTIONS_STEPS,
-        FEEDBACK_SUMMARY
+        FEEDBACK_SUMMARY,
+        USER_PREVIEWS
     }
 
 }
