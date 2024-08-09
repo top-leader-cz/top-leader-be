@@ -5,6 +5,8 @@ package com.topleader.topleader.coach;
 
 import com.topleader.topleader.coach.list.CoachListView;
 import com.topleader.topleader.coach.list.CoachListViewRepository;
+import com.topleader.topleader.coach.rate.CoachRate;
+import com.topleader.topleader.coach.rate.CoachRateRepository;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
@@ -65,6 +67,8 @@ public class CoachController {
 
     private final TransactionService transactionService;
 
+    private final CoachRateRepository coachRateRepository;
+
     @GetMapping
     @Secured("COACH")
     @Transactional
@@ -79,7 +83,7 @@ public class CoachController {
     public CoachDto setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid CoachDto request) {
         transactionService.execute(() -> {
             coachRepository.save(
-                request.updateCoach()
+                request.updateCoach(coachRateRepository)
                     .apply(coachRepository.findById(user.getUsername()).orElse(new Coach().setUsername(user.getUsername())))
             );
             userRepository.findById(user.getUsername()).map(request.updateUser()).ifPresent(userRepository::save);
@@ -230,7 +234,7 @@ public class CoachController {
                 ;
         }
 
-        public Function<Coach, Coach> updateCoach() {
+        public Function<Coach, Coach> updateCoach(CoachRateRepository coachRateRepository) {
             return c -> c
                 .setPublicProfile(publicProfile)
                 .setEmail(email)
@@ -240,6 +244,7 @@ public class CoachController {
                 .setFields(fields)
                 .setExperienceSince(experienceSince)
                 .setRate(rate)
+                .setRateOrder(coachRateRepository.findById(rate).map(CoachRate::getRateOrder).orElse(null))
                 .setLinkedinProfile(linkedinProfile);
         }
 

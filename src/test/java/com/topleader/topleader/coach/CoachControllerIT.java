@@ -42,6 +42,9 @@ class CoachControllerIT extends IntegrationTest {
     @Autowired
     private ScheduledSessionRepository scheduledSessionRepository;
 
+    @Autowired
+    private CoachRepository coachRepository;
+
     @Test
     @WithMockUser(username = "no_coach")
     void getCoachImageNoRights() throws Exception {
@@ -178,6 +181,9 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("timeZone", is("UTC")))
             .andExpect(jsonPath("linkedinProfile", is("http://linkedin.com")))
         ;
+
+        final var coach = coachRepository.findById("coach_no_info").orElseThrow();
+        assertThat(coach.getRateOrder(), is(3));
     }
 
     @Test
@@ -205,13 +211,13 @@ class CoachControllerIT extends IntegrationTest {
             .setUsername("user1")
         ).getId();
 
-        final var id3 = scheduledSessionRepository.save(new ScheduledSession()
+        scheduledSessionRepository.save(new ScheduledSession()
             .setPaid(false)
             .setPrivate(false)
             .setCoachUsername("coach_no_info")
             .setTime(now.plusHours(3))
             .setUsername("user1")
-        ).getId();
+        );
 
         mvc.perform(get("/api/latest/coach-info/upcoming-sessions"))
             .andExpect(status().isOk())

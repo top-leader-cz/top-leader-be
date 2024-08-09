@@ -3,6 +3,8 @@
  */
 package com.topleader.topleader.user.userinfo;
 
+import com.topleader.topleader.company.Company;
+import com.topleader.topleader.company.CompanyRepository;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.notification.Notification;
@@ -59,31 +61,48 @@ public class UserInfoController {
 
     private final UserInsightService userInsightService;
 
+    private final CompanyRepository companyRepository;
+
 
     @GetMapping
     public UserInfoDto getUserInfo(@AuthenticationPrincipal UserDetails user) {
+
+        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
+        final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
+
         return UserInfoDto.from(
             userInfoService.find(user.getUsername()),
-            userRepository.findById(user.getUsername()).orElseThrow()
+            dbUser,
+            company
         );
     }
 
     @PostMapping("/locale")
     public UserInfoDto setLocale(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetLocaleRequestDto request) {
+
+        final var dbUser = userRepository.findById(user.getUsername())
+            .map(u -> u.setLocale(request.locale()))
+            .map(userRepository::save)
+            .orElseThrow(NotFoundException::new);
+        final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
+
         return UserInfoDto.from(
             userInfoService.find(user.getUsername()),
-            userRepository.findById(user.getUsername())
-                .map(u -> u.setLocale(request.locale()))
-                .map(userRepository::save)
-                .orElseThrow()
+            dbUser,
+            company
         );
     }
 
     @PostMapping("/notes")
     public UserInfoDto setNotes(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetNotesRequestDto request) {
+
+        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
+        final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
+
         return UserInfoDto.from(
             userInfoService.setNotes(user.getUsername(), request.notes()),
-            userRepository.findById(user.getUsername()).orElseThrow()
+            dbUser,
+            company
         );
     }
 
@@ -94,9 +113,14 @@ public class UserInfoController {
             userInsightService.setUserInsight(userInfo);
         }
 
+        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
+        final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
+
+
         return UserInfoDto.from(
-                userInfo,
-                userRepository.findById(user.getUsername()).orElseThrow()
+            userInfo,
+            dbUser,
+            company
         );
     }
 
@@ -104,25 +128,34 @@ public class UserInfoController {
     @PostMapping("/values")
     public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid ListDataRequestDto request) {
         var userInfo = userInfoService.setValues(user.getUsername(), request.data());
-        if(shouldQueryAi(userInfo)) {
+        if (shouldQueryAi(userInfo)) {
             userInsightService.setUserInsight(userInfo);
         }
 
+        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
+        final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
+
         return UserInfoDto.from(
             userInfo,
-            userRepository.findById(user.getUsername()).orElseThrow()
+            dbUser,
+            company
         );
     }
 
     @PostMapping("/timezone")
     public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetTimezoneRequestDto request) {
 
+        final var dbUser = userRepository.findById(user.getUsername())
+            .map(u -> u.setTimeZone(request.timezone()))
+            .map(userRepository::save)
+            .orElseThrow(NotFoundException::new);
+        final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
+
+
         return UserInfoDto.from(
             userInfoService.find(user.getUsername()),
-            userRepository.findById(user.getUsername())
-                .map(u -> u.setTimeZone(request.timezone()))
-                .map(userRepository::save)
-                .orElseThrow()
+            dbUser,
+            company
         );
     }
 
@@ -130,7 +163,7 @@ public class UserInfoController {
     @PostMapping("/coach")
     public UserInfoDto setCoach(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetCoachRequestDto request) {
 
-        final var currentUser = userRepository.findById(user.getUsername()).orElseThrow();
+        final var currentUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
 
         if (!Objects.equals(request.coach(), currentUser.getCoach())) {
             currentUser.setCoach(request.coach());
@@ -145,12 +178,17 @@ public class UserInfoController {
             }
         }
 
+        final var dbUser = userRepository.findById(user.getUsername())
+            .map(u -> u.setCoach(request.coach()))
+            .map(userRepository::save)
+            .orElseThrow(NotFoundException::new);
+        final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
+
+
         return UserInfoDto.from(
             userInfoService.find(user.getUsername()),
-            userRepository.findById(user.getUsername())
-                .map(u -> u.setCoach(request.coach()))
-                .map(userRepository::save)
-                .orElseThrow()
+            dbUser,
+            company
         );
     }
 
@@ -263,9 +301,10 @@ public class UserInfoController {
         List<String> areaOfDevelopment,
         String notes,
         String coach,
-        String locale
+        String locale,
+        String maxCoachRate
     ) {
-        public static UserInfoDto from(UserInfo info, User user) {
+        public static UserInfoDto from(UserInfo info, User user, Optional<Company> company) {
             return new UserInfoDto(
                 info.getUsername(),
                 user.getFirstName(),
@@ -277,7 +316,9 @@ public class UserInfoController {
                 info.getAreaOfDevelopment(),
                 info.getNotes(),
                 user.getCoach(),
-                user.getLocale()
+                user.getLocale(),
+                Optional.ofNullable(user.getMaxCoachRate())
+                    .orElse(company.map(Company::getDefaultMaxCoachRate).orElse(null))
             );
         }
     }

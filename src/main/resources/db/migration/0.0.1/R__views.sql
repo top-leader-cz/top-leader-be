@@ -92,7 +92,7 @@ FROM users u
                    ON ns.username::text = u.username::text AND ns.coach_username::text = c.username::text
 where coach is not null;
 
-
+drop view if exists coach_list_view;
 create or replace view coach_list_view as
 select c.username,
        u.first_name,
@@ -102,6 +102,7 @@ select c.username,
        c.experience_since,
        c.public_profile,
        c.rate,
+       c.rate_order,
        c.web_link,
        u.time_zone,
        c.linkedin_profile

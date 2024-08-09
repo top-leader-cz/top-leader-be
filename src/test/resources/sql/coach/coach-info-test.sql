@@ -24,7 +24,7 @@ values (nextval('scheduled_session_id_seq'), 'coach', 'user1', '2023-08-14 10:30
        (nextval('scheduled_session_id_seq'), 'coach', 'user2', '2023-08-15 10:30:00')
 ;
 
-insert into coach_rate (rate_name, rate_credit)
-values ('$', 110),
-       ('$$', 165),
-       ('$$$', 275)
+insert into coach_rate (rate_name, rate_credit, rate_order)
+values ('$', 110, 1),
+       ('$$', 165, 2),
+       ('$$$', 275, 3)

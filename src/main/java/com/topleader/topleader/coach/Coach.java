@@ -51,5 +51,7 @@ public class Coach {
 
     private String rate;
 
+    private Integer rateOrder;
+
     private String linkedinProfile;
 }
