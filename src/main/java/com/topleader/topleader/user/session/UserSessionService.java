@@ -3,6 +3,8 @@
  */
 package com.topleader.topleader.user.session;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
@@ -11,7 +13,9 @@ import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.UserInsightService;
+import com.topleader.topleader.util.common.Translation;
 import com.topleader.topleader.util.common.user.UserUtils;
+import io.vavr.control.Try;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -21,7 +25,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
@@ -30,9 +39,12 @@ import static java.util.function.Predicate.not;
 /**
  * @author Daniel Slavik
  */
+@Slf4j
 @Service
 @AllArgsConstructor
 public class UserSessionService {
+
+    private static final int INVALID_LINK = 404;
 
     private final UserInfoService userInfoService;
 
@@ -45,6 +57,10 @@ public class UserSessionService {
     private final UserInsightService userInsightService;
 
     private final AiClient aiClient;
+
+    private final ObjectMapper objectMapper;
+
+    private final RestTemplate restTemplate;
 
     @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
@@ -104,16 +120,51 @@ public class UserSessionService {
         userInsight.setActionGoalsPending(true);
         userInsightService.save(userInsight);
 
+        var actionGoals = userActionSteps.stream()
+                .filter(step -> !step.getChecked())
+                .map(UserActionStep::getLabel)
+                .toList();
+
         userInsight.setPersonalGrowthTip(aiClient.findActionGoal(
                 UserUtils.localeToLanguage(user.getLocale()),
                 userInfo.getTopStrengths(),
                 userInfo.getValues(),
                 SessionUtils.getDevelopments(userInfo.getAreaOfDevelopment()),
                 userInfo.getLongTermGoal(),
-                userActionSteps.stream().filter(step -> !step.getChecked()).map(UserActionStep::getLabel).toList()));
+                actionGoals));
+        userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
         userInsight.setActionGoalsPending(false);
 
         userInsightService.save(userInsight);
+    }
+
+    public String handleUserPreview(String username, List<String> actionGoals) {
+        var previews = Try.of(() -> objectMapper.readValue(aiClient.generateUserPreviews(username, actionGoals), new TypeReference<List<UserPreview>>() {
+                }))
+                .onFailure(e -> log.error("Failed to generate user preview for user: [{}] ", username, e))
+                .getOrElse(List.of());
+
+        var filtered = previews.stream()
+                .map(p -> {
+                    var videoId = p.getUrl().split("v=")[1]; //
+                    var thumbnail = String.format("http://i3.ytimg.com/vi/%s/hqdefault.jpg", videoId);
+                    p.setThumbnail(thumbnail);
+                    return p;
+                })
+                .filter(p -> urlValid(p.getUrl())
+                ).toList();
+
+        return Try.of(() -> objectMapper.writeValueAsString(filtered))
+                .onFailure(e -> log.error("Failed to convert user preview for user: [{}] ", username, e))
+                .getOrElse(() -> null);
+    }
+
+    private boolean urlValid(String url) {
+         return Try.of(() -> restTemplate.getForEntity(url, String.class))
+                 .onFailure(e -> log.info("Failed to get url: [{}] ", url, e))
+                 .getOrElse(() -> ResponseEntity.status(404).body("Not Found"))
+                 .getStatusCode()
+                 .value() != INVALID_LINK;
     }
 
     private List<UserActionStep>  prepareActualActionSteps(

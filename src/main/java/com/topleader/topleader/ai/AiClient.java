@@ -76,8 +76,19 @@ public class AiClient {
         var aiQuery = String.format(prompt, resultJson, locale);
         log.debug("AI query for summary {}  locale: {},", aiQuery, locale);
 
-        var res =  chatClient.call(String.format(prompt, resultJson, locale));
-        log.info("Summary response: {},", res);
+        var res =  chatClient.call(aiQuery);
+        log.info("AI Summary response: {},", res);
+        return res;
+    }
+
+    public String generateUserPreviews(String username, List<String> actionsSteps) {
+        log.info("AI api call for user previews. User:[{}], short term goals: {} ", username, actionsSteps);
+        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_PREVIEWS);
+        var query = MessageFormat.format(prompt, actionsSteps);
+        log.info("AI query: {}", query);
+
+        var res =  chatClient.call(query);
+        log.info("AI user preview response: {}  User:[{}]", res, username);
         return res;
     }
 }
