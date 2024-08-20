@@ -132,7 +132,7 @@ public class UserSessionService {
                 SessionUtils.getDevelopments(userInfo.getAreaOfDevelopment()),
                 userInfo.getLongTermGoal(),
                 actionGoals));
-        userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
+//        userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
         userInsight.setActionGoalsPending(false);
 
         userInsightService.save(userInsight);
