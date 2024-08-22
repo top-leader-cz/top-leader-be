@@ -5,8 +5,6 @@ package com.topleader.topleader.coach.list;
 
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
-import com.topleader.topleader.coach.rate.CoachRate;
-import com.topleader.topleader.coach.rate.CoachRateRepository;
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
 import com.topleader.topleader.email.EmailService;
@@ -100,9 +98,6 @@ public class CoachListController {
     private final VelocityService velocityService;
 
     private final CompanyRepository companyRepository;
-
-    private final CoachRateRepository coachRateRepository;
-
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -264,13 +259,13 @@ public class CoachListController {
     }
 
     private Optional<Specification<CoachListView>> maxRateFilter(User user) {
-        return Optional.ofNullable(user.getMaxCoachRate())
+        return Optional.ofNullable(user.getAllowedCoachRates())
             .or(() -> Optional.ofNullable(user.getCompanyId())
                 .flatMap(companyRepository::findById)
-                .map(Company::getDefaultMaxCoachRate)
-            ).flatMap(coachRateRepository::findById)
-            .map(CoachRate::getRateOrder)
-            .map(CoachListController::maxRatePrice);
+                .map(Company::getAllowedCoachRates)
+            )
+            .filter(not(Set::isEmpty))
+            .map(CoachListController::rateIn);
     }
 
     public static Specification<CoachListView> isProfilePublic() {
@@ -278,9 +273,9 @@ public class CoachListController {
             criteriaBuilder.isTrue(root.get("publicProfile"));
     }
 
-    private static Specification<CoachListView> maxRatePrice(Integer maxRate) {
+    private static Specification<CoachListView> rateIn(Set<String> allowed) {
         return (root, query, criteriaBuilder) ->
-            criteriaBuilder.lessThanOrEqualTo(root.get("rateOrder"), maxRate);
+            root.get("rate").in(allowed);
     }
 
     public record ScheduleSessionRequest(LocalDateTime time) {

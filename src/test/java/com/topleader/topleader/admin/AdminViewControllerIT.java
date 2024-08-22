@@ -84,7 +84,7 @@ class AdminViewControllerIT extends IntegrationTest {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", 2L,
             true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "updatedCoach", 150, "updatedCoach", "en",
-            "$$"
+            Set.of("$$")
         );
         mvc.perform(post("/api/latest/admin/users/user4")
                 .contentType("application/json")
@@ -101,7 +101,7 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getCoach()).isEqualTo(updatedUser.coach());
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
         assertThat(fetchedUser.getFreeCoach()).isEqualTo(updatedUser.freeCoach());
-        assertThat(fetchedUser.getMaxCoachRate()).isEqualTo(updatedUser.maxCoachRate());
+        assertThat(fetchedUser.getAllowedCoachRates()).isEqualTo(updatedUser.allowedCoachRates());
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
@@ -138,7 +138,7 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(updatedUser.authorities());
         assertThat(fetchedUser.getCoach()).isNull();
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
-        assertThat(fetchedUser.getMaxCoachRate()).isNull();
+        assertThat(fetchedUser.getAllowedCoachRates()).isEmpty();
     }
 
     @Test
@@ -174,7 +174,8 @@ class AdminViewControllerIT extends IntegrationTest {
                       "paidCredit": 0,
                       "requestedBy": "god",
                       "hrs": "hr1, hr2",
-                      "locale": "en"
+                      "locale": "en",
+                      "allowedCoachRates": "$, $$"
                     }
                   ],
                   "pageable": {

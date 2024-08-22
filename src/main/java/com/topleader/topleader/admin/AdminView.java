@@ -72,5 +72,5 @@ public class AdminView {
 
     private String locale;
 
-    private String maxCoachRate;
+    private String allowedCoachRates;
 }

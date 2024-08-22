@@ -302,7 +302,7 @@ public class UserInfoController {
         String notes,
         String coach,
         String locale,
-        String maxCoachRate
+        Set<String> allowedCoachRates
     ) {
         public static UserInfoDto from(UserInfo info, User user, Optional<Company> company) {
             return new UserInfoDto(
@@ -317,8 +317,8 @@ public class UserInfoController {
                 info.getNotes(),
                 user.getCoach(),
                 user.getLocale(),
-                Optional.ofNullable(user.getMaxCoachRate())
-                    .orElse(company.map(Company::getDefaultMaxCoachRate).orElse(null))
+                Optional.ofNullable(user.getAllowedCoachRates())
+                    .orElse(company.map(Company::getAllowedCoachRates).orElse(null))
             );
         }
     }

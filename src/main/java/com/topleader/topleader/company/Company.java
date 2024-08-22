@@ -3,11 +3,9 @@
  */
 package com.topleader.topleader.company;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
+import java.util.Set;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,7 +33,10 @@ public class Company {
 
     private String businessStrategy;
 
-    private String defaultMaxCoachRate;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "company_coach_rates", joinColumns = @JoinColumn(name = "company_id"))
+    @Column(name = "rate_name")
+    private Set<String> allowedCoachRates;
 
     public static Company empty() {
         return new Company();

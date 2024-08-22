@@ -1,15 +1,18 @@
 drop view if exists admin_view;
 create view admin_view as
 select u.*,
-       cu.first_name as coach_first_name,
-       cu.last_name  as coach_last_name,
-       cc.name       as company_name,
-       hr_cu.hrs     as hrs
+       cu.first_name           as coach_first_name,
+       cu.last_name            as coach_last_name,
+       cc.name                 as company_name,
+       hr_cu.hrs               as hrs,
+       ucr.allowed_coach_rates as allowed_coach_rates
 from users u
          left join users cu on u.coach = cu.username
          left join company cc on cc.id = u.company_id
          left join (select string_agg(username, ', ') as hrs, company_id from users where authorities like '%"HR"%' group by company_id) hr_cu
-                   on hr_cu.company_id = u.company_id;
+                   on hr_cu.company_id = u.company_id
+         left join (select string_agg(rate_name, ', ') as allowed_coach_rates, username from user_coach_rates group by username) ucr
+                   on ucr.username = u.username;
 
 drop view if exists hr_view;
 create view hr_view as
@@ -49,8 +52,8 @@ select concat(um.manager_username, '_', um.user_username) as id,
        ui.long_term_goal,
        ui.strengths,
        um.manager_username                                as manager,
-       cu.first_name as coach_first_name,
-       cu.last_name  as coach_last_name
+       cu.first_name                                      as coach_first_name,
+       cu.last_name                                       as coach_last_name
 from users_managers um
          left join users u on u.username = um.user_username
          left join user_info ui on ui.username = um.user_username
