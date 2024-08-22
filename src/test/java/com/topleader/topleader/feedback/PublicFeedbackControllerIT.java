@@ -3,7 +3,6 @@ package com.topleader.topleader.feedback;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
-import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.user.UserRepository;
@@ -25,7 +24,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-public class PublicFeedbackControllerIT extends IntegrationTest {
+class PublicFeedbackControllerIT extends IntegrationTest {
 
     private static final String PROMPT_QUERY = "test {\"What is your name?\":[\"answer test\"],\"What is your name?2\":[\"scale.2\"]} English";
 
@@ -78,7 +77,7 @@ public class PublicFeedbackControllerIT extends IntegrationTest {
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/submit-feedback.sql", "/user_insight/ai-prompt.sql"})
     void submitForm() throws Exception {
-        Mockito.when(chatClient.call(Mockito.eq(PROMPT_QUERY))).thenReturn("""
+        Mockito.when(chatClient.call(PROMPT_QUERY)).thenReturn("""
                  {
                        "strongAreas" : "strong areas",
                         "areasOfImprovement": "areas of improvement"
