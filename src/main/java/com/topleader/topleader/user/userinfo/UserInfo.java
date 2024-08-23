@@ -33,10 +33,10 @@ public class UserInfo {
     private List<String> strengths = new ArrayList<>();
 
     @Convert(converter = SetConverter.class)
-    private List<String> values = new ArrayList<>();;
+    private List<String> values = new ArrayList<>();
 
     @Convert(converter = SetConverter.class)
-    private List<String> areaOfDevelopment = new ArrayList<>();;
+    private List<String> areaOfDevelopment = new ArrayList<>();
 
     private String notes;
 

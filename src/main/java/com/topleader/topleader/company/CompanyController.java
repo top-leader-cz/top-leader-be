@@ -6,6 +6,7 @@ package com.topleader.topleader.company;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import java.util.List;
+import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
@@ -70,7 +71,7 @@ public class CompanyController {
         return CompanyDto
             .from(
                 companyRepository.save(
-                    existingCompany.setDefaultMaxCoachRate(request.defaultMaxCoachRate())
+                    existingCompany.setAllowedCoachRates(request.defaultAllowedCoachRate())
                 )
             );
 
@@ -79,12 +80,12 @@ public class CompanyController {
     public record CreateCompanyRequest(String name) {
     }
 
-    public record UpdateCompanyRequest(String defaultMaxCoachRate) {
+    public record UpdateCompanyRequest(Set<String> defaultAllowedCoachRate) {
     }
 
-    public record CompanyDto(Long id, String name, String defaultMaxCoachRate) {
+    public record CompanyDto(Long id, String name, Set<String> defaultAllowedCoachRate) {
         public static CompanyDto from(Company c) {
-            return new CompanyDto(c.getId(), c.getName(), c.getDefaultMaxCoachRate());
+            return new CompanyDto(c.getId(), c.getName(), c.getAllowedCoachRates());
         }
     }
 }

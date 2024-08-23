@@ -1,3 +1,9 @@
+insert into coach_rate (rate_name, rate_credit, rate_order)
+values ('$', 110, 1),
+       ('$$', 165, 2),
+       ('$$$', 275, 3)
+;
+
 INSERT INTO company
 VALUES (1, 'Company 1'),
        (2, 'Company 2')
@@ -12,3 +18,7 @@ VALUES ('user1', 'password1', 'John', 'Doe', '["USER"]', 'UTC', 'AUTHORIZED', 1,
        ('coach2', 'password5', 'Eve', 'Williams', '["USER", "COACH"]', 'CST', 'AUTHORIZED', 2, 'coach2', 300, 150,  1, 500, 'god', 'en'),
        ('hr1', 'password5', 'HrEve', 'Williams', '["USER", "HR"]', 'CST', 'AUTHORIZED', 2, 'coach2', 300, 150,  1, 600, 'god', 'en'),
        ('hr2', 'password5', 'HrBob', 'Williams', '["USER", "HR"]', 'CST', 'AUTHORIZED', 2, 'coach2', 300, 150,  1, 700, 'somebody', 'en');
+
+INSERT INTO user_coach_rates(username, rate_name)
+VALUES ('coach1', '$'),
+       ('coach1', '$$');

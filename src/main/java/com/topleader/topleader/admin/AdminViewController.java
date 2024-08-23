@@ -127,7 +127,7 @@ public class AdminViewController {
             String freeCoach,
             @Pattern(regexp = "[a-z]{2}")
             String locale,
-            String maxCoachRate
+            Set<String> allowedCoachRates
     ) {
         public User updateUser(User user) {
             Optional.ofNullable(firstName).ifPresent(user::setFirstName);
@@ -140,7 +140,7 @@ public class AdminViewController {
             Optional.ofNullable(credit).ifPresent(user::setCredit);
             user.setFreeCoach(freeCoach);
             Optional.ofNullable(locale).ifPresent(user::setLocale);
-            Optional.ofNullable(maxCoachRate).ifPresent(user::setMaxCoachRate);
+            user.setAllowedCoachRates(allowedCoachRates);
             return user;
         }
     }

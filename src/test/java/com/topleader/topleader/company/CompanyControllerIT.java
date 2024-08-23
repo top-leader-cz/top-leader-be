@@ -30,12 +30,12 @@ class CompanyControllerIT extends IntegrationTest {
                       {
                         "id": 1,
                         "name": "company1",
-                        "defaultMaxCoachRate": "$$$"
+                        "defaultAllowedCoachRate": ["$$$"]
                       },
                       {
                         "id": 2,
                         "name": "company2",
-                        "defaultMaxCoachRate": "$$"
+                        "defaultAllowedCoachRate": ["$$"]
                       }
                     ]
                     """
@@ -58,7 +58,7 @@ class CompanyControllerIT extends IntegrationTest {
             .andExpect(content().json(
                 """
                     {
-                        "id": 1,
+                        "id": 3,
                         "name": "company3"
                       }
                     """
@@ -101,7 +101,7 @@ class CompanyControllerIT extends IntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                     {
-                        "defaultMaxCoachRate": "$"
+                        "defaultAllowedCoachRate": ["$"]
                     }
                     """)
             )
@@ -111,7 +111,7 @@ class CompanyControllerIT extends IntegrationTest {
                     {
                         "id": 1,
                         "name": "company1",
-                        "defaultMaxCoachRate": "$"
+                        "defaultAllowedCoachRate": ["$"]
                       }
                     """
             ));

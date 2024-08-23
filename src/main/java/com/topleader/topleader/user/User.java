@@ -65,7 +65,10 @@ public class User {
 
     private String aspiredPosition;
 
-    private String maxCoachRate;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_coach_rates", joinColumns = @JoinColumn(name = "username"))
+    @Column(name = "rate_name")
+    private Set<String> allowedCoachRates;
 
     @ManyToMany
     @JoinTable(
