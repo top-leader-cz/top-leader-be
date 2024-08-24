@@ -13,21 +13,20 @@ import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.UserInsightService;
-import com.topleader.topleader.util.common.Translation;
 import com.topleader.topleader.util.common.user.UserUtils;
 import io.vavr.control.Try;
 import jakarta.transaction.Transactional;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.http.HttpEntity;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -69,10 +68,10 @@ public class UserSessionService {
         deleteCheckActionSteps(existingActionSteps);
 
         final var userActionSteps = prepareActualActionSteps(
-            username,
-            existingActionSteps,
-            Optional.ofNullable(request.checked()).orElse(Set.of()),
-            Optional.ofNullable(request.newActionSteps()).orElse(List.of()));
+                username,
+                existingActionSteps,
+                Optional.ofNullable(request.checked()).orElse(Set.of()),
+                Optional.ofNullable(request.newActionSteps()).orElse(List.of()));
 
 
         Executors.newVirtualThreadPerTaskExecutor().submit(() -> generateActionGoals(username, userActionSteps));
@@ -80,21 +79,20 @@ public class UserSessionService {
         final var actualActionSteps = saveActionSteps(userActionSteps);
 
         Optional.ofNullable(request.areaOfDevelopment())
-            .ifPresent(a -> userInfoService.setAreaOfDevelopmentAndLongTermGoal(username, a, request.longTermGoal()));
+                .ifPresent(a -> userInfoService.setAreaOfDevelopmentAndLongTermGoal(username, a, request.longTermGoal()));
 
         createSessionStartHistoryData(
-            username,
-            userInfoService.setLastRestriction(username, request.reflection()),
-            request.reflection(),
-            actualActionSteps);
+                username,
+                userInfoService.setLastRestriction(username, request.reflection()),
+                request.reflection(),
+                actualActionSteps);
     }
-
 
 
     public UserSessionController.UserSessionDto getUserSession(String username) {
         return convertToUserSession(
-            userInfoService.find(username),
-            userActionStepRepository.findAllByUsername(username)
+                userInfoService.find(username),
+                userActionStepRepository.findAllByUsername(username)
         );
     }
 
@@ -132,15 +130,18 @@ public class UserSessionService {
                 SessionUtils.getDevelopments(userInfo.getAreaOfDevelopment()),
                 userInfo.getLongTermGoal(),
                 actionGoals));
-//        userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
+        userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
         userInsight.setActionGoalsPending(false);
 
         userInsightService.save(userInsight);
     }
 
     public String handleUserPreview(String username, List<String> actionGoals) {
-        var previews = Try.of(() -> objectMapper.readValue(aiClient.generateUserPreviews(username, actionGoals), new TypeReference<List<UserPreview>>() {
-                }))
+        var previews = Try.of(() -> {
+                    var res = aiClient.generateUserPreviews(username, actionGoals);
+                    var json = res.replace("```json", StringUtils.EMPTY).replace("```", StringUtils.EMPTY);
+                    return objectMapper.readValue(json, new TypeReference<List<UserPreview>>() { });
+                })
                 .onFailure(e -> log.error("Failed to generate user preview for user: [{}] ", username, e))
                 .getOrElse(List.of());
 
@@ -151,7 +152,7 @@ public class UserSessionService {
                     p.setThumbnail(thumbnail);
                     return p;
                 })
-                .filter(p -> urlValid(p.getUrl())
+                .filter(p -> urlValid(p.getThumbnail())
                 ).toList();
 
         return Try.of(() -> objectMapper.writeValueAsString(filtered))
@@ -160,110 +161,110 @@ public class UserSessionService {
     }
 
     private boolean urlValid(String url) {
-         return Try.of(() -> restTemplate.getForEntity(url, String.class))
-                 .onFailure(e -> log.info("Failed to get url: [{}] ", url, e))
-                 .getOrElse(() -> ResponseEntity.status(404).body("Not Found"))
-                 .getStatusCode()
-                 .value() != INVALID_LINK;
+        return Try.of(() -> restTemplate.getForEntity(url, String.class))
+                .onFailure(e -> log.info("Failed to get url: [{}] ", url, e))
+                .getOrElse(() -> ResponseEntity.status(404).body("Not Found"))
+                .getStatusCode()
+                .value() != INVALID_LINK;
     }
 
-    private List<UserActionStep>  prepareActualActionSteps(
-        String username,
-        List<UserActionStep> existingActionSteps,
-        Set<Long> checked,
-        List<UserSessionReflectionController.NewActionStepDto> newActionStepDtos
+    private List<UserActionStep> prepareActualActionSteps(
+            String username,
+            List<UserActionStep> existingActionSteps,
+            Set<Long> checked,
+            List<UserSessionReflectionController.NewActionStepDto> newActionStepDtos
     ) {
         return Stream.concat(
-            existingActionSteps.stream()
-                .filter(not(UserActionStep::getChecked))
-                .map(step -> checked.contains(step.getId()) ? step.setChecked(true) : step),
-            Optional.ofNullable(newActionStepDtos).orElse(List.of()).stream()
-                .map(step -> new UserActionStep()
-                    .setChecked(false)
-                    .setDate(step.date())
-                    .setLabel(step.label())
-                    .setUsername(username)
-                )
+                existingActionSteps.stream()
+                        .filter(not(UserActionStep::getChecked))
+                        .map(step -> checked.contains(step.getId()) ? step.setChecked(true) : step),
+                Optional.ofNullable(newActionStepDtos).orElse(List.of()).stream()
+                        .map(step -> new UserActionStep()
+                                .setChecked(false)
+                                .setDate(step.date())
+                                .setLabel(step.label())
+                                .setUsername(username)
+                        )
         ).toList();
     }
 
     private void deleteCheckActionSteps(List<UserActionStep> existingActionSteps) {
         Optional.of(existingActionSteps.stream().filter(UserActionStep::getChecked).toList())
-            .filter(not(List::isEmpty))
-            .ifPresent(userActionStepRepository::deleteAll);
+                .filter(not(List::isEmpty))
+                .ifPresent(userActionStepRepository::deleteAll);
     }
 
 
     private List<UserActionStep> saveActionSteps(List<UserActionStep> steps) {
         return Optional.ofNullable(steps)
-            .filter(not(List::isEmpty))
-            .map(userActionStepRepository::saveAll)
-            .orElse(List.of());
+                .filter(not(List::isEmpty))
+                .map(userActionStepRepository::saveAll)
+                .orElse(List.of());
     }
 
     private UserInfo safeSessionDataIntoTheUserInfoTable(String username, UserSessionController.UserSessionRequest request) {
         return userInfoService.setSessionData(
-            username,
-            request.areaOfDevelopment(),
-            request.longTermGoal(),
-            request.motivation()
+                username,
+                request.areaOfDevelopment(),
+                request.longTermGoal(),
+                request.motivation()
         );
     }
 
     private void deleteAllUserActionStep(String username) {
         Optional.of(userActionStepRepository.findAllByUsername(username))
-            .filter(not(List::isEmpty))
-            .ifPresent(userActionStepRepository::deleteAll);
+                .filter(not(List::isEmpty))
+                .ifPresent(userActionStepRepository::deleteAll);
 
     }
 
 
     private List<UserActionStep> createNewUserActionSteps(String username, List<UserSessionController.NewActionStepDto> newActionStepDtos) {
         return Optional.ofNullable(newActionStepDtos)
-            .filter(not(List::isEmpty))
-            .map(steps -> userActionStepRepository.saveAll(
-                steps.stream()
-                    .map(s -> new UserActionStep()
-                        .setUsername(username)
-                        .setChecked(false)
-                        .setLabel(s.label())
-                        .setDate(s.date())
-                    )
-                    .toList()
-            ))
-            .orElse(List.of());
+                .filter(not(List::isEmpty))
+                .map(steps -> userActionStepRepository.saveAll(
+                        steps.stream()
+                                .map(s -> new UserActionStep()
+                                        .setUsername(username)
+                                        .setChecked(false)
+                                        .setLabel(s.label())
+                                        .setDate(s.date())
+                                )
+                                .toList()
+                ))
+                .orElse(List.of());
     }
 
 
     private void createSessionStartHistoryData(String username, UserInfo userInfo, String reflection, List<UserActionStep> userActionSteps) {
         dataHistoryRepository.save(
-            new DataHistory()
-                .setUsername(username)
-                .setCreatedAt(LocalDateTime.now())
-                .setType(DataHistory.Type.USER_SESSION)
-                .setData(new UserSessionStoredData()
-                    .setAreaOfDevelopment(userInfo.getAreaOfDevelopment())
-                    .setLongTermGoal(userInfo.getLongTermGoal())
-                    .setMotivation(isNull(reflection) ? userInfo.getMotivation() : null)
-                    .setReflection(reflection)
-                    .setActionSteps(userActionSteps.stream().map(a -> new UserSessionStoredData.ActionStepData(
-                                a.getId(), a.getLabel(), a.getDate(), a.getChecked()
-                            ))
-                            .toList()
-                    )
-                )
+                new DataHistory()
+                        .setUsername(username)
+                        .setCreatedAt(LocalDateTime.now())
+                        .setType(DataHistory.Type.USER_SESSION)
+                        .setData(new UserSessionStoredData()
+                                .setAreaOfDevelopment(userInfo.getAreaOfDevelopment())
+                                .setLongTermGoal(userInfo.getLongTermGoal())
+                                .setMotivation(isNull(reflection) ? userInfo.getMotivation() : null)
+                                .setReflection(reflection)
+                                .setActionSteps(userActionSteps.stream().map(a -> new UserSessionStoredData.ActionStepData(
+                                                        a.getId(), a.getLabel(), a.getDate(), a.getChecked()
+                                                ))
+                                                .toList()
+                                )
+                        )
         );
     }
 
     private UserSessionController.UserSessionDto convertToUserSession(UserInfo userInfo, List<UserActionStep> userActionSteps) {
         return new UserSessionController.UserSessionDto(
-            userInfo.getAreaOfDevelopment(),
-            userInfo.getLongTermGoal(),
-            userInfo.getMotivation(),
-            userActionSteps.stream()
-                .map(s -> new UserSessionController.ActionStepDto(s.getId(), s.getLabel(), s.getDate(), s.getChecked()))
-                .toList(),
-            userInfo.getLastReflection()
+                userInfo.getAreaOfDevelopment(),
+                userInfo.getLongTermGoal(),
+                userInfo.getMotivation(),
+                userActionSteps.stream()
+                        .map(s -> new UserSessionController.ActionStepDto(s.getId(), s.getLabel(), s.getDate(), s.getChecked()))
+                        .toList(),
+                userInfo.getLastReflection()
         );
     }
 }

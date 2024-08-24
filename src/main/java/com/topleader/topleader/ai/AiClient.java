@@ -84,7 +84,7 @@ public class AiClient {
     public String generateUserPreviews(String username, List<String> actionsSteps) {
         log.info("AI api call for user previews. User:[{}], short term goals: {} ", username, actionsSteps);
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_PREVIEWS);
-        var query = MessageFormat.format(prompt, actionsSteps);
+        var query = String.format(prompt, actionsSteps);
         log.info("AI query: {}", query);
 
         var res =  chatClient.call(query);

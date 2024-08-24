@@ -46,7 +46,8 @@ class UserInsightControllerIT extends IntegrationTest {
                           "leaderShipStyle":{"text":"leadership-response","isPending":false},
                           "leaderPersona":{"text": "world-leader-persona","isPending":false},
                           "animalSpirit":{"text":"animal-response","isPending":false},
-                          "leadershipTip":{"text":null,"isPending":false}
+                          "leadershipTip":{"text":null,"isPending":false},
+                          "userPreviews":{"text":"test-user-previews","isPending":false}
                           }
                         """))
                 .andExpect(status().isOk());
