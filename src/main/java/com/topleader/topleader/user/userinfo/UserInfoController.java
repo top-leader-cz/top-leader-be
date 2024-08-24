@@ -40,6 +40,7 @@ import org.springframework.web.bind.annotation.RestController;
 import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.nonNull;
+import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toMap;
 
 
@@ -318,6 +319,7 @@ public class UserInfoController {
                 user.getCoach(),
                 user.getLocale(),
                 Optional.ofNullable(user.getAllowedCoachRates())
+                    .filter(not(CollectionUtils::isEmpty))
                     .orElse(company.map(Company::getAllowedCoachRates).orElse(null))
             );
         }

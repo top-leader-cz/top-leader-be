@@ -260,6 +260,7 @@ public class CoachListController {
 
     private Optional<Specification<CoachListView>> maxRateFilter(User user) {
         return Optional.ofNullable(user.getAllowedCoachRates())
+            .filter(not(Set::isEmpty))
             .or(() -> Optional.ofNullable(user.getCompanyId())
                 .flatMap(companyRepository::findById)
                 .map(Company::getAllowedCoachRates)
