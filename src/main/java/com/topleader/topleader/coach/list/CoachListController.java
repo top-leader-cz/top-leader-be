@@ -5,9 +5,7 @@ package com.topleader.topleader.coach.list;
 
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
-import com.topleader.topleader.coach.rate.CoachRateRepository;
 import com.topleader.topleader.email.EmailTemplateService;
-import com.topleader.topleader.coach.rate.CoachRate;
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
 import com.topleader.topleader.exception.ApiValidationException;
@@ -87,17 +85,6 @@ public class CoachListController {
     private final EmailTemplateService emailTemplateService;
 
     private final CompanyRepository companyRepository;
-
-    private final CoachRateRepository coachRateRepository;
-
-    @Value("${top-leader.app-url}")
-    private String appUrl;
-
-    @Value("${top-leader.supported-invitations}")
-    private List<String> supportedInvitations;
-
-    @Value("${top-leader.default-locale}")
-    private String defaultLocale;
 
 
     @Transactional
