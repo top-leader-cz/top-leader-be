@@ -133,6 +133,12 @@
             <artifactId>vavr</artifactId>
             <version>0.10.4</version>
         </dependency>
+        <dependency>
+            <groupId>org.mnode.ical4j</groupId>
+            <artifactId>ical4j</artifactId>
+            <version>4.0.0-rc6</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>Cher/Chère <b>$firstName $lastName</b>,</p>
+
+<p>Bonne nouvelle ! Vous avez réservé avec succès une séance de coaching sur la plateforme TopLeader. Veuillez vous connecter pour consulter les détails et vous préparer à votre prochaine séance.</p>
+
+<p>Date et heure de la séance : <b>$time</b></p>
+
+<p>Pour accéder à votre compte et aux détails de la séance, veuillez cliquer ici : <a href="$link" target="_blank">here</a></p>
+
+<p>Nous sommes impatients de soutenir vos progrès dans votre développement !</p>
+
+<p>Cordialement,</p>
+<p>L'équipe TopLeader</p>
+
+</body>
+</html>

@@ -5,6 +5,7 @@ package com.topleader.topleader.user.userinfo;
 
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
+import com.topleader.topleader.email.EmailTemplateService;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.notification.Notification;
@@ -63,6 +64,8 @@ public class UserInfoController {
     private final UserInsightService userInsightService;
 
     private final CompanyRepository companyRepository;
+
+    private final EmailTemplateService emailTemplateService;
 
 
     @GetMapping
@@ -254,6 +257,7 @@ public class UserInfoController {
             throw new NotFoundException();
         }
 
+        emailTemplateService.sendCancelAlertEmail(sessionId);
         scheduledSessionService.cancelSession(sessionId);
     }
 
