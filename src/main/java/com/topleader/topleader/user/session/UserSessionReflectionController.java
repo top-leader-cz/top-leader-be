@@ -58,7 +58,7 @@ public class UserSessionReflectionController {
     ) {
     }
 
-    record NewActionStepDto(String label, LocalDate date) {
+    record NewActionStepDto(String label, LocalDate date) implements ActionStep {
     }
 
 }

@@ -103,6 +103,6 @@ public class UserSessionController {
     ) {
     }
 
-    record NewActionStepDto(String label, LocalDate date) {
+    record NewActionStepDto(String label, LocalDate date) implements  ActionStep {
     }
 }

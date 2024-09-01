@@ -25,8 +25,10 @@ import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.hibernate.engine.internal.Collections;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -40,7 +42,7 @@ import static java.util.function.Predicate.not;
  */
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserSessionService {
 
     private static final int INVALID_LINK = 404;
@@ -107,10 +109,20 @@ public class UserSessionService {
 
         createSessionStartHistoryData(username, userInfo, null, userActionSteps);
 
+        final var steps = prepareActualActionSteps(
+                username,
+                List.of(),
+                Set.of(),
+                Optional.ofNullable(request.actionSteps()).orElse(List.of()));
+
+        Executors.newVirtualThreadPerTaskExecutor().submit(() -> generateActionGoals(username, steps));
+
+        saveActionSteps(userActionSteps);
+
         return convertToUserSession(userInfo, userActionSteps);
     }
 
-    private void generateActionGoals(String username, List<UserActionStep> userActionSteps) {
+    public void generateActionGoals(String username, List<UserActionStep> userActionSteps) {
         var user = userDetailService.find(username);
         var userInfo = userInfoService.find(username);
         var userInsight = userInsightService.getInsight(username);
@@ -130,7 +142,10 @@ public class UserSessionService {
                 SessionUtils.getDevelopments(userInfo.getAreaOfDevelopment()),
                 userInfo.getLongTermGoal(),
                 actionGoals));
-        userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
+
+        if(!actionGoals.isEmpty()) {
+            userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
+        }
         userInsight.setActionGoalsPending(false);
 
         userInsightService.save(userInsight);
@@ -168,11 +183,11 @@ public class UserSessionService {
                 .value() != INVALID_LINK;
     }
 
-    private List<UserActionStep> prepareActualActionSteps(
+    public List<UserActionStep> prepareActualActionSteps(
             String username,
             List<UserActionStep> existingActionSteps,
             Set<Long> checked,
-            List<UserSessionReflectionController.NewActionStepDto> newActionStepDtos
+            List<? extends ActionStep> newActionStepDtos
     ) {
         return Stream.concat(
                 existingActionSteps.stream()
@@ -195,7 +210,7 @@ public class UserSessionService {
     }
 
 
-    private List<UserActionStep> saveActionSteps(List<UserActionStep> steps) {
+    public List<UserActionStep> saveActionSteps(List<UserActionStep> steps) {
         return Optional.ofNullable(steps)
                 .filter(not(List::isEmpty))
                 .map(userActionStepRepository::saveAll)
