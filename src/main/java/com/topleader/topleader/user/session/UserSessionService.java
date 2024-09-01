@@ -76,7 +76,9 @@ public class UserSessionService {
                 Optional.ofNullable(request.newActionSteps()).orElse(List.of()));
 
 
-        Executors.newVirtualThreadPerTaskExecutor().submit(() -> generateActionGoals(username, userActionSteps));
+        Executors.newVirtualThreadPerTaskExecutor().submit(() ->
+                Try.run(() -> generateActionGoals(username, userActionSteps))
+                        .onFailure(e -> log.error("Failed to generate action goals for user: [{}] ", username, e)));
 
         final var actualActionSteps = saveActionSteps(userActionSteps);
 
@@ -143,7 +145,7 @@ public class UserSessionService {
                 userInfo.getLongTermGoal(),
                 actionGoals));
 
-        if(!actionGoals.isEmpty()) {
+        if (!actionGoals.isEmpty()) {
             userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
         }
         userInsight.setActionGoalsPending(false);
@@ -155,7 +157,8 @@ public class UserSessionService {
         var previews = Try.of(() -> {
                     var res = aiClient.generateUserPreviews(username, actionGoals);
                     var json = res.replace("```json", StringUtils.EMPTY).replace("```", StringUtils.EMPTY);
-                    return objectMapper.readValue(json, new TypeReference<List<UserPreview>>() { });
+                    return objectMapper.readValue(json, new TypeReference<List<UserPreview>>() {
+                    });
                 })
                 .onFailure(e -> log.error("Failed to generate user preview for user: [{}] ", username, e))
                 .getOrElse(List.of());
