@@ -3,8 +3,6 @@
  */
 package com.topleader.topleader.user.userinfo;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
 import com.topleader.topleader.email.EmailTemplateService;
@@ -16,13 +14,8 @@ import com.topleader.topleader.notification.context.CoachLinkedNotificationConte
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
-import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.user.session.SessionUtils;
-import com.topleader.topleader.user.session.UserActionStep;
-import com.topleader.topleader.user.session.UserSessionService;
 import com.topleader.topleader.user.userinsight.UserInsightService;
-import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
@@ -31,10 +24,8 @@ import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
-import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -46,7 +37,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
@@ -232,8 +222,7 @@ public class UserInfoController {
     @Transactional
     @PostMapping("/private-session")
     public UpcomingSessionDto schedulePrivateSession(@RequestBody SchedulePrivateSessionRequest request, @AuthenticationPrincipal UserDetails user) {
-       var username = user.getUsername();
-        final var time = request.time();
+       final var time = request.time();
 
         final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
 
@@ -262,13 +251,13 @@ public class UserInfoController {
     @DeleteMapping("/upcoming-sessions/{sessionId}")
     public void cancelSession(@PathVariable Long sessionId, @AuthenticationPrincipal UserDetails user) {
 
-        if (scheduledSessionService.listUsersFutureSessions(user.getUsername())
-            .stream().noneMatch(s -> s.getId().equals(sessionId))
-        ) {
-            throw new NotFoundException();
-        }
+        final var session = scheduledSessionService.getFutureSession(sessionId)
+            .filter(s -> s.getUsername().equals(user.getUsername()))
+            .orElseThrow(NotFoundException::new);
 
-        emailTemplateService.sendCancelAlertEmail(sessionId);
+        if (!session.isPrivate()) {
+            emailTemplateService.sendCancelAlertEmail(sessionId);
+        }
         scheduledSessionService.cancelSession(sessionId);
     }
 

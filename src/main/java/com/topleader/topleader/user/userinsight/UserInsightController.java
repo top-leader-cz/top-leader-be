@@ -30,7 +30,7 @@ public class UserInsightController {
 
     @GetMapping("/generate-tips")
     public void generateTips(@AuthenticationPrincipal UserDetails user) {
-        userInsightService.generateTips(user.getUsername());
+        userInsightService.generateTipsAsync(user.getUsername());
     }
 
 

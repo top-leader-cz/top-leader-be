@@ -6,6 +6,7 @@ import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import com.topleader.topleader.util.common.user.UserUtils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Async;
@@ -14,7 +15,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -31,6 +31,7 @@ public class UserInsightService {
 
 
     @Async
+    @Transactional
     public void setUserInsight(UserInfo userInfo) {
         var strengths = userInfo.getTopStrengths();
         var values = userInfo.getValues();
@@ -63,6 +64,11 @@ public class UserInsightService {
     }
 
     @Async
+    @Transactional
+    public void generateTipsAsync(String username) {
+        generateTips(username);
+    }
+
     public void generateTips(String username) {
         var userInfo = userInfoRepository.findById(username).orElse(new UserInfo());
         var userInsight = userInsightRepository.findById(username).orElse(new UserInsight());
