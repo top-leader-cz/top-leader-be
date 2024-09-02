@@ -398,6 +398,40 @@ class UserInfoControllerIT extends IntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "user_with_coach", authorities = "USER")
+    void deleteUpcomingPrivateSessionsTest() throws Exception {
+
+        final var now = LocalDateTime.now().withNano(0);
+
+        final var dateTime1 = now.plusHours(3);
+        final var dateTime2 = now.plusDays(3);
+
+
+        final var id1 = scheduledSessionRepository.save(
+            new ScheduledSession()
+                .setPaid(true)
+                .setPrivate(true)
+                .setUsername("user_with_coach")
+                .setTime(dateTime1)
+        ).getId();
+        final var id2 = scheduledSessionRepository.save(
+            new ScheduledSession()
+                .setPaid(false)
+                .setPrivate(false)
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(dateTime2)
+        ).getId();
+
+        mvc.perform(delete("/api/latest/user-info/upcoming-sessions/" + id1))
+            .andExpect(status().isOk())
+            ;
+
+        assertTrue(scheduledSessionRepository.findById(id1).isEmpty());
+        assertTrue(scheduledSessionRepository.findById(id2).isPresent());
+    }
+
+    @Test
     @WithMockUser(username = "user_with_coach")
     void schedulePrivateSessionTest() throws Exception {
 

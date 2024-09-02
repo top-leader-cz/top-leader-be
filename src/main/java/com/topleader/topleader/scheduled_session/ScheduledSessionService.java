@@ -49,6 +49,12 @@ public class ScheduledSessionService {
         return scheduledSessionRepository.findAllByUsernameAndTimeIsAfter(username, LocalDateTime.now());
     }
 
+    public Optional<ScheduledSession> getFutureSession(Long sessionId) {
+        return scheduledSessionRepository.findById(sessionId)
+            .filter(s -> s.getTime().isAfter(LocalDateTime.now()))
+            ;
+    }
+
     public void deleteUserSessions(String username) {
         Optional.of(scheduledSessionRepository.findAllByUsernameAndTimeIsAfter(username, LocalDateTime.now()))
             .filter(not(List::isEmpty))
