@@ -48,7 +48,6 @@ public class InvitationService {
         var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(request.locale()));
         tokenService.saveToken(new Token().setToken(token).setUsername(request.username()).setType(Token.Type.SET_PASSWORD));
         emailService.sendEmail(request.username(), subjects.getOrDefault(request.locale(), defaultLocale), emailBody);
-
     }
 
     public String parseTemplateName(String locale) {
