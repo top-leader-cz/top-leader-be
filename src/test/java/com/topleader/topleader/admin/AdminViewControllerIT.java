@@ -116,6 +116,29 @@ class AdminViewControllerIT extends IntegrationTest {
 
         Assertions.assertThat(userRepository.findById("user4")).isNotEmpty();
     }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void testResentInvitationToUser() throws Exception {
+
+        mvc.perform(post("/api/latest/admin/users/user4/resent-invitation")
+                .contentType("application/json")
+                .content(objectMapper.writeValueAsString(new AdminViewController.ResentInvitationRequestDto("en"))))
+            .andExpect(status().isOk());
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        var body = GreenMailUtil.getBody(receivedMessage);
+        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("user4");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
+        Assertions.assertThat(body)
+                .contains("Bob Brown,")
+                .contains("http://app-test-ur=\r\nl/#/api/public/set-password/")
+                .contains("Unlock Your ");
+
+        Assertions.assertThat(userRepository.findById("user4")).isNotEmpty();
+    }
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
     void testUpdateUser_nullCoachAndCompany() throws Exception {

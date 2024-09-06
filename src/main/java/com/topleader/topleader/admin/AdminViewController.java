@@ -55,15 +55,15 @@ public class AdminViewController {
     @Secured("ADMIN")
     @GetMapping("/users")
     public Page<AdminView> getUsers(
-            FilterDto filterDto,
-            Pageable pageable
+        FilterDto filterDto,
+        Pageable pageable
     ) {
 
         return Optional.ofNullable(filterDto)
-                .map(FilterDto::toSpecifications)
-                .filter(not(List::isEmpty))
-                .map(filter -> repository.findAll(Specification.allOf(filter), pageable))
-                .orElseGet(() -> repository.findAll(pageable));
+            .map(FilterDto::toSpecifications)
+            .filter(not(List::isEmpty))
+            .map(filter -> repository.findAll(Specification.allOf(filter), pageable))
+            .orElseGet(() -> repository.findAll(pageable));
     }
 
     @Transactional
@@ -82,20 +82,30 @@ public class AdminViewController {
     public void createUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequestDto userRequest) {
 
         userDetailService.getUser(username)
-                .map(user -> {
-                    var oldStatus = user.getStatus();
-                    var updatedUser = userRequest.updateUser(user);
-                    if (sendInvite(oldStatus, userRequest.status())) {
-                        invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, userRequest.locale()));
-                    }
-                    return user;
-                })
-                .ifPresentOrElse(
-                        userDetailService::save,
-                        () -> {
-                            throw new NotFoundException();
-                        }
-                );
+            .map(user -> {
+                var oldStatus = user.getStatus();
+                var updatedUser = userRequest.updateUser(user);
+                if (sendInvite(oldStatus, userRequest.status())) {
+                    invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, userRequest.locale()));
+                }
+                return user;
+            })
+            .ifPresentOrElse(
+                userDetailService::save,
+                () -> {
+                    throw new NotFoundException();
+                }
+            );
+
+    }
+
+    @Transactional
+    @Secured("ADMIN")
+    @PostMapping("/users/{username}/resent-invitation")
+    public void resentInvitation(@PathVariable String username, @RequestBody @Valid ResentInvitationRequestDto userRequest) {
+
+        userDetailService.getUser(username)
+            .ifPresent(user -> invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, userRequest.locale())));
 
     }
 
@@ -110,24 +120,29 @@ public class AdminViewController {
     @Secured("ADMIN")
     @DeleteMapping("/users/{username}")
     public void createUser(@PathVariable String username) {
-         userDetailService.delete(username);
+        userDetailService.delete(username);
     }
 
+    public record ResentInvitationRequestDto(
+        @Pattern(regexp = "[a-z]{2}")
+        String locale
+    ) {
+    }
 
     public record UpdateUserRequestDto(
-            String firstName,
-            String lastName,
-            String timeZone,
-            Long companyId,
-            Boolean isTrial,
-            Set<User.Authority> authorities,
-            User.Status status,
-            String coach,
-            Integer credit,
-            String freeCoach,
-            @Pattern(regexp = "[a-z]{2}")
-            String locale,
-            Set<String> allowedCoachRates
+        String firstName,
+        String lastName,
+        String timeZone,
+        Long companyId,
+        Boolean isTrial,
+        Set<User.Authority> authorities,
+        User.Status status,
+        String coach,
+        Integer credit,
+        String freeCoach,
+        @Pattern(regexp = "[a-z]{2}")
+        String locale,
+        Set<String> allowedCoachRates
     ) {
         public User updateUser(User user) {
             Optional.ofNullable(firstName).ifPresent(user::setFirstName);
@@ -146,53 +161,53 @@ public class AdminViewController {
     }
 
     public record CreateUserRequestDto(
-            @NotBlank @Email String username,
-            @NotBlank String firstName,
-            @NotBlank String lastName,
-            @NotBlank String timeZone,
-            Long companyId,
-            @NotNull Boolean isTrial,
+        @NotBlank @Email String username,
+        @NotBlank String firstName,
+        @NotBlank String lastName,
+        @NotBlank String timeZone,
+        Long companyId,
+        @NotNull Boolean isTrial,
 
-            Set<User.Authority> authorities,
-            @NotNull User.Status status,
-            @Pattern(regexp = "[a-z]{2}")
-            String locale
+        Set<User.Authority> authorities,
+        @NotNull User.Status status,
+        @Pattern(regexp = "[a-z]{2}")
+        String locale
     ) {
         public User toUser(String requestedBy) {
             return new User()
-                    .setUsername(username.toLowerCase(Locale.ROOT))
-                    .setFirstName(firstName)
-                    .setLastName(lastName)
-                    .setTimeZone(timeZone)
-                    .setCompanyId(companyId)
-                    .setAuthorities(authorities)
-                    .setRequestedBy(requestedBy)
-                    .setLocale(locale)
-                    .setStatus(status);
+                .setUsername(username.toLowerCase(Locale.ROOT))
+                .setFirstName(firstName)
+                .setLastName(lastName)
+                .setTimeZone(timeZone)
+                .setCompanyId(companyId)
+                .setAuthorities(authorities)
+                .setRequestedBy(requestedBy)
+                .setLocale(locale)
+                .setStatus(status);
         }
     }
 
     public record FilterDto(
-            String username,
-            String firstName,
-            String lastName,
-            String timeZone,
-            User.Status status,
-            Long companyId,
-            String companyName,
-            String coach,
-            String coachFirstName,
-            String coachLastName,
-            Integer credit,
-            Integer requestedCredit,
-            Integer sumRequestedCredit,
-            Integer paidCredit,
-            String hrs,
-            String requestedBy,
-            Boolean isTrial,
+        String username,
+        String firstName,
+        String lastName,
+        String timeZone,
+        User.Status status,
+        Long companyId,
+        String companyName,
+        String coach,
+        String coachFirstName,
+        String coachLastName,
+        Integer credit,
+        Integer requestedCredit,
+        Integer sumRequestedCredit,
+        Integer paidCredit,
+        String hrs,
+        String requestedBy,
+        Boolean isTrial,
 
-            String freeCoach,
-            String maxCoachRate
+        String freeCoach,
+        String maxCoachRate
     ) {
 
         public List<Specification<AdminView>> toSpecifications() {
