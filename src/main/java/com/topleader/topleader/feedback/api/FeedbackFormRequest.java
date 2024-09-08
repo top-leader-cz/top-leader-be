@@ -43,6 +43,8 @@ public class FeedbackFormRequest {
     @NotEmpty
     private String locale;
 
+    private boolean draft;
+
     public static FeedbackForm toForm(FeedbackFormRequest request) {
         var feedbackForm = new FeedbackForm()
                 .setId(request.getId())
@@ -50,7 +52,8 @@ public class FeedbackFormRequest {
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)));
+                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)))
+                .setDraft(request.isDraft());
 
         var feedbackFormQuestion = request.getQuestions().stream()
                 .map(q -> {
@@ -85,7 +88,8 @@ public class FeedbackFormRequest {
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)));
+                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)))
+                .setDraft(request.isDraft());
     }
 
 }

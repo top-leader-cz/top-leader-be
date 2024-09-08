@@ -43,7 +43,9 @@ public class FeedbackController {
     @Transactional
     public FeedbackFormDto createForm(@RequestBody @Valid FeedbackFormRequest request) {
        var form = saveForm(request);
-       feedbackService.sendFeedbacks(getFeedbackData(request, form));
+        if(!request.isDraft()) {
+            feedbackService.sendFeedbacks(getFeedbackData(request, form));
+        }
        return feedbackService.toFeedbackFormDto(form);
     }
 
@@ -70,7 +72,9 @@ public class FeedbackController {
         var updatedForm = FeedbackFormRequest.toForm(request).setId(id);
         updatedForm.setSummary(savedForm.getSummary());
         var form = feedbackService.saveForm(updatedForm);
-        feedbackService.sendFeedbacks(getFeedbackData(request, form));
+        if(!request.isDraft()) {
+            feedbackService.sendFeedbacks(getFeedbackData(request, form));
+        }
         return feedbackService.toFeedbackFormDto(form);
     }
 

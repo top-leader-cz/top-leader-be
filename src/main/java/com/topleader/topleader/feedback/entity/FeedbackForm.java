@@ -33,6 +33,8 @@ public class FeedbackForm {
 
     private LocalDateTime createdAt;
 
+    private boolean draft;
+
     @Convert(converter = SummaryConverter.class)
     private Summary summary;
 

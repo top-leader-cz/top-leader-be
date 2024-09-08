@@ -53,5 +53,6 @@
   "summary": {
     "strongAreas": "strongAreas",
     "areasOfImprovement": "areasOfImprovement"
-  }
+  },
+  "draft":false
 }

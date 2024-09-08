@@ -37,6 +37,8 @@ public class FeedbackFormDto {
 
     private Summary summary;
 
+    private boolean draft;
+
     public static FeedbackFormDto of(FeedbackForm feedbackForm) {
         var questions = feedbackForm.getQuestions().stream()
                 .map(q -> {
