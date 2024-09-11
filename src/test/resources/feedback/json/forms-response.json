@@ -3,6 +3,7 @@
     "id": 1,
     "title": "test-from",
     "createdAt": "2023-10-12T00:00:00",
+    "draft":false,
     "recipients": [
       {
         "id": 1,

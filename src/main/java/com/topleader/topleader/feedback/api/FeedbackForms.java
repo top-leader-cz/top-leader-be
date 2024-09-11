@@ -18,7 +18,10 @@ public class FeedbackForms {
 
     private LocalDateTime createdAt;
 
+    private boolean draft;
+
     private List<RecipientDto> recipients;
+
 
     public static List<FeedbackForms> of(List<FeedbackForm> forms) {
         return forms.stream()
@@ -29,7 +32,8 @@ public class FeedbackForms {
                     return new FeedbackForms().setId(f.getId())
                                     .setTitle(f.getTitle())
                                     .setCreatedAt(f.getCreatedAt())
-                                    .setRecipients(recipients);
+                                    .setRecipients(recipients)
+                            .setDraft(f.isDraft());
                         }
                 )
                 .collect(Collectors.toList());

@@ -1,0 +1,1 @@
+alter table feedback_form  alter valid_to drop not null;

@@ -31,7 +31,6 @@ public class FeedbackFormRequest {
     @Email
     private String username;
 
-    @NotNull
     private LocalDateTime validTo;
 
     @NotNull
