@@ -75,6 +75,7 @@ public class FeedbackController {
         savedForm.setDescription(request.getDescription());
         savedForm.setQuestions(FeedbackFormRequest.toQuestions(request.getQuestions(), savedForm));
         savedForm.getRecipients().addAll(FeedbackFormRequest.toRecipients(request.getRecipients(), savedForm));
+        savedForm.setDraft(request.isDraft());
         var form = feedbackService.saveForm(savedForm);
         if(!request.isDraft()) {
             feedbackService.sendFeedbacks(getFeedbackData(request, form));
