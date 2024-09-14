@@ -23,7 +23,7 @@ public class FeedbackData {
 
     private String lastName;
 
-    public record Recipient(Long id, String recipient, String token) {}
+    public record Recipient(Long id, String recipient, String token, boolean submitted) {}
 
 
 

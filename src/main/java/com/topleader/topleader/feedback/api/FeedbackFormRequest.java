@@ -106,14 +106,14 @@ public class FeedbackFormRequest {
                 .collect(Collectors.toSet());
     }
 
-    public static Set<Recipient> toRecipients(List<RecipientDto> recipients, FeedbackForm feedbackForm) {
+    public static List<Recipient> toRecipients(List<RecipientDto> recipients, FeedbackForm feedbackForm) {
         return recipients.stream()
                 .map(r -> new Recipient().setId(r.id())
                         .setToken(CommonUtils.generateToken())
                         .setRecipient(r.username())
                         .setSubmitted(r.submitted())
                         .setForm(feedbackForm))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
 }

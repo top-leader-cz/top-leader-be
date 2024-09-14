@@ -133,7 +133,7 @@ public class FeedbackService {
 
     void sendFeedbacks(FeedbackData data) {
         data.getRecipients().stream()
-                .filter(r -> r.id() == null)
+                .filter(r -> !r.submitted())
                 .forEach(r -> {
                     var feedbackLink = String.format("%s/#/feedback/%s/%s/%s", appUrl, data.getFormId(), r.recipient(), r.token());
                     var params = Map.of("validTo", data.getValidTo().format(TOP_LEADER_FORMATTER),
