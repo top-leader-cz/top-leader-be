@@ -10,7 +10,8 @@ import java.io.Serializable;
 @Entity
 @Table
 @Accessors(chain = true)
-@ToString(of={"id", "form.id", "question.key", "recipient.recipient", "answer"})
+@EqualsAndHashCode(of = {"id"})
+@ToString(of={"id", "form", "question", "answer"})
 public class FeedbackFormAnswer {
 
     @EmbeddedId

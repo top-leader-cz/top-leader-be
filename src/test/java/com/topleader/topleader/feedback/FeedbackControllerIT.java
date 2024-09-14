@@ -161,19 +161,23 @@ class FeedbackControllerIT extends IntegrationTest {
         TestUtils.assertJsonEquals(result, expected);
         Assertions.assertThat(questionRepository.getDefaultOptions()).hasSize(2);
 
-        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(2);
+        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(3);
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("mala@mela.cz");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("pepa@cerny.cz");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
         Assertions.assertThat(receivedMessage.getContent().toString()).contains("Jakub Svezi");
 
         receivedMessage = greenMail.getReceivedMessages()[1];
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("mala@mela.cz");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
+
+        receivedMessage = greenMail.getReceivedMessages()[2];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("kuku@kuku.cz");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
 
-        Assertions.assertThat(userRepository.findAll()).hasSize(3);
+        Assertions.assertThat(userRepository.findAll()).hasSize(4);
         Assertions.assertThat(userRepository.findById("mala@mela.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("mala@mela.cz", "mala", "mala", Set.of(RESPONDENT), REQUESTED);

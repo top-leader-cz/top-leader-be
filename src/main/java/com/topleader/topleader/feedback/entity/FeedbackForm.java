@@ -13,7 +13,9 @@ import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Entity
@@ -44,14 +46,14 @@ public class FeedbackForm {
     @JoinColumn(name = "username")
     private User user;
 
-    @OneToMany(mappedBy = "form", cascade = {CascadeType.MERGE}, orphanRemoval = true)
-    private List<FeedbackFormQuestion> questions = new ArrayList<>();
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+    private Set<FeedbackFormQuestion> questions = new HashSet<>();
 
     @OneToMany(mappedBy = "form", cascade = {CascadeType.MERGE}, orphanRemoval = true)
-    private List<FeedbackFormAnswer> answers = new ArrayList<>();
+    private Set<FeedbackFormAnswer> answers = new HashSet<>();
 
     @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private List<Recipient> recipients = new ArrayList<>();
+    private Set<Recipient> recipients = new HashSet<>();
 
 
 

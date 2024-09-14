@@ -4,7 +4,9 @@ package com.topleader.topleader.feedback;
 import com.topleader.topleader.feedback.api.*;
 
 import com.topleader.topleader.feedback.entity.FeedbackForm;
+import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
 import com.topleader.topleader.feedback.entity.Question;
+import com.topleader.topleader.feedback.entity.Recipient;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -69,9 +71,11 @@ public class FeedbackController {
     @Transactional
     public FeedbackFormDto updateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
         var savedForm = feedbackService.fetchForm(id);
-        var updatedForm = FeedbackFormRequest.toForm(request).setId(id);
-        updatedForm.setSummary(savedForm.getSummary());
-        var form = feedbackService.saveForm(updatedForm);
+        savedForm.setTitle(request.getTitle());
+        savedForm.setDescription(request.getDescription());
+        savedForm.setQuestions(FeedbackFormRequest.toQuestions(request.getQuestions(), savedForm));
+        savedForm.getRecipients().addAll(FeedbackFormRequest.toRecipients(request.getRecipients(), savedForm));
+        var form = feedbackService.saveForm(savedForm);
         if(!request.isDraft()) {
             feedbackService.sendFeedbacks(getFeedbackData(request, form));
         }
@@ -86,15 +90,15 @@ public class FeedbackController {
 
 
     public FeedbackData getFeedbackData(FeedbackFormRequest request, FeedbackForm form) {
-        var byUsername = request.getRecipients().stream()
-                .collect(Collectors.toMap(RecipientDto::username, Function.identity()));
+        var byUsername = form.getRecipients().stream()
+                .collect(Collectors.toMap(Recipient::getRecipient, Function.identity()));
         return new FeedbackData().setLocale(request.getLocale())
                 .setValidTo(request.getValidTo())
                 .setFormId(form.getId())
                 .setFirstName(form.getUser().getFirstName())
                 .setLastName(form.getUser().getLastName())
                 .setRecipients(form.getRecipients().stream()
-                        .map(r -> new FeedbackData.Recipient(byUsername.get(r.getRecipient()).id(), r.getRecipient(), r.getToken()))
+                        .map(r -> new FeedbackData.Recipient(byUsername.get(r.getRecipient()).getId(), r.getRecipient(), r.getToken(), r.isSubmitted()) )
                         .collect(Collectors.toList()));
     }
 

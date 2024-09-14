@@ -5,7 +5,6 @@ import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.PrimitiveIterator;
 
 
 @Data
@@ -24,7 +23,7 @@ public class FeedbackData {
 
     private String lastName;
 
-    public record Recipient(Long id, String recipient, String token) {}
+    public record Recipient(Long id, String recipient, String token, boolean submitted) {}
 
 
 

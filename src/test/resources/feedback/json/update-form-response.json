@@ -3,9 +3,9 @@
   "title": "update-from",
   "description": "update test description",
   "username": "jakub.svezi@dummy.com",
-  "validTo": "2023-12-13T00:00:00",
-  "firstName":"Jakub",
-  "lastName":"Svezi",
+  "firstName": "Jakub",
+  "lastName": "Svezi",
+  "validTo": "2060-12-12T00:00:00",
   "questions": [
     {
       "key": "question.key.1",
@@ -32,6 +32,11 @@
       "submitted": false
     },
     {
+      "id": 2,
+      "username": "ilja@bily.cz",
+      "submitted": true
+    },
+    {
       "id": 4,
       "username": "kuku@kuku.cz",
       "submitted": false
@@ -41,5 +46,5 @@
     "strongAreas": "strongAreas",
     "areasOfImprovement": "areasOfImprovement"
   },
-  "draft":false
+  "draft": false
 }
