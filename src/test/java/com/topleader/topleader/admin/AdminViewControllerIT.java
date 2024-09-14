@@ -6,8 +6,10 @@ package com.topleader.topleader.admin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.coach.CoachRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import java.util.Locale;
 import java.util.Set;
 
@@ -36,6 +38,12 @@ class AdminViewControllerIT extends IntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private CoachRepository coachRepository;
+
+    @Autowired
+    private UserInfoRepository userInfoRepository;
 
 
     @Test
@@ -322,6 +330,8 @@ class AdminViewControllerIT extends IntegrationTest {
 
 
         Assertions.assertThat(userRepository.findById("user1")).isEmpty();
+        Assertions.assertThat(coachRepository.findById("user1")).isEmpty();
+        Assertions.assertThat(userInfoRepository.findById("user1")).isEmpty();
     }
 
 }

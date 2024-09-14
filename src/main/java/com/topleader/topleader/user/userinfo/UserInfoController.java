@@ -172,7 +172,7 @@ public class UserInfoController {
         if (!Objects.equals(request.coach(), currentUser.getCoach())) {
             currentUser.setCoach(request.coach());
             userRepository.save(currentUser);
-            scheduledSessionService.deleteUserSessions(user.getUsername());
+            scheduledSessionService.deleteUserCoachedSessions(user.getUsername());
             if (nonNull(request.coach())) {
                 notificationService.addNotification(new NotificationService.CreateNotificationRequest(
                     request.coach(),
@@ -222,7 +222,7 @@ public class UserInfoController {
     @Transactional
     @PostMapping("/private-session")
     public UpcomingSessionDto schedulePrivateSession(@RequestBody SchedulePrivateSessionRequest request, @AuthenticationPrincipal UserDetails user) {
-       final var time = request.time();
+        final var time = request.time();
 
         final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
 
@@ -235,13 +235,17 @@ public class UserInfoController {
             throw new ApiValidationException(SESSION_IN_PAST, "time", time.toString(), "Not possible to schedule session in past.");
         }
 
+        final var session = scheduledSessionService.scheduleSession(new ScheduledSession()
+            .setPaid(true)
+            .setPrivate(true)
+            .setTime(shiftedTime)
+            .setUsername(user.getUsername())
+        );
+
+        emailTemplateService.sendBookingAlertPrivateSessionEmail(session.getId());
+
         return UpcomingSessionDto.from(
-            scheduledSessionService.scheduleSession(new ScheduledSession()
-                .setPaid(true)
-                .setPrivate(true)
-                .setTime(shiftedTime)
-                .setUsername(user.getUsername())
-            ),
+            session,
             Optional.empty()
         );
     }
@@ -255,7 +259,9 @@ public class UserInfoController {
             .filter(s -> s.getUsername().equals(user.getUsername()))
             .orElseThrow(NotFoundException::new);
 
-        if (!session.isPrivate()) {
+        if (session.isPrivate()) {
+            emailTemplateService.sendCancelAlertPrivateSessionEmail(sessionId);
+        } else {
             emailTemplateService.sendCancelAlertEmail(sessionId);
         }
         scheduledSessionService.cancelSession(sessionId);
