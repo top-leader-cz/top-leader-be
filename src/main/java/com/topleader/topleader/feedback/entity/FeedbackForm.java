@@ -46,13 +46,13 @@ public class FeedbackForm {
     @JoinColumn(name = "username")
     private User user;
 
-    @OneToMany(mappedBy = "form", cascade = {CascadeType.MERGE, CascadeType.REMOVE})
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.ALL})
     private Set<FeedbackFormQuestion> questions = new HashSet<>();
 
-    @OneToMany(mappedBy = "form", cascade = {CascadeType.MERGE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.ALL})
     private Set<FeedbackFormAnswer> answers = new HashSet<>();
 
-    @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.ALL})
     private Set<Recipient> recipients = new HashSet<>();
 
 

@@ -74,7 +74,7 @@ public class FeedbackController {
         savedForm.setTitle(request.getTitle());
         savedForm.setDescription(request.getDescription());
         savedForm.setQuestions(FeedbackFormRequest.toQuestions(request.getQuestions(), savedForm));
-        savedForm.getRecipients().addAll(FeedbackFormRequest.toRecipients(request.getRecipients(), savedForm));
+        savedForm.setRecipients(FeedbackFormRequest.toRecipients(request.getRecipients(), savedForm));
         savedForm.setDraft(request.isDraft());
         var form = feedbackService.saveForm(savedForm);
         if(!request.isDraft()) {
@@ -91,15 +91,15 @@ public class FeedbackController {
 
 
     public FeedbackData getFeedbackData(FeedbackFormRequest request, FeedbackForm form) {
-        var byUsername = form.getRecipients().stream()
-                .collect(Collectors.toMap(Recipient::getRecipient, Function.identity()));
+        var byUsername = request.getRecipients().stream()
+                .collect(Collectors.toMap(RecipientDto::username, Function.identity()));
         return new FeedbackData().setLocale(request.getLocale())
                 .setValidTo(request.getValidTo())
                 .setFormId(form.getId())
                 .setFirstName(form.getUser().getFirstName())
                 .setLastName(form.getUser().getLastName())
                 .setRecipients(form.getRecipients().stream()
-                        .map(r -> new FeedbackData.Recipient(byUsername.get(r.getRecipient()).getId(), r.getRecipient(), r.getToken(), r.isSubmitted()) )
+                        .map(r -> new FeedbackData.Recipient(byUsername.get(r.getRecipient()).id(), r.getRecipient(), r.getToken()))
                         .collect(Collectors.toList()));
     }
 
