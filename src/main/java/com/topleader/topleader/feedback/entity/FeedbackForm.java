@@ -44,10 +44,10 @@ public class FeedbackForm {
     @JoinColumn(name = "username")
     private User user;
 
-    @OneToMany(mappedBy = "form", cascade = {CascadeType.MERGE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<FeedbackFormQuestion> questions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "form", cascade = {CascadeType.MERGE}, orphanRemoval = true)
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<FeedbackFormAnswer> answers = new ArrayList<>();
 
     @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})

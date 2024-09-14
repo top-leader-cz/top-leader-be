@@ -69,9 +69,13 @@ public class FeedbackController {
     @Transactional
     public FeedbackFormDto updateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
         var savedForm = feedbackService.fetchForm(id);
-        var updatedForm = FeedbackFormRequest.toForm(request).setId(id);
-        updatedForm.setSummary(savedForm.getSummary());
-        var form = feedbackService.saveForm(updatedForm);
+        savedForm.setTitle(request.getTitle());
+        savedForm.setValidTo(request.getValidTo());
+        savedForm.setDescription(request.getDescription());
+        savedForm.setQuestions(FeedbackFormRequest.toQuestions(request.getQuestions(), savedForm));
+        savedForm.setRecipients(FeedbackFormRequest.toRecipients(request.getRecipients(), savedForm));
+        savedForm.setDraft(request.isDraft());
+        var form = feedbackService.saveForm(savedForm);
         if(!request.isDraft()) {
             feedbackService.sendFeedbacks(getFeedbackData(request, form));
         }

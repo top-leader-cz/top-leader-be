@@ -92,7 +92,6 @@ public class FeedbackService {
         return feedbackFormRepository.findByUsername(username);
     }
 
-    @Transactional
     public FeedbackForm saveForm(FeedbackForm form) {
         return feedbackFormRepository.save(form);
     }

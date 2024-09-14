@@ -10,6 +10,7 @@ import java.io.Serializable;
 @Entity
 @Table
 @Accessors(chain = true)
+@EqualsAndHashCode(of = {"id"})
 @ToString(of={"id", "form.id", "question.key", "recipient.recipient", "answer"})
 public class FeedbackFormAnswer {
 
