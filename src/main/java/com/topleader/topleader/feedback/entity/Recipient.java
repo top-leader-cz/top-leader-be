@@ -2,7 +2,10 @@ package com.topleader.topleader.feedback.entity;
 
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.io.Serializable;
@@ -12,7 +15,6 @@ import java.util.List;
 @Entity
 @Table(name = "fb_recipient")
 @Accessors(chain = true)
-@EqualsAndHashCode(of = {"recipient"})
 @ToString(of={"id", "form", "recipient", "token", "submitted"})
 public class Recipient {
 

@@ -23,6 +23,6 @@ insert into fb_recipient(id, form_id, recipient, token, submitted)
 values (nextval('fb_recipient_id_seq'), 1, 'pepa@cerny.cz', 'token', false);
 
 insert into fb_recipient(id, form_id, recipient, token, submitted)
-values (nextval('fb_recipient_id_seq'), 1, 'ilja@bily.cz', 'token2', true)
+values (nextval('fb_recipient_id_seq'), 1, 'ilja@bily.cz', 'token2', false)
 
 
