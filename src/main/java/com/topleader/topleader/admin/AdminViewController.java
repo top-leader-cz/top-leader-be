@@ -119,8 +119,8 @@ public class AdminViewController {
 
     @Secured("ADMIN")
     @DeleteMapping("/users/{username}")
-    public void createUser(@PathVariable String username) {
-        userDetailService.delete(username);
+    public void deleteUser(@PathVariable String username) {
+         userDetailService.delete(username);
     }
 
     public record ResentInvitationRequestDto(

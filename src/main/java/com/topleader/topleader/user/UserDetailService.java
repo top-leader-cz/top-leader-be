@@ -1,8 +1,10 @@
 package com.topleader.topleader.user;
 
+import com.topleader.topleader.exception.ApiValidationException;
+import java.util.List;
 import java.util.Locale;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -11,22 +13,27 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
+import static com.topleader.topleader.exception.ErrorCodeConstants.UNABLE_TO_DELETE;
+
+
 @Service
+@AllArgsConstructor
 public class UserDetailService implements UserDetailsService {
 
-    @Autowired
-    private UserRepository userRepository;
+    private static final String FIELD_USERNAME = "username";
+
+    private final UserRepository userRepository;
 
     @Override
     public UserDetails loadUserByUsername(String username) {
         var user = userRepository.findById(username.toLowerCase(Locale.ROOT))
-                .orElseThrow(() -> new UsernameNotFoundException(username));
+            .orElseThrow(() -> new UsernameNotFoundException(username));
 
         return User.withUsername(user.getUsername())
-                .disabled(com.topleader.topleader.user.User.Status.PENDING == user.getStatus())
-                .password(user.getPassword())
-                .authorities(user.getAuthorities().stream().map(Enum::name).toArray(String[]::new))
-                .build();
+            .disabled(com.topleader.topleader.user.User.Status.PENDING == user.getStatus())
+            .password(user.getPassword())
+            .authorities(user.getAuthorities().stream().map(Enum::name).toArray(String[]::new))
+            .build();
 
     }
 
@@ -44,8 +51,37 @@ public class UserDetailService implements UserDetailsService {
     }
 
     public void delete(String username) {
+
+        final var user = userRepository.findById(username).orElseThrow(() -> new ApiValidationException(UNABLE_TO_DELETE, FIELD_USERNAME, username, "not found"));
+
+        validateNotEmpty(userRepository.findByManagersContaining(user).stream()
+                .map(com.topleader.topleader.user.User::getUsername)
+                .toList(),
+            username,
+            "User is a manager of:");
+
+        validateNotEmpty(userRepository.findByCoach(username).stream()
+                .map(com.topleader.topleader.user.User::getUsername)
+                .toList(),
+            username,
+            "User is a coach of:");
+
+        validateNotEmpty(userRepository.findByFreeCoach(username).stream()
+                .map(com.topleader.topleader.user.User::getUsername)
+                .toList(),
+            username,
+            "User is a free coach of:");
+
+
         userRepository.deleteById(username);
     }
+
+    private static void validateNotEmpty(List<String> data, String username, String message) {
+        if (!data.isEmpty()) {
+            throw new ApiValidationException(UNABLE_TO_DELETE, FIELD_USERNAME, username, message + String.join(", ", data));
+        }
+    }
+
 }
 
 
