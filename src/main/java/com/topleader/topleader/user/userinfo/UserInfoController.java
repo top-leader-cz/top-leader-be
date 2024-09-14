@@ -172,7 +172,7 @@ public class UserInfoController {
         if (!Objects.equals(request.coach(), currentUser.getCoach())) {
             currentUser.setCoach(request.coach());
             userRepository.save(currentUser);
-            scheduledSessionService.deleteUserSessions(user.getUsername());
+            scheduledSessionService.deleteUserCoachedSessions(user.getUsername());
             if (nonNull(request.coach())) {
                 notificationService.addNotification(new NotificationService.CreateNotificationRequest(
                     request.coach(),

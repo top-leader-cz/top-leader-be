@@ -125,7 +125,7 @@ class UserInfoControllerIT extends IntegrationTest {
                     {
                         "locale": "fr"
                      }
-                                        """)
+                    """)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user")))
@@ -148,7 +148,7 @@ class UserInfoControllerIT extends IntegrationTest {
                     {
                         "timezone": "CST"
                      }
-                                        """)
+                    """)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user")))
@@ -170,7 +170,7 @@ class UserInfoControllerIT extends IntegrationTest {
                     {
                         "notes": "some cool notes"
                      }
-                                        """)
+                    """)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user")))
@@ -192,7 +192,7 @@ class UserInfoControllerIT extends IntegrationTest {
                     {
                         "data": ["v1", "v2"]
                      }
-                                        """)
+                    """)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user")))
@@ -228,7 +228,7 @@ class UserInfoControllerIT extends IntegrationTest {
                     {
                         "data": ["v1", "v2"]
                      }
-                                        """)
+                    """)
             )
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user")))
@@ -270,6 +270,11 @@ class UserInfoControllerIT extends IntegrationTest {
                 .setPrivate(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
+                .setTime(LocalDateTime.now().plusDays(3)),
+            new ScheduledSession()
+                .setPaid(true)
+                .setPrivate(true)
+                .setUsername("user_with_coach")
                 .setTime(LocalDateTime.now().plusDays(3))
         ));
 
@@ -295,7 +300,7 @@ class UserInfoControllerIT extends IntegrationTest {
 
         final var sessions = scheduledSessionRepository.findAll();
 
-        assertEquals(1, sessions.size());
+        assertEquals(2, sessions.size());
 
         final var user = userRepository.findById("user_with_coach").orElseThrow();
 
@@ -533,7 +538,7 @@ class UserInfoControllerIT extends IntegrationTest {
                     {
                         "data": ["selfBeliever"]
                      }
-                                        """)
+                    """)
                 )
                 .andExpect(status().isOk());
 

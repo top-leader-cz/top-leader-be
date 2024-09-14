@@ -55,8 +55,8 @@ public class ScheduledSessionService {
             ;
     }
 
-    public void deleteUserSessions(String username) {
-        Optional.of(scheduledSessionRepository.findAllByUsernameAndTimeIsAfter(username, LocalDateTime.now()))
+    public void deleteUserCoachedSessions(String username) {
+        Optional.of(scheduledSessionRepository.findAllByUsernameAndTimeIsAfterAndIsPrivateIsFalse(username, LocalDateTime.now()))
             .filter(not(List::isEmpty))
             .ifPresent(l -> l.forEach(s -> {
                 creditService.cancelSession(s.getId());

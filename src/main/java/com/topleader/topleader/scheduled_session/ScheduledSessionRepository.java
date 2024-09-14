@@ -16,6 +16,7 @@ public interface ScheduledSessionRepository extends JpaRepository<ScheduledSessi
 
     List<ScheduledSession> findAllByCoachUsernameAndTimeIsAfter(String coach, LocalDateTime time);
 
+    List<ScheduledSession> findAllByUsernameAndTimeIsAfterAndIsPrivateIsFalse(String username, LocalDateTime now);
     List<ScheduledSession> findAllByUsernameAndTimeIsAfter(String username, LocalDateTime now);
 
     List<ScheduledSession> findAllByTimeBeforeAndPaidIsFalse(LocalDateTime time);
