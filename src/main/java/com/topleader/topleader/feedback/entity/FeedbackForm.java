@@ -7,6 +7,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.util.converter.SetConverter;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 
@@ -17,6 +18,7 @@ import java.util.List;
 @Data
 @Entity
 @Accessors(chain = true)
+@EqualsAndHashCode(of = {"id"})
 @ToString(of={"id", "title", "description", "validTo"})
 public class FeedbackForm {
 

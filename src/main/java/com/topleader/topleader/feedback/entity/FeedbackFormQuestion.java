@@ -11,6 +11,7 @@ import java.io.Serializable;
 @Data
 @Entity
 @Accessors(chain = true)
+@EqualsAndHashCode(of = {"id"})
 @ToString(of={"id", "form", "question", "type", "required"})
 public class FeedbackFormQuestion {
 
