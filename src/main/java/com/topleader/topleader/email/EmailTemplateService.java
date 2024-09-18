@@ -59,6 +59,42 @@ public class EmailTemplateService {
     private final ScheduledSessionService sessionService;
 
 
+    public void sendBookingAlertPrivateSessionEmail(Long sessionId) {
+        final var session = sessionService.getSessionData(sessionId)
+            .orElseThrow(NotFoundException::new);
+
+        log.info("Sending reservation alert for: [{}]", session);
+
+        final var user = userRepository.findById(session.getUsername())
+            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
+
+        final var eventId = "session-" + sessionId;
+
+        emailService.sendEmail(
+            user.getUsername(),
+            subjectUserInvitations.getOrDefault(user.getLocale(),
+                defaultLocale),
+            velocityService.getMessage(
+                new HashMap<>(
+                    Map.of(
+                        "firstName", user.getFirstName(),
+                        "lastName", user.getLastName(),
+                        "time", session.getTime().toString(),
+                        "link", appUrl)
+                ),
+                parseUserTemplateName(user.getLocale())
+            ),
+            iCalService.createCalendarPrivateEvent(
+                session.getTime(),
+                session.getTime().plusHours(1),
+                user.getUsername(),
+                user.getFirstName() + " " + user.getLastName(),
+                "Private session",
+                eventId
+            )
+        );
+    }
+
     public void sendBookingAlertEmail(Long sessionId) {
         final var session = sessionService.getSessionData(sessionId)
             .orElseThrow(NotFoundException::new);
@@ -98,7 +134,7 @@ public class EmailTemplateService {
 
         emailService.sendEmail(
             user.getUsername(),
-            subjectUserInvitations.getOrDefault(coach.getLocale(),
+            subjectUserInvitations.getOrDefault(user.getLocale(),
                 defaultLocale),
             velocityService.getMessage(
                 new HashMap<>(
@@ -164,7 +200,7 @@ public class EmailTemplateService {
 
         emailService.sendEmail(
             user.getUsername(),
-            subjects.getOrDefault(coach.getLocale(),
+            subjects.getOrDefault(user.getLocale(),
                 defaultLocale),
             velocityService.getMessage(
                 new HashMap<>(
@@ -184,6 +220,43 @@ public class EmailTemplateService {
                 user.getUsername(),
                 user.getFirstName() + " " + user.getLastName(),
                 "Session with " + coach.getFirstName() + " " + coach.getLastName(),
+                eventId
+            )
+        );
+    }
+
+    public void sendCancelAlertPrivateSessionEmail(Long sessionId) {
+
+        final var session = sessionService.getSessionData(sessionId)
+            .orElseThrow(NotFoundException::new);
+
+        log.info("Sending cancel alert for: [{}]", session);
+
+        final var user = userRepository.findById(session.getUsername())
+            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
+
+        final var eventId = "session-" + sessionId;
+
+        emailService.sendEmail(
+            user.getUsername(),
+            subjects.getOrDefault(user.getLocale(),
+                defaultLocale),
+            velocityService.getMessage(
+                new HashMap<>(
+                    Map.of(
+                        "firstName", user.getFirstName(),
+                        "lastName", user.getLastName(),
+                        "time", session.getTime().toString(),
+                        "link", appUrl)
+                ),
+                "templates/reservation/user-cancel.vm"
+            ),
+            iCalService.cancelCalendarPrivateEvent(
+                session.getTime(),
+                session.getTime().plusHours(1),
+                user.getUsername(),
+                user.getFirstName() + " " + user.getLastName(),
+                "Private session",
                 eventId
             )
         );

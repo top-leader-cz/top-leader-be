@@ -125,6 +125,77 @@ public class ICalService {
             .getFluentTarget();
     }
 
+    public Calendar createCalendarPrivateEvent(
+        LocalDateTime start,
+        LocalDateTime end,
+        String client,
+        String clientName,
+        String eventName,
+        String eventId
+    ) {
+        final var calendar = baseCalendarPrivateSessionEvent(start, end, client, clientName, eventName, eventId, Method.VALUE_REQUEST);
+        log.debug(calendar.toString());
+        return calendar;
+    }
+
+    public Calendar cancelCalendarPrivateEvent(
+        LocalDateTime start,
+        LocalDateTime end,
+        String client,
+        String clientName,
+        String eventName,
+        String eventId
+    ) {
+        return baseCalendarPrivateSessionEvent(start, end, client, clientName, eventName, eventId, Method.VALUE_CANCEL);
+    }
+
+    public Calendar baseCalendarPrivateSessionEvent(
+        LocalDateTime start,
+        LocalDateTime end,
+        String client,
+        String clientName,
+        String eventName,
+        String eventId,
+        String method
+    ) {
+
+        // Create a TimeZone
+        final var registry = TimeZoneRegistryFactory.getInstance().createRegistry();
+        final var timezone = registry.getTimeZone("UTC");
+        final var tz = timezone.getVTimeZone();
+
+        return new Calendar().withProdId("-//Ben Fortuna//iCal4j 1.0//EN")
+            .withDefaults()
+            .withProperty(new Method(method))
+            .withComponent(
+                new VEvent(ZonedDateTime.of(start, ZoneOffset.UTC), ZonedDateTime.of(end, ZoneOffset.UTC), eventName)
+                    .withProperty(tz.getProperty(Property.TZID).orElseThrow())
+                    .withProperty(new Uid(eventId))
+                    .withProperty(
+                        new Organizer(URI.create(MAILTO + defaultFrom))
+                            .withParameter(new Cn(defaultFrom))
+                            .getFluentTarget())
+                    .withProperty(
+                        new Attendee(URI.create(MAILTO + client))
+                            .withParameter(Role.REQ_PARTICIPANT)
+                            .withParameter(new Cn(clientName))
+                            .withParameter(new CuType(CuType.INDIVIDUAL.getValue()))
+                            .withParameter(new Role(Role.REQ_PARTICIPANT.getValue()))
+                            .withParameter(new PartStat(PartStat.NEEDS_ACTION.getValue()))
+                            .withParameter(new Rsvp(true))
+                            .withParameter(new XNoGuestsParameter())
+                            .getFluentTarget())
+                    .withProperty(new Description(eventName))
+                    .withProperty(new Priority(Priority.VALUE_MEDIUM))
+                    .withProperty(new Clazz(Clazz.VALUE_PUBLIC))
+                    .withProperty(new Status(Status.VALUE_CONFIRMED))
+                    .withProperty(new Sequence(0))
+                    .withProperty(new Transp(Transp.VALUE_OPAQUE))
+                    .getFluentTarget()
+            )
+            .getFluentTarget();
+    }
+
     public static class XNoGuestsParameter extends Parameter {
         public XNoGuestsParameter() {
             super("X-NUM-GUESTS");

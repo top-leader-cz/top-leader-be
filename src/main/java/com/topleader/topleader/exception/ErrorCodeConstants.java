@@ -33,6 +33,7 @@ public final class ErrorCodeConstants {
     public static final String FROM_ALREADY_SUBMITTED = "form.already.submitted";
 
     public static final String USER_NOT_FOUND = "user.not.found";
+    public static final String UNABLE_TO_DELETE = "unable.to.delete";
 
 
 }
