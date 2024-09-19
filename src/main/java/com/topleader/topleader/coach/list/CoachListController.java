@@ -162,9 +162,11 @@ public class CoachListController {
     public List<LocalDateTime> getCoachAvailability(
         @PathVariable String username,
         @RequestParam LocalDateTime from,
-        @RequestParam LocalDateTime to
-    ) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
+        @RequestParam LocalDateTime to,
+        @AuthenticationPrincipal UserDetails loggedUser
+
+        ) {
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(loggedUser.getUsername()));
 
         final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
             .map(ScheduledSession::getTime)
