@@ -19,7 +19,7 @@ import java.util.List;
 @Entity
 @Accessors(chain = true)
 @EqualsAndHashCode(of = {"id"})
-@ToString(of={"id", "title", "description", "validTo"})
+@ToString(of = {"id", "title", "description", "validTo"})
 public class FeedbackForm {
 
     @Id
@@ -52,7 +52,6 @@ public class FeedbackForm {
 
     @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Recipient> recipients = new ArrayList<>();
-
 
 
 }

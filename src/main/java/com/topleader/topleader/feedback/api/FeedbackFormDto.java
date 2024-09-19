@@ -61,7 +61,8 @@ public class FeedbackFormDto {
                 .setValidTo(feedbackForm.getValidTo())
                 .setQuestions(questions)
                 .setRecipients(recipients)
-                .setSummary(feedbackForm.getSummary());
+                .setSummary(feedbackForm.getSummary())
+                .setDraft(feedbackForm.isDraft());
     }
 
     public static FeedbackFormDto witAnswer(FeedbackForm feedbackForm) {

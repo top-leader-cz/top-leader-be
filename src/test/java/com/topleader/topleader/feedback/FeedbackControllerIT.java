@@ -187,6 +187,23 @@ class FeedbackControllerIT extends IntegrationTest {
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
     @WithMockUser(username = "user", authorities = "USER")
+    void removeQuestion() throws Exception {
+        var result = mvc.perform(put("/api/latest/feedback/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.readFileAsString("feedback/json/remove-question-request.json")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("feedback/json/remove-question-response.json");
+
+
+    }
+
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @WithMockUser(username = "user", authorities = "USER")
     void deleteForm() throws Exception {
         mvc.perform(delete("/api/latest/feedback/1"))
                 .andExpect(status().isOk());
