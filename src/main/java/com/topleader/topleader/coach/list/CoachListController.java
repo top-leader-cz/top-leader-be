@@ -120,7 +120,7 @@ public class CoachListController {
     }
 
     private void scheduleSession(String clientName, String coachName, LocalDateTime time, Boolean useFreeBusy) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(coachName));
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(clientName));
 
         final var shiftedTime = time
             .atZone(userZoneId)
