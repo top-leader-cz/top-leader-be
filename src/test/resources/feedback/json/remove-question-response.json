@@ -9,7 +9,7 @@
   "questions": [
     {
       "key": "question.key.1",
-      "type": "SCALE",
+      "type": "PARAGRAPH",
       "required": true,
       "answers": []
     }

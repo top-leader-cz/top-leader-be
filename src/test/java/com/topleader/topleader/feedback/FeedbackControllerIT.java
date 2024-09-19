@@ -198,7 +198,7 @@ class FeedbackControllerIT extends IntegrationTest {
 
         var expected = TestUtils.readFileAsString("feedback/json/remove-question-response.json");
 
-
+        TestUtils.assertJsonEquals(result, expected);
     }
 
     @Test
