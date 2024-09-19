@@ -12,8 +12,7 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Data
 @Entity
@@ -44,14 +43,24 @@ public class FeedbackForm {
     @JoinColumn(name = "username")
     private User user;
 
-    @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<FeedbackFormQuestion> questions = new ArrayList<>();
 
     @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<FeedbackFormAnswer> answers = new ArrayList<>();
 
-    @OneToMany(mappedBy = "form", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @OneToMany(mappedBy = "form", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<Recipient> recipients = new ArrayList<>();
+
+    public void updateQuestions(Collection<FeedbackFormQuestion> questions) {
+        this.questions.clear();
+        this.questions.addAll(questions);
+    }
+
+    public void updateRecipients(Collection<Recipient> recipients) {
+        this.recipients.clear();
+        this.recipients.addAll(recipients);
+    }
 
 
 }

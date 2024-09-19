@@ -5,9 +5,11 @@ import com.topleader.topleader.feedback.api.*;
 
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.Question;
+import com.topleader.topleader.feedback.repository.FeedbackFormQuestionRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +18,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 
+@Slf4j
 @RestController
 @RequestMapping("/api/latest/feedback")
 @RequiredArgsConstructor
@@ -72,8 +75,8 @@ public class FeedbackController {
         savedForm.setTitle(request.getTitle());
         savedForm.setValidTo(request.getValidTo());
         savedForm.setDescription(request.getDescription());
-        savedForm.setQuestions(FeedbackFormRequest.toQuestions(request.getQuestions(), savedForm));
-        savedForm.setRecipients(FeedbackFormRequest.toRecipients(request.getRecipients(), savedForm));
+        savedForm.updateQuestions(FeedbackFormRequest.toQuestions(request.getQuestions(), savedForm));
+        savedForm.updateRecipients(FeedbackFormRequest.toRecipients(request.getRecipients(), savedForm));
         savedForm.setDraft(request.isDraft());
         var form = feedbackService.saveForm(savedForm);
         if(!request.isDraft()) {
