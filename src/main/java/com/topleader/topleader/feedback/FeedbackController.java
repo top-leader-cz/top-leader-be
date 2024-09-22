@@ -72,6 +72,9 @@ public class FeedbackController {
     @Transactional
     public FeedbackFormDto updateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
         var savedForm = feedbackService.fetchForm(id);
+        var defaultKeys = feedbackService.fetchOptions().stream().map(Question::getKey)
+                .collect(Collectors.toList());
+        feedbackService.updateQuestions(toQuestions(request.getQuestions(), defaultKeys));
         savedForm.setTitle(request.getTitle());
         savedForm.setValidTo(request.getValidTo());
         savedForm.setDescription(request.getDescription());

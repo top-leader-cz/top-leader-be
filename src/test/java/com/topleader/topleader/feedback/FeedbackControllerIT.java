@@ -207,7 +207,27 @@ class FeedbackControllerIT extends IntegrationTest {
         TestUtils.assertJsonEquals(result, expected);
 
         Assertions.assertThat(feedackFormQuestionRepository.findAll()).hasSize(1);
+        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(0);
+    }
 
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @WithMockUser(username = "user", authorities = "USER")
+    void customQuestion() throws Exception {
+        var result = mvc.perform(put("/api/latest/feedback/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.readFileAsString("feedback/json/custom-question-request.json")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("feedback/json/custom-question-response.json");
+
+        TestUtils.assertJsonEquals(result, expected);
+
+        Assertions.assertThat(feedackFormQuestionRepository.findAll()).hasSize(2);
+        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(0);
     }
 
     @Test
