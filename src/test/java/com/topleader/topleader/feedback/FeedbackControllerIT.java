@@ -3,21 +3,24 @@ package com.topleader.topleader.feedback;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
-import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
 import com.topleader.topleader.feedback.repository.FeedbackFormQuestionRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
+import com.topleader.topleader.feedback_notification.FeedbackNotificationRepository;
 import com.topleader.topleader.user.UserRepository;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.data.TemporalUnitWithinOffset;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.util.List;
 import java.util.Set;
 
+import static com.topleader.topleader.feedback_notification.FeedbackNotification.Status.NEW;
 import static com.topleader.topleader.user.User.Authority.RESPONDENT;
 import static com.topleader.topleader.user.User.Status.REQUESTED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -36,6 +39,9 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Autowired
     FeedbackFormQuestionRepository feedackFormQuestionRepository;
+
+    @Autowired
+    FeedbackNotificationRepository feedbackNotificationRepository;
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/feedback-answers.sql"})
@@ -111,7 +117,16 @@ class FeedbackControllerIT extends IntegrationTest {
         Assertions.assertThat(userRepository.findById("ilja@bily.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("ilja@bily.cz", "ilja", "ilja", Set.of(RESPONDENT), REQUESTED);
-   }
+
+        final var notification = feedbackNotificationRepository.findByFeedbackFormId(2L).orElseThrow();
+
+        Assertions.assertThat(notification)
+            .extracting("id", "username", "status", "processedTime")
+            .containsExactly(2L, "jakub.svezi@dummy.com", NEW, null);
+
+        Assertions.assertThat(notification.getNotificationTime()).isCloseTo(LocalDateTime.now().plusDays(5), new TemporalUnitWithinOffset(1, ChronoUnit.HOURS));
+
+    }
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
@@ -188,6 +203,15 @@ class FeedbackControllerIT extends IntegrationTest {
         Assertions.assertThat(userRepository.findById("kuku@kuku.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("kuku@kuku.cz", "kuku", "kuku", Set.of(RESPONDENT), REQUESTED);
+
+        final var notification = feedbackNotificationRepository.findByFeedbackFormId(1L).orElseThrow();
+
+        Assertions.assertThat(notification)
+            .extracting("id", "username", "status", "processedTime")
+            .containsExactly(1L, "jakub.svezi@dummy.com", NEW, null);
+
+        Assertions.assertThat(notification.getNotificationTime()).isCloseTo(LocalDateTime.now().plusDays(5), new TemporalUnitWithinOffset(1, ChronoUnit.HOURS));
+
     }
 
     @Test
@@ -207,7 +231,7 @@ class FeedbackControllerIT extends IntegrationTest {
         TestUtils.assertJsonEquals(result, expected);
 
         Assertions.assertThat(feedackFormQuestionRepository.findAll()).hasSize(1);
-        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(0);
+        Assertions.assertThat(greenMail.getReceivedMessages()).isEmpty();
     }
 
     @Test
@@ -227,7 +251,7 @@ class FeedbackControllerIT extends IntegrationTest {
         TestUtils.assertJsonEquals(result, expected);
 
         Assertions.assertThat(feedackFormQuestionRepository.findAll()).hasSize(2);
-        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(0);
+        Assertions.assertThat(greenMail.getReceivedMessages()).isEmpty();
     }
 
     @Test

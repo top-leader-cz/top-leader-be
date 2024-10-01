@@ -1,6 +1,5 @@
 package com.topleader.topleader.feedback;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.email.EmailService;
@@ -15,10 +14,9 @@ import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
+import com.topleader.topleader.feedback_notification.FeedbackNotificationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.util.common.FileUtils;
-import com.topleader.topleader.util.common.Translation;
 import com.topleader.topleader.util.common.TranslationUtils;
 import com.topleader.topleader.util.common.user.UserUtils;
 import io.vavr.control.Try;
@@ -66,6 +64,8 @@ public class FeedbackService {
     private final AiClient aiClient;
 
     private final ObjectMapper objectMapper;
+
+    private final FeedbackNotificationService feedbackNotificationService;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -150,6 +150,8 @@ public class FeedbackService {
 
                     emailService.sendEmail(r.recipient(), subject, body);
                 });
+
+        feedbackNotificationService.registerNotification(data.getFormId());
     }
 
     @SneakyThrows
