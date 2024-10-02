@@ -27,6 +27,8 @@ import static com.topleader.topleader.exception.ErrorCodeConstants.USER_NOT_FOUN
 @RequiredArgsConstructor
 public class EmailTemplateService {
 
+    private static final String PRIVATE_SESSION_EVENT_NAME = "Private session - TopLeader";
+
     private static final Map<String, String> subjects = Map.of(
         "en", "New Booking Alert on TopLeader",
         "cs", "Upozornění na novou rezervaci na TopLeader",
@@ -89,7 +91,7 @@ public class EmailTemplateService {
                 session.getTime().plusHours(1),
                 user.getUsername(),
                 user.getFirstName() + " " + user.getLastName(),
-                "Private session",
+                PRIVATE_SESSION_EVENT_NAME,
                 eventId
             )
         );
@@ -256,7 +258,7 @@ public class EmailTemplateService {
                 session.getTime().plusHours(1),
                 user.getUsername(),
                 user.getFirstName() + " " + user.getLastName(),
-                "Private session",
+                PRIVATE_SESSION_EVENT_NAME,
                 eventId
             )
         );
