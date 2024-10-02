@@ -23,6 +23,8 @@ insert into fb_recipient(id, form_id, recipient, token, submitted)
 values (nextval('fb_recipient_id_seq'), 1, 'pepa@cerny.cz', 'token', false);
 
 insert into fb_recipient(id, form_id, recipient, token, submitted)
-values (nextval('fb_recipient_id_seq'), 1, 'ilja@bily.cz', 'token2', false)
+values (nextval('fb_recipient_id_seq'), 1, 'ilja@bily.cz', 'token2', false);
 
+insert into feedback_notification(id, username, notification_time, feedback_form_id, processed_time, status)
+values (nextval('feedback_notification_id_seq'), 'jakub.svezi@dummy.com', '2023-10-12', 1, '2023-10-12', 'PROCESSED');
 
