@@ -19,5 +19,6 @@ top-leader:
   app-url: http://app-test-url
   feedback:
     summary-limit: 1
+  default-from: top-leader
 
 
