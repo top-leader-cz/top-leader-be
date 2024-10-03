@@ -27,8 +27,9 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: true
   mail:
-    host: smtp.gmail.com
-    port: 587
+    host: smtpout.secureserver.net
+    port: 25
+    username: milan.vlcek@topleader.io
     properties:
       mail:
         transport:
@@ -36,7 +37,7 @@ spring:
         smtp:
           starttls:
             enable: true
-            required: true
+            required: false
           auth: true
   servlet:
     multipart:
@@ -53,7 +54,7 @@ top-leader:
   app-url: http://localhost:8080
   supported-invitations: en, cs, fr, de
   default-locale: en
-  default-from: top-leader
+  default-from: platform@topleader.io
 
 google:
   application-name: "qa.topleaderplatform.io"
