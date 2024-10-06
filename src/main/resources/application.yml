@@ -27,17 +27,18 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: true
   mail:
-    host: smtp.gmail.com
+    host: smtp-relay.gmail.com
     port: 587
     properties:
       mail:
         transport:
           protocol: smtp
         smtp:
+          auth: true
           starttls:
             enable: true
             required: true
-          auth: true
+
   servlet:
     multipart:
       max-file-size: 10MB
