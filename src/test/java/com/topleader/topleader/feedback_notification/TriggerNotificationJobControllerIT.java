@@ -2,6 +2,7 @@ package com.topleader.topleader.feedback_notification;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.TemporalUnitWithinOffset;
@@ -38,7 +39,7 @@ class TriggerNotificationJobControllerIT extends IntegrationTest {
         assertThat(feedbackNotification2.getStatus()).isEqualTo(FeedbackNotification.Status.PROCESSED);
 
         assertThat(feedbackNotification1.getProcessedTime()).isCloseToUtcNow(new TemporalUnitWithinOffset(5, ChronoUnit.MINUTES));
-        assertThat(feedbackNotification2.getProcessedTime()).isCloseToUtcNow(new TemporalUnitWithinOffset(5, ChronoUnit.MINUTES));
+        assertThat(feedbackNotification2.getManualAvailableAfter()).isCloseTo(LocalDateTime.now().plusDays(3), new TemporalUnitWithinOffset(2, ChronoUnit.HOURS));
 
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
 
