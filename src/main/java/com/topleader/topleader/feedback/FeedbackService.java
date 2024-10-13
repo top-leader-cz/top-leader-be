@@ -93,7 +93,7 @@ public class FeedbackService {
     }
 
     public FeedbackForm saveForm(FeedbackForm form) {
-        return feedbackFormRepository.save(form);
+        return feedbackFormRepository.saveAndFlush(form);
     }
 
     public void updateQuestions(List<Question> questions) {
