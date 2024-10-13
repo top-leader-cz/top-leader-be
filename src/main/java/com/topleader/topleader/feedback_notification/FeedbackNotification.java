@@ -36,18 +36,25 @@ public class FeedbackNotification {
 
     private String username;
 
+    private LocalDateTime createdAt;
+
     private LocalDateTime notificationTime;
 
     private Long feedbackFormId;
 
     private LocalDateTime processedTime;
 
+    private LocalDateTime manualAvailableAfter;
+
+    private LocalDateTime manualReminderSentTime;
+
     @Enumerated(EnumType.STRING)
     private Status status;
 
     public enum Status {
         NEW,
-        PROCESSED
+        PROCESSED,
+        MANUAL_SENT
     }
 
 }

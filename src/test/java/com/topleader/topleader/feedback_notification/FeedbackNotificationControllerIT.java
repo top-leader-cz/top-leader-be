@@ -26,10 +26,12 @@ class FeedbackNotificationControllerIT extends IntegrationTest {
             .andExpect(content().json(
                 """
                     {
-                      "notificationTime": "2023-10-12T02:00:00",
+                      "automaticReminderTime": "2023-10-12T00:00:00",
+                      "manualReminderAllowedAfter": null,
                       "feedbackFormId": 1,
-                      "processedTime": "2023-10-12T02:00:00",
-                      "status": "PROCESSED"
+                      "automaticReminderSentTime": "2023-10-12T00:00:00",
+                      "manualReminderAllowed": true,
+                      "status": "AUTOMATIC_REMINDER_SENT"
                     }
                     """
                 )
