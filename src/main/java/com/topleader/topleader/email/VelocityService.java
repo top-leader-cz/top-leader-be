@@ -13,6 +13,7 @@ import java.util.Map;
 public class VelocityService {
 
     private final VelocityEngine velocityEngine;
+
     public String getMessage(final Map<String, Object> parameters, final String templatePath) {
         VelocityContext context = new VelocityContext(parameters);
 

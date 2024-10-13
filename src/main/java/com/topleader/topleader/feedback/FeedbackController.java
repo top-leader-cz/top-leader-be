@@ -1,11 +1,12 @@
 package com.topleader.topleader.feedback;
 
 
+import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.feedback.api.*;
 
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.Question;
-import com.topleader.topleader.feedback.repository.FeedbackFormQuestionRepository;
+import com.topleader.topleader.util.user.UserDetailUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,8 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.topleader.topleader.exception.ErrorCodeConstants.USER_NO_AUTHORIZED;
+
 
 @Slf4j
 @RestController
@@ -26,12 +29,13 @@ public class FeedbackController {
 
     private final FeedbackService feedbackService;
 
-
     @Transactional
     @GetMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormDto getForm(@PathVariable long id) {
-        return FeedbackFormDto.witAnswer(feedbackService.fetchForm(id));
+        var from = feedbackService.fetchForm(id);
+        validate(from.getUser().getUsername());
+        return FeedbackFormDto.witAnswer(from);
     }
 
     @Transactional
@@ -72,6 +76,7 @@ public class FeedbackController {
     @Transactional
     public FeedbackFormDto updateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
         var savedForm = feedbackService.fetchForm(id);
+        validate(savedForm.getUser().getUsername());
         var defaultKeys = feedbackService.fetchOptions().stream().map(Question::getKey)
                 .collect(Collectors.toList());
         feedbackService.updateQuestions(toQuestions(request.getQuestions(), defaultKeys));
@@ -88,9 +93,12 @@ public class FeedbackController {
         return feedbackService.toFeedbackFormDto(form);
     }
 
+    @Transactional
     @DeleteMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
-    public void deleteForm(@PathVariable long id) {
+    public void deleteForm( @PathVariable long id) {
+        var savedForm = feedbackService.fetchForm(id);
+        validate(savedForm.getUser().getUsername());
         feedbackService.deleteForm(id);
     }
 
@@ -106,6 +114,14 @@ public class FeedbackController {
                 .setRecipients(form.getRecipients().stream()
                         .map(r -> new FeedbackData.Recipient(byUsername.get(r.getRecipient()).id(), r.getRecipient(), r.getToken()))
                         .collect(Collectors.toList()));
+    }
+
+
+    private void validate(String fromUser) {
+        var loggedUser = UserDetailUtils.getLoggedUsername();
+        if(!fromUser.equals(loggedUser)) {
+            throw new ApiValidationException(USER_NO_AUTHORIZED, "user", loggedUser, "User is not allowed to access this form");
+        }
     }
 
 }

@@ -8,14 +8,17 @@ import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.feedback_notification.FeedbackNotificationRepository;
 import com.topleader.topleader.user.UserRepository;
+
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.TemporalUnitWithinOffset;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Set;
@@ -45,7 +48,7 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/feedback-answers.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithUserDetails("jakub.svezi@dummy.com")
     void getForm() throws Exception {
         var result = mvc.perform(get("/api/latest/feedback/1"))
                 .andExpect(status().isOk())
@@ -59,8 +62,17 @@ class FeedbackControllerIT extends IntegrationTest {
     }
 
     @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/feedback-answers.sql"})
+    @WithMockUser(authorities = "USER")
+    void getFormAuthorizationFailed() throws Exception {
+       mvc.perform(get("/api/latest/feedback/1"))
+                .andExpect(status().is4xxClientError());
+
+   }
+
+    @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithUserDetails("jakub.svezi@dummy.com")
     void getForms() throws Exception {
         var result = mvc.perform(get("/api/latest/feedback/user/jakub.svezi@dummy.com"))
                 .andExpect(status().isOk())
@@ -76,7 +88,7 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithUserDetails("jakub.svezi@dummy.com")
         void createForm() throws Exception {
         var result = mvc.perform(post("/api/latest/feedback")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,8 +123,8 @@ class FeedbackControllerIT extends IntegrationTest {
 
         Assertions.assertThat(userRepository.findAll()).hasSize(3);
         Assertions.assertThat(userRepository.findById("pepa@cerny.cz").orElseThrow())
-               .extracting("username", "lastName", "firstName", "authorities", "status")
-               .containsExactly("pepa@cerny.cz", "pepa", "pepa", Set.of(RESPONDENT), REQUESTED);
+                .extracting("username", "lastName", "firstName", "authorities", "status")
+                .containsExactly("pepa@cerny.cz", "pepa", "pepa", Set.of(RESPONDENT), REQUESTED);
 
         Assertions.assertThat(userRepository.findById("ilja@bily.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
@@ -121,8 +133,8 @@ class FeedbackControllerIT extends IntegrationTest {
         final var notification = feedbackNotificationRepository.findByFeedbackFormId(2L).orElseThrow();
 
         Assertions.assertThat(notification)
-            .extracting("id", "username", "status", "processedTime")
-            .containsExactly(2L, "jakub.svezi@dummy.com", NEW, null);
+                .extracting("id", "username", "status", "processedTime")
+                .containsExactly(2L, "jakub.svezi@dummy.com", NEW, null);
 
         Assertions.assertThat(notification.getNotificationTime()).isCloseTo(LocalDateTime.now().plusDays(5), new TemporalUnitWithinOffset(1, ChronoUnit.HOURS));
 
@@ -130,7 +142,7 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithUserDetails("jakub.svezi@dummy.com")
     void createFormNewQuestion() throws Exception {
         var result = mvc.perform(post("/api/latest/feedback")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -144,11 +156,11 @@ class FeedbackControllerIT extends IntegrationTest {
 
         Assertions.assertThat(questionRepository.getDefaultOptions()).hasSize(2);
         TestUtils.assertJsonEquals(result, expected);
-   }
+    }
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/custom-questions.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithUserDetails("jakub.svezi@dummy.com")
     void createFormNewQuestionAlreadyExits() throws Exception {
         var result = mvc.perform(post("/api/latest/feedback")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -167,9 +179,9 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithUserDetails("jakub.svezi@dummy.com")
     void updateForm() throws Exception {
-      var result = mvc.perform(put("/api/latest/feedback/1")
+        var result = mvc.perform(put("/api/latest/feedback/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(TestUtils.readFileAsString("feedback/json/update-form-request.json")))
                 .andExpect(status().isOk())
@@ -207,8 +219,8 @@ class FeedbackControllerIT extends IntegrationTest {
         final var notification = feedbackNotificationRepository.findByFeedbackFormId(1L).orElseThrow();
 
         Assertions.assertThat(notification)
-            .extracting("id", "username", "status", "processedTime")
-            .containsExactly(1L, "jakub.svezi@dummy.com", NEW, null);
+                .extracting("id", "username", "status", "processedTime")
+                .containsExactly(1L, "jakub.svezi@dummy.com", NEW, null);
 
         Assertions.assertThat(notification.getNotificationTime()).isCloseTo(LocalDateTime.now().plusDays(5), new TemporalUnitWithinOffset(1, ChronoUnit.HOURS));
 
@@ -216,7 +228,7 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithUserDetails("jakub.svezi@dummy.com")
     void removeQuestion() throws Exception {
         var result = mvc.perform(put("/api/latest/feedback/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -236,7 +248,7 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithUserDetails("jakub.svezi@dummy.com")
     void customQuestion() throws Exception {
         var result = mvc.perform(put("/api/latest/feedback/1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -256,7 +268,7 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
-    @WithMockUser(username = "user", authorities = "USER")
+    @WithUserDetails("jakub.svezi@dummy.com")
     void deleteForm() throws Exception {
         mvc.perform(delete("/api/latest/feedback/1"))
                 .andExpect(status().isOk());

@@ -1,5 +1,5 @@
-insert into users (username, first_name, last_name, password, time_zone, status)
-values ('jakub.svezi@dummy.com', 'Jakub', 'Svezi','$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO',  'Europe/Prague', 'PENDING');
+insert into users (username, first_name, last_name, password, time_zone, status, authorities)
+values ('jakub.svezi@dummy.com', 'Jakub', 'Svezi','$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO',  'Europe/Prague', 'AUTHORIZED', '["USER"]');
 
 insert into fb_question (key, default_question)
 values ('question.key.1', true);

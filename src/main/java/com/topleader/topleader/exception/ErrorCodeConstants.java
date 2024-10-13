@@ -34,6 +34,7 @@ public final class ErrorCodeConstants {
 
     public static final String USER_NOT_FOUND = "user.not.found";
     public static final String UNABLE_TO_DELETE = "unable.to.delete";
+    public static final String USER_NO_AUTHORIZED = "user.not.authorized";
 
 
 }
