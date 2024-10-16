@@ -38,8 +38,7 @@ public class UserInsightService {
         var username = userInfo.getUsername();
 
         var user = userRepository.findById(username).orElseThrow();
-        var userInsight = userInsightRepository.findById(username).orElse(new UserInsight());
-        userInsight.setUsername(username);
+        var userInsight = userInsightRepository.findById(username).orElse(new UserInsight().setUsername(username));
         var savedUserInsight = userInsightRepository.save(userInsight.setLeadershipPending(true).setAnimalSpiritPending(true));
         var leaderShip = CompletableFuture.supplyAsync(() -> aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
         var animalSpirit = CompletableFuture.supplyAsync(() -> aiClient.findAnimalSpirit(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
@@ -56,7 +55,7 @@ public class UserInsightService {
     }
 
     public UserInsight getInsight(String username) {
-        return userInsightRepository.findById(username).orElse(new UserInsight());
+        return userInsightRepository.findById(username).orElse(new UserInsight().setUsername(username));
     }
 
     public UserInsight save(UserInsight userInsight) {
@@ -70,8 +69,8 @@ public class UserInsightService {
     }
 
     public void generateTips(String username) {
-        var userInfo = userInfoRepository.findById(username).orElse(new UserInfo());
-        var userInsight = userInsightRepository.findById(username).orElse(new UserInsight());
+        var userInfo = userInfoRepository.findById(username).orElse(new UserInfo().setUsername(username));
+        var userInsight = userInsightRepository.findById(username).orElse(new UserInsight().setUsername(username));
 
         if (hasFilledOutStrengthsAndValues(userInfo) && shouldGenerateTips(userInsight)) {
             var savedUserInsight = userInsightRepository.save(userInsight.setDailyTipsPending(true));

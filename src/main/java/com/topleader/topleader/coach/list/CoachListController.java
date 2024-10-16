@@ -164,7 +164,6 @@ public class CoachListController {
         @RequestParam LocalDateTime from,
         @RequestParam LocalDateTime to,
         @AuthenticationPrincipal UserDetails loggedUser
-
         ) {
         final var userZoneId = getUserTimeZoneId(userRepository.findById(loggedUser.getUsername()));
 
