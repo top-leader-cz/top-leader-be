@@ -78,7 +78,7 @@ public class AiClient {
 
         var res =  chatClient.call(aiQuery);
         log.info("AI Summary response: {},", res);
-        return res;
+        return AiUtils.replaceNonJsonString(res);
     }
 
     public String generateUserPreviews(String username, List<String> actionsSteps) {
@@ -89,7 +89,7 @@ public class AiClient {
 
         var res =  chatClient.call(query);
         log.info("AI user preview response: {}  User:[{}]", res, username);
-        return res;
+        return AiUtils.replaceNonJsonString(res);
     }
 }
 
