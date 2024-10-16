@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class AiTest extends IntegrationTest {
+class AiTest extends IntegrationTest {
 
     @Autowired
     private ChatModel chatClient;
