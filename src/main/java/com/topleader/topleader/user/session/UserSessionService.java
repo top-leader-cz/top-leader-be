@@ -156,8 +156,7 @@ public class UserSessionService {
     public String handleUserPreview(String username, List<String> actionGoals) {
         var previews = Try.of(() -> {
                     var res = aiClient.generateUserPreviews(username, actionGoals);
-                    var json = res.replace("```json", StringUtils.EMPTY).replace("```", StringUtils.EMPTY);
-                    return objectMapper.readValue(json, new TypeReference<List<UserPreview>>() {
+                    return objectMapper.readValue(res, new TypeReference<List<UserPreview>>() {
                     });
                 })
                 .onFailure(e -> log.error("Failed to generate user preview for user: [{}] ", username, e))
