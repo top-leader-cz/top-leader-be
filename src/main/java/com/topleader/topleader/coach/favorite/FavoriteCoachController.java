@@ -26,4 +26,9 @@ public class FavoriteCoachController {
         return favoriteCoachService.getFavoriteCoaches(loggedUser.getUsername());
     }
 
+    @DeleteMapping("{coach}")
+    public void removeCoach(@AuthenticationPrincipal UserDetails loggedUser, @PathVariable String coach) {
+        favoriteCoachService.removeCoach(loggedUser.getUsername(), coach);
+    }
+
 }

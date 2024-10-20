@@ -24,4 +24,8 @@ public class FavoriteCoachService {
                 .map(favoriteCoach -> favoriteCoach.getId().getCoachUsername())
                 .collect(Collectors.toList());
     }
+
+    public void removeCoach(String username, String coachUsername) {
+        favoriteCoachRepository.deleteById(new FavoriteCoach.FavoriteCoachId(username, coachUsername));
+    }
 }

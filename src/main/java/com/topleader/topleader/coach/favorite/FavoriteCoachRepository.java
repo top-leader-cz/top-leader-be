@@ -7,4 +7,6 @@ import java.util.List;
 public interface FavoriteCoachRepository extends JpaRepository<FavoriteCoach, FavoriteCoach.FavoriteCoachId> {
 
     List<FavoriteCoach> findByUsername(String username);
+
+    void deleteById(FavoriteCoach.FavoriteCoachId id);
 }

@@ -8,14 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
 
-import java.util.List;
-
-import static net.bytebuddy.matcher.ElementMatchers.is;
-import static net.bytebuddy.matcher.ElementMatchers.nameContains;
 import static org.hamcrest.Matchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -49,9 +44,22 @@ class FavoriteCoachControllerIT extends IntegrationTest {
     public void getFavoriteCoach() throws Exception {
         mvc.perform(get("/api/latest/coach-favorite"))
                 .andExpect(status().isOk())
-                .andDo(print())
+
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$", hasItems("coach")));
+    }
+
+    @Test
+    @WithUserDetails("jakub.svezi@dummy.com")
+    public void removeFavoriteCoach() throws Exception {
+        mvc.perform(delete("/api/latest/coach-favorite/coach"))
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(favoriteCoachRepository.findAll())
+                .extracting( i -> i.getId().getCoachUsername())
+                .containsExactlyInAnyOrder("coach2");
+
+        Assertions.assertThat(favoriteCoachRepository.findByUsername("jakub.svezi@dummy.com")).isEmpty();
     }
 
 }
