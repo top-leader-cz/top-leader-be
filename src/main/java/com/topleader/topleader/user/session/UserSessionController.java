@@ -3,7 +3,7 @@ package com.topleader.topleader.user.session;
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
-import com.topleader.topleader.user.userinfo.UserInfo;
+import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.validation.Valid;
@@ -14,11 +14,11 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -64,6 +64,14 @@ public class UserSessionController {
         var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale("en")).getLocale();
         return split(aiClient.findActionsSteps(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal()));
     }
+
+
+    @Secured({"ADMIN", "HR", "USER"})
+    @GetMapping("/generate-recommended-growth")
+    public List<RecommendedGrowth> generateRecommendedGrowth(@AuthenticationPrincipal UserDetails user) {
+        return userSessionService.generateRecommendedGrowths(user.getUsername());
+    }
+
 
     Collection<String> split(String data) {
         return Arrays.stream(data

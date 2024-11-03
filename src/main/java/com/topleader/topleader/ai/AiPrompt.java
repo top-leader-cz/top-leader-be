@@ -25,7 +25,8 @@ public class AiPrompt {
         LONG_TERM_GOALS,
         ACTIONS_STEPS,
         FEEDBACK_SUMMARY,
-        USER_PREVIEWS
+        USER_PREVIEWS,
+        RECOMMENDED_GROWTH
     }
 
 }

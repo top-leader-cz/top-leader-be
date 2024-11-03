@@ -1,4 +1,4 @@
-package com.topleader.topleader.user.session;
+package com.topleader.topleader.user.session.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;

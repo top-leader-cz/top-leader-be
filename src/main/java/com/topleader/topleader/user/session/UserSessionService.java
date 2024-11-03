@@ -6,15 +6,20 @@ package com.topleader.topleader.user.session;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.ai.AiClient;
+import com.topleader.topleader.company.Company;
+import com.topleader.topleader.company.CompanyRepository;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.user.UserDetailService;
+import com.topleader.topleader.user.session.domain.RecommendedGrowth;
+import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.UserInsightService;
 import com.topleader.topleader.util.common.user.UserUtils;
 import io.vavr.control.Try;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
 import java.time.LocalDateTime;
@@ -24,11 +29,10 @@ import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.hibernate.engine.internal.Collections;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -62,6 +66,8 @@ public class UserSessionService {
     private final ObjectMapper objectMapper;
 
     private final RestTemplate restTemplate;
+
+    private final CompanyRepository companyRepository;
 
     @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
@@ -283,5 +289,29 @@ public class UserSessionService {
                         .toList(),
                 userInfo.getLastReflection()
         );
+    }
+
+    @SneakyThrows
+    public List<RecommendedGrowth> generateRecommendedGrowths(String username) {
+        var user = userDetailService.getUser(username)
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
+        var company = companyRepository.findById(user.getCompanyId()).orElse(Company.empty());
+
+        var businessStrategy = company.getBusinessStrategy();
+        var aspiredPosition = user.getAspiredPosition();
+        var aspiredCompetency = user.getAspiredCompetency();
+        if (!canGenerateRecommendedGrowths(businessStrategy, aspiredPosition, aspiredCompetency)) {
+            return null;
+        }
+        return Try.of(() -> {
+                    var res = aiClient.generateRecommendedGrowths(user, businessStrategy, aspiredPosition, aspiredCompetency);
+                    return objectMapper.readValue(res, new TypeReference<List<RecommendedGrowth>>() {});
+                })
+                .onFailure(e -> log.error("Failed to generate recommended growths for user: [{}] ", username, e))
+                .getOrElseThrow(() -> null);
+    }
+
+    boolean canGenerateRecommendedGrowths(String businessStrategy, String position, String competency) {
+        return StringUtils.isNotBlank(businessStrategy) && StringUtils.isNotBlank(competency) && StringUtils.isNotBlank(position);
     }
 }
