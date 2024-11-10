@@ -1,0 +1,1 @@
+alter table user_info alter column notes type text;

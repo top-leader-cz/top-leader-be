@@ -59,7 +59,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     @Test
     @WithMockUser("user2")
     void setUserSessionReflectionData() throws Exception {
-        var actionGoal = "test [s1, s2] test [v1, v2] test [Unknown development area, Unknown development area] test [do not lose] test English test {6}";
+        var actionGoal = "test {0} test {1} test {2} test {4} test {5} test {6}";
         Mockito.when(chatClient.call(actionGoal)).thenReturn("action-goal-response");
 
         mvc.perform(post("/api/latest/user-sessions-reflection")
