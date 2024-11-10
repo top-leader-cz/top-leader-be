@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.apache.commons.lang3.BooleanUtils.forEach;
 
 @Slf4j
 @RestController
@@ -16,13 +15,13 @@ import static org.apache.commons.lang3.BooleanUtils.forEach;
 @RequiredArgsConstructor
 public class SessionReminderController {
 
-   SessionReminderService sessionReminderService;
+    private final SessionReminderService sessionReminderService;
 
-    @GetMapping("/unscheduled-sessions")
+    @GetMapping("/remind-sessions")
     @Secured({"JOB"})
     public void processNotDisplayedMessages() {
         var usersToNotify = sessionReminderService.getUserWithNoScheduledSessions();
         log.info("Users to remind to schedule sessions {}", usersToNotify);
-        usersToNotify.forEach(user -> sessionReminderService.sendReminder(user));
+        usersToNotify.forEach(sessionReminderService::sendReminder);
     }
 }

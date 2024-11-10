@@ -115,7 +115,7 @@ from coach c
 
 drop view if exists session_reminder_view;
 create or replace view session_reminder_view as
-select distinct u.username, u.authorities, u.status, s.time::date
+select distinct u.username, u.first_name, u.last_name, u.locale
 from users u
          left join scheduled_session s on s.username = u.username
 where u.status != 'PENDING'

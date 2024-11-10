@@ -2,13 +2,13 @@
 <html>
 <body>
 
-<p><b>$firstName $lastName, consistent growth is the key to excellence! Whether you prefer a private session or a session with a coach, each session helps you stay on track and make tangible progress on your journey. Book your next session now to keep moving forward.</p>
+<p><b>$firstName $lastName,</b> une croissance régulière est la clé de l'excellence ! Que vous préfériez une session privée ou une session avec un coach, chaque session vous aide à rester sur la bonne voie et à progresser dans votre parcours. Réservez votre prochaine session pour continuer à avancer.</p>
 
-<p>If you have any feedback that could improve your experience, feel free to share it with us at<a href="$link" target="_blank">platform@topleader.io</a></p>
+<p>Si vous avez des suggestions pour améliorer votre expérience, n'hésitez pas à nous les partager à <a href="$link" target="_blank">platform@topleader.io</a></p>
 
-<p>Thank you,</p>
+<p>Merci,</p>
 
-<p>Your TopLeader Team</p>
+<p>Votre équipe TopLeader</p>
 
 </body>
 </html>

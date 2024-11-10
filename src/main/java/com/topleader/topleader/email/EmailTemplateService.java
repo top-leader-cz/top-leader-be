@@ -273,7 +273,7 @@ public class EmailTemplateService {
     }
 
     public String parseSessionReminder(String locale) {
-        return "templates/sessionReminder/user-reservation-" + parseLocale(locale) + ".vm";
+        return "templates/sessionReminder/reminder-" + parseLocale(locale) + ".vm";
     }
 
     private String parseLocale(String locale) {
