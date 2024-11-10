@@ -267,13 +267,16 @@ public class EmailTemplateService {
     private String parseCoachTemplateName(String locale) {
         return "templates/reservation/reservation-" + parseLocale(locale) + ".vm";
     }
+
     private String parseUserTemplateName(String locale) {
         return "templates/reservation/user-reservation-" + parseLocale(locale) + ".vm";
     }
 
+    public String parseSessionReminder(String locale) {
+        return "templates/sessionReminder/user-reservation-" + parseLocale(locale) + ".vm";
+    }
 
     private String parseLocale(String locale) {
         return supportedInvitations.contains(locale) ? locale : defaultLocale;
     }
-
 }
