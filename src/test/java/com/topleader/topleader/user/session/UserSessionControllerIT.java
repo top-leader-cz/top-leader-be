@@ -4,6 +4,7 @@
 package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.ai.AiPrompt;
 import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
@@ -19,6 +20,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -214,4 +216,34 @@ class UserSessionControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$", hasItems("generated-actions-steps-a.", "generated-actions-steps-b.")))
         ;
     }
+
+    @Test
+    @WithUserDetails("user2")
+    void generateRecommendedGrowth() throws Exception {
+        var query = String.format("test query Dummy business strategy position competency English");
+        Mockito.when(chatClient.call(query)).thenReturn("```json\n" +
+                "[\n" +
+                "    {\n" +
+                "        \"area\": \"Advanced Programming Skills\",\n" +
+                "        \"recommendation\": \"Enhance your programming expertise by learning advanced languages and frameworks that are in high demand, which can lead to higher-paying roles.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"area\": \"Business Acumen in Tech\",\n" +
+                "        \"recommendation\": \"Develop a deeper understanding of the business side of technology, including how tech solutions can drive revenue, to align your technical skills with business growth strategies.\"\n" +
+                "    },\n" +
+                "    {\n" +
+                "        \"area\": \"Project Management\",\n" +
+                "        \"recommendation\": \"Learn project management methodologies like Agile or Scrum to take on leadership roles in projects, which often come with increased salary potential.\"\n" +
+                "    }\n" +
+                "] ");
+        var result = mvc.perform(get("/api/latest/user-sessions/generate-recommended-growth"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        TestUtils.assertJsonEquals(result, TestUtils.readFileAsString("session/json/recommended-growth-result.json"));
+    }
+
 }

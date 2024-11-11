@@ -2,6 +2,8 @@ package com.topleader.topleader.ai;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.topleader.topleader.user.User;
+import com.topleader.topleader.util.common.user.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -89,6 +91,18 @@ public class AiClient {
 
         var res =  chatClient.call(query);
         log.info("AI user preview response: {}  User:[{}]", res, username);
+        return AiUtils.replaceNonJsonString(res);
+    }
+
+    public String generateRecommendedGrowths(User user, String businessStrategy, String position, String competency) {
+        var username = user.getUsername();
+        log.info("AI api call for user generateRecommendedGrowths. User:[{}] ", username);
+        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.RECOMMENDED_GROWTH);
+        var query = String.format(prompt, businessStrategy, position, competency, UserUtils.localeToLanguage(user.getLocale()));
+        log.info("generateRecommendedGrowths query: {} User:[{}]", query, username);
+
+        var res =  chatClient.call(query);
+        log.info("AI user preview response: {} User:[{}]", res, username);
         return AiUtils.replaceNonJsonString(res);
     }
 }
