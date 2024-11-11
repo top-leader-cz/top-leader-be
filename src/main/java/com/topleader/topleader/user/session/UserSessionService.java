@@ -293,6 +293,7 @@ public class UserSessionService {
 
     @SneakyThrows
     public List<RecommendedGrowth> generateRecommendedGrowths(String username) {
+        log.warn("generating recommend growth");
         var user = userDetailService.getUser(username)
                 .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
         var company = companyRepository.findById(user.getCompanyId()).orElse(Company.empty());
@@ -301,13 +302,14 @@ public class UserSessionService {
         var aspiredPosition = user.getAspiredPosition();
         var aspiredCompetency = user.getAspiredCompetency();
         if (!canGenerateRecommendedGrowths(businessStrategy, aspiredPosition, aspiredCompetency)) {
+            log.warn("Cannot generate recommended growths for user. Requirement dis not met");
             return null;
         }
         return Try.of(() -> {
                     var res = aiClient.generateRecommendedGrowths(user, businessStrategy, aspiredPosition, aspiredCompetency);
                     return objectMapper.readValue(res, new TypeReference<List<RecommendedGrowth>>() {});
                 })
-                .onFailure(e -> log.error("Failed to generate recommended growths for user: [{}] ", username, e))
+                .onFailure(e -> log.error("Failed to generate recommended growths", e))
                 .getOrElseThrow(() -> null);
     }
 

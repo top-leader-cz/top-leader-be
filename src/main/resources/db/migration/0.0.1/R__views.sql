@@ -112,13 +112,15 @@ select c.username,
 from coach c
          left join users u on c.username = u.username
 ;
-
 drop view if exists session_reminder_view;
 create or replace view session_reminder_view as
-select distinct u.username, u.first_name, u.last_name, u.locale
-from users u
-         left join scheduled_session s on s.username = u.username
-where u.status != 'PENDING'
+with scheduled as (
+    select max(username) as username, max(time) as time from scheduled_session group by username
+)
+select distinct u.username, u.first_name, u.last_name, u.locale, s.time
+from users u join scheduled s on u.username = s.username
+where
+    u.status != 'PENDING'
   and (
     u.authorities not like '%ADMIN%'
         and u.authorities not like '%COACH%'
@@ -130,4 +132,4 @@ where u.status != 'PENDING'
        s.time::date = now()::date - interval '24 day'
     or (time is null and
         (u.created_at::date = now()::date - interval '3 day' or u.created_at::date = now()::date - interval '10 day' or
-         u.created_at::date = now()::date - interval '24 day')))
+         u.created_at::date = now()::date - interval '24 day')));

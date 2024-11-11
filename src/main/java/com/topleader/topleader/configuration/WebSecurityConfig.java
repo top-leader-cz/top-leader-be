@@ -3,6 +3,8 @@
  */
 package com.topleader.topleader.configuration;
 
+import com.topleader.topleader.util.user.UserDetailUtils;
+import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -17,6 +19,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
+import org.springframework.security.web.context.SecurityContextHolderFilter;
 
 
 /**
@@ -25,6 +28,8 @@ import org.springframework.security.web.authentication.logout.HttpStatusReturnin
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig {
+
+    private static final String  USER_MDC_KEY = "username";
 
 
     @Bean
@@ -66,10 +71,20 @@ public class WebSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http.addFilterAfter((request, response, filterChain) -> {
+            try {
+                var username = UserDetailUtils.getLoggedUsername();
+                MDC.put(USER_MDC_KEY, username);
+                filterChain.doFilter(request, response);
+            } finally {
+                MDC.remove(USER_MDC_KEY);
+            }
+        }, SecurityContextHolderFilter.class);
+
         http
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**",
-                        "/v3/api-docs/**").permitAll()
+                        "/v3/api-docs/**", "/api/latest/coaches/**").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(e ->
@@ -85,6 +100,22 @@ public class WebSecurityConfig {
             .csrf(AbstractHttpConfigurer::disable)
             .cors(AbstractHttpConfigurer::disable)
         ;
-        return http.build();
+
+          return http.build();
     }
+
+//    @Bean
+//    public SecurityFilterChain usernameInLogChain(HttpSecurity http) throws Exception {
+//        return http.addFilterAfter((request, response, filterChain) -> {
+//                    try {
+//                        var username = UserDetailUtils.getLoggedUsername();
+//                        MDC.put(USER_MDC_KEY, username);
+//                        filterChain.doFilter(request, response);
+//                    } finally {
+//                        MDC.remove(USER_MDC_KEY);
+//                    }
+//                }, SecurityContextHolderFilter.class)
+//            .build();
+//    }
+
 }

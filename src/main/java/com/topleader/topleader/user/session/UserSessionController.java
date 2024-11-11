@@ -65,8 +65,6 @@ public class UserSessionController {
         return split(aiClient.findActionsSteps(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal()));
     }
 
-
-    @Secured({"ADMIN", "HR", "USER"})
     @GetMapping("/generate-recommended-growth")
     public List<RecommendedGrowth> generateRecommendedGrowth(@AuthenticationPrincipal UserDetails user) {
         return userSessionService.generateRecommendedGrowths(user.getUsername());
