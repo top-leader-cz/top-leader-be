@@ -114,22 +114,39 @@ from coach c
 ;
 drop view if exists session_reminder_view;
 create or replace view session_reminder_view as
-with scheduled as (
-    select max(username) as username, max(time) as time from scheduled_session group by username
-)
-select distinct u.username, u.first_name, u.last_name, u.locale, s.time
-from users u join scheduled s on u.username = s.username
-where
-    u.status != 'PENDING'
+with scheduled as (select max(username) as username, max(time) as time from scheduled_session group by username)
+select distinct u.username,
+                u.first_name,
+                u.last_name,
+                u.locale,
+                s.time,
+                case
+                    when s.time::date = now()::date - interval '3 day'
+                        or u.created_at::date = now()::date - interval '3 day' then 'DAYS3'
+                    when s.time::date = now()::date - interval '10 day'
+                        or u.created_at::date = now()::date - interval '10 day' then 'DAYS10'
+                    when s.time::date = now()::date - interval '24 day'
+                        or u.created_at::date = now()::date - interval '24 day' then 'DAYS24'
+                    else 'unknown'
+                    end as reminder_interval
+from users u
+         join scheduled s on u.username = s.username
+where u.status != 'PENDING'
   and (
-    u.authorities not like '%ADMIN%'
-        and u.authorities not like '%COACH%'
-        and u.authorities not like '%MANAGER%'
-        and u.authorities not like '%RESPONDENT%'
-        or (u.authorities like '%MANAGER%' and u.authorities like '%HR%')
+    (
+        u.authorities not like '%ADMIN%'
+            and u.authorities not like '%COACH%'
+            and u.authorities not like '%MANAGER%'
+            and u.authorities not like '%RESPONDENT%'
+        )
+        or (
+        u.authorities like '%MANAGER%' and u.authorities like '%HR%'
+        )
     )
-  and (s.time::date = now()::date - interval '3 day' or s.time::date = now()::date - interval '10 day' or
-       s.time::date = now()::date - interval '24 day'
-    or (time is null and
-        (u.created_at::date = now()::date - interval '3 day' or u.created_at::date = now()::date - interval '10 day' or
-         u.created_at::date = now()::date - interval '24 day')));
+  and (
+    s.time::date in (now()::date - interval '3 day', now()::date - interval '10 day', now()::date - interval '24 day')
+        or (
+        s.time is null
+            and u.created_at::date in (now()::date - interval '3 day', now()::date - interval '10 day', now()::date - interval '24 day')
+        )
+    );
