@@ -2,6 +2,7 @@ package com.topleader.topleader.user.session.reminder;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
+import io.vavr.control.Try;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Arrays;
@@ -17,11 +18,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
-@Sql(scripts = "/sql/user_info/session/reminder/session-reminder.sql")
+
 class SessionReminderControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(authorities = "JOB")
+    @Sql(scripts = "/sql/user_info/session/reminder/session-reminder.sql")
     void processNotDisplayedMessages() throws Exception {
         mvc.perform(get("/api/protected/jobs/remind-sessions"))
                 .andExpect(status().isOk());
@@ -42,11 +44,34 @@ class SessionReminderControllerIT extends IntegrationTest {
     }
 
     private void testEmail(MimeMessage receivedMessage, String message) throws MessagingException {
+        testEmail(receivedMessage, message, "first last,");
+    }
+
+    private void testEmail(MimeMessage receivedMessage, String message, String name) throws MessagingException {
         final var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo(message);
-        Assertions.assertThat(body).contains("first last,").contains("http://app-test-url");
+        Assertions.assertThat(body).contains(name).contains("http://app-test-url");
 
+    }
+
+    @Test
+    @WithMockUser(authorities = "JOB")
+    @Sql(scripts = "/sql/user_info/session/reminder/session-reminder-view-test.sql")
+    void viewTest() throws Exception {
+        mvc.perform(get("/api/protected/jobs/remind-sessions"))
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(5);
+        final var emails = Arrays.stream(greenMail.getReceivedMessages())
+                .collect(Collectors.toMap(m -> Try.of(() -> GreenMailUtil.getAddressList(m.getAllRecipients()))
+                                .getOrElseThrow(() -> new RuntimeException("Failed to get recipients")), Function.identity()));
+
+        testEmail(emails.get("user-3-days"), "Udržujte svůj pokrok na správné cestě!", "user-3-days last,");
+        testEmail(emails.get("user-10-days"), "Připraveni na další krok ve svém rozvoji?", "user-10-days last,");
+        testEmail(emails.get("user-24-days"), "Neztrácejte tempo – naplánujte si další lekci!", "user-24-days last,");
+        testEmail(emails.get("user-no-session"), "Udržujte svůj pokrok na správné cestě!", "user-no-session last,");
+        testEmail(emails.get("user-3-days-manager-hr"), "Udržujte svůj pokrok na správné cestě!", "user-3-days-manager-hr last,");
     }
 
 }
