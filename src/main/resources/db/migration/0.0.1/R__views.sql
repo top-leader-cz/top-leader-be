@@ -130,7 +130,7 @@ select distinct u.username,
                     else 'unknown'
                     end as reminder_interval
 from users u
-         join scheduled s on u.username = s.username
+         left join scheduled s on u.username = s.username
 where u.status != 'PENDING'
   and (
     (
