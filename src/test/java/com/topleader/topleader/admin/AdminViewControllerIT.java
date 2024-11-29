@@ -328,10 +328,6 @@ class AdminViewControllerIT extends IntegrationTest {
         mvc.perform(delete("/api/latest/admin/users/user1"))
                 .andExpect(status().isOk());
 
-
-        Assertions.assertThat(userRepository.findById("user1")).isEmpty();
-        Assertions.assertThat(coachRepository.findById("user1")).isEmpty();
-        Assertions.assertThat(userInfoRepository.findById("user1")).isEmpty();
+        Assertions.assertThat(userRepository.findById("user1").orElseThrow().getStatus()).isEqualTo(User.Status.CANCELED);
     }
-
 }

@@ -207,7 +207,8 @@ public class AdminViewController {
         Boolean isTrial,
 
         String freeCoach,
-        String maxCoachRate
+        String maxCoachRate,
+        Boolean showCanceled
     ) {
 
         public List<Specification<AdminView>> toSpecifications() {
@@ -232,6 +233,7 @@ public class AdminViewController {
             AdminViewSpecifications.isTrialEquals(isTrial).ifPresent(specs::add);
             AdminViewSpecifications.freeCoach(freeCoach).ifPresent(specs::add);
             AdminViewSpecifications.maxCoachRateContains(maxCoachRate).ifPresent(specs::add);
+            AdminViewSpecifications.showCanceled(showCanceled).ifPresent(specs::add);
 
             return specs;
         }
