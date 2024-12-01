@@ -98,15 +98,20 @@ public class UserInfoController {
     }
 
     @PostMapping("/notes")
-    public UserInfoDto setNotes(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetNotesRequestDto request) {
+    public SetNotesRequestDto setNotes(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetNotesRequestDto request) {
 
-        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
-        final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
+        return new SetNotesRequestDto(
+            userInfoService.setNotes(user.getUsername(), request.notes())
+                .getNotes()
+        )
+            ;
+    }
 
-        return UserInfoDto.from(
-            userInfoService.setNotes(user.getUsername(), request.notes()),
-            dbUser,
-            company
+    @GetMapping("/notes")
+    public SetNotesRequestDto getNotes(@AuthenticationPrincipal UserDetails user) {
+        return new SetNotesRequestDto(
+            userInfoService.find(user.getUsername())
+                .getNotes()
         );
     }
 
@@ -310,7 +315,6 @@ public class UserInfoController {
         List<String> strengths,
         List<String> values,
         List<String> areaOfDevelopment,
-        String notes,
         String coach,
         String locale,
         Set<String> allowedCoachRates
@@ -325,7 +329,6 @@ public class UserInfoController {
                 info.getStrengths(),
                 info.getValues(),
                 info.getAreaOfDevelopment(),
-                info.getNotes(),
                 user.getCoach(),
                 user.getLocale(),
                 Optional.ofNullable(user.getAllowedCoachRates())

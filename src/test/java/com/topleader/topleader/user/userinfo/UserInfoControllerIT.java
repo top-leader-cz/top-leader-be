@@ -91,7 +91,6 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.strengths", hasSize(0)))
             .andExpect(jsonPath("$.values", hasSize(0)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
-            .andExpect(jsonPath("$.notes", nullValue()))
             .andExpect(jsonPath("$.locale",is("en")))
         ;
     }
@@ -110,7 +109,6 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.values", hasItems("v1", "v2")))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
-            .andExpect(jsonPath("$.notes", is("cool note")))
             .andExpect(jsonPath("$.locale", is("en")))
         ;
     }
@@ -133,7 +131,6 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.strengths", hasSize(0)))
             .andExpect(jsonPath("$.values", hasSize(0)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
-            .andExpect(jsonPath("$.notes", nullValue()))
             .andExpect(jsonPath("$.locale", is("fr")))
         ;
     }
@@ -156,7 +153,6 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.strengths", hasSize(0)))
             .andExpect(jsonPath("$.values", hasSize(0)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
-            .andExpect(jsonPath("$.notes", nullValue()))
         ;
     }
 
@@ -173,12 +169,17 @@ class UserInfoControllerIT extends IntegrationTest {
                     """)
             )
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.username", is("user")))
-            .andExpect(jsonPath("$.timeZone", is("UTC")))
-            .andExpect(jsonPath("$.strengths", hasSize(0)))
-            .andExpect(jsonPath("$.values", hasSize(0)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
             .andExpect(jsonPath("$.notes", is("some cool notes")))
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "user2", authorities = "USER")
+    void getNotes() throws Exception {
+
+        mvc.perform(get("/api/latest/user-info/notes"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.notes", is("cool note")))
         ;
     }
 
@@ -200,7 +201,6 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.strengths", hasItems("v1", "v2")))
             .andExpect(jsonPath("$.values", hasSize(0)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
-            .andExpect(jsonPath("$.notes", nullValue()))
         ;
 
         final var userInfoData = userInfoRepository.findById("user").orElseThrow();
@@ -236,7 +236,6 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.values", hasItems("v1", "v2")))
             .andExpect(jsonPath("$.strengths", hasSize(0)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
-            .andExpect(jsonPath("$.notes", nullValue()))
         ;
 
         final var userInfoData = userInfoRepository.findById("user").orElseThrow();
@@ -294,7 +293,6 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.strengths", hasSize(0)))
             .andExpect(jsonPath("$.values", hasSize(0)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
-            .andExpect(jsonPath("$.notes", nullValue()))
             .andExpect(jsonPath("$.coach", nullValue()))
         ;
 

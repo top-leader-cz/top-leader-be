@@ -18,11 +18,20 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SessionReminderService {
 
-    private static final Map<String, String> subjectUserInvitations = Map.of(
-            "en", "Keep Your Progress on Track!",
-            "cs", "Udržujte svůj pokrok na správné cestě!",
-            "fr", "Maintenez votre progression sur la bonne voie!",
-            "de", " Halten Sie Ihren Fortschritt auf Kurs!");
+    private static final Map<String, String> subjectUserInvitations = Map.ofEntries(
+            Map.entry("DAYS3_en", "Keep Your Progress on Track!"),
+            Map.entry("DAYS10_en", "Ready to Take the Next Step in Your Development?"),
+            Map.entry("DAYS24_en", "Don’t Lose Momentum—Book Your Next Session!"),
+            Map.entry("DAYS3_cs", "Udržujte svůj pokrok na správné cestě!"),
+            Map.entry("DAYS10_cs", "Připraveni na další krok ve svém rozvoji?"),
+            Map.entry("DAYS24_cs", "Neztrácejte tempo – naplánujte si další lekci!"),
+            Map.entry("DAYS3_fr", "Maintenez votre progression sur la bonne voie!"),
+            Map.entry("DAYS10_fr", "Prêt(e) à franchir la prochaine étape de votre développement?"),
+            Map.entry("DAYS24_fr", "Ne perdez pas votre élan – Réservez votre prochaine session !"),
+            Map.entry("DAYS3_de", "Halten Sie Ihren Fortschritt auf Kurs!"),
+            Map.entry("DAYS10_de", "Bereit für den nächsten Schritt in Ihrer Entwicklung?"),
+            Map.entry("DAYS24_de", "Verlieren Sie nicht den Schwung – Buchen Sie Ihre nächste Sitzung!")
+        );
 
     private final EmailService emailService;
 
@@ -46,7 +55,7 @@ public class SessionReminderService {
         log.info("Sending reminder to user: {}", user.getUsername());
         emailService.sendEmail(
                 user.getUsername(),
-                subjectUserInvitations.getOrDefault(user.getLocale(), defaultLocale),
+                subjectUserInvitations.getOrDefault(String.join("_", user.getReminderInterval().name(), user.getLocale()), defaultLocale),
                 velocityService.getMessage(
                         new HashMap<>(
                                 Map.of(
@@ -54,7 +63,7 @@ public class SessionReminderService {
                                         "lastName", user.getLastName(),
                                         "link", appUrl)
                         ),
-                        emailTemplateService.parseSessionReminder(user.getLocale())
+                        emailTemplateService.parseSessionReminder(user.getReminderInterval(), user.getLocale())
                 ));
     }
 

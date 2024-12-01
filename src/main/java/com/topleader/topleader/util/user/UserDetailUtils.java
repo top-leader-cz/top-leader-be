@@ -5,9 +5,12 @@ package com.topleader.topleader.util.user;
 
 import com.topleader.topleader.user.User;
 import lombok.experimental.UtilityClass;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+
+import java.util.Optional;
 
 import static com.topleader.topleader.user.User.Authority.HR;
 
@@ -28,7 +31,10 @@ public final class UserDetailUtils {
     }
 
     public String getLoggedUsername() {
-        var loggedUser  = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        return loggedUser != null ? ((UserDetails)loggedUser).getUsername() : null;
+        return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
+                .map(Authentication::getPrincipal)
+                .map(principal -> (UserDetails) principal)
+                .map(UserDetails::getUsername)
+                .orElse(null);
     }
 }
