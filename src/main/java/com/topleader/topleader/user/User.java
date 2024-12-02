@@ -99,7 +99,7 @@ public class User {
     }
 
     public enum Status {
-        AUTHORIZED, PENDING, PAID, REQUESTED, VIEWED, SUBMITTED
+        AUTHORIZED, PENDING, PAID, REQUESTED, VIEWED, SUBMITTED, CANCELED
 
     }
 }
