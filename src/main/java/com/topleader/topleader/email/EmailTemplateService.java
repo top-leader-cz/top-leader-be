@@ -8,7 +8,6 @@ import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.ical.ICalService;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.user.session.reminder.SessionReminderView;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -271,14 +270,6 @@ public class EmailTemplateService {
 
     private String parseUserTemplateName(String locale) {
         return "templates/reservation/user-reservation-" + parseLocale(locale) + ".vm";
-    }
-
-    public String parseSessionReminder(SessionReminderView.ReminderInterval interval, String locale) {
-        return switch (interval) {
-            case DAYS3 -> "templates/sessionReminder/reminder-3-" + parseLocale(locale) + ".vm";
-            case DAYS10 -> "templates/sessionReminder/reminder-10-" + parseLocale(locale) + ".vm";
-            case DAYS24 -> "templates/sessionReminder/reminder-24-" + parseLocale(locale) + ".vm";
-        };
     }
 
     private String parseLocale(String locale) {

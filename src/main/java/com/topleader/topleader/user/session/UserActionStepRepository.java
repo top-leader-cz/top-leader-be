@@ -4,6 +4,7 @@
 package com.topleader.topleader.user.session;
 
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 
@@ -13,4 +14,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface UserActionStepRepository extends JpaRepository<UserActionStep, Long> {
 
     List<UserActionStep> findAllByUsername(String username);
+
+    Optional<UserActionStep>  findFirstByUsernameAndCheckedIsFalseOrderByDateDesc(String username);
 }
