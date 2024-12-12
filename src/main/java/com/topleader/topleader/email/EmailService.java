@@ -1,6 +1,7 @@
 package com.topleader.topleader.email;
 
 
+import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,8 @@ public class EmailService {
     private String defaultFrom;
 
     public void sendEmail(String to, String subject, String body) {
-        sendEmail(defaultFrom, to, subject, body);
+        Try.run(() -> sendEmail(defaultFrom, to, subject, body))
+                .onFailure(e -> log.error("Failed to send email to: [{}] subject: [{}]", to, subject, e));
     }
 
     @SneakyThrows
