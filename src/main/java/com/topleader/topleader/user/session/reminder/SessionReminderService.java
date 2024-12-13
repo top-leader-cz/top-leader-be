@@ -2,8 +2,10 @@ package com.topleader.topleader.user.session.reminder;
 
 
 import com.topleader.topleader.email.EmailService;
-import com.topleader.topleader.email.EmailTemplateService;
 import com.topleader.topleader.email.VelocityService;
+import com.topleader.topleader.user.session.UserActionStep;
+import com.topleader.topleader.user.session.UserActionStepRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -13,31 +15,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.springframework.util.StringUtils.parseLocale;
+
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class SessionReminderService {
 
-    private static final Map<String, String> subjectUserInvitations = Map.ofEntries(
-            Map.entry("DAYS3_en", "Keep Your Progress on Track!"),
-            Map.entry("DAYS10_en", "Ready to Take the Next Step in Your Development?"),
-            Map.entry("DAYS24_en", "Don’t Lose Momentum—Book Your Next Session!"),
-            Map.entry("DAYS3_cs", "Udržujte svůj pokrok na správné cestě!"),
-            Map.entry("DAYS10_cs", "Připraveni na další krok ve svém rozvoji?"),
-            Map.entry("DAYS24_cs", "Neztrácejte tempo – naplánujte si další lekci!"),
-            Map.entry("DAYS3_fr", "Maintenez votre progression sur la bonne voie!"),
-            Map.entry("DAYS10_fr", "Prêt(e) à franchir la prochaine étape de votre développement?"),
-            Map.entry("DAYS24_fr", "Ne perdez pas votre élan – Réservez votre prochaine session !"),
-            Map.entry("DAYS3_de", "Halten Sie Ihren Fortschritt auf Kurs!"),
-            Map.entry("DAYS10_de", "Bereit für den nächsten Schritt in Ihrer Entwicklung?"),
-            Map.entry("DAYS24_de", "Verlieren Sie nicht den Schwung – Buchen Sie Ihre nächste Sitzung!")
-        );
+    private static final Map<String, String> SUBJECTS = Map.of(
+        "en", "Your Journey to Excellence Awaits, %s %s!",
+        "cs", "Vaše cesta k rozvoji čeká, %s %s!",
+        "de", "Ihr Weg zur Entwicklung wartet auf Sie, %s %s!",
+        "fr", "Votre chemin vers le développement vous attend, %s %s!"
+    );
 
     private final EmailService emailService;
 
     private final VelocityService velocityService;
-
-    private final EmailTemplateService emailTemplateService;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -47,24 +42,58 @@ public class SessionReminderService {
 
     private final SessionReminderRepository sessionReminderRepository;
 
+    private final UserActionStepRepository userActionStepRepository;
+
     public List<SessionReminderView> getUserWithNoScheduledSessions() {
         return sessionReminderRepository.findAll();
     }
 
     public void sendReminder(SessionReminderView user) {
         log.info("Sending reminder to user: {}", user.getUsername());
-        emailService.sendEmail(
+
+        final var subject = SUBJECTS.getOrDefault(user.getLocale(), defaultLocale).formatted(user.getFirstName(), user.getLastName());
+
+        getShortTermGoal(user.getUsername()).ifPresentOrElse(
+            goal -> emailService.sendEmail(
                 user.getUsername(),
-                subjectUserInvitations.getOrDefault(String.join("_", user.getReminderInterval().name(), user.getLocale()), defaultLocale),
+                subject,
                 velocityService.getMessage(
-                        new HashMap<>(
-                                Map.of(
-                                        "firstName", user.getFirstName(),
-                                        "lastName", user.getLastName(),
-                                        "link", appUrl)
-                        ),
-                        emailTemplateService.parseSessionReminder(user.getReminderInterval(), user.getLocale())
-                ));
+                    new HashMap<>(
+                        Map.of(
+                            "firstName", user.getFirstName(),
+                            "lastName", user.getLastName(),
+                            "appLink", appUrl,
+                            "shortTermGoal", goal)
+                    ),
+                    parseSessionReminderTemplate(user.getLocale(), true)
+                )),
+            () -> emailService.sendEmail(
+                user.getUsername(),
+                subject,
+                velocityService.getMessage(
+                    new HashMap<>(
+                        Map.of(
+                            "firstName", user.getFirstName(),
+                            "lastName", user.getLastName(),
+                            "appLink", appUrl)
+                    ),
+                    parseSessionReminderTemplate(user.getLocale(), false)
+                )
+            )
+        );
+    }
+
+    private Optional<String> getShortTermGoal(String username) {
+        return userActionStepRepository.findFirstByUsernameAndCheckedIsFalseOrderByDateDesc(username)
+            .map(UserActionStep::getLabel);
+    }
+
+    public String parseSessionReminderTemplate(String locale, boolean hasShortTermGoal) {
+        if (hasShortTermGoal) {
+            return "templates/sessionReminder/reminder-with-short-term-" + parseLocale(locale) + ".vm";
+        } else {
+            return "templates/sessionReminder/reminder-without-short-term-" + parseLocale(locale) + ".vm";
+        }
     }
 
 }

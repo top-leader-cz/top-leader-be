@@ -33,7 +33,8 @@ select u.username,
        cu.last_name  as coach_last_name
 from users u
          left join user_info ui on u.username = ui.username
-         left join users cu on u.coach = cu.username;
+         left join users cu on u.coach = cu.username
+where u.status != 'CANCELED';
 
 drop view if exists my_team_view;
 create view my_team_view as
@@ -57,7 +58,8 @@ select concat(um.manager_username, '_', um.user_username) as id,
 from users_managers um
          left join users u on u.username = um.user_username
          left join user_info ui on ui.username = um.user_username
-         left join users cu on u.coach = cu.username;
+         left join users cu on u.coach = cu.username
+where u.status != 'CANCELED';
 
 drop view if exists manager_view;
 create view manager_view as
@@ -66,7 +68,9 @@ select u.username,
        u.last_name,
        u.company_id
 from users u
-where authorities like '%"MANAGER"%';
+where authorities like '%"MANAGER"%'
+  and u.status != 'CANCELED';
+
 
 drop view if exists coach_client_view;
 create view coach_client_view as
@@ -93,7 +97,8 @@ FROM users u
                     WHERE scheduled_session."time" >= now()
                     GROUP BY scheduled_session.username, scheduled_session.coach_username) ns
                    ON ns.username::text = u.username::text AND ns.coach_username::text = c.username::text
-where coach is not null;
+where coach is not null
+  and u.status != 'CANCELED';
 
 drop view if exists coach_list_view;
 create or replace view coach_list_view as
@@ -111,7 +116,9 @@ select c.username,
        c.linkedin_profile
 from coach c
          left join users u on c.username = u.username
+where u.status != 'CANCELED'
 ;
+
 drop view if exists session_reminder_view;
 create or replace view session_reminder_view as
 with scheduled as (select max(username) as username, max(time) as time from scheduled_session group by username)
@@ -131,7 +138,7 @@ select distinct u.username,
                     end as reminder_interval
 from users u
          left join scheduled s on u.username = s.username
-where u.status != 'PENDING'
+where (u.status != 'PENDING' or u.status != 'CANCELED')
   and (
     (
         u.authorities not like '%ADMIN%'

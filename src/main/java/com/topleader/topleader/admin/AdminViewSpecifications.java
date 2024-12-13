@@ -6,8 +6,12 @@ package com.topleader.topleader.admin;
 
 import com.topleader.topleader.user.User;
 import java.util.Optional;
+
+import io.vavr.collection.List;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
+
+import static com.topleader.topleader.user.User.Status.*;
 
 
 /**
@@ -155,6 +159,21 @@ public final class AdminViewSpecifications {
             .map(r -> (root, query, criteriaBuilder) ->
                 criteriaBuilder.equal(root.get("isTrial"), r));
     }
+
+    public static Optional<Specification<AdminView>> showCanceled(Boolean showCanceled) {
+        return Optional.ofNullable(showCanceled)
+                .map(r -> (root, query, criteriaBuilder) ->
+                        root.get("status").in(showCanceled ? getAllUsers() : getActiveUsers()));
+    }
+
+    private static User.Status[] getActiveUsers() {
+        return new User.Status[] {AUTHORIZED, PENDING, PAID, REQUESTED, VIEWED, SUBMITTED};
+    }
+
+    private static User.Status[] getAllUsers() {
+        return new User.Status[] {AUTHORIZED, PENDING, PAID, REQUESTED, VIEWED, SUBMITTED, CANCELED};
+    }
+
 }
 
 

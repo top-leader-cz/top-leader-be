@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>Hi <b>$firstName $lastName</b>,</p>
+
+<p>Every step counts on the path to growth. Have you thought about your next big goal? Setting a clear direction is the first step to unlocking your potential.</p>
+
+<p>Once your goal is defined, you can take the next step with a private session or a moment with one of our expert coaches. Staying consistent accelerates your journey to mastery.</p>
+
+<p>Your personalized growth plan is waiting for you. Keep building your unique path to success—it's closer than you think.</p>
+
+<p><b><a href="$appLink" target="_blank">Login and Book Your Next Session Here</a></b></p>
+
+<p>We’re here to support you every step of the way.</p>
+
+<p>Your TopLeader Team</p>
+
+<p>P.S. Your growth is our priority. If you have suggestions or feedback, feel free to share it with us at <a href="$appLink" target="_blank">platform@topleader.io</a></p>
+
+</body>
+</html>

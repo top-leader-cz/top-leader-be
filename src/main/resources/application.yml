@@ -16,9 +16,6 @@ spring:
     username: root
     password: postgres
   jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: validate
     open-in-view: false
@@ -57,6 +54,8 @@ top-leader:
   supported-invitations: en, cs, fr, de
   default-locale: en
   default-from: top-leader
+  feedback:
+    summary-limit: 1
 
 google:
   application-name: "qa.topleaderplatform.io"

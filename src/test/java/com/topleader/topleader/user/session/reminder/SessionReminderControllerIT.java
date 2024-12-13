@@ -37,21 +37,16 @@ class SessionReminderControllerIT extends IntegrationTest {
                         throw new RuntimeException(e);
                     }
                 }, Function.identity()));
-        testEmail(emails.get("user2"), "Udržujte svůj pokrok na správné cestě!");
-        testEmail(emails.get("user3"), "Připraveni na další krok ve svém rozvoji?");
-        testEmail(emails.get("user4"), "Neztrácejte tempo – naplánujte si další lekci!");
+        testEmail(emails.get("user2"), "Your Journey to Excellence Awaits, first last!", "<b>action 2</b>");
+        testEmail(emails.get("user3"), "Your Journey to Excellence Awaits, first last!", "Every step counts");
 
     }
 
-    private void testEmail(MimeMessage receivedMessage, String message) throws MessagingException {
-        testEmail(receivedMessage, message, "first last,");
-    }
-
-    private void testEmail(MimeMessage receivedMessage, String message, String name) throws MessagingException {
+    private void testEmail(MimeMessage receivedMessage, String subject, String message) throws MessagingException {
         final var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
-        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo(message);
-        Assertions.assertThat(body).contains(name).contains("http://app-test-url");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo(subject);
+        Assertions.assertThat(body).contains(message).contains("http://app-test-url");
 
     }
 
@@ -67,11 +62,11 @@ class SessionReminderControllerIT extends IntegrationTest {
                 .collect(Collectors.toMap(m -> Try.of(() -> GreenMailUtil.getAddressList(m.getAllRecipients()))
                                 .getOrElseThrow(() -> new RuntimeException("Failed to get recipients")), Function.identity()));
 
-        testEmail(emails.get("user-3-days"), "Udržujte svůj pokrok na správné cestě!", "user-3-days last,");
-        testEmail(emails.get("user-10-days"), "Připraveni na další krok ve svém rozvoji?", "user-10-days last,");
-        testEmail(emails.get("user-24-days"), "Neztrácejte tempo – naplánujte si další lekci!", "user-24-days last,");
-        testEmail(emails.get("user-no-session"), "Udržujte svůj pokrok na správné cestě!", "user-no-session last,");
-        testEmail(emails.get("user-3-days-manager-hr"), "Udržujte svůj pokrok na správné cestě!", "user-3-days-manager-hr last,");
+        testEmail(emails.get("user-3-days"), "Vaše cesta k rozvoji čeká, user-3-days last!", "user-3-days last");
+        testEmail(emails.get("user-10-days"), "Vaše cesta k rozvoji čeká, user-10-days last!", "user-10-days last");
+        testEmail(emails.get("user-24-days"), "Vaše cesta k rozvoji čeká, user-24-days last!", "user-24-days last");
+        testEmail(emails.get("user-no-session"), "Vaše cesta k rozvoji čeká, user-no-session last!", "user-no-session last");
+        testEmail(emails.get("user-3-days-manager-hr"), "Vaše cesta k rozvoji čeká, user-3-days-manager-hr last!", "user-3-days-manager-hr last");
     }
 
 }
