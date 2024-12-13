@@ -2,6 +2,10 @@ server:
   port: 8080
 
 spring:
+  cloud:
+    gcp:
+      sql:
+       enabled: false
   threads:
     virtual:
       enabled: true
