@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2024 Price f(x), s.r.o.
  */
-package com.topleader.topleader.google;
+package com.topleader.topleader.calendar.google;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

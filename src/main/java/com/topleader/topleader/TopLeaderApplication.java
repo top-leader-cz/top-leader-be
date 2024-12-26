@@ -2,9 +2,12 @@ package com.topleader.topleader;
 
 import java.time.ZoneOffset;
 import java.util.TimeZone;
+
+import com.topleader.topleader.calendar.calendly.CalendlyProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 
 @Slf4j
+@EnableConfigurationProperties(CalendlyProperties.class)
 @EnableMethodSecurity(
     securedEnabled = true,
     jsr250Enabled = true)

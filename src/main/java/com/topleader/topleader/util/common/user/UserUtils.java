@@ -52,4 +52,8 @@ public class UserUtils {
             this.language = language;
         }
     }
+
+    public static String getUserCalendlyUuid(String ownerUrl) {
+        return ownerUrl.substring(ownerUrl.lastIndexOf("/") + 1);
+    }
 }

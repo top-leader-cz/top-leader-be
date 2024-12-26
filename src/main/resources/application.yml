@@ -60,6 +60,12 @@ top-leader:
   default-from: top-leader
   feedback:
     summary-limit: 1
+  calendly:
+    client-id: N-KXDNA47C_aFv-ulHf4BFsrh7tOAzDSAcRtKuMDDXI
+    client-secrets: 2QRDTi20NWWABNZLs41bi8pPF1R74BBNqOmLCS4CFrs
+    redirect-uri: http://localhost:8080/login/calendly
+    base-api-url: https://api.calendly.com
+    base-auth-url: https://auth.calendly.com
 
 google:
   application-name: "qa.topleaderplatform.io"
@@ -73,3 +79,5 @@ google:
   resource:
     user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo
     prefer-token-info: true
+
+

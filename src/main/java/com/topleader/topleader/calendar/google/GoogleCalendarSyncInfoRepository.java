@@ -1,9 +1,8 @@
 /*
  * Copyright (c) 2024 Price f(x), s.r.o.
  */
-package com.topleader.topleader.google;
+package com.topleader.topleader.calendar.google;
 
-import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 

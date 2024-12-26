@@ -3,13 +3,13 @@
  */
 package com.topleader.topleader;
 
+import lombok.SneakyThrows;
 import net.javacrumbs.jsonunit.core.Option;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.MessageFormat;
 import java.util.Objects;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -23,10 +23,12 @@ public final class TestUtils {
         //util class
     }
 
+    @SneakyThrows
     public static String readFileAsString(String name) throws URISyntaxException, IOException {
         return new String(readFileAsBytes(name));
     }
 
+    @SneakyThrows
     public static byte[] readFileAsBytes(String name) throws URISyntaxException, IOException {
         return Files.readAllBytes(Paths.get(Objects.requireNonNull(TestUtils.class.getClassLoader()
             .getResource(name)).toURI()));

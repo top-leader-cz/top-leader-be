@@ -3,14 +3,14 @@
  */
 package com.topleader.topleader;
 
+import com.github.tomakehurst.wiremock.WireMockServer;
 import com.icegreen.greenmail.store.FolderException;
 import com.icegreen.greenmail.util.GreenMail;
 import com.topleader.topleader.configuration.EnablePostgresTestContainerContextCustomizerFactory;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
@@ -44,6 +44,9 @@ public abstract class IntegrationTest implements ApplicationContextAware {
     @Autowired
     protected GreenMail greenMail;
 
+    @Autowired
+    protected WireMockServer mockServer;
+
     public void setApplicationContext(@NotNull ApplicationContext applicationContext) {
         mvc = MockMvcBuilders.webAppContextSetup((WebApplicationContext) applicationContext)
             .apply(springSecurity())
@@ -53,6 +56,10 @@ public abstract class IntegrationTest implements ApplicationContextAware {
 
     @BeforeEach
     public void setUp() {
+        if(!mockServer.isRunning()) {
+            mockServer.start();
+        }
+
         if(!greenMail.isRunning()) {
             greenMail.start();
         }
