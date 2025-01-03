@@ -19,5 +19,8 @@ top-leader:
   app-url: http://app-test-url
   feedback:
     summary-limit: 1
+  calendly:
+    base-api-url: http://localhost:8060
+    base-auth-url: http://localhost:8060
 
 

@@ -3,7 +3,9 @@
  */
 package com.topleader.topleader.coach.availability;
 
-import com.topleader.topleader.google.GoogleCalendarService;
+import com.topleader.topleader.calendar.SyncEvent;
+import com.topleader.topleader.calendar.calendly.CalendlyService;
+import com.topleader.topleader.calendar.google.GoogleCalendarService;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import java.time.DayOfWeek;
@@ -38,6 +40,8 @@ public class CoachAvailabilityService {
 
     private final GoogleCalendarService googleCalendarService;
 
+    private final CalendlyService calendlyService;
+
     private final UserRepository userRepository;
 
     public List<CoachAvailability> getNonReoccurringByTimeFrame(String username, LocalDateTime from, LocalDateTime to) {
@@ -51,21 +55,21 @@ public class CoachAvailabilityService {
     public Set<LocalDateTime> getAvailabilitySplitIntoHoursFiltered(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
 
         final var googleEvents = googleCalendarService.getUserEvents(username, from, to, testFreeBusy);
+        var calendlyEvents  = calendlyService.getUserEvents(username, from, to);
 
-        if (googleEvents.isEmpty()) {
-            return getAvailabilitySplitIntoHours(username, from, to);
-        }
+        var events = Stream.concat(googleEvents.stream(), calendlyEvents.stream())
+            .collect(Collectors.toList());
 
         return getAvailabilitySplitIntoHours(username, from, to).stream()
-            .filter(isNotInsideOf(googleEvents))
+            .filter(isNotInsideOf(events))
             .collect(Collectors.toSet());
     }
 
-    private static Predicate<LocalDateTime> isNotInsideOf(List<GoogleCalendarService.SyncEvent> googleEvents) {
+    private static Predicate<LocalDateTime> isNotInsideOf(List<SyncEvent> googleEvents) {
         return time -> googleEvents.stream().noneMatch(isInsideOf(time));
     }
 
-    private static Predicate<GoogleCalendarService.SyncEvent> isInsideOf(LocalDateTime startTime) {
+    private static Predicate<SyncEvent> isInsideOf(LocalDateTime startTime) {
         return googleEvent -> {
             final var endTime = startTime.plusMinutes(59);
             final var startTimeWithBuffer = startTime.plusMinutes(1);

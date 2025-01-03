@@ -53,3 +53,5 @@ values ('$', 110, 1),
 
 INSERT INTO user_coach_rates (username, rate_name)
 VALUES ('user-with-filter', '$');
+
+INSERT INTO calendly_info VALUES ('coach1', 'token', 'https://calendly.com/coach1');

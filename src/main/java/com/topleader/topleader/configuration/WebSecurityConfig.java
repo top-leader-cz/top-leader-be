@@ -35,7 +35,7 @@ public class WebSecurityConfig {
     @Bean
     public SecurityFilterChain googleSync(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/login/google")
+            .securityMatcher("/login/google", "/login/calendly")
             .authorizeHttpRequests(requests ->
                 requests.anyRequest().permitAll()
             )

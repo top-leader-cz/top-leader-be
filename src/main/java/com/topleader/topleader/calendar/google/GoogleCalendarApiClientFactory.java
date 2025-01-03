@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2024 Price f(x), s.r.o.
  */
-package com.topleader.topleader.google;
+package com.topleader.topleader.calendar.google;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
 import com.google.api.client.googleapis.javanet.GoogleNetHttpTransport;

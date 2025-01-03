@@ -19,6 +19,10 @@ top-leader:
   app-url: https://qa.topleaderplatform.io
   feedback:
     summary-limit: 1
+  calendly:
+    client-id: vnzwTereNrHoVzQbrJMAhQM3KRfRxUPXHNtiQ-R0KJw
+    client-secrets: o2fU6bEm07cpt3ZHPiV16Enl-suS-v9bqGe_y8Yxb20
+    redirect-uri: https://qa.topleaderplatform.io/login/calendly
 
 google:
   application-name: "qa.topleaderplatform.io"

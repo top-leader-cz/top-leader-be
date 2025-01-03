@@ -1,15 +1,16 @@
 /*
  * Copyright (c) 2024 Price f(x), s.r.o.
  */
-package com.topleader.topleader.google;
+package com.topleader.topleader.calendar.google;
 
 import com.google.api.client.auth.oauth2.TokenResponse;
+import com.topleader.topleader.calendar.SyncEvent;
 import com.topleader.topleader.util.transaction.TransactionService;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -92,6 +93,4 @@ public class GoogleCalendarService {
         return calendarSyncInfoRepository.findById(username);
     }
 
-    public record SyncEvent(String username, LocalDateTime startDate, LocalDateTime endDate) {
-    }
 }
