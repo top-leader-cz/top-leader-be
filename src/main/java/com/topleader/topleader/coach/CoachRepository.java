@@ -1,14 +1,20 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.coach;
 
+import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 
 
 /**
  * @author Daniel Slavik
  */
 public interface CoachRepository extends JpaRepository<Coach, String>, JpaSpecificationExecutor<Coach> {
+
+
+    @Transactional
+    @Modifying
+    @Query("update Coach c set c.freeSlots = :freeSlots where c.username = :username")
+    void updateCoachSetFreeSlots(String username, boolean freeSlots);
 }

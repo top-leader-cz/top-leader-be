@@ -53,16 +53,19 @@ public class CoachAvailabilityService {
     }
 
     public Set<LocalDateTime> getAvailabilitySplitIntoHoursFiltered(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
-
-        final var googleEvents = googleCalendarService.getUserEvents(username, from, to, testFreeBusy);
-        var calendlyEvents  = calendlyService.getUserEvents(username, from, to);
-
-        var events = Stream.concat(googleEvents.stream(), calendlyEvents.stream())
-            .collect(Collectors.toList());
+        var events = getSyncEvents(username, from, to, testFreeBusy);
 
         return getAvailabilitySplitIntoHours(username, from, to).stream()
             .filter(isNotInsideOf(events))
             .collect(Collectors.toSet());
+    }
+
+    public List<SyncEvent> getSyncEvents(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
+             final var googleEvents = googleCalendarService.getUserEvents(username, from, to, testFreeBusy);
+        var calendlyEvents  = calendlyService.getUserEvents(username, from, to);
+
+        return Stream.concat(googleEvents.stream(), calendlyEvents.stream())
+                .collect(Collectors.toList());
     }
 
     private static Predicate<LocalDateTime> isNotInsideOf(List<SyncEvent> googleEvents) {

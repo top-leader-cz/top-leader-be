@@ -1,0 +1,1 @@
+alter table coach add column free_slots boolean not null default false;

@@ -66,4 +66,6 @@ public class CoachListView {
     @Column(length = 1000)
     private String linkedinProfile;
 
+    private boolean freeSlots;
+
 }
