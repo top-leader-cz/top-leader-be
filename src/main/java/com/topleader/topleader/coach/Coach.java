@@ -54,4 +54,6 @@ public class Coach {
     private Integer rateOrder;
 
     private String linkedinProfile;
+
+    private boolean freeSlots;
 }

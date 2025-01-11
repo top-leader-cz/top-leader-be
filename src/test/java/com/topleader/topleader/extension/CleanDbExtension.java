@@ -1,51 +1,41 @@
-package com.topleader.topleader;
+package com.topleader.topleader.extension;
 
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
+
+import org.springframework.boot.jdbc.DataSourceBuilder;
+
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
-import javax.sql.DataSource;
-import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.TestContext;
-import org.springframework.test.context.support.AbstractTestExecutionListener;
 
+public class CleanDbExtension implements AfterEachCallback, BeforeAllCallback {
 
-/**
- * Created by Jakub krhovják on 2/20/20.
- */
-public class AbstractResetDatabaseListener extends AbstractTestExecutionListener {
-
-    @Autowired
-    private DataSource dataSource;
-
-    public final int getOrder() {
-        return 2001;
-    }
-
-    private boolean alreadyCleared = false;
+    private static DataSource DATASOURCE;
 
     @Override
-    public void beforeTestClass(TestContext testContext) {
-        testContext.getApplicationContext()
-            .getAutowireCapableBeanFactory()
-            .autowireBean(this);
-    }
-
-
-
-    @Override
-    public void prepareTestInstance(@NotNull TestContext testContext) throws Exception {
-        if (!alreadyCleared) {
-            cleanupDatabase();
-            alreadyCleared = true;
+    public void beforeAll(ExtensionContext context) throws Exception {
+        if(DATASOURCE == null) {
+            DATASOURCE = DataSourceBuilder.create()
+                    .url(System.getProperty("spring.datasource.url"))
+                    .username(System.getProperty("spring.datasource.username"))
+                    .password(System.getProperty("spring.datasource.password"))
+                    .build();
         }
     }
 
+    @Override
+    public void afterEach(ExtensionContext context) throws SQLException {
+        cleanupDatabase();
+    }
+
     protected void cleanupDatabase() throws SQLException {
-        Connection c = dataSource.getConnection();
+        Connection c = DATASOURCE.getConnection();
         Statement s = c.createStatement();
 
         // Disable FK
@@ -78,4 +68,5 @@ public class AbstractResetDatabaseListener extends AbstractTestExecutionListener
         s.close();
         c.close();
     }
+
 }

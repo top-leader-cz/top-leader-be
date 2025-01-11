@@ -113,7 +113,8 @@ select c.username,
        c.rate_order,
        c.web_link,
        u.time_zone,
-       c.linkedin_profile
+       c.linkedin_profile,
+       c.free_slots
 from coach c
          left join users u on c.username = u.username
 where u.status != 'CANCELED'

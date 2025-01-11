@@ -267,24 +267,27 @@ public class CoachListController {
 
         String webLink,
 
-        String linkedinProfile
+        String linkedinProfile,
+
+        boolean freeSlots
 
 
     ) {
         public static CoachListDto from(CoachListView c) {
             return new CoachListDto(
-                c.getUsername(),
-                c.getFirstName(),
-                c.getLastName(),
-                c.getEmail(),
-                c.getBio(),
-                c.getLanguages(),
-                c.getFields(),
-                toExperience(c.getExperienceSince()),
-                c.getRate(),
-                c.getTimeZone(),
-                c.getWebLink(),
-                c.getLinkedinProfile()
+                    c.getUsername(),
+                    c.getFirstName(),
+                    c.getLastName(),
+                    c.getEmail(),
+                    c.getBio(),
+                    c.getLanguages(),
+                    c.getFields(),
+                    toExperience(c.getExperienceSince()),
+                    c.getRate(),
+                    c.getTimeZone(),
+                    c.getWebLink(),
+                    c.getLinkedinProfile(),
+                    c.isFreeSlots()
             );
         }
 
