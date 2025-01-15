@@ -6,13 +6,11 @@ package com.topleader.topleader;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.icegreen.greenmail.store.FolderException;
 import com.icegreen.greenmail.util.GreenMail;
-import com.topleader.topleader.extension.CleanDbExtension;
-import com.topleader.topleader.extension.PostgreSQLExtension;
+import com.topleader.topleader.configuration.EnablePostgresTestContainerContextCustomizerFactory;
 import org.jetbrains.annotations.NotNull;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
@@ -22,6 +20,7 @@ import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
@@ -31,8 +30,13 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
  */
 
 @ActiveProfiles("test")
+@Testcontainers
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ExtendWith({ PostgreSQLExtension.class, CleanDbExtension.class})
+@TestExecutionListeners(mergeMode =
+    TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS,
+    listeners = {ResetDatabaseAfterTestMethodListener.class}
+)
+@EnablePostgresTestContainerContextCustomizerFactory.EnabledPostgresTestContainer
 public abstract class IntegrationTest implements ApplicationContextAware {
 
     protected MockMvc mvc;
