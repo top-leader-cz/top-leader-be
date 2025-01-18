@@ -37,4 +37,6 @@ insert into coach_languages (coach_username, languages) values ('user1', 'cz');
 
 insert into coach_image (username, type, image_data) values ('user1', 'image1', null);
 
+update coach set internal_rate = cr.rate_credit from coach c left join coach_rate cr on c.rate = cr.rate_name;
+
 

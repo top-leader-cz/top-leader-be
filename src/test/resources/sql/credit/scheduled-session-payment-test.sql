@@ -12,8 +12,8 @@ values ('$', 110),
        ('$$$', 275)
 ;
 
-INSERT INTO coach (username, public_profile, email, web_link, bio, experience_since, rate)
-VALUES ('coach', true, 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$');
+INSERT INTO coach (username, public_profile, email, web_link, bio, experience_since, rate, internal_rate)
+VALUES ('coach', true, 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$', 90);
 
 
 insert into scheduled_session (id, coach_username, username, time, paid)

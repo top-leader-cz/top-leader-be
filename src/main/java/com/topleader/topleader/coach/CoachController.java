@@ -5,8 +5,6 @@ package com.topleader.topleader.coach;
 
 import com.topleader.topleader.coach.list.CoachListView;
 import com.topleader.topleader.coach.list.CoachListViewRepository;
-import com.topleader.topleader.coach.rate.CoachRate;
-import com.topleader.topleader.coach.rate.CoachRateRepository;
 import com.topleader.topleader.email.EmailTemplateService;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
@@ -70,8 +68,6 @@ public class CoachController {
 
     private final EmailTemplateService emailTemplateService;
 
-    private final CoachRateRepository coachRateRepository;
-
     @GetMapping
     @Secured("COACH")
     @Transactional
@@ -86,7 +82,7 @@ public class CoachController {
     public CoachDto setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid CoachDto request) {
         transactionService.execute(() -> {
             coachRepository.save(
-                request.updateCoach(coachRateRepository)
+                request.updateCoach()
                     .apply(coachRepository.findById(user.getUsername()).orElse(new Coach().setUsername(user.getUsername())))
             );
             userRepository.findById(user.getUsername()).map(request.updateUser()).ifPresent(userRepository::save);
@@ -238,7 +234,7 @@ public class CoachController {
                 ;
         }
 
-        public Function<Coach, Coach> updateCoach(CoachRateRepository coachRateRepository) {
+        public Function<Coach, Coach> updateCoach() {
             return c -> c
                 .setPublicProfile(publicProfile)
                 .setEmail(email)
@@ -247,8 +243,6 @@ public class CoachController {
                 .setLanguages(languages)
                 .setFields(fields)
                 .setExperienceSince(experienceSince)
-                .setRate(rate)
-                .setRateOrder(coachRateRepository.findById(rate).map(CoachRate::getRateOrder).orElse(null))
                 .setLinkedinProfile(linkedinProfile);
         }
 

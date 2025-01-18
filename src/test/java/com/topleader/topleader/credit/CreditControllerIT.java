@@ -43,7 +43,7 @@ class CreditControllerIT extends IntegrationTest {
 
         final var coach = userRepository.findById("coach").orElseThrow();
 
-        assertThat(coach.getCredit(), is(660));
+        assertThat(coach.getCredit(), is(0));
 
         final var client1 = userRepository.findById("client1").orElseThrow();
 
@@ -65,7 +65,7 @@ class CreditControllerIT extends IntegrationTest {
 
         assertThat(received, hasSize(6));
         assertThat(received.stream().allMatch(e -> e.getUsername().equals("coach")), is(true));
-        assertThat(received.stream().allMatch(e -> e.getCredit().equals(110)), is(true));
+        assertThat(received.stream().allMatch(e -> e.getCredit().equals(90)), is(true));
 
         final var paid = creditHistory.stream()
             .filter(c -> c.getType().equals(CreditHistory.Type.PAID))

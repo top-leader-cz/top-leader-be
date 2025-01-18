@@ -5,9 +5,12 @@ select u.*,
        cu.last_name            as coach_last_name,
        cc.name                 as company_name,
        hr_cu.hrs               as hrs,
-       ucr.allowed_coach_rates as allowed_coach_rates
+       ucr.allowed_coach_rates as allowed_coach_rates,
+       c.rate,
+       c.internal_rate
 from users u
          left join users cu on u.coach = cu.username
+         left join coach c on c.username = u.username
          left join company cc on cc.id = u.company_id
          left join (select string_agg(username, ', ') as hrs, company_id from users where authorities like '%"HR"%' group by company_id) hr_cu
                    on hr_cu.company_id = u.company_id

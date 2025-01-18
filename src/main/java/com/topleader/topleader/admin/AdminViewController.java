@@ -3,6 +3,8 @@
  */
 package com.topleader.topleader.admin;
 
+import com.topleader.topleader.coach.Coach;
+import com.topleader.topleader.coach.CoachRepository;
 import com.topleader.topleader.credit.CreditService;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
@@ -32,6 +34,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import static com.topleader.topleader.util.user.UserDetailUtils.sendInvite;
+import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
 
 
@@ -52,6 +55,8 @@ public class AdminViewController {
 
     private final UserDetailService userDetailService;
 
+    private final CoachRepository coachRepository;
+
     @Secured("ADMIN")
     @GetMapping("/users")
     public Page<AdminView> getUsers(
@@ -71,6 +76,7 @@ public class AdminViewController {
     @PostMapping("/users")
     public void createUser(@AuthenticationPrincipal UserDetails u, @RequestBody @Valid CreateUserRequestDto userRequest) {
         final var user = userDetailService.save(userRequest.toUser(u.getUsername()));
+        userRequest.toCoach().ifPresent(coachRepository::save);
         if (sendInvite(User.Status.PENDING, userRequest.status)) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, userRequest.locale()));
         }
@@ -79,7 +85,7 @@ public class AdminViewController {
     @Transactional
     @Secured("ADMIN")
     @PostMapping("/users/{username}")
-    public void createUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequestDto userRequest) {
+    public void updateUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequestDto userRequest) {
 
         userDetailService.getUser(username)
             .map(user -> {
@@ -96,6 +102,12 @@ public class AdminViewController {
                     throw new NotFoundException();
                 }
             );
+
+        coachRepository.findById(username)
+            .map(userRequest::updateCoach)
+            .ifPresentOrElse(
+                coachRepository::save,
+                () -> userRequest.toCoach(username).ifPresent(coachRepository::save));
 
     }
 
@@ -120,7 +132,7 @@ public class AdminViewController {
     @Secured("ADMIN")
     @DeleteMapping("/users/{username}")
     public void deleteUser(@PathVariable String username) {
-         userDetailService.delete(username);
+        userDetailService.delete(username);
     }
 
     public record ResentInvitationRequestDto(
@@ -142,7 +154,9 @@ public class AdminViewController {
         String freeCoach,
         @Pattern(regexp = "[a-z]{2}")
         String locale,
-        Set<String> allowedCoachRates
+        Set<String> allowedCoachRates,
+        String rate,
+        Integer internalRate
     ) {
         public User updateUser(User user) {
             Optional.ofNullable(firstName).ifPresent(user::setFirstName);
@@ -158,6 +172,25 @@ public class AdminViewController {
             user.setAllowedCoachRates(allowedCoachRates);
             return user;
         }
+
+        public Coach updateCoach(Coach coach) {
+            Optional.ofNullable(rate).ifPresent(coach::setRate);
+            Optional.ofNullable(internalRate).ifPresent(coach::setInternalRate);
+            return coach;
+        }
+
+        public Optional<Coach> toCoach(String username) {
+            if (isNull(rate) && isNull(internalRate)) {
+                return Optional.empty();
+            }
+
+            return Optional.of(
+                new Coach()
+                    .setUsername(username)
+                    .setRate(rate)
+                    .setInternalRate(internalRate)
+            );
+        }
     }
 
     public record CreateUserRequestDto(
@@ -171,7 +204,9 @@ public class AdminViewController {
         Set<User.Authority> authorities,
         @NotNull User.Status status,
         @Pattern(regexp = "[a-z]{2}")
-        String locale
+        String locale,
+        String rate,
+        Integer internalRate
     ) {
         public User toUser(String requestedBy) {
             return new User()
@@ -184,6 +219,19 @@ public class AdminViewController {
                 .setRequestedBy(requestedBy)
                 .setLocale(locale)
                 .setStatus(status);
+        }
+
+        public Optional<Coach> toCoach() {
+            if (isNull(rate) && isNull(internalRate)) {
+                return Optional.empty();
+            }
+
+            return Optional.of(
+                new Coach()
+                    .setUsername(username.toLowerCase(Locale.ROOT))
+                    .setRate(rate)
+                    .setInternalRate(internalRate)
+            );
         }
     }
 
