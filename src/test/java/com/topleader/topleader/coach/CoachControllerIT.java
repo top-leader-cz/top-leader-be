@@ -177,13 +177,13 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("fields", hasSize(2)))
             .andExpect(jsonPath("fields", hasItems("field1", "field2")))
             .andExpect(jsonPath("experienceSince", is("2023-08-06")))
-            .andExpect(jsonPath("rate", is("$$$")))
+            .andExpect(jsonPath("rate", nullValue()))
             .andExpect(jsonPath("timeZone", is("UTC")))
             .andExpect(jsonPath("linkedinProfile", is("http://linkedin.com")))
         ;
 
         final var coach = coachRepository.findById("coach_no_info").orElseThrow();
-        assertThat(coach.getRateOrder(), is(3));
+        assertThat(coach.getRateOrder(), nullValue());
     }
 
     @Test

@@ -73,4 +73,8 @@ public class AdminView {
     private String locale;
 
     private String allowedCoachRates;
+
+    private String rate;
+
+    private Integer internalRate;
 }

@@ -67,7 +67,7 @@ class AdminViewControllerIT extends IntegrationTest {
     void testCreateUser() throws Exception {
         final var createUserRequestDto = new AdminViewController.CreateUserRequestDto(
             "NewUser@gmail.com", "John", "Doe", "UTC", 1L,
-            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "en"
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "en", null, null
         );
 
         mvc.perform(post("/api/latest/admin/users")
@@ -92,7 +92,7 @@ class AdminViewControllerIT extends IntegrationTest {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", 2L,
             true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "updatedCoach", 150, "updatedCoach", "en",
-            Set.of("$$")
+            Set.of("$$"), null, null
         );
         mvc.perform(post("/api/latest/admin/users/user4")
                 .contentType("application/json")
@@ -153,7 +153,7 @@ class AdminViewControllerIT extends IntegrationTest {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", null,
             true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, null, 150, null, "en",
-            null
+            null, null, null
         );
         mvc.perform(post("/api/latest/admin/users/user1")
                 .contentType("application/json")
@@ -233,6 +233,76 @@ class AdminViewControllerIT extends IntegrationTest {
                   },
                   "numberOfElements": 1,
                   "first": true,
+                  "empty": false
+                }
+                """))
+        ;
+    }
+
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void adminListInternalRateTest() throws Exception {
+        mvc.perform(get("/api/latest/admin/users")
+                .param("username", "user1")
+                .param("size", "1")
+                .param("sort", "username,asc")
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().json("""
+                {
+                  "content": [
+                    {
+                      "username": "user1",
+                      "firstName": "John",
+                      "lastName": "Doe",
+                      "authorities": [
+                        "USER"
+                      ],
+                      "timeZone": "UTC",
+                      "status": "AUTHORIZED",
+                      "companyId": 1,
+                      "companyName": "Company 1",
+                      "coach": "coach1",
+                      "coachFirstName": "Jane",
+                      "coachLastName": "Smith",
+                      "credit": 100,
+                      "requestedCredit": 50,
+                      "sumRequestedCredit": 1000,
+                      "paidCredit": 100,
+                      "scheduledCredit": 0,
+                      "hrs": "user3",
+                      "requestedBy": "god",
+                      "freeCoach": null,
+                      "locale": "en",
+                      "allowedCoachRates": null,
+                      "rate": "$$$",
+                      "internalRate": 275
+                    }
+                  ],
+                  "pageable": {
+                    "pageNumber": 0,
+                    "pageSize": 1,
+                    "sort": {
+                      "empty": false,
+                      "unsorted": false,
+                      "sorted": true
+                    },
+                    "offset": 0,
+                    "unpaged": false,
+                    "paged": true
+                  },
+                  "last": true,
+                  "totalPages": 1,
+                  "totalElements": 1,
+                  "first": true,
+                  "size": 1,
+                  "number": 0,
+                  "sort": {
+                    "empty": false,
+                    "unsorted": false,
+                    "sorted": true
+                  },
+                  "numberOfElements": 1,
                   "empty": false
                 }
                 """))

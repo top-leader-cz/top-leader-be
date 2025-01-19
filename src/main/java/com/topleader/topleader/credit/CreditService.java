@@ -17,7 +17,6 @@ import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -145,7 +144,9 @@ public class CreditService {
 
         session.setPaid(true);
 
-        final var coachRate = coachRepository.findById(session.getCoachUsername())
+        final var coachData = coachRepository.findById(session.getCoachUsername());
+
+        final var coachRate = coachData
             .map(Coach::getRate)
             .flatMap(coachRateRepository::findById)
             .map(CoachRate::getRateCredit)
@@ -158,8 +159,6 @@ public class CreditService {
             .setScheduledCredit(Optional.ofNullable(user.getScheduledCredit()).orElse(0) - coachRate)
             .setPaidCredit(Optional.ofNullable(user.getPaidCredit()).orElse(0) + coachRate)
         ;
-        coach.setCredit(Optional.ofNullable(coach.getCredit()).orElse(0) + coachRate);
-
 
 
         scheduledSessionRepository.save(session);
@@ -178,7 +177,7 @@ public class CreditService {
                     .setTime(now)
                     .setUsername(coach.getUsername())
                     .setType(CreditHistory.Type.RECEIVED)
-                    .setCredit(coachRate)
+                    .setCredit(coachData.map(Coach::getInternalRate).orElse(1))
                     .setContext(ObjectMapperUtils.toJsonString(session))
             )
         );
