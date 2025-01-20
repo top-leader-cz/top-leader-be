@@ -18,40 +18,5 @@ VALUES ('coach1', true, 'john.doe@example.com', 'http://some_video1', 'Experienc
        ('coach3', true, 'michael.johnson@example.com', 'http://some_video3', 'Certified fitness coach', '2019-09-10', '$$$', 3, 'http://linkac'),
        ('coach4', false, 'michael.johnson@example.com', 'http://some_video4', 'Certified fitness coach', '2019-09-10', '$$$', 3, null);
 
-INSERT INTO coach_languages (coach_username, languages)
-VALUES ('coach1', 'English'),
-       ('coach1', 'French'),
-       ('coach2', 'English'),
-       ('coach2', 'Spanish'),
-       ('coach3', 'German');
-
-INSERT INTO coach_fields (coach_username, fields)
-VALUES ('coach1', 'Fitness'),
-       ('coach2', 'Yoga'),
-       ('coach2', 'Meditation'),
-       ('coach3', 'Weightlifting');
-
-insert into coach_availability (id, username, recurring, day_from, time_from, day_to, time_to)
-values (nextval('coach_availability_seq'), 'coach1', true, 'MONDAY', '13:00:00', 'MONDAY', '14:00:00');
-insert into coach_availability (id, username, recurring, day_from, time_from, day_to, time_to)
-values (nextval('coach_availability_seq'), 'coach1', true, 'TUESDAY', '13:00:00', 'TUESDAY', '14:00:00');
-
-insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
-values (nextval('coach_availability_seq'), 'coach1', false, '2023-08-14 10:00:00', '2023-08-14 12:00:00');
-insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
-values (nextval('coach_availability_seq'), 'coach1', false, '2023-08-15 12:00:00', '2023-08-15 14:00:00');
-insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
-values (nextval('coach_availability_seq'), 'coach1', false, '2023-09-14 13:00:00', '2023-09-14 14:00:00');
-insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
-values (nextval('coach_availability_seq'), 'coach1', false, '2023-09-15 12:00:00', '2023-09-15 13:00:00');
-
-insert into coach_rate (rate_name, rate_credit, rate_order)
-values ('$', 110, 1),
-       ('$$', 165, 2),
-       ('$$$', 275, 3)
-;
-
-INSERT INTO user_coach_rates (username, rate_name)
-VALUES ('user-with-filter', '$');
-
-INSERT INTO calendar_sync_info(username, status, sync_type, refresh_token, owner_url) VALUES ('coach1', 'OK', 'CALENDLY', 'token', 'https://calendly.com/coach1');
+INSERT INTO calendar_sync_info(username, status, sync_type, refresh_token, owner_url)
+VALUES ('coach1', 'OK', 'CALENDLY', 'token', 'https://calendly.com/coach1');

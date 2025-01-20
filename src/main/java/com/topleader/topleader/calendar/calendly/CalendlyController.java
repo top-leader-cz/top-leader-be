@@ -1,7 +1,7 @@
 package com.topleader.topleader.calendar.calendly;
 
 
-import com.topleader.topleader.calendar.calendly.domain.CalendlyInfo;
+import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,9 +23,11 @@ public class CalendlyController {
         var tokens = calendlyService.fetchTokens(code);
         var userInfo = calendlyService.getUserInfo(tokens);
 
-        calendlyService.saveInfo(new CalendlyInfo()
+        calendlyService.saveInfo(new CalendarSyncInfo()
+                .setId(new CalendarSyncInfo.CalendarInfoId(userInfo.getResource().getEmail(), CalendarSyncInfo.SyncType.CALENDLY))
                 .setUsername(userInfo.getResource().getEmail())
                 .setRefreshToken(tokens.getRefreshToken())
+                .setAccessToken(tokens.getAccessToken())
                 .setOwnerUrl(tokens.getOwner()));
 
         return new RedirectView("/#/sync-success?provider=calendly");

@@ -25,7 +25,7 @@ class GoogleTokenInfoControllerIT extends IntegrationTest {
                 {
                     "active": true,
                     "status": "OK",
-                    "lastSync": "2023-08-14T13:00:00"
+                    "lastSync": "2023-08-14T13:00:00Z"
                 }
                 """)
             )
