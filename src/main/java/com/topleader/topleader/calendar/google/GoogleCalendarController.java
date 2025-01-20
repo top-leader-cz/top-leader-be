@@ -58,7 +58,7 @@ public class GoogleCalendarController {
 
         calendarService.storeTokenInfo(userEmail, response);
 
-        return new RedirectView("/#/sync-success");
+        return new RedirectView("/#/sync-success?provider=gcal");
     }
 
     private String authorize(String username) {
