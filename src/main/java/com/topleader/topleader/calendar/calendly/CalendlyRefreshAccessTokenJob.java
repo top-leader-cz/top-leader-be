@@ -32,6 +32,7 @@ public class CalendlyRefreshAccessTokenJob {
         log.info("Fetching Calendly tokens");
         repository.findBySyncType(CalendarSyncInfo.SyncType.CALENDLY)
                 .forEach(info -> {
+                    log.info("Fetching tokens for user: {}", info.getUsername());
                     Try.of(() -> calendarSyncInfoService.fetchTokens(info))
                             .map(tokens -> repository.save(info.setRefreshToken(tokens.getRefreshToken()).setAccessToken(tokens.getAccessToken())))
                             .onFailure(e -> errorHandler.handleError(info, e));
