@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/protected/jobs")
@@ -32,9 +34,11 @@ public class CalendlyRefreshAccessTokenJob {
         log.info("Fetching Calendly tokens");
         repository.findBySyncType(CalendarSyncInfo.SyncType.CALENDLY)
                 .forEach(info -> {
-                    log.info("Fetching tokens for user: {}", info.getUsername());
+                    log.info("Refreshing tokens for user: {}", info.getUsername());
                     Try.of(() -> calendarSyncInfoService.fetchTokens(info))
-                            .map(tokens -> repository.save(info.setRefreshToken(tokens.getRefreshToken()).setAccessToken(tokens.getAccessToken())))
+                            .map(tokens -> repository.save(info.setRefreshToken(tokens.getRefreshToken())
+                                            .setAccessToken(tokens.getAccessToken()))
+                                    .setLastSync(LocalDateTime.now()))
                             .onFailure(e -> errorHandler.handleError(info, e));
                 });
     }

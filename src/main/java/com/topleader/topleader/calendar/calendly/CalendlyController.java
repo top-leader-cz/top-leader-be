@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.time.LocalDateTime;
+
 @Slf4j
 @RestController
 @RequestMapping
@@ -28,7 +30,8 @@ public class CalendlyController {
                 .setRefreshToken(tokens.getRefreshToken())
                 .setAccessToken(tokens.getAccessToken())
                 .setOwnerUrl(tokens.getOwner())
-                .setStatus(CalendarSyncInfo.Status.OK);
+                .setStatus(CalendarSyncInfo.Status.OK)
+                .setLastSync(LocalDateTime.now());
 
         log.info("Saving Calendly info: {}", info.getId().getUsername());
 
