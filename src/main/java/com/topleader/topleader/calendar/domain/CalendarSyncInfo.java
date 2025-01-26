@@ -31,7 +31,7 @@ public class CalendarSyncInfo {
     @Column(insertable = false, updatable = false)
     private SyncType syncType;
 
-    private LocalDateTime lastSync;
+    private LocalDateTime lastSync = LocalDateTime.now();
 
     private String ownerUrl;
 
