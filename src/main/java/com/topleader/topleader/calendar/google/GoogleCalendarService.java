@@ -57,16 +57,14 @@ public class GoogleCalendarService {
     public void storeTokenInfo(String username, TokenResponse tokenResponse) {
         log.info("Storing token info for user {} token info: {}", username, tokenResponse);
 
+        var id = new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.GOOGLE);
         transactionService.execute(() -> {
-            final var info = calendarSyncInfoRepository.findById(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.GOOGLE))
-                    .orElseGet(() -> new CalendarSyncInfo()
-//                            .setUsername(username)
-                    );
+            final var info = calendarSyncInfoRepository.findById(id).orElse(new CalendarSyncInfo().setId(id));
             info
                     .setStatus(CalendarSyncInfo.Status.OK)
-                    .setLastSync(LocalDateTime.now())
                     .setRefreshToken(tokenResponse.getRefreshToken())
-                    .setAccessToken(tokenResponse.getAccessToken());
+                    .setAccessToken(tokenResponse.getAccessToken())
+                    .setLastSync(LocalDateTime.now());
 
             calendarSyncInfoRepository.save(info);
         });

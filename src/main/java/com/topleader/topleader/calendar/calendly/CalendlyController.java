@@ -30,8 +30,7 @@ public class CalendlyController {
                 .setOwnerUrl(tokens.getOwner())
                 .setStatus(CalendarSyncInfo.Status.OK);
 
-
-        log.info("Saving Calendly info: {}", info);
+        log.info("Saving Calendly info: {}", info.getId().getUsername());
 
         calendlyService.saveInfo(info);
 
