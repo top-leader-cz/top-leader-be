@@ -34,11 +34,13 @@ public class CalendlyRefreshAccessTokenJob {
         log.info("Fetching Calendly tokens");
         repository.findBySyncType(CalendarSyncInfo.SyncType.CALENDLY)
                 .forEach(info -> {
-                    log.info("Refreshing tokens for user: {}", info.getUsername());
+                    log.info("fetching tokens for user: {}", info.getUsername());
                     Try.of(() -> calendarSyncInfoService.fetchTokens(info))
-                            .map(tokens -> repository.save(info.setRefreshToken(tokens.getRefreshToken())
-                                            .setAccessToken(tokens.getAccessToken()))
-                                    .setLastSync(LocalDateTime.now()))
+                            .map(tokens ->
+                                 repository.save(info.setRefreshToken(tokens.getRefreshToken())
+                                        .setAccessToken(tokens.getAccessToken())
+                                        .setLastSync(LocalDateTime.now()))
+                            )
                             .onFailure(e -> errorHandler.handleError(info, e));
                 });
     }
