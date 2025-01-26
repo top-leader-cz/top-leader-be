@@ -9,6 +9,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
@@ -16,7 +17,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-
+@Sql("/sql/calendly/calendly-token.sql")
 class CalendlyControllerIT extends IntegrationTest {
 
     @Autowired
@@ -52,9 +53,9 @@ class CalendlyControllerIT extends IntegrationTest {
                 .andExpect(status().is3xxRedirection());
 
         Assertions.assertThat(repository.findAll()).extracting(CalendarSyncInfo::getAccessToken, CalendarSyncInfo::getRefreshToken,
-                        CalendarSyncInfo::getUsername, CalendarSyncInfo::getOwnerUrl, CalendarSyncInfo::getSyncType, CalendarSyncInfo::getStatus)
+                        c -> c.getId().getUsername(), CalendarSyncInfo::getOwnerUrl, CalendarSyncInfo::getSyncType, CalendarSyncInfo::getStatus)
                 .containsExactly(Assertions.tuple("accessToken", "refreshToken", "coach1",
-                        "https://localhost:8080/coach1", CalendarSyncInfo.SyncType.CALENDLY, CalendarSyncInfo.Status.OK));
+                        "http://localhost:8080/ownerId", CalendarSyncInfo.SyncType.CALENDLY, CalendarSyncInfo.Status.OK));
     }
 
 }

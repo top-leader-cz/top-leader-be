@@ -39,7 +39,7 @@ class CalendlyRefreshAccessTokenJobIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         Assertions.assertThat(repository.findAll()).extracting(CalendarSyncInfo::getAccessToken, CalendarSyncInfo::getRefreshToken,
-                        CalendarSyncInfo::getUsername, CalendarSyncInfo::getOwnerUrl, CalendarSyncInfo::getSyncType, CalendarSyncInfo::getStatus)
+                        c -> c.getId().getUsername(), CalendarSyncInfo::getOwnerUrl, CalendarSyncInfo::getSyncType, CalendarSyncInfo::getStatus)
                 .containsExactly(Assertions.tuple("accessToken", "refreshToken", "coach1",
                         "https://calendly.com/coach1", CalendarSyncInfo.SyncType.CALENDLY, CalendarSyncInfo.Status.OK));
     }

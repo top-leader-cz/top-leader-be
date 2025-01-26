@@ -25,11 +25,9 @@ public class CalendlyController {
 
         var info = new CalendarSyncInfo()
                 .setId(new CalendarSyncInfo.CalendarInfoId(userInfo.getResource().getEmail(), CalendarSyncInfo.SyncType.CALENDLY))
-//                .setUsername(userInfo.getResource().getEmail())
                 .setRefreshToken(tokens.getRefreshToken())
                 .setAccessToken(tokens.getAccessToken())
                 .setOwnerUrl(tokens.getOwner())
-//                .setSyncType(CalendarSyncInfo.SyncType.CALENDLY)
                 .setStatus(CalendarSyncInfo.Status.OK);
 
 
