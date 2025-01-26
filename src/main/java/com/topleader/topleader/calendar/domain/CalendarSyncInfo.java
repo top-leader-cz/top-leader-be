@@ -17,6 +17,7 @@ public class CalendarSyncInfo {
     @EmbeddedId
     private CalendarInfoId id;
 
+    @Column(insertable = false, updatable = false)
     private String username;
 
     private String refreshToken;
@@ -27,6 +28,7 @@ public class CalendarSyncInfo {
     private Status status;
 
     @Enumerated(EnumType.STRING)
+    @Column(insertable = false, updatable = false)
     private SyncType syncType;
 
     private LocalDateTime lastSync;
@@ -47,11 +49,9 @@ public class CalendarSyncInfo {
     @AllArgsConstructor
     public static class CalendarInfoId implements Serializable {
 
-        @Column( insertable = false, updatable = false)
         private String username;
 
         @Enumerated(EnumType.STRING)
-        @Column(insertable = false, updatable = false)
         private SyncType syncType;
 
     }

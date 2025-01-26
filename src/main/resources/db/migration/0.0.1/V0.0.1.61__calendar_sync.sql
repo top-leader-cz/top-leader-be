@@ -1,9 +1,9 @@
 create table calendar_sync_info
 (
-    username         varchar(250) not null
-        constraint fk_calendar_sync_info_info
-            references users
-            on delete cascade,
+    username         varchar(250) not null,
+--         constraint fk_calendar_sync_info_info
+--             references users
+--             on delete cascade,
     status        varchar(50)  not null,
     sync_type     varchar(50)  not null,
     refresh_token varchar(500) null,

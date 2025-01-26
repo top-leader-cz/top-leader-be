@@ -60,7 +60,7 @@ public class GoogleCalendarService {
         transactionService.execute(() -> {
             final var info = calendarSyncInfoRepository.findById(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.GOOGLE))
                     .orElseGet(() -> new CalendarSyncInfo()
-                            .setUsername(username)
+//                            .setUsername(username)
                     );
             info
                     .setStatus(CalendarSyncInfo.Status.OK)

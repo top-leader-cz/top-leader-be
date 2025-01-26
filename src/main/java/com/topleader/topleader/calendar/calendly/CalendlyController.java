@@ -23,16 +23,22 @@ public class CalendlyController {
         var tokens = calendlyService.fetchTokens(code);
         var userInfo = calendlyService.getUserInfo(tokens);
 
-        calendlyService.saveInfo(new CalendarSyncInfo()
+        var info = new CalendarSyncInfo()
                 .setId(new CalendarSyncInfo.CalendarInfoId(userInfo.getResource().getEmail(), CalendarSyncInfo.SyncType.CALENDLY))
-                .setUsername(userInfo.getResource().getEmail())
+//                .setUsername(userInfo.getResource().getEmail())
                 .setRefreshToken(tokens.getRefreshToken())
                 .setAccessToken(tokens.getAccessToken())
-                .setOwnerUrl(tokens.getOwner()));
+                .setOwnerUrl(tokens.getOwner())
+//                .setSyncType(CalendarSyncInfo.SyncType.CALENDLY)
+                .setStatus(CalendarSyncInfo.Status.OK);
+
+
+        log.info("Saving Calendly info: {}", info);
+
+        calendlyService.saveInfo(info);
 
         return new RedirectView("/#/sync-success?provider=calendly");
 
-//        List<SyncEvent> userEvents = calendlyService.getUserEvents(userInfo.getResource().getEmail(), LocalDateTime.now(), LocalDateTime.now().plusDays(5));
     }
 
 

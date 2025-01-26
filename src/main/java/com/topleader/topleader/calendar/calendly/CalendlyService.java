@@ -38,7 +38,7 @@ public class CalendlyService {
     private final CalendarToErrorHandler errorHandler;
 
     public void saveInfo(CalendarSyncInfo info) {
-        log.info("Saving Calendly info: {}", info.getUsername());
+        log.info("Saving Calendly info: {}", info.getId().getUsername());
         repository.save(info);
     }
 
