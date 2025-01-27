@@ -4,7 +4,6 @@
 package com.topleader.topleader.coach;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.icegreen.greenmail.util.EncodingUtil;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
@@ -19,7 +18,6 @@ import com.topleader.topleader.util.image.ImageUtil;
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 
-import jnr.constants.platform.Local;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -347,7 +345,7 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().json("""
-                        ["2023-08-14T10:00:00","2023-08-14T11:00:00"]
+                        ["2023-08-14T10:00:00","2023-08-14T11:00:00","2023-08-14T13:00:00"]
                         """))
         ;
     }

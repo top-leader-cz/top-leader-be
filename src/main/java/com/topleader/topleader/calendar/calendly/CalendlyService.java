@@ -1,8 +1,10 @@
 package com.topleader.topleader.calendar.calendly;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.topleader.topleader.calendar.SyncEvent;
-import com.topleader.topleader.calendar.calendly.domain.CalendlyInfo;
+import com.topleader.topleader.calendar.CalendarSyncInfoRepository;
+import com.topleader.topleader.calendar.CalendarToErrorHandler;
+import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
+import com.topleader.topleader.calendar.domain.SyncEvent;
 import com.topleader.topleader.calendar.calendly.domain.CalendlyUserInfo;
 import com.topleader.topleader.calendar.calendly.domain.TokenResponse;
 
@@ -11,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
+
 import java.nio.charset.Charset;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -19,24 +22,24 @@ import java.util.List;
 
 
 import static com.topleader.topleader.util.common.user.UserUtils.getUserCalendlyUuid;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
-import static org.springframework.http.HttpHeaders.encodeBasicAuth;
+import static org.springframework.http.HttpHeaders.*;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class CalendlyService {
 
-    private final CalendlyInfoRepository calendlyInfoRepository;
-
+    private final CalendarSyncInfoRepository repository;
 
     private final CalendlyProperties properties;
 
     private final RestClient restClient;
 
-    public void saveInfo(CalendlyInfo info) {
-        log.info("Saving Calendly info: {}", info.getUsername());
-        calendlyInfoRepository.save(info);
+    private final CalendarToErrorHandler errorHandler;
+
+    public void saveInfo(CalendarSyncInfo info) {
+        log.info("Saving Calendly info: {}", info.getId().getUsername());
+        repository.save(info);
     }
 
     public TokenResponse fetchTokens(String authorizationCode) {
@@ -64,44 +67,33 @@ public class CalendlyService {
 
     public List<SyncEvent> getUserEvents(String username, LocalDateTime startDate, LocalDateTime endDate) {
         log.info("Looking for Calendly info");
-        return  calendlyInfoRepository.findById(username)
+        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.CALENDLY))
                 .map(info -> {
                     log.info("Fetching Calendly user events");
-                    var response = restClient.get().uri(properties.getBaseApiUrl().concat("/scheduled_events?user={user}&start_time={start_time}&end_time={end_time}"),
-                                    info.getOwnerUrl(),
-                                    toCalendlyFormat(startDate),
-                                    toCalendlyFormat(endDate))
-                            .header(AUTHORIZATION, bearer(getAccessToken(info)))
-                            .retrieve()
-                            .body(JsonNode.class);
+                    try {
+                        var response = restClient.get().uri(properties.getBaseApiUrl().concat("/scheduled_events?user={user}&start_time={start_time}&end_time={end_time}"),
+                                        info.getOwnerUrl(),
+                                        toCalendlyFormat(startDate),
+                                        toCalendlyFormat(endDate))
+                                .header(AUTHORIZATION, bearer(info.getAccessToken()))
+                                .retrieve()
+                                .body(JsonNode.class);
 
-                    var events = new ArrayList<SyncEvent>();
-                    response.get("collection").forEach(node ->
-                            events.add(new SyncEvent(username, fromCalendlyFormat(node.get("start_time").asText()), fromCalendlyFormat(node.get("end_time").asText())))
-                    );
+                        var events = new ArrayList<SyncEvent>();
+                        response.get("collection").forEach(node ->
+                                events.add(new SyncEvent(username, fromCalendlyFormat(node.get("start_time").asText()), fromCalendlyFormat(node.get("end_time").asText())))
+                        );
 
-                    return events;
+                        return events;
+                    } catch (Exception e) {
+                        errorHandler.handleError(info, e);
+                        return new ArrayList<SyncEvent>();
+                    }
                 })
                 .orElse(new ArrayList<>());
     }
 
-    public String getAccessToken(CalendlyInfo info) {
-        log.info("Refreshing Calendly token");
-        var body = new LinkedMultiValueMap<String, String>();
-        body.add("grant_type", "refresh_token");
-        body.add("refresh_token", info.getRefreshToken());
-        body.add("redirect_uri", properties.getRedirectUri());
 
-        var tokens = restClient.post().uri(properties.getBaseAuthUrl().concat("/oauth/token"))
-                .header(AUTHORIZATION, basic())
-                .body(body)
-                .retrieve()
-                .body(TokenResponse.class);
-
-        calendlyInfoRepository.save(info.setRefreshToken(tokens.getRefreshToken()));
-
-        return tokens.getAccessToken();
-    }
 
     private String basic() {
         return "Basic " + encodeBasicAuth(properties.getClientId(), properties.getClientSecrets(), Charset.defaultCharset());

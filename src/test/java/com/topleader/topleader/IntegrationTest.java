@@ -22,6 +22,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.ZoneOffset;
+import java.util.TimeZone;
+
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 
 
@@ -56,6 +59,7 @@ public abstract class IntegrationTest implements ApplicationContextAware {
 
     @BeforeEach
     public void setUp() {
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.UTC));
         if(!mockServer.isRunning()) {
             mockServer.start();
         }
