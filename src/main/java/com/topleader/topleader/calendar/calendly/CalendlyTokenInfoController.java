@@ -1,7 +1,5 @@
-/*
- * Copyright (c) 2024 Price f(x), s.r.o.
- */
-package com.topleader.topleader.calendar.google;
+package com.topleader.topleader.calendar.calendly;
+
 
 import com.topleader.topleader.calendar.CalendarSyncInfoService;
 import com.topleader.topleader.calendar.calendly.domain.CalendarTokenInfo;
@@ -16,27 +14,24 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.ZoneId;
 
-/**
- * @author Daniel Slavik
- */
+
 @Slf4j
 @RestController
-@RequestMapping("/api/latest/google-info")
+@RequestMapping("/api/latest/calendly-info")
 @RequiredArgsConstructor
-public class GoogleTokenInfoController {
-
+public class CalendlyTokenInfoController {
 
     private final CalendarSyncInfoService calendarService;
 
-
     @GetMapping
     public CalendarTokenInfo getGoogleTokenInfo(@AuthenticationPrincipal UserDetails user) {
-        return calendarService.getInfo(user.getUsername(), CalendarSyncInfo.SyncType.GOOGLE)
+        return calendarService.getInfo(user.getUsername(), CalendarSyncInfo.SyncType.CALENDLY)
                 .map(tokenInfo -> new CalendarTokenInfo(
                         true,
                         tokenInfo.getStatus(),
-                        tokenInfo.getLastSync().atZone(ZoneId.of("UTC")))
-                )
+                        tokenInfo.getLastSync().atZone(ZoneId.systemDefault())
+                ))
                 .orElse(CalendarTokenInfo.EMPTY);
     }
+
 }

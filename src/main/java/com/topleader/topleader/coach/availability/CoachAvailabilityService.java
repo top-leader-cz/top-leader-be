@@ -3,7 +3,7 @@
  */
 package com.topleader.topleader.coach.availability;
 
-import com.topleader.topleader.calendar.SyncEvent;
+import com.topleader.topleader.calendar.domain.SyncEvent;
 import com.topleader.topleader.calendar.calendly.CalendlyService;
 import com.topleader.topleader.calendar.google.GoogleCalendarService;
 import com.topleader.topleader.user.UserRepository;
@@ -61,8 +61,8 @@ public class CoachAvailabilityService {
     }
 
     public List<SyncEvent> getSyncEvents(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
-             final var googleEvents = googleCalendarService.getUserEvents(username, from, to, testFreeBusy);
-        var calendlyEvents  = calendlyService.getUserEvents(username, from, to);
+        final var googleEvents = googleCalendarService.getUserEvents(username, from, to, testFreeBusy);
+        var calendlyEvents = calendlyService.getUserEvents(username, from, to);
 
         return Stream.concat(googleEvents.stream(), calendlyEvents.stream())
                 .collect(Collectors.toList());
