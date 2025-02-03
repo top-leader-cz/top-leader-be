@@ -162,17 +162,20 @@ public class CoachListController {
     @GetMapping("/{username}/availability")
     public List<ZonedDateTime> getCoachAvailability(
         @PathVariable String username,
-        @RequestParam LocalDateTime from,
-        @RequestParam LocalDateTime to,
+        @RequestParam ZonedDateTime from,
+        @RequestParam ZonedDateTime to,
         @AuthenticationPrincipal UserDetails loggedUser
         ) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(loggedUser.getUsername()));
+
+        final var userZoneId = getUserTimeZoneId(userRepository.findById("coach1@gmail.com"));
+        var fromUtc  = from.withZoneSameInstant(userZoneId).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
+        var toUtc  = to.withZoneSameInstant(userZoneId).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
 
         final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
                 .map(ScheduledSession::getTime)
                 .collect(Collectors.toSet());
 
-        return coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, from, to, true).stream()
+        return coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, fromUtc, toUtc, true).stream()
                 .filter(not(scheduledEvents::contains))
                 .map(d -> d.atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId))
                 .toList();

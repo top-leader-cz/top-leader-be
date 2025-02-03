@@ -14,8 +14,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -88,25 +90,44 @@ public class CoachAvailabilityService {
     public List<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
         var requestedIntervals = toIntervals(from, to);
 
-        var available = Stream.concat(
-                getReoccurring(username).stream()
+       var reoccurring =  getReoccurring(username);
+       var available = Stream.concat(
+               reoccurring.stream()
+                       .map(e -> {
+                           var timeFrom = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
+                           var timeTo = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayTo())), e.getTimeTo());
+                           return toIntervals(timeFrom, timeTo);
+                       })
+                       .flatMap(Collection::stream),
+               reoccurring.stream()
                         .map(e -> {
-                            var timeFrom = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
+                            var timeFrom = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.next(e.getDayFrom())), e.getTimeFrom());
                             var timeTo = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.next(e.getDayTo())), e.getTimeTo());
                             return toIntervals(timeFrom, timeTo);
                         })
-                        .flatMap(Collection::stream),
+                        .flatMap(Collection::stream)
 
-                getNonReoccurringByTimeFrame(username, from, to).stream()
-                        .map(a -> toIntervals(a.getDateTimeFrom(), a.getDateTimeTo()))
         ).collect(Collectors.toSet());
 
-        requestedIntervals.removeIf(a -> !available.contains(a));
+        available.addAll(getNonReoccurringByTimeFrame(username, from, to).stream()
+                .map(a -> toIntervals(a.getDateTimeFrom(), a.getDateTimeTo()))
+                .flatMap(Set::stream)
+                .collect(Collectors.toSet()));
 
-        return requestedIntervals.stream()
+        List<LocalDateTime> a = requestedIntervals.stream().sorted().toList();
+
+        var ava = available.stream().sorted().toList();
+
+        requestedIntervals.removeIf(c -> !available.contains(c));
+
+        var res =  requestedIntervals.stream()
                 .sorted()
                 .toList();
+
+        return res;
     }
+
+
 
     Set<LocalDateTime> toIntervals(LocalDateTime from, LocalDateTime to) {
         var intervals = new HashSet<LocalDateTime>();
