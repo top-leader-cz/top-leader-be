@@ -23,6 +23,9 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 import org.springframework.stereotype.Service;
 
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
@@ -88,36 +91,26 @@ public class CoachAvailabilityService {
     }
 
     public List<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
-       var requestedIntervals = toIntervals(from, to);
+        var reoccurringMap = getReoccurring(username).stream()
+                .collect(Collectors.toMap(CoachAvailability::getDayFrom, Function.identity()));
 
-       var reoccurring =  getReoccurring(username);
-         var available = Stream.concat(
-               reoccurring.stream()
-                       .map(e -> {
-                           var timeFrom = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
-                           var timeTo = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayTo())), e.getTimeTo());
-                           return toIntervals(timeFrom, timeTo);
-                       })
-                       .flatMap(Collection::stream),
-               reoccurring.stream()
-                        .map(e -> {
-                            var timeFrom = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.next(e.getDayFrom())), e.getTimeFrom());
-                            var timeTo = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.next(e.getDayTo())), e.getTimeTo());
-                            return toIntervals(timeFrom, timeTo);
-                        })
-                        .flatMap(Collection::stream)
-
-        ).collect(Collectors.toSet());
-
-        available.addAll(getNonReoccurringByTimeFrame(username, from, to).stream()
+        var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to).stream()
                 .map(a -> toIntervals(a.getDateTimeFrom(), a.getDateTimeTo()))
                 .flatMap(Set::stream)
-                .collect(Collectors.toSet()));
+                .collect(Collectors.toSet());
 
-
-        requestedIntervals.removeIf(c -> !available.contains(c));
-
-     return requestedIntervals.stream()
+        return toIntervals(from, to).stream()
+                .filter(r -> {
+                    var e = reoccurringMap.get(r.getDayOfWeek());
+                    if(e != null && e.getTimeFrom() != null && e.getTimeTo() != null) {
+                        var timeFrom = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
+                        var timeTo = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayTo())), e.getTimeTo());
+                        return nonReoccurring.contains(r) || toIntervals(timeFrom, timeTo).contains(r);
+                    }
+                    return nonReoccurring.contains(r);
+                })
+                .collect(Collectors.toSet())
+                .stream()
                 .sorted()
                 .toList();
     }

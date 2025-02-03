@@ -192,8 +192,8 @@ class CoachControllerIT extends IntegrationTest {
 
         final var now = LocalDateTime.now().withNano(0);
 
-        final var user1Session1 = now.plusHours(2);
-        final var user1Session2 = now.plusDays(2);
+        final var user1Session1 = now.plusHours(2).withNano(0);
+        final var user1Session2 = now.plusDays(2).withNano(0);
 
         final var id1 = scheduledSessionRepository.save(new ScheduledSession()
             .setPaid(false)

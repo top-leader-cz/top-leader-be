@@ -339,8 +339,8 @@ class CoachListControllerIT extends IntegrationTest {
     void getCoachAvailabilityTest() throws Exception {
 
         mvc.perform(get("/api/latest/coaches/coach1/availability")
-                        .param("from", "2023-08-14T00:00:00z")
-                        .param("to", "2023-08-14T23:59:00z")
+                        .param("from", "2023-08-14T00:00:00")
+                        .param("to", "2023-08-14T23:59:00")
                 )
                 .andExpect(status().isOk())
                 .andDo(print())
