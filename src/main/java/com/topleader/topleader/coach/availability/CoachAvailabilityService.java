@@ -114,17 +114,12 @@ public class CoachAvailabilityService {
                 .flatMap(Set::stream)
                 .collect(Collectors.toSet()));
 
-        List<LocalDateTime> a = requestedIntervals.stream().sorted().toList();
-
-        var ava = available.stream().sorted().toList();
 
         requestedIntervals.removeIf(c -> !available.contains(c));
 
-        var res =  requestedIntervals.stream()
+     return requestedIntervals.stream()
                 .sorted()
                 .toList();
-
-        return res;
     }
 
 

@@ -345,7 +345,7 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().json("""
-                        ["2023-08-14T10:00:00","2023-08-14T11:00:00","2023-08-14T13:00:00"]
+                        ["2023-08-14T10:00:00Z","2023-08-14T11:00:00Z","2023-08-14T12:00:00Z","2023-08-14T13:00:00Z","2023-08-14T14:00:00Z"]
                         """))
         ;
     }
