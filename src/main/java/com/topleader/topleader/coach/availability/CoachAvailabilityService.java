@@ -88,10 +88,10 @@ public class CoachAvailabilityService {
     }
 
     public List<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
-        var requestedIntervals = toIntervals(from, to);
+       var requestedIntervals = toIntervals(from, to);
 
        var reoccurring =  getReoccurring(username);
-       var available = Stream.concat(
+         var available = Stream.concat(
                reoccurring.stream()
                        .map(e -> {
                            var timeFrom = LocalDateTime.of(from.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
