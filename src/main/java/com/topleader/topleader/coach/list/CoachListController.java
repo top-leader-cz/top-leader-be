@@ -22,6 +22,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -159,7 +160,7 @@ public class CoachListController {
     }
 
     @GetMapping("/{username}/availability")
-    public List<LocalDateTime> getCoachAvailability(
+    public List<ZonedDateTime> getCoachAvailability(
         @PathVariable String username,
         @RequestParam LocalDateTime from,
         @RequestParam LocalDateTime to,
@@ -168,14 +169,13 @@ public class CoachListController {
         final var userZoneId = getUserTimeZoneId(userRepository.findById(loggedUser.getUsername()));
 
         final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
-            .map(ScheduledSession::getTime)
-            .collect(Collectors.toSet());
+                .map(ScheduledSession::getTime)
+                .collect(Collectors.toSet());
 
         return coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, from, to, true).stream()
-            .filter(not(scheduledEvents::contains))
-            .map(d -> d.atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId).toLocalDateTime())
-            .sorted()
-            .toList();
+                .filter(not(scheduledEvents::contains))
+                .map(d -> d.atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId))
+                .toList();
     }
 
     @GetMapping("/{username}/photo")
