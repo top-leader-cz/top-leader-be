@@ -167,7 +167,7 @@ public class CoachListController {
         @AuthenticationPrincipal UserDetails loggedUser
         ) {
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findById("coach1@gmail.com"));
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(loggedUser.getUsername()));
         var fromUtc  = from.withZoneSameInstant(userZoneId).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
         var toUtc  = to.withZoneSameInstant(userZoneId).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime();
 
