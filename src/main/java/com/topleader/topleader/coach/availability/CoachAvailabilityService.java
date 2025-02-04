@@ -59,7 +59,7 @@ public class CoachAvailabilityService {
 
         return getAvailabilitySplitIntoHours(username, from, to).stream()
                 .filter(isNotInsideOf(events))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public List<SyncEvent> getSyncEvents(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
