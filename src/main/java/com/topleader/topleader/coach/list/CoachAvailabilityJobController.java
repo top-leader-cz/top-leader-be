@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 
@@ -33,7 +34,7 @@ public class CoachAvailabilityJobController {
     @GetMapping("/set-free-slots")
     public void updateCoachAvailability() {
         log.info("CoachAvailabilityJobController START");
-        var from = LocalDateTime.now();
+        var from = LocalDate.now().atStartOfDay();
         var to = from.plusDays(7);
 
         coachListViewRepository.fetchActiveCoachesUsernames().forEach(username -> {

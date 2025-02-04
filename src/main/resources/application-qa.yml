@@ -14,7 +14,6 @@ spring:
         cloudSqlInstance: topleader-394306:europe-west3:top-leader-db
         enableIamAuth: false
         sslmode: disable
-
 top-leader:
   app-url: https://qa.topleaderplatform.io
   feedback:

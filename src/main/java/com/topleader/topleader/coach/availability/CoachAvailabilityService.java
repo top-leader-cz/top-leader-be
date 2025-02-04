@@ -8,22 +8,24 @@ import com.topleader.topleader.calendar.calendly.CalendlyService;
 import com.topleader.topleader.calendar.google.GoogleCalendarService;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
+
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 import org.springframework.stereotype.Service;
 
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
@@ -52,12 +54,12 @@ public class CoachAvailabilityService {
         return coachAvailabilityRepository.findAllByUsernameAndRecurringIsTrue(username);
     }
 
-    public Set<LocalDateTime> getAvailabilitySplitIntoHoursFiltered(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
+    public List<LocalDateTime> getAvailabilitySplitIntoHoursFiltered(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
         var events = getSyncEvents(username, from, to, testFreeBusy);
 
         return getAvailabilitySplitIntoHours(username, from, to).stream()
-            .filter(isNotInsideOf(events))
-            .collect(Collectors.toSet());
+                .filter(isNotInsideOf(events))
+                .toList();
     }
 
     public List<SyncEvent> getSyncEvents(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
@@ -88,89 +90,47 @@ public class CoachAvailabilityService {
         };
     }
 
-    public Set<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
+    public List<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
+        var reoccurringMap = getReoccurring(username).stream()
+                .collect(Collectors.toMap(CoachAvailability::getDayFrom, Function.identity()));
 
-        final var dayMap = toDayMap(from, to);
+        var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to);
 
-        return processData(
-            Stream.concat(
-                getReoccurring(username).stream()
-                    .filter(e -> {
-                            if (!dayMap.containsKey(e.getDayFrom()) && !dayMap.containsKey(e.getDayTo())) {
-                                return false;
-                            }
-
-                            if (dayMap.containsKey(e.getDayFrom()) && (LocalDateTime.of(dayMap.get(e.getDayFrom()), e.getTimeFrom()).isAfter(to))) {
-                                return false;
-                            }
-
-                            return !dayMap.containsKey(e.getDayTo()) || (!LocalDateTime.of(dayMap.get(e.getDayTo()), e.getTimeTo()).isBefore(from));
-                        }
-                    )
-                    .map(a -> new TimeRange(
-                        toDateTime(a.getDayFrom(), a.getTimeFrom(), dayMap, from, from::isAfter),
-                        toDateTime(a.getDayTo(), a.getTimeTo(), dayMap, to, to::isBefore)
-                    ))
-                ,
-                getNonReoccurringByTimeFrame(username, from, to).stream()
-                    .map(a -> new TimeRange(a.getDateTimeFrom(), a.getDateTimeTo()))
-            )
-        );
-
-    }
-
-    private static LocalDateTime toDateTime(
-        DayOfWeek day,
-        LocalTime time,
-        Map<DayOfWeek, LocalDate> dayMap,
-        LocalDateTime orDefault,
-        Predicate<LocalDateTime> shouldReturnDefault
-    ) {
-
-        if (!dayMap.containsKey(day)) {
-            return orDefault;
-        }
-
-        final var possibleResult = LocalDateTime.of(dayMap.get(day), time);
-
-        if (shouldReturnDefault.test(possibleResult)) {
-            return orDefault;
-        }
-
-        return possibleResult;
-    }
-
-    private Set<LocalDateTime> processData(Stream<TimeRange> stream) {
-        final var dateCache = new HashSet<LocalDateTime>();
-
-        return stream
-            .flatMap(a -> splitTimeRangeByHour(a).stream()
-                .filter(timeRange -> {
-                    if (dateCache.contains(timeRange.timeFrom())) {
-                        return false;
+        return toIntervals(from, to).stream()
+                .filter(r -> {
+                    var e = reoccurringMap.get(r.getDayOfWeek());
+                    if (e != null && e.getTimeFrom() != null && e.getTimeTo() != null) {
+                        var timeFrom = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
+                        var timeTo = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayTo())), e.getTimeTo());
+                        return testNonReoccurring(r, nonReoccurring) ||  isInRange(r, timeFrom, timeTo);
                     }
-                    dateCache.add(timeRange.timeFrom());
-                    return true;
+                    return testNonReoccurring(r, nonReoccurring);
                 })
-                .map(TimeRange::timeFrom)
-            )
-            .collect(Collectors.toSet());
+                .collect(Collectors.toSet())
+                .stream()
+                .sorted()
+                .toList();
     }
 
-    private static List<TimeRange> splitTimeRangeByHour(TimeRange timeRange) {
+    private boolean testNonReoccurring(LocalDateTime requested, List<CoachAvailability> nonReoccurring) {
+        return nonReoccurring.stream()
+                .anyMatch(n -> isInRange(requested, n.getDateTimeFrom(), n.getDateTimeTo()));
+    }
 
-        final var hourlyIntervals = new ArrayList<TimeRange>();
+    private boolean isInRange(LocalDateTime requested, LocalDateTime from, LocalDateTime to) {
+        final var endTime = requested.plusMinutes(59);
+        return (requested.isAfter(from) || requested.isEqual(from)) &&
+                (endTime.isBefore(to) || endTime.isEqual(to));
+    }
 
-        var currentInterval = timeRange.timeFrom();
-
-        while (!currentInterval.isAfter(timeRange.timeTo()) && !currentInterval.equals(timeRange.timeTo())) {
-
-            final var nextInterval = currentInterval.plusHours(1);
-            hourlyIntervals.add(new TimeRange(currentInterval, nextInterval.isBefore(timeRange.timeTo()) ? nextInterval : timeRange.timeTo()));
-            currentInterval = nextInterval;
+    List<LocalDateTime> toIntervals(LocalDateTime from, LocalDateTime to) {
+        var intervals = new ArrayList<LocalDateTime>();
+        var current = from;
+        while (!current.isAfter(to)) {
+            intervals.add(current);
+            current = current.plusHours(1); // Increment by 1 hour
         }
-
-        return hourlyIntervals;
+        return intervals;
     }
 
     @Transactional
@@ -293,25 +253,5 @@ public class CoachAvailabilityService {
             );
         }
 
-    }
-
-    private static Map<DayOfWeek, LocalDate> toDayMap(LocalDateTime from, LocalDateTime to) {
-        final var result = new EnumMap<DayOfWeek, LocalDate>(DayOfWeek.class);
-
-        result.put(from.getDayOfWeek(), from.toLocalDate());
-
-        var temDate = from.plusDays(1);
-
-        while (temDate.isBefore(to)) {
-            result.put(temDate.getDayOfWeek(), temDate.toLocalDate());
-            temDate = temDate.plusDays(1);
-        }
-
-        result.put(to.getDayOfWeek(), to.toLocalDate());
-
-        return result;
-    }
-
-    private record TimeRange(LocalDateTime timeFrom, LocalDateTime timeTo) {
     }
 }
