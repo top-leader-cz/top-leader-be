@@ -94,20 +94,18 @@ public class CoachAvailabilityService {
         var reoccurringMap = getReoccurring(username).stream()
                 .collect(Collectors.toMap(CoachAvailability::getDayFrom, Function.identity()));
 
-        var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to).stream()
-                .map(a -> toIntervals(a.getDateTimeFrom(), a.getDateTimeTo()))
-                .flatMap(Set::stream)
-                .collect(Collectors.toSet());
+        var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to);
+
 
         return toIntervals(from, to).stream()
                 .filter(r -> {
                     var e = reoccurringMap.get(r.getDayOfWeek());
-                    if(e != null && e.getTimeFrom() != null && e.getTimeTo() != null) {
+                    if (e != null && e.getTimeFrom() != null && e.getTimeTo() != null) {
                         var timeFrom = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
                         var timeTo = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayTo())), e.getTimeTo());
-                        return nonReoccurring.contains(r) || toIntervals(timeFrom, timeTo).contains(r);
+                        return testNonReoccurring(r, nonReoccurring) ||  isInRange(r, timeFrom, timeTo);
                     }
-                    return nonReoccurring.contains(r);
+                    return testNonReoccurring(r, nonReoccurring);
                 })
                 .collect(Collectors.toSet())
                 .stream()
@@ -115,10 +113,20 @@ public class CoachAvailabilityService {
                 .toList();
     }
 
+    private boolean testNonReoccurring(LocalDateTime requested, List<CoachAvailability> nonReoccurring) {
+        return nonReoccurring.stream()
+                .anyMatch(n -> isInRange(requested, n.getDateTimeFrom(), n.getDateTimeTo()));
+    }
+
+    private boolean isInRange(LocalDateTime requested, LocalDateTime from, LocalDateTime to) {
+        final var endTime = requested.plusMinutes(59);
+        return (requested.isAfter(from) || requested.isEqual(from)) &&
+                (endTime.isBefore(to) || endTime.isEqual(to));
+    }
 
 
-    Set<LocalDateTime> toIntervals(LocalDateTime from, LocalDateTime to) {
-        var intervals = new HashSet<LocalDateTime>();
+    List<LocalDateTime> toIntervals(LocalDateTime from, LocalDateTime to) {
+        var intervals = new ArrayList<LocalDateTime>();
         var current = from;
         while (!current.isAfter(to)) {
             intervals.add(current);
