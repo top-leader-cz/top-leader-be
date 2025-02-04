@@ -167,7 +167,7 @@ public class CoachListController {
         @AuthenticationPrincipal UserDetails loggedUser
         ) {
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findById("user1@gamail.com"));
+        final var userZoneId = getUserTimeZoneId(userRepository.findById(loggedUser.getUsername()));
 
         final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
                 .map(ScheduledSession::getTime)
