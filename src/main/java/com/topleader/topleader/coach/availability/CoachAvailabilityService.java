@@ -96,7 +96,6 @@ public class CoachAvailabilityService {
 
         var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to);
 
-
         return toIntervals(from, to).stream()
                 .filter(r -> {
                     var e = reoccurringMap.get(r.getDayOfWeek());
@@ -123,7 +122,6 @@ public class CoachAvailabilityService {
         return (requested.isAfter(from) || requested.isEqual(from)) &&
                 (endTime.isBefore(to) || endTime.isEqual(to));
     }
-
 
     List<LocalDateTime> toIntervals(LocalDateTime from, LocalDateTime to) {
         var intervals = new ArrayList<LocalDateTime>();
