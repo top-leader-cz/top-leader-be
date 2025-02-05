@@ -243,7 +243,8 @@ public class CoachController {
                 .setLanguages(languages)
                 .setFields(fields)
                 .setExperienceSince(experienceSince)
-                .setLinkedinProfile(linkedinProfile);
+                .setLinkedinProfile(linkedinProfile)
+                .setRate(rate);
         }
 
     }
