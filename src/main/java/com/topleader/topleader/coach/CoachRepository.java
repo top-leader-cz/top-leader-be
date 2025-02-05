@@ -17,4 +17,7 @@ public interface CoachRepository extends JpaRepository<Coach, String>, JpaSpecif
     @Modifying
     @Query("update Coach c set c.freeSlots = :freeSlots where c.username = :username")
     void updateCoachSetFreeSlots(String username, boolean freeSlots);
+
+    @Query("select c.freeSlots from Coach c where c.username = :username")
+    boolean hasFeeSlot(String username);
 }

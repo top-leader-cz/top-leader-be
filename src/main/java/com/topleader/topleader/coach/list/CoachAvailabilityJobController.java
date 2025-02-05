@@ -42,8 +42,10 @@ public class CoachAvailabilityJobController {
 
                         var freeSlots = !coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, from, to, true).isEmpty();
 
-                        log.info("setting freeSlot: {}, for coach: {}", freeSlots, username);
-                        coachRepository.updateCoachSetFreeSlots(username, freeSlots);
+                        if(freeSlots != coachRepository.hasFeeSlot(username)) {
+                            log.info("setting freeSlot: {}, for coach: {}", freeSlots, username);
+                            coachRepository.updateCoachSetFreeSlots(username, freeSlots);
+                        }
                     })
                     .onFailure(e -> log.error("Error updating coach availability for coach: {}", username, e));
         });
