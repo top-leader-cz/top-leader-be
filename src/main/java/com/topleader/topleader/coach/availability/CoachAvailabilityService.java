@@ -3,6 +3,8 @@
  */
 package com.topleader.topleader.coach.availability;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import com.topleader.topleader.calendar.domain.SyncEvent;
 import com.topleader.topleader.calendar.calendly.CalendlyService;
 import com.topleader.topleader.calendar.google.GoogleCalendarService;
@@ -90,21 +92,26 @@ public class CoachAvailabilityService {
         };
     }
 
+
+
     public List<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
-        var reoccurringMap = getReoccurring(username).stream()
-                .collect(Collectors.toMap(CoachAvailability::getDayFrom, Function.identity()));
+        Multimap<DayOfWeek, CoachAvailability> reoccurringMap = ArrayListMultimap.create();
+        getReoccurring(username).forEach(e -> reoccurringMap.put(e.getDayFrom(), e));
 
         var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to);
 
         return toIntervals(from, to).stream()
                 .filter(r -> {
-                    var e = reoccurringMap.get(r.getDayOfWeek());
-                    if (e != null && e.getTimeFrom() != null && e.getTimeTo() != null) {
-                        var timeFrom = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
-                        var timeTo = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayTo())), e.getTimeTo());
-                        return testNonReoccurring(r, nonReoccurring) ||  isInRange(r, timeFrom, timeTo);
-                    }
-                    return testNonReoccurring(r, nonReoccurring);
+                    var availabilities = reoccurringMap.get(r.getDayOfWeek());
+                    return  testNonReoccurring(r, nonReoccurring) || availabilities.stream()
+                            .anyMatch(e -> {
+                                if (e != null && e.getTimeFrom() != null && e.getTimeTo() != null) {
+                                    var timeFrom = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
+                                    var timeTo = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayTo())), e.getTimeTo());
+                                    return testNonReoccurring(r, nonReoccurring) || isInRange(r, timeFrom, timeTo);
+                                }
+                                return false;
+                              });
                 })
                 .collect(Collectors.toSet())
                 .stream()
