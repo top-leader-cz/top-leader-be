@@ -3,13 +3,11 @@
  */
 package com.topleader.topleader.coach;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.util.Set;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -58,4 +56,15 @@ public class Coach {
     private String linkedinProfile;
 
     private boolean freeSlots;
+
+    private String firstName;
+
+    @Enumerated(EnumType.STRING)
+    private CertificateType certificate;
+
+    public enum CertificateType {
+        ACC,
+        PCC,
+        MCC
+    }
 }

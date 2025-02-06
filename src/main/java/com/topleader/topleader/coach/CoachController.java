@@ -200,7 +200,7 @@ public class CoachController {
         LocalDate experienceSince,
 
         @NotNull
-        String rate,
+        Coach.CertificateType certificate,
 
         String timeZone,
 
@@ -219,7 +219,7 @@ public class CoachController {
                     c.getLanguages(),
                     c.getFields(),
                     c.getExperienceSince(),
-                    c.getRate(),
+                    c.getCertificate(),
                     c.getTimeZone(),
                     c.getLinkedinProfile()
 
@@ -244,7 +244,7 @@ public class CoachController {
                 .setFields(fields)
                 .setExperienceSince(experienceSince)
                 .setLinkedinProfile(linkedinProfile)
-                .setRate(rate);
+                .setCertificate(certificate);
         }
 
     }

@@ -3,13 +3,9 @@
  */
 package com.topleader.topleader.coach.list;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
+import com.topleader.topleader.coach.Coach;
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.util.Set;
 import lombok.Getter;
@@ -67,5 +63,8 @@ public class CoachListView {
     private String linkedinProfile;
 
     private boolean freeSlots;
+
+    @Enumerated(EnumType.STRING)
+    private Coach.CertificateType certificate;
 
 }

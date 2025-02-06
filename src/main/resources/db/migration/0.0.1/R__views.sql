@@ -7,7 +7,8 @@ select u.*,
        hr_cu.hrs               as hrs,
        ucr.allowed_coach_rates as allowed_coach_rates,
        c.rate,
-       c.internal_rate
+       c.internal_rate,
+       c.certificate
 from users u
          left join users cu on u.coach = cu.username
          left join coach c on c.username = u.username
@@ -113,6 +114,7 @@ select c.username,
        c.experience_since,
        c.public_profile,
        c.rate,
+       c.certificate,
        c.rate_order,
        c.web_link,
        u.time_zone,

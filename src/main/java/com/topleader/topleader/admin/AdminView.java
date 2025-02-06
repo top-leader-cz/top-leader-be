@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.admin;
 
+import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.user.RoleConverter;
 import com.topleader.topleader.user.User;
 import jakarta.persistence.Convert;
@@ -10,6 +11,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
+
+import java.security.cert.Certificate;
 import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -75,6 +78,8 @@ public class AdminView {
     private String allowedCoachRates;
 
     private String rate;
+
+    private Coach.CertificateType certificate;
 
     private Integer internalRate;
 }
