@@ -79,6 +79,7 @@ public class AdminView {
 
     private String rate;
 
+    @Enumerated(EnumType.STRING)
     private Coach.CertificateType certificate;
 
     private Integer internalRate;

@@ -57,8 +57,6 @@ public class Coach {
 
     private boolean freeSlots;
 
-    private String firstName;
-
     @Enumerated(EnumType.STRING)
     private CertificateType certificate;
 

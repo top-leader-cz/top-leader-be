@@ -6,11 +6,11 @@ package com.topleader.topleader.admin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import java.util.Locale;
 import java.util.Set;
 
@@ -43,9 +43,20 @@ class AdminViewControllerIT extends IntegrationTest {
     @Autowired
     private CoachRepository coachRepository;
 
-    @Autowired
-    private UserInfoRepository userInfoRepository;
+    @Test
+    @WithMockUser(username = "admin", authorities = "ADMIN")
+    void listUser() throws Exception {
 
+        var result = mvc.perform(get("/api/latest/admin/users"))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("admin/admin-list-response.json");
+
+        TestUtils.assertJsonEquals(result, expected);
+    }
 
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
@@ -68,7 +79,7 @@ class AdminViewControllerIT extends IntegrationTest {
     void testCreateUser() throws Exception {
         final var createUserRequestDto = new AdminViewController.CreateUserRequestDto(
             "NewUser@gmail.com", "John", "Doe", "UTC", 1L,
-            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "en", "S", 165, Coach.CertificateType.ACC
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "en", "$", 165, Coach.CertificateType.ACC
         );
 
         mvc.perform(post("/api/latest/admin/users")
