@@ -120,11 +120,9 @@ public class CoachListController {
         scheduleSession(user.getUsername(), coachName, request.time(), true);
     }
 
-    private void scheduleSession(String clientName, String coachName, LocalDateTime time, Boolean useFreeBusy) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(clientName));
+    private void scheduleSession(String clientName, String coachName, ZonedDateTime time, Boolean useFreeBusy) {
 
         final var shiftedTime = time
-            .atZone(userZoneId)
             .withZoneSameInstant(ZoneOffset.UTC)
             .toLocalDateTime();
 
@@ -245,7 +243,7 @@ public class CoachListController {
             root.get("rate").in(allowed);
     }
 
-    public record ScheduleSessionRequest(LocalDateTime time) {
+    public record ScheduleSessionRequest(ZonedDateTime time) {
     }
 
     public record CoachListDto(
