@@ -113,7 +113,7 @@ class CoachListControllerIT extends IntegrationTest {
         final var scheduleTime = LocalDateTime.of(
                 LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
                 LocalTime.of(9, 0)
-        );
+        ).atZone(ZoneId.of("UTC"));
 
         coachAvailabilityRepository.save(
                 new CoachAvailability()
@@ -141,7 +141,7 @@ class CoachListControllerIT extends IntegrationTest {
 
         assertThat(session.getCoachUsername(), is("coach1"));
         assertThat(session.getUsername(), is("user"));
-        assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
+        assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
         final var user = userRepository.findById("user").orElseThrow();
 
@@ -175,7 +175,7 @@ class CoachListControllerIT extends IntegrationTest {
         final var scheduleTime = LocalDateTime.of(
                 LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
                 LocalTime.of(9, 0)
-        );
+        ).atZone(ZoneId.of("UTC"));
 
         coachAvailabilityRepository.save(
                 new CoachAvailability()
@@ -203,7 +203,7 @@ class CoachListControllerIT extends IntegrationTest {
 
         assertThat(session.getCoachUsername(), is("coach1"));
         assertThat(session.getUsername(), is("user"));
-        assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
+        assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
         final var user = userRepository.findById("user").orElseThrow();
 
@@ -237,7 +237,7 @@ class CoachListControllerIT extends IntegrationTest {
         final var scheduleTime = LocalDateTime.of(
                 LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
                 LocalTime.of(9, 0)
-        );
+        ).atZone(ZoneId.of("UTC"));
 
         coachAvailabilityRepository.save(
                 new CoachAvailability()
@@ -293,7 +293,7 @@ class CoachListControllerIT extends IntegrationTest {
         final var scheduleTime = LocalDateTime.of(
                 LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
                 LocalTime.of(9, 0)
-        );
+        ).atZone(ZoneId.of("UTC"));
 
         coachAvailabilityRepository.save(
                 new CoachAvailability()
@@ -322,7 +322,7 @@ class CoachListControllerIT extends IntegrationTest {
 
         assertThat(session.getCoachUsername(), is("coach3"));
         assertThat(session.getUsername(), is("no-credit-user-free-coach"));
-        assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
+        assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
         final var user = userRepository.findById("no-credit-user-free-coach").orElseThrow();
 
