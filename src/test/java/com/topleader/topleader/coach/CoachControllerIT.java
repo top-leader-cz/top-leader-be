@@ -118,7 +118,7 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("languages", hasSize(0)))
             .andExpect(jsonPath("fields", hasSize(0)))
             .andExpect(jsonPath("experienceSince", nullValue()))
-            .andExpect(jsonPath("rate", nullValue()))
+            .andExpect(jsonPath("certificate", nullValue()))
         ;
 
     }
@@ -140,7 +140,7 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("fields", hasSize(2)))
             .andExpect(jsonPath("fields", hasItems("field1", "field2")))
             .andExpect(jsonPath("experienceSince", is("2023-08-06")))
-            .andExpect(jsonPath("rate", is("$$$")))
+            .andExpect(jsonPath("certificate", is("ACC")))
             .andExpect(jsonPath("timeZone", is("Europe/Prague")))
         ;
 
@@ -177,7 +177,7 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("fields", hasSize(2)))
             .andExpect(jsonPath("fields", hasItems("field1", "field2")))
             .andExpect(jsonPath("experienceSince", is("2023-08-06")))
-            .andExpect(jsonPath("rate", nullValue()))
+            .andExpect(jsonPath("certificate", is("ACC")))
             .andExpect(jsonPath("timeZone", is("UTC")))
             .andExpect(jsonPath("linkedinProfile", is("http://linkedin.com")))
         ;
