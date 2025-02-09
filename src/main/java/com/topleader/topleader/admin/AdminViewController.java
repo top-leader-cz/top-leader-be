@@ -24,6 +24,7 @@ import java.util.Set;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -194,20 +195,23 @@ public class AdminViewController {
     }
 
     public record CreateUserRequestDto(
-        @NotBlank @Email String username,
-        @NotBlank String firstName,
-        @NotBlank String lastName,
-        @NotBlank String timeZone,
-        Long companyId,
-        @NotNull Boolean isTrial,
+            @NotBlank @Email String username,
+            @NotBlank String firstName,
+            @NotBlank String lastName,
+            @NotBlank String timeZone,
+            Long companyId,
+            @NotNull Boolean isTrial,
 
-        Set<User.Authority> authorities,
-        @NotNull User.Status status,
-        @Pattern(regexp = "[a-z]{2}")
-        String locale,
-        String rate,
-        Integer internalRate
-    ) {
+            Set<User.Authority> authorities,
+            @NotNull User.Status status,
+            @Pattern(regexp = "[a-z]{2}")
+            String locale,
+            @NotNull
+            String rate,
+            Integer internalRate,
+            @NotNull
+            Coach.CertificateType certificate
+            ) {
         public User toUser(String requestedBy) {
             return new User()
                 .setUsername(username.toLowerCase(Locale.ROOT))
@@ -222,14 +226,11 @@ public class AdminViewController {
         }
 
         public Optional<Coach> toCoach() {
-            if (isNull(rate) && isNull(internalRate)) {
-                return Optional.empty();
-            }
-
             return Optional.of(
                 new Coach()
                     .setUsername(username.toLowerCase(Locale.ROOT))
                     .setRate(rate)
+                    .setCertificate(certificate)
                     .setInternalRate(internalRate)
             );
         }
