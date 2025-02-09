@@ -109,7 +109,7 @@ class AdminViewControllerIT extends IntegrationTest {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", 2L,
             true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "updatedCoach", 150, "updatedCoach", "en",
-            Set.of("$$"), null, null
+            Set.of("$$"), null, null, Coach.CertificateType.ACC
         );
         mvc.perform(post("/api/latest/admin/users/user4")
                 .contentType("application/json")
@@ -127,6 +127,7 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
         assertThat(fetchedUser.getFreeCoach()).isEqualTo(updatedUser.freeCoach());
         assertThat(fetchedUser.getAllowedCoachRates()).isEqualTo(updatedUser.allowedCoachRates());
+
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
@@ -170,7 +171,7 @@ class AdminViewControllerIT extends IntegrationTest {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", null,
             true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, null, 150, null, "en",
-            null, null, null
+            null, null, null, Coach.CertificateType.ACC
         );
         mvc.perform(post("/api/latest/admin/users/user1")
                 .contentType("application/json")
@@ -187,6 +188,7 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getCoach()).isNull();
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
         assertThat(fetchedUser.getAllowedCoachRates()).isEmpty();
+
     }
 
     @Test
