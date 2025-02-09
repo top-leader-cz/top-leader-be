@@ -36,6 +36,7 @@ public class CalendlyRefreshAccessTokenJob {
         log.info("Fetching Calendly tokens");
         repository.findBySyncType(CalendarSyncInfo.SyncType.CALENDLY)
                 .forEach(info -> {
+                    CommonUtils.sleep(TimeUnit.MILLISECONDS, 100);
                     log.info("fetching tokens for user: {}", info.getUsername());
                     CommonUtils.sleep(TimeUnit.MILLISECONDS, 100);
                     Try.of(() -> calendarSyncInfoService.fetchTokens(info))

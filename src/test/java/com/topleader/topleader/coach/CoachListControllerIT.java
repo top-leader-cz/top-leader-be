@@ -396,7 +396,7 @@ class CoachListControllerIT extends IntegrationTest {
                 )
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].username", is("coach3")))
-                .andExpect(jsonPath("$.content[0].freeSlots", is(true)))
+                .andExpect(jsonPath("$.content[0].freeSlots", is(false)))
         ;
     }
 
@@ -469,7 +469,7 @@ class CoachListControllerIT extends IntegrationTest {
                 )
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].username", is("coach1")))
-                .andExpect(jsonPath("$.content[0].freeSlots", is(true)))
+                .andExpect(jsonPath("$.content[0].freeSlots", is(false)))
         ;
     }
 

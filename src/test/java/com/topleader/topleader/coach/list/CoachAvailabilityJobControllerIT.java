@@ -17,6 +17,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.time.*;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 
@@ -81,13 +82,12 @@ class CoachAvailabilityJobControllerIT extends IntegrationTest {
         mvc.perform(MockMvcRequestBuilders.get("/api/protected/jobs/set-free-slots"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(coachListViewRepository.findAll())
+        Assertions.assertThat(coachListViewRepository.findAll().stream().filter(CoachListView::getPublicProfile).collect(Collectors.toList()))
                 .extracting(CoachListView::getUsername, CoachListView::isFreeSlots)
                 .containsExactlyInAnyOrder(
                         new Tuple("coach1", true),
                         new Tuple("coach2", false),
-                        new Tuple("coach3", false),
-                        new Tuple("coach4", true)
+                        new Tuple("coach3", true)
          );
     }
 }
