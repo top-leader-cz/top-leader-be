@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.coach.list;
 
+import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
 import com.topleader.topleader.email.EmailTemplateService;
@@ -262,6 +263,8 @@ public class CoachListController {
 
         String rate,
 
+        Coach.CertificateType certificate,
+
         String timeZone,
 
         String webLink,
@@ -283,6 +286,7 @@ public class CoachListController {
                     c.getFields(),
                     toExperience(c.getExperienceSince()),
                     c.getRate(),
+                    c.getCertificate(),
                     c.getTimeZone(),
                     c.getWebLink(),
                     c.getLinkedinProfile(),
