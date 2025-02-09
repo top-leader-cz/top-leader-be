@@ -157,7 +157,9 @@ public class AdminViewController {
         String locale,
         Set<String> allowedCoachRates,
         String rate,
-        Integer internalRate
+        Integer internalRate,
+        @NotNull
+        Coach.CertificateType certificate
     ) {
         public User updateUser(User user) {
             Optional.ofNullable(firstName).ifPresent(user::setFirstName);
@@ -171,25 +173,24 @@ public class AdminViewController {
             user.setFreeCoach(freeCoach);
             Optional.ofNullable(locale).ifPresent(user::setLocale);
             user.setAllowedCoachRates(allowedCoachRates);
+
             return user;
         }
 
         public Coach updateCoach(Coach coach) {
             Optional.ofNullable(rate).ifPresent(coach::setRate);
             Optional.ofNullable(internalRate).ifPresent(coach::setInternalRate);
+            Optional.ofNullable(certificate).ifPresent(coach::setCertificate);
             return coach;
         }
 
         public Optional<Coach> toCoach(String username) {
-            if (isNull(rate) && isNull(internalRate)) {
-                return Optional.empty();
-            }
-
             return Optional.of(
                 new Coach()
                     .setUsername(username)
                     .setRate(rate)
                     .setInternalRate(internalRate)
+                    .setCertificate(certificate)
             );
         }
     }
