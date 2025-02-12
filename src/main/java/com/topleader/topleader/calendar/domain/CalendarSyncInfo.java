@@ -20,6 +20,8 @@ public class CalendarSyncInfo {
     @Column(insertable = false, updatable = false)
     private String username;
 
+    private String email;
+
     private String refreshToken;
 
     private String accessToken;
@@ -36,7 +38,7 @@ public class CalendarSyncInfo {
     private String ownerUrl;
 
     public enum Status {
-        OK, WARN, ERROR
+        OK, WARN, ERROR, NEW
     }
 
     public enum SyncType {

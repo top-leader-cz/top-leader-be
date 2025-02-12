@@ -8,6 +8,7 @@ import com.topleader.topleader.calendar.domain.SyncEvent;
 import com.topleader.topleader.calendar.calendly.domain.CalendlyUserInfo;
 import com.topleader.topleader.calendar.calendly.domain.TokenResponse;
 
+import com.topleader.topleader.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
+import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserCalendlyUuid;
 import static org.springframework.http.HttpHeaders.*;
 
@@ -40,6 +43,10 @@ public class CalendlyService {
     public void saveInfo(CalendarSyncInfo info) {
         log.info("Saving Calendly info: {}", info.getId().getUsername());
         repository.save(info);
+    }
+
+    public Optional<CalendarSyncInfo> findInfo(String email) {
+        return repository.findByEmailOrUsername(email, CALENDLY);
     }
 
     public TokenResponse fetchTokens(String authorizationCode) {
@@ -67,7 +74,7 @@ public class CalendlyService {
 
     public List<SyncEvent> getUserEvents(String username, LocalDateTime startDate, LocalDateTime endDate) {
         log.info("Looking for Calendly info");
-        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.CALENDLY))
+        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CALENDLY))
                 .map(info -> {
                     log.info("Fetching Calendly user events");
                     try {
