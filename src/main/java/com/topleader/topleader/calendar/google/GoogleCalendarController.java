@@ -7,7 +7,12 @@ import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.oauth2.Oauth2Scopes;
 import java.io.IOException;
+import java.util.Calendar;
 import java.util.Set;
+
+import com.topleader.topleader.calendar.CalendarSyncInfoRepository;
+import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
+import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.binary.Base64;
@@ -35,6 +40,8 @@ public class GoogleCalendarController {
 
     private final GoogleCalendarService calendarService;
 
+    private final CalendarSyncInfoRepository calendarSyncInfoRepository;
+
     @Value("${google.client.redirectUri}")
     private String redirectURI;
 
@@ -48,17 +55,18 @@ public class GoogleCalendarController {
 
     @GetMapping(value = "/login/google", params = {"code", "state"})
     public RedirectView oauth2Callback(
-        @RequestParam(value = "code") String code,
-        @RequestParam(value = "state") String state
-        ) throws IOException {
+            @RequestParam(value = "code") String code,
+            @RequestParam(value = "state") String state
+    ) throws IOException {
 
         final var response = flow.newTokenRequest(code).setRedirectUri(redirectURI).execute();
 
         final var userEmail = new String(Base64.decodeBase64(state));
 
-        calendarService.storeTokenInfo(userEmail, response);
-
-        return new RedirectView("/#/sync-success?provider=gcal");
+        return Try.run(() -> calendarService.storeTokenInfo(userEmail, response))
+                .map(d -> new RedirectView("/#/sync-success?provider=gcal"))
+                .onFailure(e -> log.error("Failed to save Google info", e))
+                .getOrElse(new RedirectView("/#/sync-error?provider=gcal&error=user.email.not.matched"));
     }
 
     private String authorize(String username) {

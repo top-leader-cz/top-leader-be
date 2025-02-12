@@ -19,6 +19,7 @@ public class CalendarController {
 
     @PostMapping
     public void createCalendarInfo(@AuthenticationPrincipal UserDetails user, @RequestBody InfoRequest request) {
+        log.info("Creating calendar info for user {}", user.getUsername());
         repository.save(new CalendarSyncInfo()
                 .setId(new CalendarSyncInfo.CalendarInfoId(user.getUsername(), request.syncType()))
                 .setEmail(request.email())
