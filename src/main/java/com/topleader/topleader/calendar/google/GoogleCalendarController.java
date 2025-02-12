@@ -4,6 +4,7 @@
 package com.topleader.topleader.calendar.google;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
+import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.oauth2.Oauth2Scopes;
 import java.io.IOException;
@@ -57,16 +58,19 @@ public class GoogleCalendarController {
     public RedirectView oauth2Callback(
             @RequestParam(value = "code") String code,
             @RequestParam(value = "state") String state
-    ) throws IOException {
+    ) {
+        try {
+            var response = flow.newTokenRequest(code).setRedirectUri(redirectURI).execute();
+            var userEmail = new String(Base64.decodeBase64(state));
 
-        final var response = flow.newTokenRequest(code).setRedirectUri(redirectURI).execute();
-
-        final var userEmail = new String(Base64.decodeBase64(state));
-
-        return Try.run(() -> calendarService.storeTokenInfo(userEmail, response))
-                .map(d -> new RedirectView("/#/sync-success?provider=gcal"))
-                .onFailure(e -> log.error("Failed to save Google info", e))
-                .getOrElse(new RedirectView("/#/sync-error?provider=gcal&error=user.email.not.matched"));
+            return Try.run(() -> calendarService.storeTokenInfo(userEmail, response))
+                    .map(d -> new RedirectView("/#/sync-success?provider=gcal"))
+                    .onFailure(e -> log.error("Failed to save Google info", e))
+                    .getOrElse(new RedirectView("/#/sync-error?provider=gcal&error=user.email.not.matched"));
+        } catch (Exception e) {
+            log.error("Failed to sync Google", e);
+            return new RedirectView("/#/sync-error?provider=gcal&error=sync.failed");
+        }
     }
 
     private String authorize(String username) {
