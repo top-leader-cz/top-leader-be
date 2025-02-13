@@ -10,6 +10,7 @@ import com.topleader.topleader.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.calendar.CalendarToErrorHandler;
 import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.calendar.domain.SyncEvent;
+import com.topleader.topleader.util.common.CommonUtils;
 import com.topleader.topleader.util.transaction.TransactionService;
 
 import java.io.IOException;
@@ -54,22 +55,21 @@ public class GoogleCalendarService {
     @Value("${google.client.client-secret}")
     private String clientSecret;
 
-    public void storeTokenInfo(String username, TokenResponse tokenResponse) {
-        log.info("Storing token info for user {} token info: {}", username, tokenResponse);
-
-        var id = new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.GOOGLE);
+    public void storeTokenInfo(String email, TokenResponse tokenResponse) {
         transactionService.execute(() -> {
-            final var info = calendarSyncInfoRepository.findById(id).orElse(new CalendarSyncInfo().setId(id));
+            var info = calendarSyncInfoRepository.findByEmailOrUsername(email, CalendarSyncInfo.SyncType.GOOGLE)
+                    .orElseThrow(CommonUtils.entityNotFound(email));
             info
                     .setStatus(CalendarSyncInfo.Status.OK)
                     .setRefreshToken(tokenResponse.getRefreshToken())
                     .setAccessToken(tokenResponse.getAccessToken())
+                    .setEmail(email)
                     .setLastSync(LocalDateTime.now());
 
+            log.info("Storing token info for user {} email: {}", info.getUsername(), email);
             calendarSyncInfoRepository.save(info);
         });
 
-        log.info("Storing token info for user {}", username);
     }
 
     public List<SyncEvent> getUserEvents(String username, LocalDateTime startDate, LocalDateTime endDate, Boolean testFreeBusy) {

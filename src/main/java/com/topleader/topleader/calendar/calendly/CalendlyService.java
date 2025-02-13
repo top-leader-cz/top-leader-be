@@ -8,6 +8,7 @@ import com.topleader.topleader.calendar.domain.SyncEvent;
 import com.topleader.topleader.calendar.calendly.domain.CalendlyUserInfo;
 import com.topleader.topleader.calendar.calendly.domain.TokenResponse;
 
+import com.topleader.topleader.user.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,8 +20,10 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
+import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserCalendlyUuid;
 import static org.springframework.http.HttpHeaders.*;
 
@@ -42,8 +45,11 @@ public class CalendlyService {
         repository.save(info);
     }
 
+    public Optional<CalendarSyncInfo> findInfo(String email) {
+        return repository.findByEmailOrUsername(email, CALENDLY);
+    }
 
-    public TokenResponse fetchTokens(String authorizationCode, String username) {
+    public TokenResponse fetchTokens(String authorizationCode) {
         log.info("Fetching Calendly tokens");
         var body = new LinkedMultiValueMap<String, String>();
         body.add("grant_type", "authorization_code");

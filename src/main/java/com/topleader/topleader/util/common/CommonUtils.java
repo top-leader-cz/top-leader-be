@@ -11,6 +11,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 @Slf4j
 @UtilityClass
@@ -27,8 +28,8 @@ public class CommonUtils {
             .onFailure(e -> log.warn("Failed to sleep", e));
     }
 
-    public void entityNotFound(String message) {
-        throw new EntityNotFoundException(message);
+    public Supplier<EntityNotFoundException> entityNotFound(String message) {
+        return () -> new EntityNotFoundException(message);
     }
 
 
