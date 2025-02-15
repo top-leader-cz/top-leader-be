@@ -20,7 +20,6 @@ public class CalendlyController {
 
     private final CalendlyService calendlyService;
 
-
     @GetMapping("/login/calendly")
     public RedirectView cal(String code) {
         CalendarSyncInfo info;

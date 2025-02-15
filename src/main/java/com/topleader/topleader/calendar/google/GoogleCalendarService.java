@@ -48,6 +48,8 @@ public class GoogleCalendarService {
 
     private final CalendarToErrorHandler errorHandler;
 
+    private final UserDetailService userDetailService;
+
     @Value("${google.client.client-id}")
     private String clientId;
 
