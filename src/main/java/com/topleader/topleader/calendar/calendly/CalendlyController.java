@@ -2,6 +2,7 @@ package com.topleader.topleader.calendar.calendly;
 
 
 import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
+import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.util.common.CommonUtils;
 import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;

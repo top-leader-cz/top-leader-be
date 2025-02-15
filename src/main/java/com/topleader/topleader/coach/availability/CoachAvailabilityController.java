@@ -3,6 +3,9 @@
  */
 package com.topleader.topleader.coach.availability;
 
+import com.topleader.topleader.calendar.calendly.CalendlyService;
+import com.topleader.topleader.calendar.calendly.domain.CalendlySchedules;
+import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.Valid;
@@ -18,11 +21,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static com.topleader.topleader.exception.ErrorCodeConstants.FIELD_OUTSIDE_OF_FRAME;
 import static com.topleader.topleader.exception.ErrorCodeConstants.MORE_THEN_24_EVENT;
@@ -40,6 +39,8 @@ public class CoachAvailabilityController {
     private final CoachAvailabilityService coachAvailabilityService;
 
     private final UserRepository userRepository;
+
+    private CalendlyService calendlyService;
 
     @Secured("COACH")
     @GetMapping("/non-recurring")
@@ -81,9 +82,13 @@ public class CoachAvailabilityController {
     }
 
     @Secured("COACH")
-    @GetMapping("/recurring")
-    public List<ReoccurringEventDto> getRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user) {
+    @PostMapping("/recurring")
+    public List<ReoccurringEventDto> getRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user, ReoccurringAvailabilityRequest request) {
         final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
+
+        if(request.scheduleUuid() != null) {
+            return calendlyService.getScheduledAvailability(user.getUsername(), request.scheduleUuid());
+        }
 
         return coachAvailabilityService.getReoccurring(user.getUsername()).stream()
             .map(e ->
@@ -136,6 +141,16 @@ public class CoachAvailabilityController {
         coachAvailabilityService.setRecurringAvailability(user.getUsername(), request);
     }
 
+
+    @Secured("COACH")
+    @GetMapping("/event-types")
+    public List<CalendlySchedules> getCalendlySchedules(@AuthenticationPrincipal UserDetails user) {
+        return calendlyService.getSchedules(user.getUsername());
+    }
+
+    public record ReoccurringAvailabilityRequest(String scheduleUuid , CalendarSyncInfo.SyncType syncType) {
+    }
+
     public record EventFilterDto(@NotNull LocalDateTime from, @NotNull LocalDateTime to) {
     }
 
@@ -153,5 +168,4 @@ public class CoachAvailabilityController {
         @NotNull List<NonReoccurringEventDto> events
     ) {
     }
-
 }

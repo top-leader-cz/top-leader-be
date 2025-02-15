@@ -10,6 +10,7 @@ import com.topleader.topleader.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.calendar.CalendarToErrorHandler;
 import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.calendar.domain.SyncEvent;
+import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.util.common.CommonUtils;
 import com.topleader.topleader.util.transaction.TransactionService;
 
@@ -49,6 +50,8 @@ public class GoogleCalendarService {
 
     private final CalendarToErrorHandler errorHandler;
 
+    private final UserDetailService userDetailService;
+
     @Value("${google.client.client-id}")
     private String clientId;
 
@@ -58,7 +61,10 @@ public class GoogleCalendarService {
     public void storeTokenInfo(String email, TokenResponse tokenResponse) {
         transactionService.execute(() -> {
             var info = calendarSyncInfoRepository.findByEmailOrUsername(email, CalendarSyncInfo.SyncType.GOOGLE)
-                    .orElseThrow(CommonUtils.entityNotFound(email));
+                    .orElse(new CalendarSyncInfo()
+                            .setId(new CalendarSyncInfo.CalendarInfoId(userDetailService.find(email).getUsername(), CalendarSyncInfo.SyncType.CALENDLY))
+                            .setEmail(email)
+                    );
             info
                     .setStatus(CalendarSyncInfo.Status.OK)
                     .setRefreshToken(tokenResponse.getRefreshToken())

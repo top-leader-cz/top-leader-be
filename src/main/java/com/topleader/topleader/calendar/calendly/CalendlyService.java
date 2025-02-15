@@ -3,20 +3,24 @@ package com.topleader.topleader.calendar.calendly;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.topleader.topleader.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.calendar.CalendarToErrorHandler;
+import com.topleader.topleader.calendar.calendly.domain.CalendlySchedules;
 import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.calendar.domain.SyncEvent;
 import com.topleader.topleader.calendar.calendly.domain.CalendlyUserInfo;
 import com.topleader.topleader.calendar.calendly.domain.TokenResponse;
 
-import com.topleader.topleader.user.User;
+import com.topleader.topleader.coach.availability.CoachAvailabilityController;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import java.nio.charset.Charset;
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +35,8 @@ import static org.springframework.http.HttpHeaders.*;
 @Service
 @RequiredArgsConstructor
 public class CalendlyService {
+
+    private static final String SCHEDULE_URI_REPLACEMENT = "https://api.calendly.com/user_availability_schedules/";
 
     private final CalendarSyncInfoRepository repository;
 
@@ -106,7 +112,83 @@ public class CalendlyService {
                 .orElse(new ArrayList<>());
     }
 
+    public List<CalendlySchedules> getSchedules(String username) {
+        log.info("Fetching Calendly events types");
+        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CALENDLY))
+                .map(info -> {
+                    try {
+                        var response = restClient.get().uri(properties.getBaseApiUrl().concat("/user_availability_schedules?user={user}"),
+                                        info.getOwnerUrl())
+                                .header(AUTHORIZATION, bearer(info.getAccessToken()))
+                                .retrieve()
+                                .body(JsonNode.class);
 
+                        var events = new ArrayList<CalendlySchedules>();
+                        response.get("collection").forEach(node -> {
+                                    var uri = node.get("uri").asText();
+                                    var scheduleUuid = uri.replace(SCHEDULE_URI_REPLACEMENT, StringUtils.EMPTY);
+                                    events.add(new CalendlySchedules(node.get("name").asText(), scheduleUuid));
+                                }
+
+                        );
+                        return events;
+                    } catch (Exception e) {
+                        log.error("Error fetching Calendly schedules", e);
+                        throw new RuntimeException("Error fetching Calendly schedules", e);
+                    }
+                })
+                .orElse(new ArrayList<>());
+    }
+
+
+    public List<CoachAvailabilityController.ReoccurringEventDto> getScheduledAvailability(String username, String scheduleUuid) {
+        log.info("Fetching Calendly scheduled availability");
+        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CALENDLY))
+                .map(info -> {
+                    try {
+                        var response = restClient.get().uri(properties.getBaseApiUrl().concat("/user_availability_schedules/{scheduleUuid}"),
+                                        info.getOwnerUrl(), scheduleUuid)
+                                .header(AUTHORIZATION, bearer(info.getAccessToken()))
+                                .retrieve()
+                                .body(JsonNode.class);
+
+                        var events = new ArrayList<CoachAvailabilityController.ReoccurringEventDto>();
+                        response.get("resource").get("rules").forEach(node -> {
+                            var dayOfTheWeek = getDayOfWeek(node.get("wday").asText());
+                            node.get("intervals").forEach(interval -> {
+                                var dto = new CoachAvailabilityController.ReoccurringEventDto(from(dayOfTheWeek, interval), to(dayOfTheWeek, interval));
+                                events.add(dto);
+                            });
+                        });
+                        return events;
+                    } catch (Exception e) {
+                        log.error("Error fetching scheduled availability", e);
+                        throw new RuntimeException("Error fetching scheduled availability", e);
+                    }
+                })
+                .orElse(new ArrayList<>());
+    }
+
+    private DayOfWeek getDayOfWeek(String day) {
+        return switch (day) {
+            case "monday" -> DayOfWeek.MONDAY;
+            case "tuesday" -> DayOfWeek.TUESDAY;
+            case "wednesday" -> DayOfWeek.WEDNESDAY;
+            case "thursday" -> DayOfWeek.THURSDAY;
+            case "friday" -> DayOfWeek.FRIDAY;
+            case "saturday" -> DayOfWeek.SATURDAY;
+            case "sunday" -> DayOfWeek.SUNDAY;
+            default -> throw new IllegalArgumentException("Invalid day of week: " + day);
+        };
+    }
+
+    private CoachAvailabilityController.ReoccurringEventTimeDto from(DayOfWeek dayOfTheWeek, JsonNode interval) {
+        return new CoachAvailabilityController.ReoccurringEventTimeDto(dayOfTheWeek, LocalTime.parse(interval.get("from").asText()));
+    }
+
+    private CoachAvailabilityController.ReoccurringEventTimeDto to(DayOfWeek dayOfTheWeek, JsonNode interval) {
+        return new CoachAvailabilityController.ReoccurringEventTimeDto(dayOfTheWeek, LocalTime.parse(interval.get("to").asText()));
+    }
 
     private String basic() {
         return "Basic " + encodeBasicAuth(properties.getClientId(), properties.getClientSecrets(), Charset.defaultCharset());

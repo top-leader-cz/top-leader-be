@@ -96,6 +96,11 @@ public class CoachAvailabilityService {
 
     public List<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
         Multimap<DayOfWeek, CoachAvailability> reoccurringMap = ArrayListMultimap.create();
+        var availabilityType = coachAvailabilityRepository.getAvailabilityTpe(username);
+
+       if(CoachAvailability.AvailabilityType.CALENDLY.equals(availabilityType)) {
+            calendlyService.getScheduledAvailability(username).forEach(e -> reoccurringMap.put(e.getDayFrom(), e));
+        }
         getReoccurring(username).forEach(e -> reoccurringMap.put(e.getDayFrom(), e));
 
         var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to);
