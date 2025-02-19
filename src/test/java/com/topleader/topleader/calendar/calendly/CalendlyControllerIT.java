@@ -49,7 +49,7 @@ class CalendlyControllerIT extends IntegrationTest {
                                 }
                                 """)));
 
-        mvc.perform(MockMvcRequestBuilders.get("/login/calendly?code=code"))
+        mvc.perform(MockMvcRequestBuilders.get("/login/calendly?code=code&username=coach1"))
                 .andExpect(status().is3xxRedirection());
 
         Assertions.assertThat(repository.findAll()).extracting(CalendarSyncInfo::getAccessToken, CalendarSyncInfo::getRefreshToken,

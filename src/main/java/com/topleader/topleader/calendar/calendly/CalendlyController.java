@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.view.RedirectView;
 
@@ -21,13 +22,12 @@ public class CalendlyController {
     private final CalendlyService calendlyService;
 
     @GetMapping("/login/calendly")
-    public RedirectView cal(String code) {
+    public RedirectView cal(@RequestParam String code, @RequestParam String username) {
         CalendarSyncInfo info;
         try {
             var tokens = calendlyService.fetchTokens(code);
-            var userInfo = calendlyService.getUserInfo(tokens);
-             info = new CalendarSyncInfo()
-                    .setId(new CalendarSyncInfo.CalendarInfoId(userInfo.getResource().getEmail(), CalendarSyncInfo.SyncType.CALENDLY))
+            info = new CalendarSyncInfo()
+                    .setId(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.CALENDLY))
                     .setRefreshToken(tokens.getRefreshToken())
                     .setAccessToken(tokens.getAccessToken())
                     .setOwnerUrl(tokens.getOwner())
