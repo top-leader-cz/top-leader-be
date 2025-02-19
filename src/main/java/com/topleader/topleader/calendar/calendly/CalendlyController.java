@@ -25,7 +25,7 @@ public class CalendlyController {
     public RedirectView cal(@RequestParam String code, @RequestParam String username) {
         CalendarSyncInfo info;
         try {
-            var tokens = calendlyService.fetchTokens(code);
+            var tokens = calendlyService.fetchTokens(code, username);
             info = new CalendarSyncInfo()
                     .setId(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.CALENDLY))
                     .setRefreshToken(tokens.getRefreshToken())
