@@ -158,7 +158,6 @@ public class AdminViewController {
         Set<String> allowedCoachRates,
         String rate,
         Integer internalRate,
-        @NotNull
         Coach.CertificateType certificate
     ) {
         public User updateUser(User user) {
@@ -210,7 +209,6 @@ public class AdminViewController {
             @NotNull
             String rate,
             Integer internalRate,
-            @NotNull
             Coach.CertificateType certificate
             ) {
         public User toUser(String requestedBy) {

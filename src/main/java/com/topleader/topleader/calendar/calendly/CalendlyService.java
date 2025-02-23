@@ -42,27 +42,18 @@ public class CalendlyService {
         repository.save(info);
     }
 
-    public TokenResponse fetchTokens(String authorizationCode) {
+    public TokenResponse fetchTokens(String authorizationCode, String username) {
         log.info("Fetching Calendly tokens");
         var body = new LinkedMultiValueMap<String, String>();
         body.add("grant_type", "authorization_code");
         body.add("code", authorizationCode);
-        body.add("redirect_uri", properties.getRedirectUri());
+        body.add("redirect_uri", properties.getRedirectUri().concat("?username=" + username));
 
         return restClient.post().uri(properties.getBaseAuthUrl().concat("/oauth/token"))
                 .header(AUTHORIZATION, basic())
                 .body(body)
                 .retrieve()
                 .body(TokenResponse.class);
-    }
-
-    public CalendlyUserInfo getUserInfo(TokenResponse tokens) {
-        log.info("Fetching Calendly user info: {}", tokens.getOwner());
-
-        return restClient.get().uri(properties.getBaseApiUrl().concat("/users/" + getUserCalendlyUuid(tokens.getOwner())))
-                .header(AUTHORIZATION, bearer(tokens.getAccessToken()))
-                .retrieve()
-                .body(CalendlyUserInfo.class);
     }
 
     public List<SyncEvent> getUserEvents(String username, LocalDateTime startDate, LocalDateTime endDate) {
