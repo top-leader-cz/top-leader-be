@@ -206,7 +206,6 @@ public class AdminViewController {
             @NotNull User.Status status,
             @Pattern(regexp = "[a-z]{2}")
             String locale,
-            @NotNull
             String rate,
             Integer internalRate,
             Coach.CertificateType certificate
