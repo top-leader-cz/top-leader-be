@@ -67,4 +67,6 @@ public class CoachListView {
     @Enumerated(EnumType.STRING)
     private Coach.CertificateType certificate;
 
+    private int priority;
+
 }

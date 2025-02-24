@@ -31,7 +31,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -570,7 +570,6 @@ class CoachListControllerIT extends IntegrationTest {
         final var exp = LocalDate.now().getYear() - 2019;
 
         mvc.perform(get("/api/latest/coaches/coach3"))
-                .andDo(print())
                 .andExpect(jsonPath("$.username", is("coach3")))
                 .andExpect(jsonPath("$.firstName", is("Michael")))
                 .andExpect(jsonPath("$.lastName", is("Johnson")))
@@ -595,9 +594,29 @@ class CoachListControllerIT extends IntegrationTest {
                                 }
                                 """)
                 )
-                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content", hasSize(1)))
         ;
     }
+
+
+    @Test
+    @WithMockUser
+    void findCoachesPriority() throws Exception {
+
+        mvc.perform(post("/api/latest/coaches")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "page": {}
+                                }
+                                """)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[*].username", containsInRelativeOrder("coach2",  "coach3", "coach1")))
+        ;
+    }
+
+
 }
