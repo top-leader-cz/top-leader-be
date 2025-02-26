@@ -13,6 +13,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
 
 import java.nio.charset.Charset;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
@@ -49,5 +50,9 @@ public class CalendarSyncInfoService {
 
     private String basic() {
         return "Basic " + encodeBasicAuth(properties.getClientId(), properties.getClientSecrets(), Charset.defaultCharset());
+    }
+
+    public CalendarSyncInfo save(CalendarSyncInfo info) {
+        return repository.save(info);
     }
 }
