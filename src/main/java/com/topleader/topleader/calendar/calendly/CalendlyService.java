@@ -42,6 +42,7 @@ public class CalendlyService {
         repository.save(info);
     }
 
+
     public TokenResponse fetchTokens(String authorizationCode, String username) {
         log.info("Fetching Calendly tokens");
         var body = new LinkedMultiValueMap<String, String>();
@@ -55,6 +56,21 @@ public class CalendlyService {
                 .retrieve()
                 .body(TokenResponse.class);
     }
+
+    public TokenResponse refreshTokens(CalendarSyncInfo info) {
+        log.info("Refreshing Calendly token");
+        var body = new LinkedMultiValueMap<String, String>();
+        body.add("grant_type", "refresh_token");
+        body.add("refresh_token", info.getRefreshToken());
+        body.add("redirect_uri", properties.getRedirectUri());
+
+        return restClient.post().uri(properties.getBaseAuthUrl().concat("/oauth/token"))
+                .header(AUTHORIZATION, basic())
+                .body(body)
+                .retrieve()
+                .body(TokenResponse.class);
+    }
+
 
     public List<SyncEvent> getUserEvents(String username, LocalDateTime startDate, LocalDateTime endDate) {
         log.info("Looking for Calendly info");

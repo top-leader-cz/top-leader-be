@@ -26,13 +26,15 @@ import java.time.ZoneId;
 public class CalendlyTokenInfoController {
 
     private final CalendarSyncInfoService calendarService;
+
+    private final CalendlyService calendlyService;
     private final CalendarToErrorHandler errorHandler;
 
     @GetMapping
     public CalendarTokenInfo getGoogleTokenInfo(@AuthenticationPrincipal UserDetails user) {
         return calendarService.getInfo(user.getUsername(), CalendarSyncInfo.SyncType.CALENDLY)
                 .map(info ->
-                     Try.of(() -> calendarService.fetchTokens(info))
+                     Try.of(() -> calendlyService.refreshTokens(info))
                             .map(tokens ->
                                     calendarService.save(info.setRefreshToken(tokens.getRefreshToken())
                                             .setAccessToken(tokens.getAccessToken())

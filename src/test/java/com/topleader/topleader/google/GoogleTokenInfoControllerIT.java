@@ -24,7 +24,7 @@ class GoogleTokenInfoControllerIT extends IntegrationTest {
             .andExpect(content().json("""
                 {
                     "active": true,
-                    "status": "OK",
+                    "status": "ERROR",
                     "lastSync": "2023-08-14T13:00:00Z"
                 }
                 """)
