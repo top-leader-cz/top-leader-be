@@ -57,6 +57,8 @@ public class Coach {
 
     private boolean freeSlots;
 
+    private int priority;
+
     @Enumerated(EnumType.STRING)
     private CertificateType certificate;
 

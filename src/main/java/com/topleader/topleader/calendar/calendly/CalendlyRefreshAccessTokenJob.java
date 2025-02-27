@@ -25,7 +25,7 @@ public class CalendlyRefreshAccessTokenJob {
 
     private final CalendarSyncInfoRepository repository;
 
-    private final CalendarSyncInfoService calendarSyncInfoService;
+    private final CalendlyService calendlyService;
 
     private final CalendarToErrorHandler errorHandler;
 
@@ -38,8 +38,7 @@ public class CalendlyRefreshAccessTokenJob {
                 .forEach(info -> {
                     CommonUtils.sleep(TimeUnit.MILLISECONDS, 100);
                     log.info("fetching tokens for user: {}", info.getUsername());
-                    CommonUtils.sleep(TimeUnit.MILLISECONDS, 100);
-                    Try.of(() -> calendarSyncInfoService.fetchTokens(info))
+                    Try.of(() -> calendlyService.refreshTokens(info))
                             .map(tokens ->
                                  repository.save(info.setRefreshToken(tokens.getRefreshToken())
                                         .setAccessToken(tokens.getAccessToken())

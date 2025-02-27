@@ -33,7 +33,9 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -212,13 +214,16 @@ public class CoachListController {
     }
 
     private Page<CoachListView> findCoaches(List<Specification<CoachListView>> filter, Pageable page) {
+       var p = PageRequest.of(page.getPageNumber(), page.getPageSize(),
+               page.getSortOr(Sort.sort(CoachListView.class).by(CoachListView::getPriority).descending()));
+
 
         return coachListViewRepository.findAll(
             Optional.ofNullable(filter)
                 .filter(not(List::isEmpty))
                 .map(f -> allOf(f).and(isProfilePublic()))
                 .orElse(isProfilePublic()),
-            page
+            p
         );
 
     }

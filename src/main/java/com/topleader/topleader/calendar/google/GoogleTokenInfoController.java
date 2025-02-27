@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 
 /**
@@ -28,10 +29,18 @@ public class GoogleTokenInfoController {
 
     private final CalendarSyncInfoService calendarService;
 
+    private final GoogleCalendarService googleCalendarService;
+
 
     @GetMapping
     public CalendarTokenInfo getGoogleTokenInfo(@AuthenticationPrincipal UserDetails user) {
+
         return calendarService.getInfo(user.getUsername(), CalendarSyncInfo.SyncType.GOOGLE)
+                .map(info -> {
+                       var active = googleCalendarService.verifyToken(info.getRefreshToken());
+                       info.setStatus(active ? CalendarSyncInfo.Status.OK : CalendarSyncInfo.Status.ERROR);
+                       return calendarService.save(info);
+                })
                 .map(tokenInfo -> new CalendarTokenInfo(
                         true,
                         tokenInfo.getStatus(),
