@@ -20,14 +20,13 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
 import lombok.AllArgsConstructor;
-
 import org.springframework.stereotype.Service;
 
 import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
@@ -40,6 +39,7 @@ import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZone
 @Service
 @AllArgsConstructor
 public class CoachAvailabilityService {
+    private static final int NOT_ALLOWED_BOOK = 24;
 
     private final CoachAvailabilityRepository coachAvailabilityRepository;
 
@@ -65,9 +65,10 @@ public class CoachAvailabilityService {
     }
 
     public List<LocalDateTime> getAvailabilitySplitIntoHoursFiltered(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
-        var events = getSyncEvents(username, from, to, testFreeBusy);
+        var from24Hour = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(NOT_ALLOWED_BOOK);
+        var events = getSyncEvents(username, from24Hour, to, testFreeBusy);
 
-        return getAvailabilitySplitIntoHours(username, from, to).stream()
+        return getAvailabilitySplitIntoHours(username, from24Hour, to).stream()
                 .filter(isNotInsideOf(events))
                 .toList();
     }
