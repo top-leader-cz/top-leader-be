@@ -4,7 +4,6 @@
 package com.topleader.topleader.calendar.google;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.client.googleapis.auth.oauth2.GoogleTokenResponse;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.api.services.oauth2.Oauth2Scopes;
 import java.io.IOException;
