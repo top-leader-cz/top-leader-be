@@ -4,16 +4,20 @@
 package com.topleader.topleader.coach.availability;
 
 import com.topleader.topleader.calendar.calendly.CalendlyService;
-import com.topleader.topleader.calendar.calendly.domain.CalendlySchedules;
+import com.topleader.topleader.calendar.calendly.domain.EventType;
 import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
+import com.topleader.topleader.coach.availability.domain.NonReoccurringEventDto;
+import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
+import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
+import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
-import java.time.DayOfWeek;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
@@ -40,7 +44,9 @@ public class CoachAvailabilityController {
 
     private final UserRepository userRepository;
 
-    private CalendlyService calendlyService;
+    private final CalendlyService calendlyService;
+
+    private final AvailabilitySettingRepository availabilitySettingRepository;
 
     @Secured("COACH")
     @GetMapping("/non-recurring")
@@ -82,12 +88,12 @@ public class CoachAvailabilityController {
     }
 
     @Secured("COACH")
-    @PostMapping("/recurring")
-    public List<ReoccurringEventDto> getRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user, ReoccurringAvailabilityRequest request) {
+    @GetMapping("/recurring")
+    public List<ReoccurringEventDto> getRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user, @RequestParam(required = false) String uuid) {
         final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
 
-        if(request.scheduleUuid() != null) {
-            return calendlyService.getScheduledAvailability(user.getUsername(), request.scheduleUuid());
+        if(uuid != null) {
+            return calendlyService.getEventAvailability(user.getUsername(), uuid);
         }
 
         return coachAvailabilityService.getReoccurring(user.getUsername()).stream()
@@ -144,23 +150,25 @@ public class CoachAvailabilityController {
 
     @Secured("COACH")
     @GetMapping("/event-types")
-    public List<CalendlySchedules> getCalendlySchedules(@AuthenticationPrincipal UserDetails user) {
-        return calendlyService.getSchedules(user.getUsername());
+    public List<EventType> getCalendlyEvents(@AuthenticationPrincipal UserDetails user) {
+        return calendlyService.getEventTypes(user.getUsername());
     }
 
-    public record ReoccurringAvailabilityRequest(String scheduleUuid , CalendarSyncInfo.SyncType syncType) {
+
+    @Secured("COACH")
+    @PatchMapping("/recurring/settings")
+    public void updateRecurringSetting(@AuthenticationPrincipal UserDetails user, @RequestBody ReoccurringAvailabilityRequest request) {
+        availabilitySettingRepository.save(new CoachAvailabilitySettings().setCoach(user.getUsername()).
+                setResource(request.uuid)
+                .setType(request.type)
+                .setActive(request.active)
+        );
+    }
+
+    public record ReoccurringAvailabilityRequest(String uuid , CalendarSyncInfo.SyncType type, boolean active) {
     }
 
     public record EventFilterDto(@NotNull LocalDateTime from, @NotNull LocalDateTime to) {
-    }
-
-    public record NonReoccurringEventDto(LocalDateTime from, LocalDateTime to) {
-    }
-
-    public record ReoccurringEventDto(ReoccurringEventTimeDto from, ReoccurringEventTimeDto to) {
-    }
-
-    public record ReoccurringEventTimeDto(DayOfWeek day, LocalTime time) {
     }
 
     public record SetNonrecurringRequestDto(

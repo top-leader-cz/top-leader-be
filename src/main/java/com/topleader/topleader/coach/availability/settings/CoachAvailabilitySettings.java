@@ -1,6 +1,9 @@
 package com.topleader.topleader.coach.availability.settings;
 
+import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
+import groovyjarjarantlr4.v4.codegen.model.Sync;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -11,16 +14,15 @@ import lombok.experimental.Accessors;
 public class CoachAvailabilitySettings {
 
     @Id
-    private String username;
+    private String coach;
 
-    private AvailabilitySettingsType type;
+    @Enumerated(jakarta.persistence.EnumType.STRING)
+    private CalendarSyncInfo.SyncType type;
+
+    private String resource;
 
     boolean active;
 
 
-    public enum AvailabilitySettingsType {
-        LOCAL,
-        GOOGLE,
-        CALENDLY,
-    }
+
 }

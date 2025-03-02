@@ -17,5 +17,5 @@ public interface CoachAvailabilityRepository extends JpaRepository<CoachAvailabi
 
     List<CoachAvailability> findAllByUsernameAndDateTimeFromAfterAndDateTimeToBefore(String username, LocalDateTime from, LocalDateTime to);
 
-    List<CoachAvailability.AvailabilityType> getAvailabilityTpe(String username);
+//    List<CoachAvailability.AvailabilityType> getAvailabilityTpe(String username);
 }

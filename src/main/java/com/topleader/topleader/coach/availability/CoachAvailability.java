@@ -54,12 +54,12 @@ public class CoachAvailability {
 
     private LocalDateTime dateTimeTo;
 
-    private AvailabilityType type;
-
-    public enum AvailabilityType {
-        LOCAL,
-        GOOGLE,
-        CALENDLY,
-    }
+//    private AvailabilityType type;
+//
+//    public enum AvailabilityType {
+//        LOCAL,
+//        GOOGLE,
+//        CALENDLY,
+//    }
 
 }
