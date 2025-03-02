@@ -11,8 +11,4 @@ import java.util.Optional;
 public interface CalendarSyncInfoRepository extends JpaRepository<CalendarSyncInfo, CalendarSyncInfo.CalendarInfoId> {
 
     List<CalendarSyncInfo> findBySyncType(CalendarSyncInfo.SyncType syncType);
-
-    @Query("SELECT c FROM CalendarSyncInfo c WHERE (c.username = :email OR c.email = :email) AND c.syncType = :syncType")
-    Optional<CalendarSyncInfo> findByEmailOrUsername(String email, CalendarSyncInfo.SyncType syncType);
-
 }
