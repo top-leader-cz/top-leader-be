@@ -36,7 +36,7 @@ public class CalendarSyncInfo {
     private String ownerUrl;
 
     public enum Status {
-        OK, WARN, ERROR
+        OK, WARN, ERROR, NEW
     }
 
     public enum SyncType {
