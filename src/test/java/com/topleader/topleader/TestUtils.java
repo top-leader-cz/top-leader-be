@@ -3,6 +3,8 @@
  */
 package com.topleader.topleader;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import net.javacrumbs.jsonunit.core.Option;
 
@@ -19,6 +21,9 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
  * @author Daniel Slavik
  */
 public final class TestUtils {
+
+    private final static ObjectMapper MAPPER = new ObjectMapper();
+
     private TestUtils() {
         //util class
     }
@@ -26,6 +31,12 @@ public final class TestUtils {
     @SneakyThrows
     public static String readFileAsString(String name) throws URISyntaxException, IOException {
         return new String(readFileAsBytes(name));
+    }
+
+    @SneakyThrows
+    public static JsonNode readFileAsJson(String name) {
+        var data = readFileAsString(name);
+        return MAPPER.readTree(data);
     }
 
     @SneakyThrows

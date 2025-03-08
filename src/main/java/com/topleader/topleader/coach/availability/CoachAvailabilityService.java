@@ -8,28 +8,29 @@ import com.google.common.collect.Multimap;
 import com.topleader.topleader.calendar.domain.SyncEvent;
 import com.topleader.topleader.calendar.calendly.CalendlyService;
 import com.topleader.topleader.calendar.google.GoogleCalendarService;
+import com.topleader.topleader.coach.availability.domain.NonReoccurringEventDto;
+import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
+import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
+import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.ZoneOffset;
-import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Accessors;
+
 import org.springframework.stereotype.Service;
 
+import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 
 
@@ -47,6 +48,13 @@ public class CoachAvailabilityService {
     private final CalendlyService calendlyService;
 
     private final UserRepository userRepository;
+
+    private final AvailabilitySettingRepository availabilitySettingRepository;
+
+    @Override
+    protected Object clone() throws CloneNotSupportedException {
+        return super.clone();
+    }
 
     public List<CoachAvailability> getNonReoccurringByTimeFrame(String username, LocalDateTime from, LocalDateTime to) {
         return coachAvailabilityRepository.findAllByUsernameAndDateTimeFromAfterAndDateTimeToBefore(username, from, to);
@@ -93,17 +101,15 @@ public class CoachAvailabilityService {
     }
 
 
-
     public List<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
         Multimap<DayOfWeek, CoachAvailability> reoccurringMap = ArrayListMultimap.create();
-        getReoccurring(username).forEach(e -> reoccurringMap.put(e.getDayFrom(), e));
-
+        getReoccurringEvents(username).forEach(e -> reoccurringMap.put(e.getDayFrom(), e));
         var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to);
 
         return toIntervals(from, to).stream()
                 .filter(r -> {
                     var availabilities = reoccurringMap.get(r.getDayOfWeek());
-                    return  testNonReoccurring(r, nonReoccurring) || availabilities.stream()
+                    return testNonReoccurring(r, nonReoccurring) || availabilities.stream()
                             .anyMatch(e -> {
                                 if (e != null && e.getTimeFrom() != null && e.getTimeTo() != null) {
                                     var timeFrom = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
@@ -111,12 +117,29 @@ public class CoachAvailabilityService {
                                     return testNonReoccurring(r, nonReoccurring) || isInRange(r, timeFrom, timeTo);
                                 }
                                 return false;
-                              });
+                            });
                 })
                 .collect(Collectors.toSet())
                 .stream()
                 .sorted()
                 .toList();
+    }
+
+    private List<CoachAvailability> getReoccurringEvents(String username) {
+        return availabilitySettingRepository.findById(username)
+                .filter(CoachAvailabilitySettings::isActive)
+                .map(a -> {
+                    if (CALENDLY == a.getType()) {
+                        return calendlyService.getEventAvailability(username, a.getResource()).stream()
+                                .map(e -> new CoachAvailability()
+                                        .setDayFrom(e.from().day())
+                                        .setTimeFrom(e.from().time())
+                                        .setDayTo(e.to().day())
+                                        .setTimeTo(e.to().time()))
+                                .toList();
+                    }
+                    return null;
+                }).orElse(getReoccurring(username));
     }
 
     private boolean testNonReoccurring(LocalDateTime requested, List<CoachAvailability> nonReoccurring) {
@@ -155,7 +178,7 @@ public class CoachAvailabilityService {
 
         final var shiftedEvents = request.events().stream()
             .map(e ->
-                new CoachAvailabilityController.NonReoccurringEventDto(
+                new NonReoccurringEventDto(
                     e.from()
                         .atZone(userZoneId)
                         .withZoneSameInstant(ZoneOffset.UTC)
@@ -171,11 +194,11 @@ public class CoachAvailabilityService {
         final var existingEvents = getNonReoccurringByTimeFrame(username, from.toLocalDateTime(), to.toLocalDateTime());
 
         final var toDelete = existingEvents.stream()
-            .filter(e -> !shiftedEvents.contains(new CoachAvailabilityController.NonReoccurringEventDto(e.getDateTimeFrom(), e.getDateTimeTo())))
+            .filter(e -> !shiftedEvents.contains(new NonReoccurringEventDto(e.getDateTimeFrom(), e.getDateTimeTo())))
             .toList();
 
         final var existingEventsMapped = existingEvents.stream()
-            .map(e -> new CoachAvailabilityController.NonReoccurringEventDto(e.getDateTimeFrom(), e.getDateTimeTo()))
+            .map(e -> new NonReoccurringEventDto(e.getDateTimeFrom(), e.getDateTimeTo()))
             .collect(Collectors.toSet());
 
         final var toCreate = shiftedEvents.stream()
@@ -200,7 +223,7 @@ public class CoachAvailabilityService {
     }
 
     @Transactional
-    public void setRecurringAvailability(String username, List<CoachAvailabilityController.ReoccurringEventDto> events) {
+    public void setRecurringAvailability(String username, List<ReoccurringEventDto> events) {
         final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
 
         final var shiftedEvents = events.stream()
@@ -213,9 +236,9 @@ public class CoachAvailabilityService {
                     LocalDate.now().with(TemporalAdjusters.next(e.to().day())),
                     e.to().time()
                 ).atZone(userZoneId).withZoneSameInstant(ZoneOffset.UTC);
-                return new CoachAvailabilityController.ReoccurringEventDto(
-                    new CoachAvailabilityController.ReoccurringEventTimeDto(userTimeFrom.getDayOfWeek(), userTimeFrom.toLocalTime()),
-                    new CoachAvailabilityController.ReoccurringEventTimeDto(userTimeTo.getDayOfWeek(), userTimeTo.toLocalTime())
+                return new ReoccurringEventDto(
+                    new ReoccurringEventTimeDto(userTimeFrom.getDayOfWeek(), userTimeFrom.toLocalTime()),
+                    new ReoccurringEventTimeDto(userTimeTo.getDayOfWeek(), userTimeTo.toLocalTime())
                 );
             })
             .collect(Collectors.toSet());
@@ -223,17 +246,17 @@ public class CoachAvailabilityService {
         final var existing = getReoccurring(username);
 
         final var existingMapped = existing.stream()
-            .map(e -> new CoachAvailabilityController.ReoccurringEventDto(
-                new CoachAvailabilityController.ReoccurringEventTimeDto(e.getDayFrom(), e.getTimeFrom()),
-                new CoachAvailabilityController.ReoccurringEventTimeDto(e.getDayTo(), e.getTimeTo())
+            .map(e -> new ReoccurringEventDto(
+                new ReoccurringEventTimeDto(e.getDayFrom(), e.getTimeFrom()),
+                new ReoccurringEventTimeDto(e.getDayTo(), e.getTimeTo())
             ))
             .collect(Collectors.toSet());
 
         final var toDelete = existing.stream()
             .filter(e -> !shiftedEvents.contains(
-                new CoachAvailabilityController.ReoccurringEventDto(
-                    new CoachAvailabilityController.ReoccurringEventTimeDto(e.getDayFrom(), e.getTimeFrom()),
-                    new CoachAvailabilityController.ReoccurringEventTimeDto(e.getDayTo(), e.getTimeTo())
+                new ReoccurringEventDto(
+                    new ReoccurringEventTimeDto(e.getDayFrom(), e.getTimeFrom()),
+                    new ReoccurringEventTimeDto(e.getDayTo(), e.getTimeTo())
                 )
             ))
             .toList();
