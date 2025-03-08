@@ -1,6 +1,9 @@
 server:
   port: {PORT}
 spring:
+  docker:
+    compose:
+      enabled: false
   ai:
     openai:
       chat:

@@ -1,11 +1,12 @@
-version: '3.6'
-
+version: '3.8'
 services:
-  postgresql:
-    image: 'bitnami/postgresql:latest'
+  db:
+    image: postgres:15
+    container_name: my-postgres-db
+    restart: always
     environment:
-      - POSTGRESQL_USERNAME=root
-      - POSTGRESQL_PASSWORD=postgres
-      - POSTGRESQL_DATABASE=top_leader
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: top_leader
     ports:
-      - '5432:5432'
+      - "5433:5432"

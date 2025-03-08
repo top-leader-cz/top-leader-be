@@ -3,6 +3,7 @@ package com.topleader.topleader.user.userinsight;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
 
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Accessors(chain = true)
+@EqualsAndHashCode(of = {"username"})
 public class UserInsight {
 
     @Id
