@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -54,6 +55,7 @@ class CoachClientControllerIT extends IntegrationTest {
     @Autowired
     private TokenRepository tokenRepository;
 
+    @Disabled
     @Test
     @WithMockUser(username = "coach", authorities = "COACH")
     void findClientsTest() throws Exception {

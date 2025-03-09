@@ -45,7 +45,7 @@ values (nextval('coach_availability_seq'), 'coach1', false, '2023-09-14 13:00:00
 insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
 values (nextval('coach_availability_seq'), 'coach1', false, '2023-09-15 12:00:00', '2023-09-15 13:00:00');
 insert into coach_availability (id, username, recurring, date_time_from, date_time_to)
-values (nextval('coach_availability_seq'), 'coach3', false, now(), now() + interval '2 hour');
+values (nextval('coach_availability_seq'), 'coach3', false, now() + interval '25 hour', now() + interval '80 hour');
 
 
 insert into coach_rate (rate_name, rate_credit, rate_order)

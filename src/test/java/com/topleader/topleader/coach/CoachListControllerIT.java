@@ -16,9 +16,12 @@ import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 
 import java.time.*;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 
 import lombok.SneakyThrows;
+import net.fortuna.ical4j.model.WeekDay;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -337,19 +340,31 @@ class CoachListControllerIT extends IntegrationTest {
     @Test
     @WithMockUser
     void getCoachAvailabilityTest() throws Exception {
+        var from24Hour = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(24);
+        var plusDays6 = from24Hour.plusDays(7);
+        var monday = getDay(DayOfWeek.MONDAY);
+        var tuesday = getDay(DayOfWeek.TUESDAY);
 
         mvc.perform(get("/api/latest/coaches/coach1/availability")
-                        .param("from", "2023-08-14T00:00:00")
-                        .param("to", "2023-08-14T23:59:00")
+                        .param("from", from24Hour.toString())
+                        .param("to", plusDays6.toString())
                 )
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(content().json("""
-                        ["2023-08-14T10:00:00Z","2023-08-14T11:00:00Z","2023-08-14T13:00:00Z"]
-                        """))
-        ;
+                .andExpect(content().json(String.format("""
+                        ["%s","%s"]
+                        """, monday, tuesday)));
     }
 
+    private String getDay(DayOfWeek dayOfWeek) {
+        var from24Hour = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(24);
+       return from24Hour.with(TemporalAdjusters.nextOrSame(dayOfWeek))
+                .toLocalDate()
+                .atStartOfDay()
+                .plusHours(13)
+                .atZone(ZoneId.of("UTC"))
+                .format(DateTimeFormatter.ISO_INSTANT);
+    }
 
     @Test
     @WithMockUser
@@ -614,7 +629,7 @@ class CoachListControllerIT extends IntegrationTest {
                 )
                 .andDo(print())
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[*].username", containsInRelativeOrder("coach2",  "coach3", "coach1")))
+                .andExpect(jsonPath("$.content[*].username", containsInRelativeOrder("coach2", "coach3", "coach1")))
         ;
     }
 
