@@ -1,24 +1,32 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.coach.availability;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.topleader.topleader.IntegrationTest;
+
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Comparator;
+
+import com.topleader.topleader.TestUtils;
+import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.*;
+import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -33,12 +41,15 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @Autowired
     private CoachAvailabilityRepository coachAvailabilityRepository;
 
+    @Autowired
+    private AvailabilitySettingRepository availabilitySettingRepository;
+
     @Test
     @WithMockUser(username = "coach")
     void getApiIsSecured() throws Exception {
 
         mvc.perform(get("/api/latest/coach-availability/recurring"))
-            .andExpect(status().isForbidden())
+                .andExpect(status().isForbidden())
         ;
 
     }
@@ -48,31 +59,31 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     void getRecurringTest() throws Exception {
 
         mvc.perform(get("/api/latest/coach-availability/recurring"))
-            .andExpect(status().isOk())
-            .andExpect(content().json("""
-                    [
-                      {
-                        "from": {
-                          "day": "MONDAY",
-                          "time": "13:00:00"
-                        },
-                        "to": {
-                          "day": "MONDAY",
-                          "time": "14:00:00"
-                        }
-                      },
-                      {
-                        "from": {
-                          "day": "TUESDAY",
-                          "time": "13:00:00"
-                        },
-                        "to": {
-                          "day": "TUESDAY",
-                          "time": "14:00:00"
-                        }
-                      }
-                    ]
-                """))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                            [
+                              {
+                                "from": {
+                                  "day": "MONDAY",
+                                  "time": "13:00:00"
+                                },
+                                "to": {
+                                  "day": "MONDAY",
+                                  "time": "14:00:00"
+                                }
+                              },
+                              {
+                                "from": {
+                                  "day": "TUESDAY",
+                                  "time": "13:00:00"
+                                },
+                                "to": {
+                                  "day": "TUESDAY",
+                                  "time": "14:00:00"
+                                }
+                              }
+                            ]
+                        """))
         ;
 
     }
@@ -82,21 +93,21 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     void getNonRecurringTest() throws Exception {
 
         mvc.perform(get("/api/latest/coach-availability/non-recurring")
-                .param("from", "2023-08-14T00:00:00")
-                .param("to", "2023-08-16T00:00:00")
-            )
-            .andDo(print())
-            .andExpect(content().json("""
-                [
-                  {
-                    "from": "2023-08-14T13:00:00",
-                    "to": "2023-08-14T14:00:00"
-                  },
-                  {
-                    "from": "2023-08-15T12:00:00",
-                    "to": "2023-08-15T14:00:00"
-                  }
-                ]"""))
+                        .param("from", "2023-08-14T00:00:00")
+                        .param("to", "2023-08-16T00:00:00")
+                )
+                .andDo(print())
+                .andExpect(content().json("""
+                        [
+                          {
+                            "from": "2023-08-14T13:00:00",
+                            "to": "2023-08-14T14:00:00"
+                          },
+                          {
+                            "from": "2023-08-15T12:00:00",
+                            "to": "2023-08-15T14:00:00"
+                          }
+                        ]"""))
         ;
 
     }
@@ -106,16 +117,16 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     void getNonRecurringSingleItemTest() throws Exception {
 
         mvc.perform(get("/api/latest/coach-availability/non-recurring")
-                .param("from", "2023-08-14T12:59:00")
-                .param("to", "2023-08-14T14:01:00")
-            )
-            .andExpect(content().json("""
-                [
-                  {
-                    "from": "2023-08-14T13:00:00",
-                    "to": "2023-08-14T14:00:00"
-                  }
-                ]"""))
+                        .param("from", "2023-08-14T12:59:00")
+                        .param("to", "2023-08-14T14:01:00")
+                )
+                .andExpect(content().json("""
+                        [
+                          {
+                            "from": "2023-08-14T13:00:00",
+                            "to": "2023-08-14T14:00:00"
+                          }
+                        ]"""))
         ;
 
     }
@@ -125,38 +136,38 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     void setNonRecurringTest() throws Exception {
 
         mvc.perform(post("/api/latest/coach-availability/non-recurring")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                        {
-                          "timeFrame": {
-                            "from": "2023-08-14T00:00:00",
-                            "to": "2023-08-16T00:00:00"
-                          },
-                          "events": [
-                              {
-                                "from": "2023-08-14T16:00:00",
-                                "to": "2023-08-14T18:00:00"
-                              },
-                              {
-                                "from": "2023-08-15T14:00:00",
-                                "to": "2023-08-15T16:00:00"
-                              }
-                          ]
-                        }
-                        """
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+                                        {
+                                          "timeFrame": {
+                                            "from": "2023-08-14T00:00:00",
+                                            "to": "2023-08-16T00:00:00"
+                                          },
+                                          "events": [
+                                              {
+                                                "from": "2023-08-14T16:00:00",
+                                                "to": "2023-08-14T18:00:00"
+                                              },
+                                              {
+                                                "from": "2023-08-15T14:00:00",
+                                                "to": "2023-08-15T16:00:00"
+                                              }
+                                          ]
+                                        }
+                                        """
+                        )
                 )
-            )
-            .andExpect(status().isOk())
+                .andExpect(status().isOk())
         ;
 
         final var events = coachAvailabilityRepository.findAllByUsernameAndDateTimeFromAfterAndDateTimeToBefore(
-                "coach",
-                LocalDateTime.parse("2023-08-14T00:00:00"),
-                LocalDateTime.parse("2023-08-16T00:00:00")
-            ).stream()
-            .sorted(Comparator.comparing(CoachAvailability::getDateTimeFrom))
-            .toList();
+                        "coach",
+                        LocalDateTime.parse("2023-08-14T00:00:00"),
+                        LocalDateTime.parse("2023-08-16T00:00:00")
+                ).stream()
+                .sorted(Comparator.comparing(CoachAvailability::getDateTimeFrom))
+                .toList();
 
         assertThat(events, hasSize(2));
         assertThat(events.get(0).getRecurring(), is(false));
@@ -173,41 +184,41 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     void setRecurringTest() throws Exception {
 
         mvc.perform(post("/api/latest/coach-availability/recurring")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                        [
-                          {
-                            "from": {
-                              "day": "MONDAY",
-                              "time": "13:00:00"
-                            },
-                            "to": {
-                              "day": "MONDAY",
-                              "time": "14:00:00"
-                            }
-                          },
-                          {
-                            "from": {
-                              "day": "TUESDAY",
-                              "time": "10:00:00"
-                            },
-                            "to": {
-                              "day": "TUESDAY",
-                              "time": "12:00:00"
-                            }
-                          }
-                        ]
-                            """
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                                """
+                                        [
+                                          {
+                                            "from": {
+                                              "day": "MONDAY",
+                                              "time": "13:00:00"
+                                            },
+                                            "to": {
+                                              "day": "MONDAY",
+                                              "time": "14:00:00"
+                                            }
+                                          },
+                                          {
+                                            "from": {
+                                              "day": "TUESDAY",
+                                              "time": "10:00:00"
+                                            },
+                                            "to": {
+                                              "day": "TUESDAY",
+                                              "time": "12:00:00"
+                                            }
+                                          }
+                                        ]
+                                            """
+                        )
                 )
-            )
-            .andExpect(status().isOk())
+                .andExpect(status().isOk())
         ;
 
         final var events = coachAvailabilityRepository.findAllByUsernameAndRecurringIsTrue("coach")
-            .stream()
-            .sorted(Comparator.comparingLong(CoachAvailability::getId))
-            .toList();
+                .stream()
+                .sorted(Comparator.comparingLong(CoachAvailability::getId))
+                .toList();
 
         assertThat(events, hasSize(2));
         assertThat(events.get(0).getRecurring(), is(true));
@@ -223,4 +234,56 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
 
 
     }
+
+    @Test
+    @WithMockUser(username = "coach1", authorities = {"COACH"})
+    @Sql("/sql/coach/coach-list-test.sql")
+    void getCalendlyEvents() throws Exception {
+        mockServer.stubFor(WireMock.get(urlMatching("/event_types?\\?user=.*"))
+                .withHeader(AUTHORIZATION, equalTo("Bearer accessToken"))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "application/json")
+                        .withBody(TestUtils.readFileAsString("availability/get-events-types-response.json"))));
+
+        mvc.perform(get("/api/latest/coach-availability/event-types"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        [
+                          {
+                            "name": "toplead",
+                            "uuid": "a6797441-2311-4687-bdc8-30e1ce338b56",
+                            "active": false
+                          }
+                        ]
+                        """))
+        ;
+
+    }
+
+    @Test
+    @WithMockUser(username = "coach1", authorities = {"COACH"})
+    @Sql("/sql/coach/coach-list-test.sql")
+    void updateRecurringSetting() throws Exception {
+        mvc.perform(patch("/api/latest/coach-availability/recurring/settings")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "uuid": "a6797441-2311-4687-bdc8-30e1ce338b56",
+                                    "type": "CALENDLY",
+                                    "active": true
+                                }
+                                """))
+                .andExpect(status().isOk());
+
+        Assertions.assertThat(availabilitySettingRepository.findAll()).containsExactly(
+                new CoachAvailabilitySettings().setCoach("coach1")
+                        .setResource("a6797441-2311-4687-bdc8-30e1ce338b56")
+                        .setActive(true)
+                        .setType(CALENDLY)
+        );
+
+    }
+
+
 }

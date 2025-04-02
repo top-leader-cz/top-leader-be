@@ -3,25 +3,37 @@ package com.topleader.topleader.calendar.calendly;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.topleader.topleader.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.calendar.CalendarToErrorHandler;
+import com.topleader.topleader.calendar.calendly.domain.EventType;
 import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.calendar.domain.SyncEvent;
-import com.topleader.topleader.calendar.calendly.domain.CalendlyUserInfo;
 import com.topleader.topleader.calendar.calendly.domain.TokenResponse;
 
+import com.topleader.topleader.coach.availability.AvailabilityUtils;
+import com.topleader.topleader.coach.availability.CoachAvailabilityRepository;
+import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
+import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
+import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
 import java.nio.charset.Charset;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 
-import static com.topleader.topleader.util.common.user.UserUtils.getUserCalendlyUuid;
+import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
 import static org.springframework.http.HttpHeaders.*;
 
 @Slf4j
@@ -29,7 +41,11 @@ import static org.springframework.http.HttpHeaders.*;
 @RequiredArgsConstructor
 public class CalendlyService {
 
+    private static final String EVENT_URI_REPLACEMENT = "https://api.calendly.com/event_types/";
+
     private final CalendarSyncInfoRepository repository;
+
+    private final AvailabilitySettingRepository availabilitySettingRepository;
 
     private final CalendlyProperties properties;
 
@@ -100,6 +116,59 @@ public class CalendlyService {
                 .orElse(new ArrayList<>());
     }
 
+    public List<EventType> getEventTypes(String username) {
+        log.info("Fetching Calendly events types");
+        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CALENDLY))
+                .map(info -> {
+                    try {
+                        var response = restClient.get().uri(properties.getBaseApiUrl().concat("/event_types?user={user}"),
+                                        info.getOwnerUrl())
+                                .header(AUTHORIZATION, bearer(info.getAccessToken()))
+                                .retrieve()
+                                .body(JsonNode.class);
+
+                        var events = new ArrayList<EventType>();
+                        response.get("collection").forEach(node -> {
+                                    if (node.get("active").asBoolean()) {
+                                        var uri = node.get("uri").asText();
+                                        var scheduleUuid = uri.replace(EVENT_URI_REPLACEMENT, StringUtils.EMPTY);
+                                        var active = availabilitySettingRepository.isActive(username, CalendarSyncInfo.SyncType.CALENDLY, scheduleUuid);
+                                        events.add(new EventType(node.get("name").asText(), scheduleUuid, Boolean.TRUE.equals(active)));
+                                    }
+                                }
+                        );
+                        return events;
+                    } catch (Exception e) {
+                        log.error("Error fetching Calendly schedules", e);
+                        throw new RuntimeException("Error fetching Calendly schedules", e);
+                    }
+                })
+                .orElse(new ArrayList<>());
+    }
+
+
+    public List<ReoccurringEventDto> getEventAvailability(String username, String uuid) {
+        log.info("Fetching Calendly scheduled availability");
+        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CALENDLY))
+                .map(info -> {
+                    try {
+                        var from = LocalDate.now().plusDays(1).atStartOfDay();
+                        var response = restClient.get().uri(properties.getBaseApiUrl().concat("/event_type_available_times?event_type=https://api.calendly.com/event_types/{uuid}&start_time={start_time}&end_time={end_time}"),
+                                        uuid,
+                                        from,
+                                        from.plusDays(7))
+                                .header(AUTHORIZATION, bearer(info.getAccessToken()))
+                                .retrieve()
+                                .body(JsonNode.class);
+
+                        return AvailabilityUtils.toReoccurringEvent(response);
+                    } catch (Exception e) {
+                        log.error("Error fetching scheduled availability", e);
+                        throw new RuntimeException("Error fetching scheduled availability", e);
+                    }
+                })
+                .orElse(new ArrayList<>());
+    }
 
 
     private String basic() {
