@@ -19,6 +19,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 
 import lombok.SneakyThrows;
 import net.fortuna.ical4j.model.WeekDay;
@@ -113,16 +114,16 @@ class CoachListControllerIT extends IntegrationTest {
     @Test
     @WithMockUser
     void scheduleDefaultCoachEventTest() throws Exception {
-        final var scheduleTime = LocalDateTime.of(
-                LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
-                LocalTime.of(9, 0)
-        ).atZone(ZoneId.of("UTC"));
+        var scheduleTime  = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
+                .plusDays(1)
+                .plusHours(9)
+                .atZone(ZoneId.of("UTC"));
 
         coachAvailabilityRepository.save(
                 new CoachAvailability()
                         .setUsername("coach1")
-                        .setDateTimeFrom(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(8, 0)))
-                        .setDateTimeTo(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(10, 0)))
+                        .setDateTimeFrom(scheduleTime.toLocalDateTime())
+                        .setDateTimeTo(scheduleTime.toLocalDateTime().plusHours(2))
                         .setRecurring(false)
         );
 
@@ -174,17 +175,16 @@ class CoachListControllerIT extends IntegrationTest {
     @Test
     @WithMockUser
     void scheduleEventTest() throws Exception {
-
-        final var scheduleTime = LocalDateTime.of(
-                LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
-                LocalTime.of(9, 0)
-        ).atZone(ZoneId.of("UTC"));
+        var scheduleTime  = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
+                .plusDays(1)
+                .plusHours(9)
+                .atZone(ZoneId.of("UTC"));
 
         coachAvailabilityRepository.save(
                 new CoachAvailability()
                         .setUsername("coach1")
-                        .setDateTimeFrom(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(8, 0)))
-                        .setDateTimeTo(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(10, 0)))
+                        .setDateTimeFrom(scheduleTime.toLocalDateTime())
+                        .setDateTimeTo(scheduleTime.toLocalDateTime().plusHours(2))
                         .setRecurring(false)
         );
 
@@ -236,17 +236,17 @@ class CoachListControllerIT extends IntegrationTest {
     @Test
     @WithMockUser("no-credit-user")
     void scheduleEventNoCreditTest() throws Exception {
+        var scheduleTime  = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
+                .plusDays(1)
+                .plusHours(9)
+                .atZone(ZoneId.of("UTC"));
 
-        final var scheduleTime = LocalDateTime.of(
-                LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
-                LocalTime.of(9, 0)
-        ).atZone(ZoneId.of("UTC"));
 
         coachAvailabilityRepository.save(
                 new CoachAvailability()
                         .setUsername("coach2")
-                        .setDateTimeFrom(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(8, 0)))
-                        .setDateTimeTo(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(10, 0)))
+                        .setDateTimeFrom(scheduleTime.toLocalDateTime())
+                        .setDateTimeTo(scheduleTime.toLocalDateTime().plusHours(2))
                         .setRecurring(false)
         );
 
@@ -292,17 +292,17 @@ class CoachListControllerIT extends IntegrationTest {
     @Test
     @WithMockUser("no-credit-user-free-coach")
     void scheduleEventNoCreditFreeCoachTest() throws Exception {
+        var scheduleTime  = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
+                .plusDays(1)
+                .plusHours(9)
+                .atZone(ZoneId.of("UTC"));
 
-        final var scheduleTime = LocalDateTime.of(
-                LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
-                LocalTime.of(9, 0)
-        ).atZone(ZoneId.of("UTC"));
 
         coachAvailabilityRepository.save(
                 new CoachAvailability()
                         .setUsername("coach3")
-                        .setDateTimeFrom(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(8, 0)))
-                        .setDateTimeTo(LocalDateTime.of(scheduleTime.toLocalDate(), LocalTime.of(10, 0)))
+                        .setDateTimeFrom(scheduleTime.toLocalDateTime())
+                        .setDateTimeTo(scheduleTime.toLocalDateTime().plusHours(2))
                         .setRecurring(false)
         );
 

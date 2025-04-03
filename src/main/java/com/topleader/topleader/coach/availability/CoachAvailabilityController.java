@@ -22,11 +22,15 @@ import java.time.ZoneOffset;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CUSTOM;
 import static com.topleader.topleader.exception.ErrorCodeConstants.FIELD_OUTSIDE_OF_FRAME;
 import static com.topleader.topleader.exception.ErrorCodeConstants.MORE_THEN_24_EVENT;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
@@ -96,23 +100,31 @@ public class CoachAvailabilityController {
             return calendlyService.getEventAvailability(user.getUsername(), uuid);
         }
 
-        return coachAvailabilityService.getReoccurring(user.getUsername()).stream()
-            .map(e ->
-            {
-                final var userTimeFrom = LocalDateTime.of(
-                    LocalDate.now().with(TemporalAdjusters.next(e.getDayFrom())),
-                    e.getTimeFrom()
-                ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
-                final var userTimeTo = LocalDateTime.of(
-                    LocalDate.now().with(TemporalAdjusters.next(e.getDayTo())),
-                    e.getTimeTo()
-                ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
-                return new ReoccurringEventDto(
-                    new ReoccurringEventTimeDto(userTimeFrom.getDayOfWeek(), userTimeFrom.toLocalTime()),
-                    new ReoccurringEventTimeDto(userTimeTo.getDayOfWeek(), userTimeTo.toLocalTime())
-                );
-            })
-            .toList();
+        var setting = availabilitySettingRepository.findByActive(user.getUsername())
+                .map(s -> new ReoccurringAvailabilityDto(s.getResource(), s.getType(), s.isActive()))
+                .orElse(ReoccurringAvailabilityDto.empty());
+
+        if(setting.isActive()) {
+            return coachAvailabilityService.getReoccurring(user.getUsername()).stream()
+                    .map(e ->
+                    {
+                        final var userTimeFrom = LocalDateTime.of(
+                                LocalDate.now().with(TemporalAdjusters.next(e.getDayFrom())),
+                                e.getTimeFrom()
+                        ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
+                        final var userTimeTo = LocalDateTime.of(
+                                LocalDate.now().with(TemporalAdjusters.next(e.getDayTo())),
+                                e.getTimeTo()
+                        ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
+                        return new ReoccurringEventDto(
+                                new ReoccurringEventTimeDto(userTimeFrom.getDayOfWeek(), userTimeFrom.toLocalTime()),
+                                new ReoccurringEventTimeDto(userTimeTo.getDayOfWeek(), userTimeTo.toLocalTime())
+                        );
+                    })
+                    .toList();
+        }
+
+        return List.of();
 
     }
 
@@ -148,7 +160,7 @@ public class CoachAvailabilityController {
     }
 
 
-    @Secured("COACH")
+    @Secured({"COACH", "ADMIN"})
     @GetMapping("/event-types")
     public List<EventType> getCalendlyEvents(@AuthenticationPrincipal UserDetails user) {
         return calendlyService.getEventTypes(user.getUsername());
@@ -157,7 +169,7 @@ public class CoachAvailabilityController {
 
     @Secured("COACH")
     @PatchMapping("/recurring/settings")
-    public void updateRecurringSetting(@AuthenticationPrincipal UserDetails user, @RequestBody ReoccurringAvailabilityRequest request) {
+    public void updateRecurringSetting(@AuthenticationPrincipal UserDetails user, @RequestBody ReoccurringAvailabilityDto request) {
         availabilitySettingRepository.save(new CoachAvailabilitySettings().setCoach(user.getUsername()).
                 setResource(request.uuid)
                 .setType(request.type)
@@ -165,7 +177,28 @@ public class CoachAvailabilityController {
         );
     }
 
-    public record ReoccurringAvailabilityRequest(String uuid , CalendarSyncInfo.SyncType type, boolean active) {
+    @Secured("COACH")
+    @GetMapping("/recurring/settings")
+    public ReoccurringAvailabilityDto getRecurringSetting(@AuthenticationPrincipal UserDetails user) {
+        return availabilitySettingRepository.findByActive(user.getUsername())
+                .map(s -> new ReoccurringAvailabilityDto(s.getResource(), s.getType(), s.isActive()))
+                .orElse(ReoccurringAvailabilityDto.empty());
+    }
+
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ReoccurringAvailabilityDto {
+        private static final ReoccurringAvailabilityDto EMPTY = new ReoccurringAvailabilityDto();
+
+        private String uuid;
+        private CalendarSyncInfo.SyncType type;
+        private boolean active;
+
+        public static ReoccurringAvailabilityDto empty() {
+            return EMPTY;
+        }
     }
 
     public record EventFilterDto(@NotNull LocalDateTime from, @NotNull LocalDateTime to) {

@@ -10,9 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -22,7 +20,7 @@ import java.time.ZoneId;
  */
 @Slf4j
 @RestController
-@RequestMapping("/api/latest/google-info")
+@RequestMapping("/api/latest")
 @RequiredArgsConstructor
 public class GoogleTokenInfoController {
 
@@ -32,7 +30,7 @@ public class GoogleTokenInfoController {
     private final GoogleCalendarService googleCalendarService;
 
 
-    @GetMapping
+    @GetMapping("google-info")
     public CalendarTokenInfo getGoogleTokenInfo(@AuthenticationPrincipal UserDetails user) {
 
         return calendarService.getInfo(user.getUsername(), CalendarSyncInfo.SyncType.GOOGLE)
@@ -47,5 +45,10 @@ public class GoogleTokenInfoController {
                         tokenInfo.getLastSync().atZone(ZoneId.of("UTC")))
                 )
                 .orElse(CalendarTokenInfo.EMPTY);
+    }
+
+    @DeleteMapping("google-disconnect")
+    public void disconnect(@AuthenticationPrincipal UserDetails user) {
+        calendarService.disconnect(user.getUsername(), CalendarSyncInfo.SyncType.GOOGLE);
     }
 }

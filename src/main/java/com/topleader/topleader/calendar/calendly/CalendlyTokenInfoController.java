@@ -11,9 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -21,7 +19,7 @@ import java.time.ZoneId;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/latest/calendly-info")
+@RequestMapping("/api/latest")
 @RequiredArgsConstructor
 public class CalendlyTokenInfoController {
 
@@ -30,7 +28,7 @@ public class CalendlyTokenInfoController {
     private final CalendlyService calendlyService;
     private final CalendarToErrorHandler errorHandler;
 
-    @GetMapping
+    @GetMapping("calendly-info")
     public CalendarTokenInfo getGoogleTokenInfo(@AuthenticationPrincipal UserDetails user) {
         return calendarService.getInfo(user.getUsername(), CalendarSyncInfo.SyncType.CALENDLY)
                 .map(info ->
@@ -49,6 +47,11 @@ public class CalendlyTokenInfoController {
                         tokenInfo.getLastSync().atZone(ZoneId.systemDefault())
                 ))
                 .orElse(CalendarTokenInfo.EMPTY);
+    }
+
+    @DeleteMapping("calendly-disconnect")
+    public void disconnect(@AuthenticationPrincipal UserDetails user) {
+        calendarService.disconnect(user.getUsername(), CalendarSyncInfo.SyncType.CALENDLY);
     }
 
 }

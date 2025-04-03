@@ -7,10 +7,13 @@ import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.ical.ICalService;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +44,12 @@ public class EmailTemplateService {
         "fr", "Bestätigung Ihres Coaching-Termins bei TopLeader",
         "de", "Confirmation de votre séance de coaching sur TopLeader");
 
+    private static final Map<String, String> pickedCoachSubjects = Map.of(
+            "en", "You’ve Been Selected as a Coach on TopLeader!",
+            "cs", "Byli jste vybráni jako kouč na platformě TopLeader!",
+            "fr", "Vous avez été sélectionné comme coach sur TopLeader!",
+            "de", " Sie wurden als Coach auf TopLeader ausgewählt!");
+
     @Value("${top-leader.app-url}")
     private String appUrl;
 
@@ -59,6 +68,7 @@ public class EmailTemplateService {
     private final ICalService iCalService;
 
     private final ScheduledSessionService sessionService;
+
 
 
     public void sendBookingAlertPrivateSessionEmail(Long sessionId) {
@@ -264,12 +274,36 @@ public class EmailTemplateService {
         );
     }
 
+    public void sentPickedMessage(String coachUsername) {
+        log.info("Sending coach picked email for coach: [{}]", coachUsername);
+
+        final var user = userRepository.findById(coachUsername)
+                .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", coachUsername, "User not found " + coachUsername ));
+
+        emailService.sendEmail(
+                user.getCoachData().getCoachEmail(),
+                pickedCoachSubjects.getOrDefault(user.getLocale(), defaultLocale),
+                velocityService.getMessage(
+                        new HashMap<>(
+                                Map.of(
+                                        "firstName", user.getFirstName(),
+                                        "lastName", user.getLastName(),
+                                        "link", appUrl)
+                        ),
+                        parsePickedCoachTemplateName(user.getLocale()))
+               );
+    }
+
     private String parseCoachTemplateName(String locale) {
         return "templates/reservation/reservation-" + parseLocale(locale) + ".vm";
     }
 
     private String parseUserTemplateName(String locale) {
         return "templates/reservation/user-reservation-" + parseLocale(locale) + ".vm";
+    }
+
+    private String parsePickedCoachTemplateName(String locale) {
+        return "templates/reservation/picked-coach-" + parseLocale(locale) + ".vm";
     }
 
     private String parseLocale(String locale) {

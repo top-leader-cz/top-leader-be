@@ -64,7 +64,7 @@ public class CoachAvailabilityService {
         return coachAvailabilityRepository.findAllByUsernameAndRecurringIsTrue(username);
     }
 
-    public List<LocalDateTime> getAvailabilitySplitIntoHoursFiltered(String username, LocalDateTime from, LocalDateTime to, Boolean testFreeBusy) {
+    public List<LocalDateTime> getAvailabilitySplitIntoHoursFiltered(String username, LocalDateTime to, Boolean testFreeBusy) {
         var from24Hour = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(NOT_ALLOWED_BOOK);
         var events = getSyncEvents(username, from24Hour, to, testFreeBusy);
 
@@ -166,6 +166,11 @@ public class CoachAvailabilityService {
 
     @Transactional
     public void setNonRecurringAvailability(String username, CoachAvailabilityController.SetNonrecurringRequestDto request) {
+        var timeFrame = request.timeFrame();
+
+        if(timeFrame.from() == null || timeFrame.to() == null) {
+            return;
+        }
 
         final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
 

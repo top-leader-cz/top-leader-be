@@ -10,6 +10,7 @@ import com.topleader.topleader.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.calendar.CalendarToErrorHandler;
 import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.calendar.domain.SyncEvent;
+import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
 import com.topleader.topleader.util.transaction.TransactionService;
 
 import java.io.IOException;
@@ -42,6 +43,9 @@ public class GoogleCalendarService {
 
     private final CalendarSyncInfoRepository calendarSyncInfoRepository;
 
+
+    private final AvailabilitySettingRepository availabilitySettingRepository;
+
     private final TransactionService transactionService;
 
     private final RestClient restClient;
@@ -65,7 +69,8 @@ public class GoogleCalendarService {
                     .setRefreshToken(tokenResponse.getRefreshToken())
                     .setAccessToken(tokenResponse.getAccessToken())
                     .setLastSync(LocalDateTime.now());
-
+            calendarSyncInfoRepository.deleteAll();
+            availabilitySettingRepository.deleteAll();
             calendarSyncInfoRepository.save(info);
         });
 

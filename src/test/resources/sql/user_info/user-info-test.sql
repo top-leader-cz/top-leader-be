@@ -6,9 +6,14 @@ insert into users (username, password, status, time_zone, coach, credit, schedul
 values ('user_with_coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', 'UTC', 'coach', 400, 400, 'en');
 insert into users (username, password, status, first_name, last_name, time_zone, locale)
 values ('coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', 'Mitch', 'Cleverman', 'UTC', 'en');
+insert into users (username, password, status, first_name, last_name, time_zone, locale)
+values ('coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', 'Mitch', 'Cleverman', 'UTC', 'cs');
 
 INSERT INTO coach (username, public_profile, email, web_link, bio, experience_since, rate)
 VALUES ('coach', true, 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$');
+
+INSERT INTO coach (username, public_profile, email, web_link, bio, experience_since, rate)
+VALUES ('coach2', true, 'john.doe@example.com', 'http://some_video1', 'Experienced coach', '2021-01-01', '$');
 
 insert into coach_rate (rate_name, rate_credit)
 values ('$', 110),

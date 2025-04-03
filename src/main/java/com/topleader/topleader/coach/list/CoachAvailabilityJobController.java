@@ -40,7 +40,7 @@ public class CoachAvailabilityJobController {
         coachListViewRepository.fetchActiveCoachesUsernames().forEach(username -> {
             Try.run(() -> {
 
-                        var freeSlots = !coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, from, to, true).isEmpty();
+                        var freeSlots = !coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username,  to, true).isEmpty();
 
                         if(freeSlots != coachRepository.hasFeeSlot(username)) {
                             log.info("setting freeSlot: {}, for coach: {}", freeSlots, username);

@@ -6,6 +6,7 @@ package com.topleader.topleader.coach;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 
 import lombok.Getter;
@@ -66,5 +67,10 @@ public class Coach {
         ACC,
         PCC,
         MCC
+    }
+
+    public String getCoachEmail() {
+        return Optional.ofNullable(email)
+                .orElse(username);
     }
 }

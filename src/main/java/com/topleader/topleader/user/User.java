@@ -1,5 +1,6 @@
 package com.topleader.topleader.user;
 
+import com.topleader.topleader.coach.Coach;
 import jakarta.persistence.*;
 
 import java.util.HashSet;
@@ -88,6 +89,10 @@ public class User {
             .setStatus(Status.PENDING)
             .setLocale("en");
     }
+
+    @OneToOne
+    @JoinColumn(name = "username", unique = true)
+    private Coach coachData;
 
     public enum Authority {
         RESPONDENT,

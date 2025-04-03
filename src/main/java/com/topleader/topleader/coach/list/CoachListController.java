@@ -24,6 +24,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -133,7 +134,7 @@ public class CoachListController {
             throw new ApiValidationException(SESSION_IN_PAST, "time", time.toString(), "Not possible to schedule session in past.");
         }
 
-        final var possibleStartDates = coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(coachName, shiftedTime.minusDays(1), shiftedTime.plusDays(1), useFreeBusy);
+        final var possibleStartDates = coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(coachName, shiftedTime.plusDays(7), useFreeBusy);
 
         if (!possibleStartDates.contains(shiftedTime)) {
             throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", time.toString(), "Time " + time + " is not available");
@@ -174,7 +175,7 @@ public class CoachListController {
                 .map(ScheduledSession::getTime)
                 .collect(Collectors.toSet());
 
-        return coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, from, to, true).stream()
+        return coachAvailabilityService.getAvailabilitySplitIntoHoursFiltered(username, to, true).stream()
                 .filter(not(scheduledEvents::contains))
                 .map(d -> d.atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId))
                 .toList();

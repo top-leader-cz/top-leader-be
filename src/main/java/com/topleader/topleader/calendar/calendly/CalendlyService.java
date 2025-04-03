@@ -55,6 +55,8 @@ public class CalendlyService {
 
     public void saveInfo(CalendarSyncInfo info) {
         log.info("Saving Calendly info: {}", info.getId().getUsername());
+        repository.deleteAll();
+        availabilitySettingRepository.deleteAll();
         repository.save(info);
     }
 

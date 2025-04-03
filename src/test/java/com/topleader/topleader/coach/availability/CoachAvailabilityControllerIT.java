@@ -20,6 +20,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
+import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.GOOGLE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -28,8 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 /**
@@ -57,7 +57,7 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "coach", authorities = {"COACH"})
     void getRecurringTest() throws Exception {
-
+        availabilitySettingRepository.save(new CoachAvailabilitySettings().setCoach("coach").setType(GOOGLE).setResource("test-res").setActive(true));
         mvc.perform(get("/api/latest/coach-availability/recurring"))
                 .andExpect(status().isOk())
                 .andExpect(content().json("""
@@ -265,6 +265,7 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach1", authorities = {"COACH"})
     @Sql("/sql/coach/coach-list-test.sql")
     void updateRecurringSetting() throws Exception {
+        availabilitySettingRepository.save(new CoachAvailabilitySettings().setCoach("coach1").setType(GOOGLE).setResource("test-res").setActive(true));
         mvc.perform(patch("/api/latest/coach-availability/recurring/settings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -285,5 +286,30 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
 
     }
 
+    @Test
+    @WithMockUser(username = "coach1", authorities = {"COACH"})
+    @Sql("/sql/coach/coach-list-test.sql")
+    void getRecurringSettingMissing() throws Exception {
+        mvc.perform(get("/api/latest/coach-availability/recurring/settings"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("{}"));
+
+    }
+
+    @Test
+    @WithMockUser(username = "coach1", authorities = {"COACH"})
+    @Sql("/sql/coach/coach-list-test.sql")
+    void getRecurringSettingActive() throws Exception {
+        availabilitySettingRepository.save(new CoachAvailabilitySettings().setCoach("coach1").setType(CALENDLY).setResource("test-res").setActive(true));
+        mvc.perform(get("/api/latest/coach-availability/recurring/settings"))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                                {
+                                    "uuid": "test-res",
+                                    "type": "CALENDLY",
+                                    "active": true
+                                }
+                                """));
+    }
 
 }

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<p>Hallo <b>$firstName $lastName</b>,</p>
+
+<p>Gute Nachrichten! Ein Nutzer hat Sie als Coach auf der TopLeader-Plattform ausgewählt.
+    Das bedeutet, dass er oder sie bald Sitzungen mit Ihnen vereinbaren möchte.</p>
+
+<p>Bitte überprüfen und aktualisieren Sie Ihre Verfügbarkeit im Kalender.</p>
+
+<p>💬 Sie können die Person jetzt schon über das Nachrichtentool kontaktieren, um sich zu vernetzen und ihre Ziele und Erwartungen im Coaching besser kennenzulernen.</p>
+
+
+<p>👉 Melden Sie sich bei Ihrem TopLeader-Konto an <a href="$link" target="_blank">here</a></p>
+
+<p>Wir freuen uns, Sie in unserem Team von Expertencoaches zu haben, und sind gespannt auf Ihren Beitrag.</p>
+
+<p>Mit freundlichen Grüßen,</p>
+<p><b>Das TopLeader-Team</b></p>
+
+</body>
+</html>

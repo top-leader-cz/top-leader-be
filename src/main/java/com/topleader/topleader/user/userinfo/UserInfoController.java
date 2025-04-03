@@ -179,6 +179,7 @@ public class UserInfoController {
             userRepository.save(currentUser);
             scheduledSessionService.deleteUserCoachedSessions(user.getUsername());
             if (nonNull(request.coach())) {
+                emailTemplateService.sentPickedMessage(request.coach());
                 notificationService.addNotification(new NotificationService.CreateNotificationRequest(
                     request.coach(),
                     Notification.Type.COACH_LINKED,

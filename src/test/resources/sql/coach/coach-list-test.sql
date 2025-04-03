@@ -58,3 +58,4 @@ INSERT INTO user_coach_rates (username, rate_name)
 VALUES ('user-with-filter', '$');
 
 INSERT INTO calendar_sync_info(username, status, sync_type, refresh_token, access_token, owner_url) VALUES ('coach1', 'OK', 'CALENDLY', 'token', 'accessToken', 'https://calendly.com/coach1');
+INSERT INTO calendar_sync_info(username, status, sync_type, refresh_token, access_token, owner_url) VALUES ('coach1', 'OK', 'GOOGLE', 'token', 'accessToken', null);

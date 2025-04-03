@@ -1,5 +1,6 @@
 package com.topleader.topleader.user.userinfo;
 
+import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.ai.AiPrompt;
 import com.topleader.topleader.ai.AiPromptService;
@@ -12,6 +13,9 @@ import com.topleader.topleader.history.data.ValuesStoredData;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -314,6 +318,27 @@ class UserInfoControllerIT extends IntegrationTest {
         assertEquals(110, history.get(0).getCredit());
         assertEquals(110, history.get(1).getCredit());
     }
+
+
+    @Test
+    @WithMockUser(username = "user_with_coach", authorities = "USER")
+    void pickCoachTest() throws Exception {
+        mvc.perform(post("/api/latest/user-info/coach")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                            "coach": "coach2"
+                        }
+                    """)
+                )
+                .andExpect(status().isOk());
+
+        var receivedMessage = greenMail.getReceivedMessages()[0];
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("john.doe@example.com");
+        Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Byli jste vybráni jako kouč na platformě TopLeader!");
+    }
+
 
     @Test
     @WithMockUser(username = "user_with_coach", authorities = "USER")

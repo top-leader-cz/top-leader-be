@@ -40,7 +40,7 @@ public class CalendarSyncInfo {
     }
 
     public enum SyncType {
-        GOOGLE, CALENDLY
+        GOOGLE, CALENDLY, CUSTOM
     }
 
     @Data
