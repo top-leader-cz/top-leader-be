@@ -2,6 +2,10 @@ server:
   port: {PORT}
 
 spring:
+  cloud:
+    gcp:
+      sql:
+        database-name: top_leader_prod
   docker:
     compose:
       enabled: false
