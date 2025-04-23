@@ -9,4 +9,6 @@ public interface CalendarSyncInfoRepository extends JpaRepository<CalendarSyncIn
 
     List<CalendarSyncInfo> findBySyncType(CalendarSyncInfo.SyncType syncType);
 
+    void deleteByUsername(String username);
+
 }

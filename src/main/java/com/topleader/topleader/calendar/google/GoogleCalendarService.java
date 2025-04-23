@@ -69,8 +69,8 @@ public class GoogleCalendarService {
                     .setRefreshToken(tokenResponse.getRefreshToken())
                     .setAccessToken(tokenResponse.getAccessToken())
                     .setLastSync(LocalDateTime.now());
-            calendarSyncInfoRepository.deleteAll();
-            availabilitySettingRepository.deleteAll();
+            calendarSyncInfoRepository.deleteByUsername(info.getId().getUsername());
+            availabilitySettingRepository.deleteByCoach(info.getId().getUsername());
             calendarSyncInfoRepository.save(info);
         });
 
