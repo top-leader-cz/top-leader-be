@@ -3,11 +3,8 @@
  */
 package com.topleader.topleader.scheduled_session;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.*;
+
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,5 +38,15 @@ public class ScheduledSession {
     private boolean paid;
 
     private boolean isPrivate;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    public enum Status {
+        COMPLETED,
+        UPCOMING,
+        CANCELED,
+        PENDING,
+    }
 
 }

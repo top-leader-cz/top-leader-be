@@ -164,3 +164,20 @@ where (u.status != 'PENDING' or u.status != 'CANCELED')
             and u.created_at::date in (now()::date - interval '3 day', now()::date - interval '10 day', now()::date - interval '24 day')
         )
     );
+
+drop view if exists coach_session_view;
+create view coach_session_view as
+select s.id,
+       s.username as client,
+       s.time as date,
+       s.coach_username,
+       CASE
+           WHEN s.status = 'UPCOMING' AND s.time <= now() THEN 'PENDING'
+           WHEN s.status = 'UPCOMING' AND s.time > now() THEN 'UPCOMING'
+           ELSE s.status
+           END AS status,
+       u.first_name,
+       u.last_name
+from scheduled_session s
+         left join users u on s.username = u.username;
+
