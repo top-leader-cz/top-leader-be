@@ -14,6 +14,7 @@ import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
 import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
 import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
 import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -53,9 +54,9 @@ public class CalendlyService {
 
     private final CalendarToErrorHandler errorHandler;
 
-    public void saveInfo(CalendarSyncInfo info) {
+     @Transactional
+     public void saveInfo(CalendarSyncInfo info) {
         log.info("Saving Calendly info: {}", info.getId().getUsername());
-        repository.deleteByUsername(info.getId().getUsername());
         availabilitySettingRepository.deleteByCoach(info.getId().getUsername());
         repository.save(info);
     }

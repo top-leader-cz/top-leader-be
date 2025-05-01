@@ -8,7 +8,4 @@ import java.util.List;
 public interface CalendarSyncInfoRepository extends JpaRepository<CalendarSyncInfo, CalendarSyncInfo.CalendarInfoId> {
 
     List<CalendarSyncInfo> findBySyncType(CalendarSyncInfo.SyncType syncType);
-
-    void deleteByUsername(String username);
-
 }

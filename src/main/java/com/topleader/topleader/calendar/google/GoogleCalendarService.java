@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.vavr.control.Try;
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
@@ -58,6 +59,7 @@ public class GoogleCalendarService {
     @Value("${google.client.client-secret}")
     private String clientSecret;
 
+    @Transactional
     public void storeTokenInfo(String username, TokenResponse tokenResponse) {
         log.info("Storing token info for user {} token info: {}", username, tokenResponse);
 
@@ -69,7 +71,6 @@ public class GoogleCalendarService {
                     .setRefreshToken(tokenResponse.getRefreshToken())
                     .setAccessToken(tokenResponse.getAccessToken())
                     .setLastSync(LocalDateTime.now());
-            calendarSyncInfoRepository.deleteByUsername(info.getId().getUsername());
             availabilitySettingRepository.deleteByCoach(info.getId().getUsername());
             calendarSyncInfoRepository.save(info);
         });
