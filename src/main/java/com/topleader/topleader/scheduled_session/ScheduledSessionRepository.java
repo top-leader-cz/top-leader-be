@@ -5,6 +5,7 @@ package com.topleader.topleader.scheduled_session;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import com.topleader.topleader.coach.session.Client;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,6 +25,8 @@ public interface ScheduledSessionRepository extends JpaSpecificationExecutor<Sch
     List<ScheduledSession> findAllByUsernameAndTimeIsAfter(String username, LocalDateTime now);
 
     List<ScheduledSession> findAllByTimeBeforeAndPaidIsFalse(LocalDateTime time);
+
+    Optional<ScheduledSession> findByCoachUsernameAndId(String username, Long id);
 
 
 

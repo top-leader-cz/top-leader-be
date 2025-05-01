@@ -34,7 +34,7 @@ public class CalendlyRefreshAccessTokenJob {
     @GetMapping("refresh-tokens-calendly")
     public void fetchTokens() {
         log.info("Fetching Calendly tokens");
-        repository.findBySyncType(CalendarSyncInfo.SyncType.CALENDLY)
+        repository.findBySyncTypeAndStatus(CalendarSyncInfo.SyncType.CALENDLY)
                 .forEach(info -> {
                     CommonUtils.sleep(TimeUnit.MILLISECONDS, 100);
                     log.info("fetching tokens for user: {}", info.getUsername());

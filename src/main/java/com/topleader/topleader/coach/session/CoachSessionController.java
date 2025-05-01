@@ -37,7 +37,7 @@ public class CoachSessionController {
     @Secured({"COACH", "ADMIN"})
     @PatchMapping
     public SessionDto updateSession(@AuthenticationPrincipal UserDetails user, @RequestBody SessionDto session) {
-        return scheduledSessionRepository.findOne(Example.of(new ScheduledSession().setCoachUsername(user.getUsername()).setId(session.id())))
+        return scheduledSessionRepository.findByCoachUsernameAndId(user.getUsername(), session.id())
                 .map(s -> s.setStatus(session.status()))
                 .map(SessionDto::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found session"));

@@ -40,7 +40,7 @@ public class ScheduledSession {
     private boolean isPrivate;
 
     @Enumerated(EnumType.STRING)
-    private Status status;
+    private Status status = Status.UPCOMING;
 
     public enum Status {
         COMPLETED,

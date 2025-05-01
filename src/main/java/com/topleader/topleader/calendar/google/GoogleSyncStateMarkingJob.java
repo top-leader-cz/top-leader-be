@@ -30,7 +30,7 @@ public class GoogleSyncStateMarkingJob {
     @GetMapping("verify-sync-gcal")
     public void fetchTokens() {
         log.info("Verifying Google tokens");
-        repository.findBySyncType(CalendarSyncInfo.SyncType.GOOGLE)
+        repository.findBySyncTypeAndStatus(CalendarSyncInfo.SyncType.GOOGLE)
                 .forEach(info -> {
                     var active = googleCalendarService.verifyToken(info.getRefreshToken());
                     repository.save(info

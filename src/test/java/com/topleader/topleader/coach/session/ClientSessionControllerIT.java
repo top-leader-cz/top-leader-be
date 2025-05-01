@@ -51,7 +51,7 @@ class ClientSessionControllerIT extends IntegrationTest {
                          }
                                           """)));
 
-        Assertions.assertThat(repository.findOne(Example.of(new ScheduledSession().setId(1L))).get().getStatus()).isEqualTo(COMPLETED);
+        Assertions.assertThat(repository.findById(1L).get().getStatus()).isEqualTo(COMPLETED);
 
     }
 
