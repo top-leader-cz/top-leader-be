@@ -15,6 +15,5 @@ public interface AvailabilitySettingRepository extends JpaRepository<CoachAvaila
     @Query("select a from  CoachAvailabilitySettings a where a.active = true and a.coach = :coach")
     Optional<CoachAvailabilitySettings> findByActive(String coach);
 
-    @Transactional
     void deleteByCoach(String coach);
 }

@@ -54,9 +54,10 @@ public class CalendlyService {
 
     private final CalendarToErrorHandler errorHandler;
 
-     @Transactional
-     public void saveInfo(CalendarSyncInfo info) {
+    @Transactional
+    public void saveInfo(CalendarSyncInfo info) {
         log.info("Saving Calendly info: {}", info.getId().getUsername());
+        repository.deleteByUsername(info.getId().getUsername());
         availabilitySettingRepository.deleteByCoach(info.getId().getUsername());
         repository.save(info);
     }
