@@ -28,6 +28,8 @@ public interface ScheduledSessionRepository extends JpaSpecificationExecutor<Sch
 
     Optional<ScheduledSession> findByCoachUsernameAndId(String username, Long id);
 
+    Optional<ScheduledSession> findTopByUsernameOrderByIdDesc(String username);
+
 
 
 }

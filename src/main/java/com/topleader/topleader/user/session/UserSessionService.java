@@ -316,4 +316,5 @@ public class UserSessionService {
     boolean canGenerateRecommendedGrowths(String businessStrategy, String position, String competency) {
         return StringUtils.isNotBlank(businessStrategy) && StringUtils.isNotBlank(competency) && StringUtils.isNotBlank(position);
     }
+
 }

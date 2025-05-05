@@ -32,8 +32,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 
 /**
@@ -245,5 +244,36 @@ class UserSessionControllerIT extends IntegrationTest {
 
         TestUtils.assertJsonEquals(result, TestUtils.readFileAsString("session/json/recommended-growth-result.json"));
     }
+
+    @Test
+    @WithUserDetails("user2")
+    void setFeedback() throws Exception {
+        mvc.perform(post("/api/latest/user-sessions/feedback")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                   "answers": {"a1" :  1, "a2" :  2, "a3":  3},
+                                   "feedback": "long text"
+                                }
+                                """)
+                )
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                          "username": "user2",
+                          "sessionId": 4,
+                          "answers": {
+                            "a1": 1,
+                            "a2": 2,
+                            "a3": 3
+                          },
+                          "feedback": "long text"
+                        }
+
+                        """));
+    }
+
+
 
 }

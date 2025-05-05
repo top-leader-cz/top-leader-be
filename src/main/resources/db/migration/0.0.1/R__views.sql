@@ -181,3 +181,20 @@ select s.id,
 from scheduled_session s
          left join users u on s.username = u.username;
 
+drop view if exists user_session_view;
+create view report_session_view as
+select distinct ROW_NUMBER() OVER (ORDER BY u.username, s.time) AS id,
+        u.username,
+        u.first_name,
+        u.last_name,
+        s.status,
+        u.company_id,
+        s.time as date
+from users u
+         left join scheduled_session s on s.username = u.username
+where u.status != 'CANCELED' and company_id is not null
+
+
+
+
+
