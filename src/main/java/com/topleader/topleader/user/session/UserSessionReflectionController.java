@@ -4,12 +4,15 @@
 package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.exception.ApiValidationException;
+import com.topleader.topleader.user.badge.Badge;
+import com.topleader.topleader.user.badge.BadgeService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,6 +34,8 @@ public class UserSessionReflectionController {
 
     private final UserSessionService userSessionService;
 
+    private final BadgeService badgeService;
+
     @PostMapping
     public void setUserReflection(
         @AuthenticationPrincipal UserDetails user,
@@ -45,7 +50,12 @@ public class UserSessionReflectionController {
             }
         }
 
+
         userSessionService.setUserSessionReflection(user.getUsername(), request);
+        badgeService.recordAchievement(user.getUsername(), Badge.AchievementType.COMPLETE_SESSION);
+        if(CollectionUtils.isNotEmpty(request.checked)) {
+            badgeService.recordAchievement(user.getUsername(), Badge.AchievementType.COMPLETED_SHORT_GOAL);
+        }
     }
 
     public record UserSessionReflectionRequest(

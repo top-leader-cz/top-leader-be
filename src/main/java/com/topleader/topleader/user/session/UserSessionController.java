@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,6 +30,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/latest/user-sessions")
@@ -83,10 +85,13 @@ public class UserSessionController {
     @PostMapping("/feedback")
     public FeedbackDto setFeedback(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid FeedbackDto request) {
         return scheduledSessionRepository.findTopByUsernameOrderByIdDesc(user.getUsername())
-                .map(s -> sessionFeedbackRepository.save(new SessionFeedback()
+                .map(s -> {
+                    log.info("saving user session feedback");
+                    return sessionFeedbackRepository.save(new SessionFeedback()
                         .setId(new SessionFeedback.SessionFeedbackId(s.getId(), user.getUsername()))
                         .setAnswers(request.answers))
-                        .setFeedback(request.feedback))
+                        .setFeedback(request.feedback);
+                })
                 .map(f -> new FeedbackDto(f.getId().getUsername(), f.getId().getSessionId(), f.getAnswers(), f.getFeedback()))
                 .orElse(null);
     }
