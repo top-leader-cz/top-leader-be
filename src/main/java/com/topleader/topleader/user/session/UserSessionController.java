@@ -1,6 +1,8 @@
 package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.ai.AiClient;
+import com.topleader.topleader.history.DataHistory;
+import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
@@ -22,6 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,6 +32,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 
+@Slf4j
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/latest/user-sessions")
@@ -44,7 +48,7 @@ public class UserSessionController {
 
     private final SessionFeedbackRepository sessionFeedbackRepository;
 
-    private final ScheduledSessionRepository scheduledSessionRepository;
+    private final DataHistoryRepository dataHistoryRepository;
 
     @GetMapping
     public UserSessionDto getUserSession(@AuthenticationPrincipal UserDetails user) {
@@ -63,7 +67,7 @@ public class UserSessionController {
     @PostMapping("/generate-long-term-goal")
     public Collection<String> generateLongTermGoal(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
         var userInfo = userInfoService.find(user.getUsername());
-        var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale("en")).getLocale();
+        var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale(" ")).getLocale();
         return split(aiClient.findLongTermGoal(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment()));
     }
 
@@ -82,11 +86,14 @@ public class UserSessionController {
     @Secured({"USER", "ADMIN"})
     @PostMapping("/feedback")
     public FeedbackDto setFeedback(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid FeedbackDto request) {
-        return scheduledSessionRepository.findTopByUsernameOrderByIdDesc(user.getUsername())
-                .map(s -> sessionFeedbackRepository.save(new SessionFeedback()
+        return dataHistoryRepository.findTopByUsernameAndTypeOrderByIdDesc(user.getUsername(), DataHistory.Type.USER_SESSION)
+                .map(s -> {
+                    log.info("saving user session feedback");
+                    return sessionFeedbackRepository.save(new SessionFeedback()
                         .setId(new SessionFeedback.SessionFeedbackId(s.getId(), user.getUsername()))
-                        .setAnswers(request.answers))
-                        .setFeedback(request.feedback))
+                        .setAnswers(request.answers)
+                        .setFeedback(request.feedback));
+                })
                 .map(f -> new FeedbackDto(f.getId().getUsername(), f.getId().getSessionId(), f.getAnswers(), f.getFeedback()))
                 .orElse(null);
     }

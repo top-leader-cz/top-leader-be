@@ -4,6 +4,9 @@
 package com.topleader.topleader.history;
 
 import java.util.List;
+import java.util.Optional;
+
+import com.topleader.topleader.scheduled_session.ScheduledSession;
 import org.springframework.data.repository.CrudRepository;
 
 
@@ -13,4 +16,6 @@ import org.springframework.data.repository.CrudRepository;
 public interface DataHistoryRepository extends CrudRepository<DataHistory, String> {
 
     List<DataHistory> findAllByUsernameAndType(String username, DataHistory.Type type);
+
+    Optional<DataHistory> findTopByUsernameAndTypeOrderByIdDesc(String username, DataHistory.Type type);
 }

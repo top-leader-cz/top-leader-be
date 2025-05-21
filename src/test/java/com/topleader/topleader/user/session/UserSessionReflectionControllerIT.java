@@ -8,8 +8,11 @@ import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
+import com.topleader.topleader.user.badge.Badge;
+import com.topleader.topleader.user.badge.BadgeRepository;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import org.assertj.core.api.Assertions;
@@ -17,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -47,6 +51,9 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
     @Autowired
     UserInsightRepository userInsightRepository;
+
+    @Autowired
+    BadgeRepository badgeRepository;
 
     @Autowired
     AiPromptService aiPromptService;
@@ -109,6 +116,13 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                 .extracting("personalGrowthTip")
                 .contains("action-goal-response");
 
+        Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETED_SHORT_GOAL)))).isNotEmpty();
+        Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();
+    }
+
+    private Badge badge(Badge.AchievementType type) {
+        var now = LocalDateTime.now();
+        return new Badge().setBadgeId(new Badge.BadgeId("user2", type, now.getMonth(), now.getYear()));
     }
 
 }

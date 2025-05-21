@@ -131,7 +131,7 @@ class UserSessionControllerIT extends IntegrationTest {
     @Test
     @WithMockUser("user2")
     void setUserSessionData() throws Exception {
-        mvc.perform(post("/api/latest/user-sessions")
+         mvc.perform(post("/api/latest/user-sessions")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -247,7 +247,8 @@ class UserSessionControllerIT extends IntegrationTest {
 
     @Test
     @WithUserDetails("user2")
-    void setFeedback() throws Exception {
+    @Sql(scripts = {"/sql/user_info/session/user-session.sql", "/sql/user_info/session/ai-prompt.sql", "/sql/user/feedback/feedback.sql"})
+   void setFeedback() throws Exception {
         mvc.perform(post("/api/latest/user-sessions/feedback")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -262,7 +263,7 @@ class UserSessionControllerIT extends IntegrationTest {
                 .andExpect(content().json("""
                         {
                           "username": "user2",
-                          "sessionId": 4,
+                          "sessionId": 2,
                           "answers": {
                             "a1": 1,
                             "a2": 2,

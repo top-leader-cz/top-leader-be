@@ -16,7 +16,6 @@ values (nextval('user_action_step_seq'), 'user2', 'action 1', '2023-08-14', true
 insert into user_action_step(id ,username, label, date, checked)
 values (nextval('user_action_step_seq'), 'user2', 'action 2', '2023-08-15', false);
 
-
 insert into scheduled_session (id, coach_username, username, time, status)
 values (1, 'coach', 'user2', '2023-08-14 08:30:00', 'COMPLETED'),
        (2, 'coach', 'user2', '2023-08-14 12:30:00', 'COMPLETED'),

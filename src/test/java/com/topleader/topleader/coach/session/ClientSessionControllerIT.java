@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
+import static com.topleader.topleader.scheduled_session.ScheduledSession.Status.CANCELED;
 import static com.topleader.topleader.scheduled_session.ScheduledSession.Status.COMPLETED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -37,7 +38,7 @@ class ClientSessionControllerIT extends IntegrationTest {
                         .content("""
                                 {
                                             "id": "1",
-                                            "status": "COMPLETED"
+                                            "status": "CANCELED"
                                           }
                                     """
                         ))
@@ -47,11 +48,11 @@ class ClientSessionControllerIT extends IntegrationTest {
                            "id": 1,
                            "date": "2023-08-14T10:30:00Z",
                            "client": "client1",
-                           "status": "COMPLETED"
+                           "status": "CANCELED"
                          }
                                           """)));
 
-        Assertions.assertThat(repository.findById(1L).get().getStatus()).isEqualTo(COMPLETED);
+        Assertions.assertThat(repository.findById(1L).get().getStatus()).isEqualTo(CANCELED);
 
     }
 

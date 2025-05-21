@@ -39,9 +39,7 @@ class ReportSessionController {
                 .map(User::getCompanyId)
                 .orElseThrow(() -> new ApiValidationException(NOT_PART_OF_COMPANY, "user", hrAuth.getUsername(), "User is not part of any company"));
 
-        var a  = repository.findAll(ReportSessionSpecification.withFilter(filter, companyId), pageable)
-                .getContent();
-        var all = repository.findAll(ReportSessionSpecification.withFilter(filter, companyId), pageable)
+         var all = repository.findAll(ReportSessionSpecification.withFilter(filter, companyId), pageable)
                 .stream()
                 .map(ReportSessionDto::from)
                 .collect(Collectors.toMap(
