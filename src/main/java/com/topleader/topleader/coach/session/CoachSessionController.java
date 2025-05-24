@@ -39,6 +39,7 @@ public class CoachSessionController {
     public SessionDto updateSession(@AuthenticationPrincipal UserDetails user, @RequestBody SessionDto session) {
         return scheduledSessionRepository.findByCoachUsernameAndId(user.getUsername(), session.id())
                 .map(s -> s.setStatus(session.status()))
+                .map(scheduledSessionRepository::save)
                 .map(SessionDto::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found session"));
     }
