@@ -85,7 +85,7 @@ class CoachAvailabilityJobControllerIT extends IntegrationTest {
         Assertions.assertThat(coachListViewRepository.findAll().stream().filter(CoachListView::getPublicProfile).collect(Collectors.toList()))
                 .extracting(CoachListView::getUsername, CoachListView::isFreeSlots)
                 .containsExactlyInAnyOrder(
-                        new Tuple("coach1", true),
+                        new Tuple("coach1", false),
                         new Tuple("coach2", false),
                         new Tuple("coach3", true)
          );

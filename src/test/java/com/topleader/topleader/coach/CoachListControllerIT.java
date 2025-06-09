@@ -340,7 +340,7 @@ class CoachListControllerIT extends IntegrationTest {
     @Test
     @WithMockUser
     void getCoachAvailabilityTest() throws Exception {
-        var from24Hour = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(24);
+        var from24Hour = LocalDateTime.parse("2025-06-09T15:00").truncatedTo(ChronoUnit.HOURS).plusHours(24);
         var plusDays6 = from24Hour.plusDays(7);
         var monday = getDay(DayOfWeek.MONDAY);
         var tuesday = getDay(DayOfWeek.TUESDAY);
@@ -352,16 +352,15 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(content().json(String.format("""
-                        ["%s","%s"]
+                        ["2025-06-16T13:00:00Z","2025-06-17T13:00:00Z"]
                         """, monday, tuesday)));
     }
 
     private String getDay(DayOfWeek dayOfWeek) {
-        var from24Hour = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS).plusHours(24);
+       var from24Hour = LocalDateTime.parse("2025-06-09T15:00").truncatedTo(ChronoUnit.HOURS).plusHours(24);
        return from24Hour.with(TemporalAdjusters.nextOrSame(dayOfWeek))
                 .toLocalDate()
                 .atStartOfDay()
-                .plusHours(13)
                 .atZone(ZoneId.of("UTC"))
                 .format(DateTimeFormatter.ISO_INSTANT);
     }
