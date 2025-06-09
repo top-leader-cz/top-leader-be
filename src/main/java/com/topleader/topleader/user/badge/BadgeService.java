@@ -19,6 +19,6 @@ public class BadgeService {
 
 
     public List<Badge> getBadges(String username) {
-       return badgeRepository.getUerBadges(username,  LocalDate.now().getYear());
+       return badgeRepository.getUserBadges(username,  LocalDate.now().getYear());
     }
 }

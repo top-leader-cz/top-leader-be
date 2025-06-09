@@ -12,6 +12,7 @@ import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeRepository;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import org.assertj.core.api.Assertions;
@@ -120,7 +121,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     }
 
     private Badge badge(Badge.AchievementType type) {
-        var now = LocalDate.parse("2025-05-20");
+        var now = LocalDateTime.now();
         return new Badge().setBadgeId(new Badge.BadgeId("user2", type, now.getMonth(), now.getYear()));
     }
 
