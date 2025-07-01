@@ -12,12 +12,17 @@ import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import com.topleader.topleader.user.badge.Badge;
+import com.topleader.topleader.user.badge.BadgeRepository;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -53,6 +58,10 @@ class UserSessionControllerIT extends IntegrationTest {
 
     @Autowired
     AiPromptService aiPromptService;
+
+    @Autowired
+    BadgeRepository badgeRepository;
+
 
 
     @Test
@@ -125,6 +134,8 @@ class UserSessionControllerIT extends IntegrationTest {
         assertThat(sessionData.getLongTermGoal(), is("win"));
         assertThat(sessionData.getAreaOfDevelopment(), hasSize(2));
         assertThat(sessionData.getAreaOfDevelopment(), hasItems("a1", "a2"));
+
+        Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();
 
     }
 
@@ -275,6 +286,10 @@ class UserSessionControllerIT extends IntegrationTest {
                         """));
     }
 
+    private Badge badge(Badge.AchievementType type) {
+        var now = LocalDateTime.now();
+        return new Badge().setBadgeId(new Badge.BadgeId("user", type, now.getMonth(), now.getYear()));
+    }
 
 
 }

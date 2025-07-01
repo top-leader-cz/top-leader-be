@@ -56,10 +56,6 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     BadgeRepository badgeRepository;
 
     @Autowired
-    AiPromptService aiPromptService;
-
-
-    @Autowired
     ChatModel chatClient;
 
 

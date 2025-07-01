@@ -12,6 +12,8 @@ import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.user.UserDetailService;
+import com.topleader.topleader.user.badge.Badge;
+import com.topleader.topleader.user.badge.BadgeService;
 import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.user.userinfo.UserInfo;
@@ -32,6 +34,7 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -68,6 +71,8 @@ public class UserSessionService {
     private final RestTemplate restTemplate;
 
     private final CompanyRepository companyRepository;
+
+    private final BadgeService badgeService;
 
     @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
@@ -126,6 +131,7 @@ public class UserSessionService {
         Executors.newVirtualThreadPerTaskExecutor().submit(() -> generateActionGoals(username, steps));
 
         saveActionSteps(userActionSteps);
+        badgeService.recordAchievement(username, Badge.AchievementType.COMPLETE_SESSION);
 
         return convertToUserSession(userInfo, userActionSteps);
     }
