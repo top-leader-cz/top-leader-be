@@ -31,7 +31,7 @@ class ReportSessionController {
 
     @PostMapping
     @Secured({"HR", "ADMIN"})
-    public Page<ReportSessionDto> fetch(@PageableDefault(size = 25, sort = "username") Pageable pageable,
+    public Page<ReportSessionDto> fetch(@PageableDefault(size = 1000, sort = "username") Pageable pageable,
                                          @RequestBody ReportSessionFilter filter,
                                          @AuthenticationPrincipal UserDetails hrAuth) {
 
