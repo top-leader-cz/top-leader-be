@@ -41,15 +41,16 @@ class UserInsightControllerIT extends IntegrationTest {
         mvc.perform(get("/api/latest/user-insight"))
                 .andDo(print())
                 .andExpect(content().json("""
-                          {
-                          "personalGrowthTip":{"text":null,"isPending":false},
-                          "leaderShipStyle":{"text":"leadership-response","isPending":false},
-                          "leaderPersona":{"text": "world-leader-persona","isPending":false},
-                          "animalSpirit":{"text":"animal-response","isPending":false},
-                          "leadershipTip":{"text":null,"isPending":false},
-                          "userPreviews":{"text":"test-user-previews","isPending":false}
-                          }
-                        """))
+                        {
+                        "personalGrowthTip":{"text":null,"isPending":false},
+                        "leaderShipStyle":{"text":"leadership-response","isPending":false},
+                        "leaderPersona":{"text": "world-leader-persona","isPending":false},
+                        "animalSpirit":{"text":"animal-response","isPending":false},
+                        "leadershipTip":{"text":null,"isPending":false},
+                        "userPreviews":{"text":"test-user-previews","isPending":false},
+                        "userArticles":{"text":"[{\\\"url\\\":\\\"https://hbr.org/2018/04/better-brainstorming\\\",\\\"perex\\\":\\\"perex\\\",\\\"title\\\":\\\"title\\\",\\\"author\\\":\\\"Scott Berinato\\\",\\\"source\\\":\\\"Harvard Business Review\\\",\\\"language\\\":\\\"en\\\",\\\"readTime\\\":\\\"6 min read\\\",\\\"imageData\\\":\\\"image\\\",\\\"application\\\":\\\"application\\\",\\\"imagePrompt\\\":\\\"prompt\\\",\\\"summaryText\\\":\\\"summary\\\",\\\"id\\\":1}]","isPending":false}
+                  }
+                """))
                 .andExpect(status().isOk());
 
     }

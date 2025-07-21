@@ -26,7 +26,8 @@ public class AiPrompt {
         ACTIONS_STEPS,
         FEEDBACK_SUMMARY,
         USER_PREVIEWS,
-        RECOMMENDED_GROWTH
+        RECOMMENDED_GROWTH,
+        USER_ARTICLES
     }
 
 }

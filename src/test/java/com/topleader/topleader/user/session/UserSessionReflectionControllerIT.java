@@ -4,7 +4,6 @@
 package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
@@ -15,11 +14,13 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.topleader.topleader.user.userinsight.UserInsightRepository;
+import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -58,12 +59,49 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     @Autowired
     ChatModel chatClient;
 
+    @Autowired
+    ArticleRepository articleRepository;
+
 
     @Test
     @WithMockUser("user2")
     void setUserSessionReflectionData() throws Exception {
         var actionGoal = "test {0} test {1} test {2} test {4} test {5} test {6}";
         Mockito.when(chatClient.call(actionGoal)).thenReturn("action-goal-response");
+        
+        // Mock AI client response for user articles generation
+        var expectedArticlesJson = """
+                [
+                    {
+                        "title": "Effective Leadership Communication",
+                        "author": "John Doe",
+                        "source": "Leadership Journal",
+                        "url": "https://example.com/article1",
+                        "readTime": "5 min",
+                        "language": "en",
+                        "perex": "Learn how to communicate effectively as a leader",
+                        "summaryText": "This article covers key communication strategies for leaders",
+                        "application": "Apply these techniques in daily team meetings",
+                        "imagePrompt": "leadership communication meeting"
+                    },
+                    {
+                        "title": "Building Team Motivation",
+                        "author": "Jane Smith",
+                        "source": "Management Today",
+                        "url": "https://example.com/article2",
+                        "readTime": "3 min",
+                        "language": "en",
+                        "perex": "Discover ways to keep your team motivated",
+                        "summaryText": "Methods for maintaining high team morale and productivity",
+                        "application": "Implement motivational strategies in your team",
+                        "imagePrompt": "team motivation office"
+                    }
+                ]
+                """;
+
+        Mockito.when(chatClient.call(Mockito.anyString()))
+                .thenReturn("action-goal-response")
+                .thenReturn(expectedArticlesJson);
 
         mvc.perform(post("/api/latest/user-sessions-reflection")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -111,6 +149,16 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
         Assertions.assertThat(userInsightRepository.findAll())
                 .extracting("personalGrowthTip")
                 .contains("action-goal-response");
+
+        var article = articleRepository.findByUsername("user2").get(0).getContent();
+
+        Assertions.assertThat(article).isNotNull();
+        Assertions.assertThat(article).contains("Effective Leadership Communication");
+        Assertions.assertThat(article).contains("Building Team Motivation");
+        Assertions.assertThat(article).contains("John Doe");
+        Assertions.assertThat(article).contains("Jane Smith");
+        Assertions.assertThat(article).contains("leadership communication meeting");
+        Assertions.assertThat(article).contains("team motivation office");
 
         Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETED_SHORT_GOAL)))).isNotEmpty();
         Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();

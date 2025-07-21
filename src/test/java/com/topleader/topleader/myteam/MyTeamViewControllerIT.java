@@ -1,12 +1,13 @@
 package com.topleader.topleader.myteam;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.util.image.ArticleImageService;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -16,6 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  */
 @Sql(scripts = "/sql/manager/my-team.sql")
 class MyTeamViewControllerIT extends IntegrationTest {
+    @Autowired
+    private ArticleImageService articleImageService;
 
     @Test
     @WithMockUser(username = "managerUser", authorities = "MANAGER")
