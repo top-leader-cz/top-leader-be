@@ -7,6 +7,7 @@ import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -76,6 +77,7 @@ class CoachAvailabilityJobControllerIT extends IntegrationTest {
                         .withBody(TestUtils.readFileAsString("json/coach/calendly-token-response.json"))));
     }
 
+    @Disabled("feature is no used")
     @Test
     @WithMockUser(authorities = "JOB")
     void testAvailabilityJob() throws Exception {

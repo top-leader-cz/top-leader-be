@@ -38,5 +38,7 @@ public class UserInsight {
 
     private String userPreviews;
 
+    private String userArticles;
+
     private boolean actionGoalsPending;
 }

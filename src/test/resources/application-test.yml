@@ -23,4 +23,8 @@ top-leader:
     base-api-url: http://localhost:8060
     base-auth-url: http://localhost:8060
 
+openai:
+  image:
+    url: http://localhost:8060/image
+
 

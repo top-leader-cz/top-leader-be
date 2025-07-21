@@ -5,6 +5,7 @@ package com.topleader.topleader.user.session;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Base64;
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
@@ -16,10 +17,14 @@ import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeService;
 import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.session.domain.UserPreview;
+import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.UserInsightService;
+import com.topleader.topleader.user.userinsight.article.Article;
+import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.util.common.user.UserUtils;
+import com.topleader.topleader.util.image.ArticleImageService;
 import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -34,7 +39,6 @@ import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -73,6 +77,10 @@ public class UserSessionService {
     private final CompanyRepository companyRepository;
 
     private final BadgeService badgeService;
+
+    private final ArticleImageService articleImageService;
+
+    private final ArticleRepository articlesRepository;
 
     @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
@@ -159,7 +167,15 @@ public class UserSessionService {
 
         if (!actionGoals.isEmpty()) {
             userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
-        }
+            var userArticles = handleUserArticles(username, actionGoals);
+            if (!userArticles.isEmpty()) {
+                articlesRepository.deleteAllByUsername(username);
+                userArticles.forEach(article -> articlesRepository.save(new Article()
+                        .setUsername(username)
+                        .setContent(article))
+                );
+            }
+       }
         userInsight.setActionGoalsPending(false);
 
         userInsightService.save(userInsight);
@@ -187,6 +203,20 @@ public class UserSessionService {
         return Try.of(() -> objectMapper.writeValueAsString(filtered))
                 .onFailure(e -> log.error("Failed to convert user preview for user: [{}] ", username, e))
                 .getOrElse(() -> null);
+    }
+
+    public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
+        var user = userDetailService.find(username);
+        return Try.of(() -> {
+                    var res = aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()));
+                    return objectMapper.readValue(res, new TypeReference<List<UserArticle>>() {
+                    });
+                })
+                .onFailure(e -> log.error("Failed to generate user articles for user: [{}] ", username, e))
+                .getOrElse(List.of())
+                .stream()
+                .map(article ->  article.setImageData(articleImageService.generatePlaceholderImageData(article.getImagePrompt())))
+                .toList();
     }
 
     private boolean urlValid(String url) {
