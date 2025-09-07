@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
+import java.time.ZonedDateTime;
+
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Accessors(chain = true)
@@ -23,5 +25,6 @@ public class UserArticle {
     private String application;
     private String imagePrompt;
     private String imageData;
+    private String date;
 
 }

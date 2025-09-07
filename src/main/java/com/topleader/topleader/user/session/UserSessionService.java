@@ -215,13 +215,14 @@ public class UserSessionService {
                 .onFailure(e -> log.error("Failed to generate user articles for user: [{}] ", username, e))
                 .getOrElse(List.of())
                 .stream()
+                .filter(article -> StringUtils.isBlank(article.getUrl()) || urlValid(article.getUrl()))
                 .map(article ->  article.setImageData(articleImageService.generatePlaceholderImageData(article.getImagePrompt())))
                 .toList();
     }
 
     private boolean urlValid(String url) {
         return Try.of(() -> restTemplate.getForEntity(url, String.class))
-                .onFailure(e -> log.info("Failed to get url: [{}] ", url, e))
+                .onFailure(e -> log.warn("Failed to get url: [{}] ", url, e))
                 .getOrElse(() -> ResponseEntity.status(404).body("Not Found"))
                 .getStatusCode()
                 .value() != INVALID_LINK;

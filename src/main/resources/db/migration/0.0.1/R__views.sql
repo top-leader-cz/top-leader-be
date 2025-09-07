@@ -120,11 +120,12 @@ select c.username,
        u.time_zone,
        c.linkedin_profile,
        c.free_slots,
-       c.priority
+       c.priority,
+       c.primary_roles
 from coach c
          left join users u on c.username = u.username
-where u.status != 'CANCELED'
-;
+where u.status != 'CANCELED';
+
 
 drop view if exists session_reminder_view;
 create or replace view session_reminder_view as
@@ -182,6 +183,7 @@ from scheduled_session s
          left join users u on s.username = u.username;
 
 drop view if exists user_session_view;
+drop view if exists report_session_view;
 create view report_session_view as
 select distinct ROW_NUMBER() OVER (ORDER BY u.username, s.time) AS id,
         u.username,

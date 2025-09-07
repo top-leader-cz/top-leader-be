@@ -3,19 +3,18 @@
  */
 package com.topleader.topleader.coach;
 
-import com.topleader.topleader.coach.list.CoachListView;
-import com.topleader.topleader.coach.list.CoachListViewRepository;
 import com.topleader.topleader.email.EmailTemplateService;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.util.common.CommonUtils;
 import com.topleader.topleader.util.image.ImageUtil;
-import com.topleader.topleader.util.transaction.TransactionService;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.io.IOException;
@@ -56,15 +55,11 @@ public class CoachController {
 
     private final CoachRepository coachRepository;
 
-    private final CoachListViewRepository coachListViewRepository;
-
     private final CoachImageRepository coachImageRepository;
 
     private final ScheduledSessionService sessionService;
 
     private final UserRepository userRepository;
-
-    private final TransactionService transactionService;
 
     private final EmailTemplateService emailTemplateService;
 
@@ -72,7 +67,7 @@ public class CoachController {
     @Secured("COACH")
     @Transactional
     public CoachDto getCoachInfo(@AuthenticationPrincipal UserDetails user) {
-        return coachListViewRepository.findById(user.getUsername())
+        return coachRepository.findById(user.getUsername())
             .map(CoachDto::from)
             .orElse(CoachDto.EMPTY);
     }
@@ -80,15 +75,13 @@ public class CoachController {
     @PostMapping
     @Secured("COACH")
     public CoachDto setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid CoachDto request) {
-        transactionService.execute(() -> {
-            coachRepository.save(
-                request.updateCoach()
-                    .apply(coachRepository.findById(user.getUsername()).orElse(new Coach().setUsername(user.getUsername())))
-            );
-            userRepository.findById(user.getUsername()).map(request.updateUser()).ifPresent(userRepository::save);
-        });
+        var coach = coachRepository.findById(user.getUsername())
+                .orElse(new Coach()
+                        .setUsername(user.getUsername())
+                        .setUser(userRepository.findById(user.getUsername())
+                                .orElseThrow(CommonUtils.entityNotFound("user " + user.getUsername()))));
 
-        return CoachDto.from(coachListViewRepository.findById(user.getUsername()).orElseThrow());
+        return CoachDto.from(coachRepository.save(request.updateCoach(coach)));
     }
 
     @Transactional
@@ -204,15 +197,19 @@ public class CoachController {
 
         String timeZone,
 
-        String linkedinProfile
-    ) {
-        public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, Set.of(), Set.of(), null, null, null, null);
+        String linkedinProfile,
 
-        public static CoachDto from(CoachListView c) {
+        @NotEmpty
+        Set<Coach.PrimaryRole> primaryRoles
+    ) {
+        public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, Set.of(), Set.of(), null, null, null, null, Set.of(Coach.PrimaryRole.COACH));
+
+        public static CoachDto from(Coach c) {
+            var user = c.getUser();
             return new CoachDto(
                     c.getPublicProfile(),
-                    c.getFirstName(),
-                    c.getLastName(),
+                    user.getFirstName(),
+                    user.getLastName(),
                     c.getEmail(),
                     c.getWebLink(),
                     c.getBio(),
@@ -220,31 +217,33 @@ public class CoachController {
                     c.getFields(),
                     c.getExperienceSince(),
                     c.getCertificate(),
-                    c.getTimeZone(),
-                    c.getLinkedinProfile()
-
+                    user.getTimeZone(),
+                    c.getLinkedinProfile(),
+                    c.getPrimaryRoles()
             );
         }
 
-        public Function<User, User> updateUser() {
-            return u ->
-                u.setFirstName(firstName())
-                    .setLastName(lastName())
-                    .setTimeZone(timeZone())
-                ;
+
+        public Coach updateCoach(Coach coach) {
+            return coach
+                    .setPublicProfile(publicProfile)
+                    .setEmail(email)
+                    .setWebLink(webLink)
+                    .setBio(bio)
+                    .setLanguages(languages)
+                    .setFields(fields)
+                    .setExperienceSince(experienceSince)
+                    .setLinkedinProfile(linkedinProfile)
+                    .setCertificate(certificate)
+                    .setPrimaryRoles(primaryRoles)
+                    .setUser(updateUser(coach.getUser()));
         }
 
-        public Function<Coach, Coach> updateCoach() {
-            return c -> c
-                .setPublicProfile(publicProfile)
-                .setEmail(email)
-                .setWebLink(webLink)
-                .setBio(bio)
-                .setLanguages(languages)
-                .setFields(fields)
-                .setExperienceSince(experienceSince)
-                .setLinkedinProfile(linkedinProfile)
-                .setCertificate(certificate);
+        public User updateUser(User user) {
+            return user.setFirstName(firstName())
+                    .setLastName(lastName())
+                    .setTimeZone(timeZone())
+                    ;
         }
 
     }

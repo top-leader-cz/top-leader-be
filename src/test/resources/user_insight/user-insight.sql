@@ -19,5 +19,6 @@ values ('user', '{
     "summaryText": "summary",
     "application": "application",
     "imagePrompt": "prompt",
-    "imageData": "image"
+    "imageData": "image",
+    "date": "2025-08-25"
   }');
