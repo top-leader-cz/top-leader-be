@@ -119,6 +119,7 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("fields", hasSize(0)))
             .andExpect(jsonPath("experienceSince", nullValue()))
             .andExpect(jsonPath("certificate", nullValue()))
+            .andExpect(jsonPath("primaryRoles", hasItems(Coach.PrimaryRole.COACH.name())))
         ;
 
     }
@@ -142,6 +143,7 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("experienceSince", is("2023-08-06")))
             .andExpect(jsonPath("certificate", is("ACC")))
             .andExpect(jsonPath("timeZone", is("Europe/Prague")))
+            .andExpect(jsonPath("primaryRoles", hasItems(Coach.PrimaryRole.COACH.name())))
         ;
 
     }
@@ -180,6 +182,8 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("certificate", is("ACC")))
             .andExpect(jsonPath("timeZone", is("UTC")))
             .andExpect(jsonPath("linkedinProfile", is("http://linkedin.com")))
+            .andExpect(jsonPath("primaryRoles", hasItems(Coach.PrimaryRole.COACH.name(), Coach.PrimaryRole.MENTOR.name())))
+
         ;
 
         final var coach = coachRepository.findById("coach_no_info").orElseThrow();

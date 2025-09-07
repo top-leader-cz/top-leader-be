@@ -412,7 +412,7 @@ class CoachListControllerIT extends IntegrationTest {
                 )
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].username", is("coach3")))
-                .andExpect(jsonPath("$.content[0].freeSlots", is(false)))
+                .andExpect(jsonPath("$.content[0].primaryRoles", hasItems(Coach.PrimaryRole.COACH.name())))
         ;
     }
 
@@ -485,7 +485,7 @@ class CoachListControllerIT extends IntegrationTest {
                 )
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].username", is("coach1")))
-                .andExpect(jsonPath("$.content[0].freeSlots", is(false)))
+                .andExpect(jsonPath("$.content[0].primaryRoles", hasItems(Coach.PrimaryRole.COACH.name())))
         ;
     }
 
@@ -576,6 +576,7 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.content[0].rate", is("$$$")))
                 .andExpect(jsonPath("$.content[0].timeZone", is("UTC")))
                 .andExpect(jsonPath("$.content[0].webLink", is("http://some_video3")))
+                .andExpect(jsonPath("$.content[0].primaryRoles", hasItems(Coach.PrimaryRole.COACH.name())))
         ;
     }
 
@@ -595,6 +596,7 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.rate", is("$$$")))
                 .andExpect(jsonPath("$.webLink", is("http://some_video3")))
                 .andExpect(jsonPath("$.linkedinProfile", is("http://linkac")))
+                .andExpect(jsonPath("$.primaryRoles", hasItems(Coach.PrimaryRole.COACH.name())))
         ;
     }
 

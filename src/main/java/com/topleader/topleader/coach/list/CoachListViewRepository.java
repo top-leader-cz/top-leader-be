@@ -15,7 +15,4 @@ import java.util.List;
  */
 public interface CoachListViewRepository extends JpaRepository<CoachListView, String>, JpaSpecificationExecutor<CoachListView> {
 
-
-    @Query("SELECT c.username FROM CoachListView c WHERE c.publicProfile = true")
-    List<String > fetchActiveCoachesUsernames();
 }

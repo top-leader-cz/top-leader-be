@@ -3,6 +3,7 @@
  */
 package com.topleader.topleader.user.session;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
@@ -71,25 +72,27 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                         "title": "Effective Leadership Communication",
                         "author": "John Doe",
                         "source": "Leadership Journal",
-                        "url": "https://example.com/article1",
+                        "url": "http://localhost:8060/article1",
                         "readTime": "5 min",
                         "language": "en",
                         "perex": "Learn how to communicate effectively as a leader",
                         "summaryText": "This article covers key communication strategies for leaders",
                         "application": "Apply these techniques in daily team meetings",
-                        "imagePrompt": "leadership communication meeting"
+                        "imagePrompt": "leadership communication meeting",
+                        "date": "2023-10-01"
                     },
                     {
                         "title": "Building Team Motivation",
                         "author": "Jane Smith",
                         "source": "Management Today",
-                        "url": "https://example.com/article2",
+                        "url": "http://localhost:8060/article2",
                         "readTime": "3 min",
                         "language": "en",
                         "perex": "Discover ways to keep your team motivated",
                         "summaryText": "Methods for maintaining high team morale and productivity",
                         "application": "Implement motivational strategies in your team",
-                        "imagePrompt": "team motivation office"
+                        "imagePrompt": "team motivation office",
+                        "date": "2023-10-02"
                     }
                 ]
                 """;
@@ -97,6 +100,18 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
         Mockito.when(chatClient.call(Mockito.anyString()))
                 .thenReturn("action-goal-response")
                 .thenReturn(expectedArticlesJson);
+
+        mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article1"))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "text/html")
+                        .withBody("<html><body>Valid article content</body></html>")));
+
+        mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article2"))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(200)
+                        .withHeader("Content-Type", "text/html")
+                        .withBody("<html><body>Another valid article</body></html>")));
 
         mvc.perform(post("/api/latest/user-sessions-reflection")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -157,6 +172,9 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
         Assertions.assertThat(articles)
                 .extracting("content.imagePrompt")
                 .contains("leadership communication meeting", "team motivation office");
+        Assertions.assertThat(articles)
+                .extracting("content.date")
+                .contains( "2023-10-01",  "2023-10-02");
 
         Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETED_SHORT_GOAL)))).isNotEmpty();
         Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();

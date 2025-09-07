@@ -62,11 +62,12 @@ public class CoachListView {
     @Column(length = 1000)
     private String linkedinProfile;
 
-    private boolean freeSlots;
+    private Set<Coach.PrimaryRole> primaryRoles;
 
     @Enumerated(EnumType.STRING)
     private Coach.CertificateType certificate;
 
     private int priority;
+
 
 }

@@ -4,8 +4,10 @@ import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.util.common.JsonUtils;
 import io.vavr.control.Try;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -55,6 +57,13 @@ public class UserInsightController {
         userInsightService.generateTipsAsync(user.getUsername());
     }
 
+    @Secured({"USER"})
+    @GetMapping("/article/{articleId}")
+    public UserArticle fetchArticle(@PathVariable long articleId) {
+        return articlesRepository.findById(articleId)
+                .map(article -> article.getContent().setId(article.getId()))
+                .orElseThrow(() -> new EntityNotFoundException("Article not found for id " + articleId));
+    }
 
     public record InsightItem(String text, boolean isPending) {
     }

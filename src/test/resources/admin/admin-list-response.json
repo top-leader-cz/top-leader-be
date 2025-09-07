@@ -27,7 +27,8 @@
       "allowedCoachRates": null,
       "rate": null,
       "certificate": null,
-      "internalRate": null
+      "internalRate": null,
+      "primaryRoles": null
     },
     {
       "username": "user1",
@@ -55,15 +56,19 @@
       "allowedCoachRates": null,
       "rate": "$$$",
       "certificate": "MCC",
-      "internalRate": 275
+      "internalRate": 275,
+      "primaryRoles": [
+        "COACH",
+        "TRAINER"
+      ]
     },
     {
       "username": "coach2",
       "firstName": "Eve",
       "lastName": "Williams",
       "authorities": [
-        "USER",
-        "COACH"
+        "COACH",
+        "USER"
       ],
       "timeZone": "CST",
       "status": "AUTHORIZED",
@@ -84,7 +89,8 @@
       "allowedCoachRates": null,
       "rate": null,
       "certificate": null,
-      "internalRate": null
+      "internalRate": null,
+      "primaryRoles": null
     },
     {
       "username": "hr1",
@@ -113,7 +119,8 @@
       "allowedCoachRates": null,
       "rate": null,
       "certificate": null,
-      "internalRate": null
+      "internalRate": null,
+      "primaryRoles": null
     },
     {
       "username": "hr2",
@@ -142,15 +149,16 @@
       "allowedCoachRates": null,
       "rate": null,
       "certificate": null,
-      "internalRate": null
+      "internalRate": null,
+      "primaryRoles": null
     },
     {
       "username": "coach1",
       "firstName": "Jane",
       "lastName": "Smith",
       "authorities": [
-        "USER",
-        "COACH"
+        "COACH",
+        "USER"
       ],
       "timeZone": "GMT",
       "status": "PENDING",
@@ -171,7 +179,8 @@
       "allowedCoachRates": "$, $$",
       "rate": null,
       "certificate": null,
-      "internalRate": null
+      "internalRate": null,
+      "primaryRoles": null
     },
     {
       "username": "user4",
@@ -199,7 +208,8 @@
       "allowedCoachRates": null,
       "rate": null,
       "certificate": null,
-      "internalRate": null
+      "internalRate": null,
+      "primaryRoles": null
     }
   ],
   "pageable": {
@@ -207,23 +217,23 @@
     "pageSize": 20,
     "sort": {
       "empty": true,
-      "sorted": false,
-      "unsorted": true
+      "unsorted": true,
+      "sorted": false
     },
     "offset": 0,
     "unpaged": false,
     "paged": true
   },
   "last": true,
-  "totalPages": 1,
   "totalElements": 7,
+  "totalPages": 1,
   "first": true,
   "size": 20,
   "number": 0,
   "sort": {
     "empty": true,
-    "sorted": false,
-    "unsorted": true
+    "unsorted": true,
+    "sorted": false
   },
   "numberOfElements": 7,
   "empty": false
