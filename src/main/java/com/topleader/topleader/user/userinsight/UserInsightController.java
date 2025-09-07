@@ -1,16 +1,21 @@
 package com.topleader.topleader.user.userinsight;
 
+import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.util.common.JsonUtils;
+import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.time.LocalDateTime;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/latest/user-insight")
 @RequiredArgsConstructor
@@ -22,19 +27,17 @@ public class UserInsightController {
 
     @GetMapping
     public Map<String, InsightItem> getInsight(@AuthenticationPrincipal UserDetails user) {
-        var userInsight = userInsightService.getInsight(user.getUsername());
-        var articles = articlesRepository.findByUsername(user.getUsername());
-        try {
-            var arrayNode = objectMapper.createArrayNode();
-            articles.forEach(article -> {
-                var contentNode = JsonUtils.toJObjectNode(article.getContent());
-                    contentNode.put("id", article.getId());
-                    arrayNode.add(contentNode);
-            });
-            userInsight.setUserArticles(arrayNode.toString());
-        } catch (Exception e) {
-            userInsight.setUserArticles("[]");
-        }
+        final var userInsight = userInsightService.getInsight(user.getUsername());
+        var articles = articlesRepository.findByUsername(user.getUsername()).stream()
+                .map(article -> {
+                    var content = article.getContent();
+                    content.setId(article.getId());
+                    return content;
+                })
+                .toList();
+
+        Try.run(() -> userInsight.setUserArticles(objectMapper.writeValueAsString(articles)))
+                .onFailure(e -> log.error("Error converting user articles to JSON", e));
 
         return Map.of(
                 "leaderShipStyle", new InsightItem(userInsight.getLeadershipStyleAnalysis(), userInsight.isLeadershipPending()),

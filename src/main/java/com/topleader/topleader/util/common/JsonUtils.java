@@ -31,5 +31,7 @@ public class JsonUtils {
         return (ObjectNode) toJsonNode(json);
     }
 
-
+    public ObjectNode toJArrayNode(String json) {
+        return (ObjectNode) toJsonNode(json);
+    }
 }

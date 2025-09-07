@@ -26,11 +26,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -121,44 +116,47 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
         final var historyData = dataHistoryRepository.findAllByUsernameAndType("user2", DataHistory.Type.USER_SESSION);
 
-        assertThat(historyData, hasSize(1));
-        assertThat(historyData.get(0).getData(), instanceOf(UserSessionStoredData.class));
+        Assertions.assertThat(historyData).hasSize(1);
+        Assertions.assertThat(historyData.get(0).getData()).isInstanceOf(UserSessionStoredData.class);
 
         final var sessionData = (UserSessionStoredData) historyData.get(0).getData();
 
-        assertThat(sessionData.getMotivation(), nullValue());
-        assertThat(sessionData.getReflection(), is("you can do it!"));
-        assertThat(sessionData.getLongTermGoal(), is("newGoal"));
-        assertThat(sessionData.getAreaOfDevelopment(), hasSize(2));
-        assertThat(sessionData.getAreaOfDevelopment(), hasItems("b1", "b2"));
+        Assertions.assertThat(sessionData.getMotivation()).isNull();
+        Assertions.assertThat(sessionData.getReflection()).isEqualTo("you can do it!");
+        Assertions.assertThat(sessionData.getLongTermGoal()).isEqualTo("newGoal");
+        Assertions.assertThat(sessionData.getAreaOfDevelopment()).hasSize(2);
+        Assertions.assertThat(sessionData.getAreaOfDevelopment()).contains("b1", "b2");
 
         final var userActionSteps = userActionStepRepository.findAllByUsername("user2");
-        assertThat(userActionSteps, hasSize(2));
+        Assertions.assertThat(userActionSteps).hasSize(2);
         final var doNotLoseStep = userActionSteps.stream().filter(s -> "do not lose".equals(s.getLabel())).findAny().orElseThrow();
-        assertThat(doNotLoseStep.getChecked(), is(false));
-        assertThat(doNotLoseStep.getLabel(), is("do not lose"));
-        assertThat(doNotLoseStep.getDate(), is(LocalDate.parse("2023-08-15")));
+        Assertions.assertThat(doNotLoseStep.getChecked()).isEqualTo(false);
+        Assertions.assertThat(doNotLoseStep.getLabel()).isEqualTo("do not lose");
+        Assertions.assertThat(doNotLoseStep.getDate()).isEqualTo(LocalDate.parse("2023-08-15"));
         final var action2Step = userActionSteps.stream().filter(s -> "action 2".equals(s.getLabel())).findAny().orElseThrow();
-        assertThat(action2Step.getChecked(), is(true));
-        assertThat(action2Step.getLabel(), is("action 2"));
-        assertThat(action2Step.getDate(), is(LocalDate.parse("2023-08-15")));
+        Assertions.assertThat(action2Step.getChecked()).isEqualTo(true);
+        Assertions.assertThat(action2Step.getLabel()).isEqualTo("action 2");
+        Assertions.assertThat(action2Step.getDate()).isEqualTo(LocalDate.parse("2023-08-15"));
 
-        assertThat(userInfoRepository.findById("user2").orElseThrow().getLastReflection(), is("you can do it!"));
+        Assertions.assertThat(userInfoRepository.findById("user2").orElseThrow().getLastReflection()).isEqualTo("you can do it!");
 
         Thread.sleep(100);
         Assertions.assertThat(userInsightRepository.findAll())
                 .extracting("personalGrowthTip")
                 .contains("action-goal-response");
 
-        var article = articleRepository.findByUsername("user2").get(0).getContent();
+        var articles = articleRepository.findByUsername("user2");
 
-        Assertions.assertThat(article).isNotNull();
-        Assertions.assertThat(article).contains("Effective Leadership Communication");
-        Assertions.assertThat(article).contains("Building Team Motivation");
-        Assertions.assertThat(article).contains("John Doe");
-        Assertions.assertThat(article).contains("Jane Smith");
-        Assertions.assertThat(article).contains("leadership communication meeting");
-        Assertions.assertThat(article).contains("team motivation office");
+        Assertions.assertThat(articles).hasSize(2);
+        Assertions.assertThat(articles)
+                .extracting("content.title")
+                .contains("Effective Leadership Communication", "Building Team Motivation");
+        Assertions.assertThat(articles)
+                .extracting("content.author") 
+                .contains("John Doe", "Jane Smith");
+        Assertions.assertThat(articles)
+                .extracting("content.imagePrompt")
+                .contains("leadership communication meeting", "team motivation office");
 
         Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETED_SHORT_GOAL)))).isNotEmpty();
         Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();

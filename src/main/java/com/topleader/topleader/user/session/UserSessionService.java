@@ -5,6 +5,7 @@ package com.topleader.topleader.user.session;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Base64;
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
@@ -166,10 +167,15 @@ public class UserSessionService {
 
         if (!actionGoals.isEmpty()) {
             userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
-            articlesRepository.save(new Article()
-                    .setUsername(username)
-                    .setContent(handleUserArticles(username, actionGoals)));
-        }
+            var userArticles = handleUserArticles(username, actionGoals);
+            if (!userArticles.isEmpty()) {
+                articlesRepository.deleteAllByUsername(username);
+                userArticles.forEach(article -> articlesRepository.save(new Article()
+                        .setUsername(username)
+                        .setContent(article))
+                );
+            }
+       }
         userInsight.setActionGoalsPending(false);
 
         userInsightService.save(userInsight);
@@ -199,32 +205,18 @@ public class UserSessionService {
                 .getOrElse(() -> null);
     }
 
-    public String handleUserArticles(String username, List<String> actionGoals) {
+    public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
         var user = userDetailService.find(username);
-        var articles = Try.of(() -> {
+        return Try.of(() -> {
                     var res = aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()));
                     return objectMapper.readValue(res, new TypeReference<List<UserArticle>>() {
                     });
                 })
                 .onFailure(e -> log.error("Failed to generate user articles for user: [{}] ", username, e))
-                .getOrElse(List.of());
-
-        var articlesWithImages = articles.stream()
-                .map(article -> {
-                    if (StringUtils.isNotBlank(article.getImagePrompt())) {
-
-                            article.setImageData(articleImageService.generatePlaceholderImageData(article.getImagePrompt()));
-//                      try      log.info("Successfully downloaded image for article: {} (size: {} bytes)",
-//                                    article.getTitle(), imageData.length);
-
-                    }
-                    return article;
-                })
+                .getOrElse(List.of())
+                .stream()
+                .map(article ->  article.setImageData(articleImageService.generatePlaceholderImageData(article.getImagePrompt())))
                 .toList();
-
-        return Try.of(() -> objectMapper.writeValueAsString(articlesWithImages))
-                .onFailure(e -> log.error("Failed to convert user articles for user: [{}] ", username, e))
-                .getOrElse(() -> null);
     }
 
     private boolean urlValid(String url) {

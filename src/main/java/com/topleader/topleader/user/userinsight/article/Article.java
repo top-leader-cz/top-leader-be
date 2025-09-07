@@ -1,10 +1,12 @@
 package com.topleader.topleader.user.userinsight.article;
 
+import com.topleader.topleader.user.session.domain.UserArticle;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
+import java.time.LocalDateTime;
 
 @Data
 @ToString(of = {"id", "user"})
@@ -20,5 +22,14 @@ public class Article {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private String content;
+    @Convert(converter = UserArticleConverter.class)
+    private UserArticle content;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
 }
