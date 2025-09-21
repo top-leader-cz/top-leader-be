@@ -14,6 +14,7 @@ import com.topleader.topleader.user.UserRepository;
 import java.util.Locale;
 import java.util.Set;
 
+import com.topleader.topleader.util.image.ArticleImageService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,10 +44,12 @@ class AdminViewControllerIT extends IntegrationTest {
     @Autowired
     private CoachRepository coachRepository;
 
+    @Autowired
+    ArticleImageService articleImageService;
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
     void listUser() throws Exception {
-
+        articleImageService.generateImage("imgate with hardworking in steal factory");
         var result = mvc.perform(get("/api/latest/admin/users"))
                 .andExpect(status().isOk())
                 .andReturn()

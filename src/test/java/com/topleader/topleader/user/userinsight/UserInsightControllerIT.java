@@ -4,7 +4,6 @@ import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.ai.AiPrompt;
 import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
-import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
@@ -35,8 +34,6 @@ class UserInsightControllerIT extends IntegrationTest {
     @Autowired
     AiPromptService aiPromptService;
 
-    @Autowired
-    ArticleRepository articleRepository;
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
@@ -52,7 +49,7 @@ class UserInsightControllerIT extends IntegrationTest {
                         "animalSpirit":{"text":"animal-response","isPending":false},
                         "leadershipTip":{"text":null,"isPending":false},
                         "userPreviews":{"text":"test-user-previews","isPending":false},
-                        "userArticles":{"text":"[{\\\"url\\\":\\\"https://hbr.org/2018/04/better-brainstorming\\\",\\\"perex\\\":\\\"perex\\\",\\\"title\\\":\\\"title\\\",\\\"author\\\":\\\"Scott Berinato\\\",\\\"source\\\":\\\"Harvard Business Review\\\",\\\"language\\\":\\\"en\\\",\\\"readTime\\\":\\\"6 min read\\\",\\\"imageData\\\":\\\"image\\\",\\\"application\\\":\\\"application\\\",\\\"imagePrompt\\\":\\\"prompt\\\",\\\"summaryText\\\":\\\"summary\\\",\\\"id\\\":1,\\\"date\\\":\\\"2025-08-25\\\"}]","isPending":false}
+                        "userArticles":{"text":"[{\\\"url\\\":\\\"gs://ai-images-top-leader/test_image.png\\\",\\\"perex\\\":\\\"perex\\\",\\\"title\\\":\\\"title\\\",\\\"author\\\":\\\"Scott Berinato\\\",\\\"source\\\":\\\"Harvard Business Review\\\",\\\"language\\\":\\\"en\\\",\\\"readTime\\\":\\\"6 min read\\\",\\\"imageData\\\":\\\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==\\\",\\\"application\\\":\\\"application\\\",\\\"imagePrompt\\\":\\\"prompt\\\",\\\"summaryText\\\":\\\"summary\\\",\\\"id\\\":1,\\\"imageUrl\\\":null,\\\"date\\\":\\\"2025-08-25\\\"}]","isPending":false}
                   }
                 """))
                 .andExpect(status().isOk());
@@ -111,11 +108,12 @@ class UserInsightControllerIT extends IntegrationTest {
                                       "source": "Harvard Business Review",
                                       "language": "en",
                                       "readTime": "6 min read",
-                                      "imageData": "image",
+                                      "imageData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
                                       "application": "application",
                                       "imagePrompt": "prompt",
                                       "summaryText": "summary",
-                                      "date": "2025-08-25"
+                                      "date": "2025-08-25",
+                                      "imageUrl": "gs://ai-images-top-leader/test_image.png"
                                     }
                         
                         """));

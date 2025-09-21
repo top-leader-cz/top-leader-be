@@ -25,6 +25,7 @@ public class UserArticle {
     private String application;
     private String imagePrompt;
     private String imageData;
+    private String imageUrl;
     private String date;
 
 }
