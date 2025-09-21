@@ -20,20 +20,41 @@ public class ArticleImageService {
     private String imageGenerationUrl;
 
 
-    public String generatePlaceholderImageData(String imagePrompt) {
-        String safePrompt = imagePrompt == null ? "placeholder" : imagePrompt;
-        String displayText = safePrompt.length() > 30 ? safePrompt.substring(0, 30) + "..." : safePrompt;
+    public String generateImage(String imagePrompt) {
+        log.info("Generating image with DALL-E 3 for prompt: {}", imagePrompt);
 
-        String svgContent = String.format(
-                "<svg width=\"400\" height=\"300\" xmlns=\"http://www.w3.org/2000/svg\">" +
-                        "<rect width=\"100%%\" height=\"100%%\" fill=\"#2C3E50\"/>" +
-                        "<text x=\"50%%\" y=\"50%%\" font-family=\"Arial\" font-size=\"16\" fill=\"white\" text-anchor=\"middle\" dominant-baseline=\"middle\">" +
-                        "Image: %s" +
-                        "</text></svg>",
-                displayText
-        );
+        var requestBody = """
+            {
+                "model": "dall-e-3",
+                "prompt": "%s",
+                "n": 1,
+                "size": "1024x1024",
+                "quality": "standard",
+                "response_format": "url"
+            }
+            """.formatted(imagePrompt);
 
-        return svgContent;
+        var response = restClient.post()
+            .uri(imageGenerationUrl)
+            .header("Authorization", "Bearer " + openaiApiKey)
+            .header("Content-Type", "application/json")
+            .body(requestBody)
+            .retrieve()
+            .body(String.class);
+
+        log.info("Received response from OpenAI: {}", response);
+        return extractImageUrl(response);
+    }
+
+    private String extractImageUrl(String response) {
+        try {
+            int urlStart = response.indexOf("\"url\":\"") + 7;
+            int urlEnd = response.indexOf("\"", urlStart);
+            return response.substring(urlStart, urlEnd);
+        } catch (Exception e) {
+            log.error("Failed to extract image URL from response: {}", response, e);
+            throw new RuntimeException("Failed to extract image URL from OpenAI response", e);
+        }
     }
 
 
