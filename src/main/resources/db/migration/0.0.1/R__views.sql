@@ -8,7 +8,8 @@ select u.*,
        ucr.allowed_coach_rates as allowed_coach_rates,
        c.rate,
        c.internal_rate,
-       c.certificate
+       c.certificate,
+       c.primary_roles
 from users u
          left join users cu on u.coach = cu.username
          left join coach c on c.username = u.username

@@ -6,11 +6,7 @@ package com.topleader.topleader.admin;
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.user.RoleConverter;
 import com.topleader.topleader.user.User;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.security.cert.Certificate;
 import java.util.Set;
@@ -19,6 +15,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 
 /**
@@ -83,4 +81,8 @@ public class AdminView {
     private Coach.CertificateType certificate;
 
     private Integer internalRate;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<Coach.PrimaryRole> primaryRoles;
 }
