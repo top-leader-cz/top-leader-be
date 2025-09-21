@@ -216,7 +216,7 @@ public class UserSessionService {
                 .getOrElse(List.of())
                 .stream()
                 .filter(article -> StringUtils.isBlank(article.getUrl()) || urlValid(article.getUrl()))
-                .map(article ->  article.setImageData(articleImageService.generatePlaceholderImageData(article.getImagePrompt())))
+                .map(article ->  article.setImageUrl(articleImageService.generateImage(article.getImagePrompt())))
                 .toList();
     }
 

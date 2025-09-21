@@ -19,6 +19,7 @@ values ('user', '{
     "summaryText": "summary",
     "application": "application",
     "imagePrompt": "prompt",
-    "imageData": "image",
-    "date": "2025-08-25"
+    "imageData": null,
+    "date": "2025-08-25",
+    "imageUrl": "gs://ai-images-top-leader/test_image.png"
   }');

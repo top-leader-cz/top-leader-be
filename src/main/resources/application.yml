@@ -86,4 +86,8 @@ openai:
   image:
     url: https://api.openai.com/v1/images/generations
 
+gcp:
+  storage:
+    bucket-name: ai-images-top-leader
+
 

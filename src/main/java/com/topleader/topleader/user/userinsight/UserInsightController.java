@@ -3,6 +3,7 @@ package com.topleader.topleader.user.userinsight;
 import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.util.common.JsonUtils;
+import com.topleader.topleader.util.image.ArticleImageService;
 import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ public class UserInsightController {
     public final UserInsightService userInsightService;
     public final ArticleRepository articlesRepository;
     public final ObjectMapper objectMapper;
+    public final ArticleImageService articleImageService;
 
     @GetMapping
     public Map<String, InsightItem> getInsight(@AuthenticationPrincipal UserDetails user) {
@@ -34,6 +36,7 @@ public class UserInsightController {
                 .map(article -> {
                     var content = article.getContent();
                     content.setId(article.getId());
+                    content.setImageData(articleImageService.getImageAsBase64(content.getImageUrl()));
                     return content;
                 })
                 .toList();
@@ -61,7 +64,11 @@ public class UserInsightController {
     @GetMapping("/article/{articleId}")
     public UserArticle fetchArticle(@PathVariable long articleId) {
         return articlesRepository.findById(articleId)
-                .map(article -> article.getContent().setId(article.getId()))
+                .map(article -> {
+                    article.getContent().setId(article.getId());
+                    article.getContent().setImageData(articleImageService.getImageAsBase64(article.getContent().getImageUrl()));
+                    return article.getContent();
+                })
                 .orElseThrow(() -> new EntityNotFoundException("Article not found for id " + articleId));
     }
 
