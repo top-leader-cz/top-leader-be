@@ -14,8 +14,6 @@ import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -92,9 +90,9 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.timeZone", is("UTC")))
             .andExpect(jsonPath("$.userRoles", hasSize(1)))
             .andExpect(jsonPath("$.userRoles", hasItems("USER")))
-            .andExpect(jsonPath("$.strengths", hasSize(0)))
-            .andExpect(jsonPath("$.values", hasSize(0)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+            .andExpect(jsonPath("$.strengths", hasSize(2)))
+            .andExpect(jsonPath("$.values", hasSize(2)))
+            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
             .andExpect(jsonPath("$.locale",is("en")))
         ;
     }
@@ -132,9 +130,9 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user")))
             .andExpect(jsonPath("$.timeZone", is("UTC")))
-            .andExpect(jsonPath("$.strengths", hasSize(0)))
-            .andExpect(jsonPath("$.values", hasSize(0)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+            .andExpect(jsonPath("$.strengths", hasSize(2)))
+            .andExpect(jsonPath("$.values", hasSize(2)))
+            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
             .andExpect(jsonPath("$.locale", is("fr")))
         ;
     }
@@ -154,9 +152,9 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.username", is("user")))
             .andExpect(jsonPath("$.timeZone", is("CST")))
-            .andExpect(jsonPath("$.strengths", hasSize(0)))
-            .andExpect(jsonPath("$.values", hasSize(0)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+            .andExpect(jsonPath("$.strengths", hasSize(2)))
+            .andExpect(jsonPath("$.values", hasSize(2)))
+            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
         ;
     }
 
@@ -203,8 +201,8 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.username", is("user")))
             .andExpect(jsonPath("$.strengths", hasSize(2)))
             .andExpect(jsonPath("$.strengths", hasItems("v1", "v2")))
-            .andExpect(jsonPath("$.values", hasSize(0)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+            .andExpect(jsonPath("$.values", hasSize(2)))
+            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
         ;
 
         final var userInfoData = userInfoRepository.findById("user").orElseThrow();
@@ -238,8 +236,8 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.username", is("user")))
             .andExpect(jsonPath("$.values", hasSize(2)))
             .andExpect(jsonPath("$.values", hasItems("v1", "v2")))
-            .andExpect(jsonPath("$.strengths", hasSize(0)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(0)))
+            .andExpect(jsonPath("$.strengths", hasSize(2)))
+            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
         ;
 
         final var userInfoData = userInfoRepository.findById("user").orElseThrow();
@@ -540,6 +538,7 @@ class UserInfoControllerIT extends IntegrationTest {
                 .containsExactly(new Tuple("leadership-response", "animal-response", "world-leader-response"));
 
     }
+
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")

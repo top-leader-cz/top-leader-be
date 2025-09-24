@@ -8,6 +8,7 @@ import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import com.topleader.topleader.util.common.user.UserUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.concurrent.CompletableFuture;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserInsightService {
@@ -31,7 +33,6 @@ public class UserInsightService {
 
 
     @Async
-    @Transactional
     public void setUserInsight(UserInfo userInfo) {
         var strengths = userInfo.getTopStrengths();
         var values = userInfo.getValues();
@@ -39,7 +40,8 @@ public class UserInsightService {
 
         var user = userRepository.findById(username).orElseThrow();
         var userInsight = userInsightRepository.findById(username).orElse(new UserInsight().setUsername(username));
-        var savedUserInsight = userInsightRepository.save(userInsight.setLeadershipPending(true).setAnimalSpiritPending(true));
+        userInsight.setLeadershipPending(true).setAnimalSpiritPending(true);
+        var savedUserInsight = userInsightRepository.save(userInsight);
         var leaderShip = CompletableFuture.supplyAsync(() -> aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
         var animalSpirit = CompletableFuture.supplyAsync(() -> aiClient.findAnimalSpirit(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
         var leaderPersona = CompletableFuture.supplyAsync(() -> aiClient.findLeaderPersona(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
@@ -52,6 +54,7 @@ public class UserInsightService {
         savedUserInsight.setAnimalSpiritPending(false);
         userInsightRepository.save(savedUserInsight);
         generateTips(username);
+        log.info("User insight set successfully: {}", username);
     }
 
     public UserInsight getInsight(String username) {
@@ -69,11 +72,13 @@ public class UserInsightService {
     }
 
     public void generateTips(String username) {
+        log.info("Generating tips for user: {}", username);
         var userInfo = userInfoRepository.findById(username).orElse(new UserInfo().setUsername(username));
         var userInsight = userInsightRepository.findById(username).orElse(new UserInsight().setUsername(username));
 
         if (hasFilledOutStrengthsAndValues(userInfo) && shouldGenerateTips(userInsight)) {
-            var savedUserInsight = userInsightRepository.save(userInsight.setDailyTipsPending(true));
+            userInsight.setDailyTipsPending(true);
+            var savedUserInsight = userInsightRepository.save(userInsight);
             var user = userRepository.findById(username).orElseThrow();
             var strengths = userInfo.getTopStrengths();
             var values = userInfo.getValues();
@@ -84,6 +89,7 @@ public class UserInsightService {
             savedUserInsight.setDailyTipsPending(false);
             userInsightRepository.save(savedUserInsight);
         }
+        log.info("tips generated successfully: {}", username);
     }
 
     private boolean shouldGenerateTips(UserInsight userInsight) {

@@ -23,33 +23,11 @@ This is a Spring Boot 3.4.3 application using Java 21 that serves as a prototype
 - Debug port 5005 available for remote debugging
 - Uses Spring DevTools for hot reloading
 
-## Architecture
 
-### Package Structure
-- `com.groupon.spring.oxygen` - Root package
-- `api/` - REST controllers and API data models
-- `client/` - External service clients and utilities
-- `config/` - Spring configuration classes
-- `greetings/` - Sample domain feature (controller, service, repository, dto)
-- `mbus/` - Message bus integration
-- `redis/` - Redis integration and services
 
-### Key Components
-- **OxygenApplication.java** - Main Spring Boot application entry point
-- **Database**: PostgreSQL with Flyway migrations in `src/main/resources/db/migration/`
-- **Redis**: Key-value storage with Jedis client
-- **MBus**: Internal message bus system for service communication
-- **External APIs**: Proxy and external service integration
-
-### Configuration
-- Uses YAML configuration with profile-specific files
-- Main config: `application.yml`
-- Environment-specific: `application-{profile}.yml`
-- OpenTelemetry integration for observability
 
 ## Development Conventions
 
-From crsor/rules:
 - Use constructor injection over field injection
 - Follow Spring Boot naming conventions (*Controller, *Service, *Repository)
 - Use SLF4J for logging with Lombok's @Slf4j
@@ -60,20 +38,12 @@ From crsor/rules:
 ## Testing Strategy
 - Unit tests in `src/test/java/`
 - Integration tests using `@SpringBootTest`
-- Abstract base class: `AbstractIntegrationTest.java`
+- Abstract base class: `IntegrationTest.java`
 - Test configuration: `TestBeanConfiguration.java`
 - Separate test application.yml configuration
 
-## Dependencies and Integrations
-- Groupon-specific Spring Boot starters
-- OpenTelemetry for observability
-- Flyway for database migrations
-- Jedis for Redis operations
-- Vavr for functional programming utilities
-- JaCoCo for code coverage reporting
 
 ## Spring Boot Rules
-
 # structure
 src/main/java/         # Main Java source code
 src/main/resources/    # Application resources
@@ -98,11 +68,6 @@ Configuration:  *Configuration.java
 - Prioritize domain  packaging like Order domain should contain all the code related to Orders @RestController, @Service @Entity etc...
 - Do not use @Repository annotation
 
-# security
-- Do not commit secrets or passwords to source control
-- Use environment variables or secret management for sensitive data
-- Validate all user input
-- Use HTTPS in production
 
 # dependencies
 - Use Maven for dependency management (pom.xml must exist)
