@@ -210,7 +210,7 @@ public class CoachController {
 
         public static CoachDto from(CoachListView c) {
             return new CoachDto(
-                    c.getPublicProfile(),
+                    c.getPublicProfile() != null,
                     c.getFirstName(),
                     c.getLastName(),
                     c.getEmail(),
