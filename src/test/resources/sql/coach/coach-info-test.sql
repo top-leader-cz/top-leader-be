@@ -10,9 +10,15 @@ insert into users (username, password, status, authorities, first_name, last_nam
 values ('user2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER"]', 'user2FirstName', 'user2lastName');
 insert into users (username, password, status, authorities, first_name, last_name)
 values ('user3', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER"]', 'user3FirstName', 'user3lastName');
+insert into users (username, password, status, authorities, first_name, last_name)
+values ('coach3', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'coach3FirstName', 'coach3lastName');
 
 insert into coach (username, bio, email, experience_since, web_link, public_profile, rate, certificate, primary_roles)
 values ('coach', 'some bio', 'cool@email.cz', '2023-08-06', 'http://some_video1', true, '$', 'ACC', '["COACH"]');
+
+insert into coach (username, bio, email, experience_since, web_link, rate, certificate)
+values ('coach3', 'some bio', 'coach3@email.cz', '2023-08-06', 'http://some_video1',  '$', 'ACC');
+
 insert into coach_fields (coach_username, fields) values ('coach', 'field1');
 insert into coach_fields (coach_username, fields) values ('coach', 'field2');
 insert into coach_languages (coach_username, languages) values ('coach', 'cz');

@@ -167,8 +167,8 @@ public class CoachController {
 
 
     public record CoachDto(
-        @NotNull
-        Boolean publicProfile,
+
+        boolean publicProfile,
         @Size(max = 240)
         String firstName,
         @Size(max = 240)
@@ -207,7 +207,7 @@ public class CoachController {
         public static CoachDto from(Coach c) {
             var user = c.getUser();
             return new CoachDto(
-                    c.getPublicProfile(),
+                    c.getPublicProfile() != null,
                     user.getFirstName(),
                     user.getLastName(),
                     c.getEmail(),

@@ -104,6 +104,15 @@ class CoachControllerIT extends IntegrationTest {
     }
 
     @Test
+    @WithMockUser(username = "coach3", authorities = {"COACH"} )
+    void publicProfileNull() throws Exception {
+
+        mvc.perform(get("/api/latest/coach-info"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("publicProfile", is(false)));
+    }
+
+    @Test
     @WithMockUser(username = "no_coach", authorities = {"COACH"})
     void getCoachInfoEmpty() throws Exception {
 
