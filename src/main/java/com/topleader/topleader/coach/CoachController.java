@@ -174,8 +174,8 @@ public class CoachController {
 
 
     public record CoachDto(
-        @NotNull
-        Boolean publicProfile,
+
+        boolean publicProfile,
         @Size(max = 240)
         String firstName,
         @Size(max = 240)
