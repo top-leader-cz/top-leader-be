@@ -215,7 +215,12 @@ public class UserSessionService {
                 .onFailure(e -> log.error("Failed to generate user articles for user: [{}] ", username, e))
                 .getOrElse(List.of())
                 .stream()
-                .filter(article -> StringUtils.isBlank(article.getUrl()) || urlValid(article.getUrl()))
+                .map(article -> {
+                    if(!urlValid(article.getUrl())) {
+                        article.setUrl(null);
+                    }
+                    return article;
+                })
                 .map(article ->  article.setImageUrl(articleImageService.generateImage(article.getImagePrompt())))
                 .toList();
     }
