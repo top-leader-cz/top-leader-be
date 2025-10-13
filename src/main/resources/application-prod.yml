@@ -13,8 +13,8 @@ spring:
     openai:
       chat:
         options:
-          model: gpt-5-chat-latest
-          temperature: 1
+          model: gpt-4o
+
   datasource:
     username: top-leader-prod
     hikari:
