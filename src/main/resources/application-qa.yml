@@ -13,6 +13,7 @@ spring:
       chat:
         options:
           model: gpt-4o
+          temperature: 1
   datasource:
     username: top-leader
     hikari:

@@ -17,5 +17,6 @@
   "rate": "$",
   "timeZone": "UTC",
   "linkedinProfile": "http://linkedin.com",
-  "certificate": "ACC"
+  "certificate": "ACC",
+  "primaryRoles": ["COACH", "MENTOR"]
 }

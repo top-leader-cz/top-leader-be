@@ -3,7 +3,10 @@
  */
 package com.topleader.topleader.coach;
 
+import com.topleader.topleader.user.User;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
 import java.util.Optional;
@@ -60,6 +63,14 @@ public class Coach {
 
     private int priority;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<PrimaryRole> primaryRoles;
+
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "username", referencedColumnName = "username")
+    private User user;
+
     @Enumerated(EnumType.STRING)
     private CertificateType certificate;
 
@@ -67,6 +78,16 @@ public class Coach {
         ACC,
         PCC,
         MCC
+    }
+
+
+    public enum PrimaryRole {
+        COACH,
+        MENTOR,
+        TRAINER,
+        FACILITATOR,
+        CONSULTANT,
+        SPEAKER
     }
 
     public String getCoachEmail() {

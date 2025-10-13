@@ -24,7 +24,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -277,7 +276,7 @@ public class CoachListController {
 
         String linkedinProfile,
 
-        boolean freeSlots
+        Set<Coach.PrimaryRole> primaryRoles
 
 
     ) {
@@ -296,7 +295,7 @@ public class CoachListController {
                     c.getTimeZone(),
                     c.getWebLink(),
                     c.getLinkedinProfile(),
-                    c.isFreeSlots()
+                    c.getPrimaryRoles()
             );
         }
 

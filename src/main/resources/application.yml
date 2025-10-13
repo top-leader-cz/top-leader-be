@@ -82,4 +82,12 @@ google:
     user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo
     prefer-token-info: true
 
+openai:
+  image:
+    url: https://api.openai.com/v1/images/generations
+
+gcp:
+  storage:
+    bucket-name: ai-images-top-leader
+
 

@@ -105,6 +105,17 @@ public class AiClient {
         log.info("AI user preview response: {} User:[{}]", res, username);
         return AiUtils.replaceNonJsonString(res);
     }
+
+    public String generateUserArticles(String username, List<String> actionGoals, String language) {
+        log.info("AI api call for user articles. User:[{}], short term goals: {} ", username, actionGoals);
+        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
+        var query = String.format(prompt, actionGoals, language);
+        log.info("AI articles query: {}", query);
+
+        var res = chatClient.call(query);
+        log.info("AI user articles response: {}  User:[{}]", res, username);
+        return AiUtils.replaceNonJsonString(res);
+    }
 }
 
 
