@@ -4,10 +4,14 @@
 package com.topleader.topleader.coach;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.hr.domain.UserRequest;
 import com.topleader.topleader.scheduled_session.ScheduledSession;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 import java.time.LocalDateTime;
+
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -44,6 +48,9 @@ class CoachControllerIT extends IntegrationTest {
 
     @Autowired
     private CoachRepository coachRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Test
     @WithMockUser(username = "no_coach")
@@ -142,7 +149,7 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("publicProfile", is(true)))
             .andExpect(jsonPath("firstName", is("firstName")))
             .andExpect(jsonPath("lastName", is("lastName")))
-            .andExpect(jsonPath("email", is("cool@email.cz")))
+            .andExpect(jsonPath("email", is("cool123@email.cz")))
             .andExpect(jsonPath("webLink", is("http://some_video1")))
             .andExpect(jsonPath("bio", is("some bio")))
             .andExpect(jsonPath("languages", hasSize(2)))
@@ -172,7 +179,7 @@ class CoachControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach_no_info", authorities = {"COACH"})
     void setCoachInfo() throws Exception {
 
-        mvc.perform(post("/api/latest/coach-info")
+          mvc.perform(post("/api/latest/coach-info")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(readFileAsString("json/coach/set-coach-info-request.json"))
             )
@@ -180,7 +187,7 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("publicProfile", is(true)))
             .andExpect(jsonPath("firstName", is("firstName")))
             .andExpect(jsonPath("lastName", is("lastName")))
-            .andExpect(jsonPath("email", is("cool@email.cz")))
+            .andExpect(jsonPath("email", is("cool-test@email.cz")))
             .andExpect(jsonPath("webLink", is("http://some_video1")))
             .andExpect(jsonPath("bio", is("some bio")))
             .andExpect(jsonPath("languages", hasSize(2)))
@@ -194,7 +201,7 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("primaryRoles", hasItems(Coach.PrimaryRole.COACH.name(), Coach.PrimaryRole.MENTOR.name())))
 
         ;
-
+        Assertions.assertThat(userRepository.findByEmail("cool-test@email.cz")).isPresent();
         final var coach = coachRepository.findById("coach_no_info").orElseThrow();
         assertThat(coach.getRateOrder(), nullValue());
     }

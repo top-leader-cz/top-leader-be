@@ -10,6 +10,7 @@ import lombok.experimental.Accessors;
 public class UserSettings {
 
     private String username;
+    private String email;
     private String firstName;
     private String lastName;
     private String company;
@@ -22,6 +23,7 @@ public class UserSettings {
     public static UserSettings fromUser(User user) {
         return new UserSettings()
                 .setUsername(user.getUsername())
+                .setEmail(user.getEmail())
                 .setFirstName(user.getFirstName())
                 .setLastName(user.getLastName())
                 .setManager(user.getManagers().stream().findFirst().map(User::getUsername).orElse(null))

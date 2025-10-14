@@ -7,13 +7,13 @@ values ('client1', 'coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIY
 
 insert into users (username, password, time_zone, first_name, last_name, authorities)
 values ('coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'UTC', 'firstName', 'lastName', '["USER", "COACH"]');
-insert into coach (username, bio, email, experience_since, web_link, public_profile, rate)
-values ('coach', 'some bio', 'cool@email.cz', '2023-08-06', 'http://some_video1', true, '$$$');
+insert into coach (username, bio,  experience_since, web_link, public_profile, rate)
+values ('coach', 'some bio', '2023-08-06', 'http://some_video1', true, '$$$');
 
 insert into users (username, password, time_zone, first_name, last_name, authorities)
 values ('coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'UTC', 'firstName', 'coach2', '["USER", "COACH"]');
-insert into coach (username, bio, email, experience_since, web_link, public_profile, rate)
-values ('coach2', 'some bio', 'coach2@email.cz', '2023-08-06', 'http://some_video1', true, '$$$');
+insert into coach (username, bio,  experience_since, web_link, public_profile, rate)
+values ('coach2', 'some bio',  '2023-08-06', 'http://some_video1', true, '$$$');
 
 
 insert into scheduled_session (id, coach_username, username, time, status)

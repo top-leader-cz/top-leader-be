@@ -20,13 +20,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Sql(scripts = {"/user_settings/user-settings.sql"})
 class UserSettingsControllerIT extends IntegrationTest {
     @Test
-    @WithUserDetails("jakub.svezi@dummy.com")
+    @WithUserDetails("jakub.svezi@email.com")
     void updateUserSettings() throws Exception {
         mvc.perform(put("/api/latest/user-settings")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
                                    "firstName": "changed first name",
+                                   "email": "jakub.svezi@dummy.com",
                                    "lastName": "changed last name",
                                    "manager": "jakub.manager@dummy.com",
                                    "position": "new position",
@@ -39,6 +40,7 @@ class UserSettingsControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.firstName", is("changed first name")))
                 .andExpect(jsonPath("$.lastName", is("changed last name")))
                 .andExpect(jsonPath("$.manager", is("jakub.manager@dummy.com")))
+                .andExpect(jsonPath("$.email", is("jakub.svezi@dummy.com")))
                 .andExpect(jsonPath("$.position", is("new position")))
                 .andExpect(jsonPath("$.aspiredCompetency", is("changed aspired competency")))
                 .andExpect(jsonPath("$.aspiredPosition", is("changed aspired position")))
@@ -47,12 +49,13 @@ class UserSettingsControllerIT extends IntegrationTest {
     }
 
     @Test
-    @WithUserDetails("jakub.svezi@dummy.com")
+    @WithUserDetails("jakub.svezi@email.com")
     @Sql(scripts = {"/user_settings/user-settings.sql", "/user_settings/user-manager.sql"})
     void fetchUserSettings() throws Exception {
         mvc.perform(get("/api/latest/user-settings"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.username", is("jakub.svezi@dummy.com")))
+                .andExpect(jsonPath("$.email", is("jakub.svezi@email.com")))
                 .andExpect(jsonPath("$.firstName", is("Jakub")))
                 .andExpect(jsonPath("$.lastName", is("Svezi")))
                 .andExpect(jsonPath("$.position", is("test position")))
@@ -77,16 +80,19 @@ class UserSettingsControllerIT extends IntegrationTest {
                 .andDo(print())
                 .andExpect(content().json("""
                         [
-                        {"username":"manager.one@dummy.com",
+                        {
+                        "username":"manager.one@dummy.com",
+                        "email": "manager.one@dummy.com",
                         "firstName":"manager",
                         "lastName":"one"
                         },
                         {
                         "username":"manager.two@dummy.com",
+                        "email": "manager.two@dummy.com",
                         "firstName":"manager",
                         "lastName":"two"
                         }
                         ]                       
-                                """));
+                        """));
     }
 }

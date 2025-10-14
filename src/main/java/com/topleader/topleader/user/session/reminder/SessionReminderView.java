@@ -18,6 +18,8 @@ public class SessionReminderView {
     @Id
     private String username;
 
+    private String email;
+
     private String firstName;
 
     private String lastName;

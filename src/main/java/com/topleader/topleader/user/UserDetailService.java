@@ -27,7 +27,9 @@ public class UserDetailService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) {
-        var user = userRepository.findById(username.toLowerCase(Locale.ROOT))
+        var sinInName = username.toLowerCase(Locale.ROOT);
+        var user = userRepository.findByEmail(sinInName)
+                .or(() -> userRepository.findById(sinInName))
             .orElseThrow(() -> new UsernameNotFoundException(username));
 
         return User.withUsername(user.getUsername())
@@ -43,6 +45,13 @@ public class UserDetailService implements UserDetailsService {
     public Optional<com.topleader.topleader.user.User> getUser(String username) {
         return userRepository.findById(username);
     }
+
+    public boolean userExist(String username) {
+        return userRepository.findById(username)
+                .or(() -> userRepository.findByEmail(username))
+                .isPresent();
+    }
+
 
     public com.topleader.topleader.user.User save(com.topleader.topleader.user.User user) {
         log.info("Saving user: {}", user);

@@ -162,7 +162,7 @@ public class MessageService {
                 userRepository.findById(user).ifPresent(userToNotify -> {
                     var params = Map.of("firstName", userToNotify.getFirstName(), "lastName", userToNotify.getLastName(), "link", appUrl);
                     var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(userToNotify.getLocale()));
-                    emailService.sendEmail(userToNotify.getUsername(), subjects.getOrDefault(userToNotify.getLocale(), defaultLocale), emailBody);
+                    emailService.sendEmail(userToNotify.getEmail(), subjects.getOrDefault(userToNotify.getLocale(), defaultLocale), emailBody);
                 })
         );
         messageRepository.setNotified(usersToNotify);

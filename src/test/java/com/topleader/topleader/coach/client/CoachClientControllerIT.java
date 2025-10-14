@@ -188,6 +188,7 @@ class CoachClientControllerIT extends IntegrationTest {
         assertThat(user.getStatus(), is(User.Status.PENDING));
         assertThat(user.getLocale(), is("en"));
     }
+
     @Test
     @WithMockUser(username = "coach", authorities = "COACH")
     void testInviteTrialUserEndpoint() throws Exception {
@@ -250,5 +251,28 @@ class CoachClientControllerIT extends IntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(content().json(String.format("[]", nextSessionTimeClient1, nextSessionTimeClient2)));
+    }
+
+    @Test
+    @WithMockUser(username = "coach", authorities = "COACH")
+    void testInviteUserAlreadyExists() throws Exception {
+
+        mvc.perform(post("/api/latest/coach-clients")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "email": "client4@eamil.com",
+                                    "firstName": "Dan",
+                                    "lastName": "Aaa",
+                                    "isTrial": false,
+                                    "locale": "en"
+                                }
+                                """
+                        ))
+                .andDo(print())
+                .andExpect(status().is4xxClientError())
+                .andExpect(content().json("""
+                       [ {"errorCode":"email.used","fields":[{"name":"email","value":"client4@eamil.com"}],"errorMessage":"Already used"}]
+                        """));
     }
 }

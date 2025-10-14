@@ -35,8 +35,6 @@ public class Coach {
 
     private Boolean publicProfile;
 
-    private String email;
-
     @Column(length = 1000)
     private String webLink;
 
@@ -90,8 +88,9 @@ public class Coach {
         SPEAKER
     }
 
-    public String getCoachEmail() {
-        return Optional.ofNullable(email)
+    public String getUserEmail() {
+        return Optional.ofNullable(user)
+                .map(User::getEmail)
                 .orElse(username);
     }
 }

@@ -79,6 +79,7 @@ public class CoachController {
                 .orElse(new Coach()
                         .setUsername(user.getUsername())
                         .setUser(userRepository.findById(user.getUsername())
+                                .map(u -> u.setEmail(request.email))
                                 .orElseThrow(CommonUtils.entityNotFound("user " + user.getUsername()))));
 
         return CoachDto.from(coachRepository.save(request.updateCoach(coach)));
@@ -210,7 +211,7 @@ public class CoachController {
                     c.getPublicProfile() != null,
                     user.getFirstName(),
                     user.getLastName(),
-                    c.getEmail(),
+                    c.getUserEmail(),
                     c.getWebLink(),
                     c.getBio(),
                     c.getLanguages(),
@@ -227,7 +228,6 @@ public class CoachController {
         public Coach updateCoach(Coach coach) {
             return coach
                     .setPublicProfile(publicProfile)
-                    .setEmail(email)
                     .setWebLink(webLink)
                     .setBio(bio)
                     .setLanguages(languages)
@@ -241,6 +241,7 @@ public class CoachController {
 
         public User updateUser(User user) {
             return user.setFirstName(firstName())
+                    .setEmail(email())
                     .setLastName(lastName())
                     .setTimeZone(timeZone())
                     ;

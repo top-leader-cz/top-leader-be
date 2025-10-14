@@ -87,7 +87,7 @@ public class HrController {
         return managerService.listManagerByCompany(foundUser.getCompanyId()).stream()
                 .map(m -> {
                     var found = userDetailService.find(m.getUsername());
-                    return new ManagerDto(found.getUsername(), found.getFirstName(), found.getLastName());
+                    return new ManagerDto(found.getUsername(), found.getEmail(), found.getFirstName(), found.getLastName());
                 })
                 .collect(Collectors.toList());
     }
@@ -100,6 +100,7 @@ public class HrController {
         var user = new User();
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .setUsername(request.username().toLowerCase(Locale.ROOT))
+                .setEmail(request.username().toLowerCase(Locale.ROOT))
                 .setFirstName(request.firstName())
                 .setLastName(request.lastName())
                 .setAuthorities(request.authorities())
@@ -120,7 +121,7 @@ public class HrController {
         user.setCompanyId(companyId)
                 .setCredit(0);
 
-        if (userDetailService.getUser(request.username()).isPresent()) {
+        if (userDetailService.userExist(user.getUsername())) {
             throw new ApiValidationException(EMAIL_USED, "username", request.username(), "Already used");
         }
 

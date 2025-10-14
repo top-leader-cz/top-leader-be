@@ -30,6 +30,8 @@ public class User {
 
     private String lastName;
 
+    private String email;
+
     @Convert(converter = RoleConverter.class)
     private Set<Authority> authorities;
 
