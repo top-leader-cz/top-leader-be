@@ -2,6 +2,7 @@ package com.topleader.topleader.user.token;
 
 import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.email.VelocityService;
+import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -71,14 +72,15 @@ public class TokenController {
     public void generateResetPasswordLink(@Valid @RequestBody TokenController.GenerateLinkRequest request) {
         log.info("User generate-link username: [{}]", request.username);
 
-        userRepository.findById(request.username)
+        userRepository.findByEmail(request.username)
                 .ifPresentOrElse(user -> {
                     var token = tokenService.generateToken();
                     var link = String.format("%s/#/api/public/set-password/%s/%s", appUrl, request.username, token);
                     var params = Map.of("firstName", user.getFirstName(), "lastName", user.getLastName(), "link", link);
                     var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(request.locale()));
-                    tokenService.saveToken(new Token().setToken(token).setUsername(request.username()).setType(Token.Type.SET_PASSWORD));
-                    emailService.sendEmail(request.username(), subjects.get(request.locale), emailBody);
+                    tokenService.saveToken(new Token().setToken(token).setUsername(user.getUsername()).setType(Token.Type.SET_PASSWORD));
+
+                    emailService.sendEmail(request.username, subjects.get(request.locale), emailBody);
                     log.info("User generate-link  finished. username: [{}]", request.username);
                 }, () -> log.warn("Generate-link failed! User not found: [{}]", request.username));
     }
@@ -98,7 +100,7 @@ public class TokenController {
     }
 
     public  record GenerateLinkRequest(
-            @NotEmpty String username,
+            @NotEmpty String username, // this is new email
 
             @Pattern(regexp = "[a-z]{2}")
             String locale

@@ -55,7 +55,7 @@ public class SessionReminderService {
 
         getShortTermGoal(user.getUsername()).ifPresentOrElse(
             goal -> emailService.sendEmail(
-                user.getUsername(),
+                user.getEmail(),
                 subject,
                 velocityService.getMessage(
                     new HashMap<>(
@@ -68,7 +68,7 @@ public class SessionReminderService {
                     parseSessionReminderTemplate(user.getLocale(), true)
                 )),
             () -> emailService.sendEmail(
-                user.getUsername(),
+                user.getEmail(),
                 subject,
                 velocityService.getMessage(
                     new HashMap<>(

@@ -13,6 +13,7 @@ public class UserSettingRequest {
     private String firstName;
     @NotEmpty
     private String lastName;
+    private String email;
     private String manager;
     private String position;
     private String aspiredCompetency;

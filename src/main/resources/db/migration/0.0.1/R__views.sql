@@ -108,10 +108,10 @@ where coach is not null
 drop view if exists coach_list_view;
 create or replace view coach_list_view as
 select c.username,
+       u.email,
        u.first_name,
        u.last_name,
        c.bio,
-       c.email,
        c.experience_since,
        c.public_profile,
        c.rate,
@@ -132,6 +132,7 @@ drop view if exists session_reminder_view;
 create or replace view session_reminder_view as
 with scheduled as (select max(username) as username, max(time) as time from scheduled_session group by username)
 select distinct u.username,
+                u.email,
                 u.first_name,
                 u.last_name,
                 u.locale,

@@ -96,13 +96,16 @@ public class CoachClientController {
 
         final var coach = userRepository.findById(user.getUsername()).orElseThrow();
 
-        if (userRepository.findById(request.email()).isPresent()) {
-            throw new ApiValidationException(EMAIL_USED, "email", request.email(), "Already used");
-        }
+        userRepository.findById(request.email())
+                .or(() -> userRepository.findByEmail(request.email()))
+                .ifPresent(u -> {
+                    throw new ApiValidationException(EMAIL_USED, "email", request.email(), "Already used");
+                });
 
         final var createdUser = userRepository.save(
             new User()
                 .setUsername(request.email().toLowerCase(Locale.ROOT))
+                .setEmail(request.email().toLowerCase(Locale.ROOT))
                 .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .setFirstName(request.firstName())
                 .setLastName(request.lastName())

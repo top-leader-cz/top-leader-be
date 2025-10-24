@@ -6,6 +6,7 @@ import com.topleader.topleader.user.token.Token;
 import com.topleader.topleader.user.token.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +48,7 @@ public class InvitationService {
         var params = Map.of("firstName", request.firstName(), "lastName", request.lastName(), "appUrl", appUrl, "passwordLink", setPasswordUrl);
         var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(request.locale()));
         tokenService.saveToken(new Token().setToken(token).setUsername(request.username()).setType(Token.Type.SET_PASSWORD));
-        emailService.sendEmail(request.username(), subjects.getOrDefault(request.locale(), defaultLocale), emailBody);
+        emailService.sendEmail(request.getEmail(), subjects.getOrDefault(request.locale(), defaultLocale), emailBody);
     }
 
     public String parseTemplateName(String locale) {
@@ -60,9 +61,13 @@ public class InvitationService {
 
 
 
-    public record UserInvitationRequestDto(String firstName, String lastName, String username, String timezone, String locale) {
+    public record UserInvitationRequestDto(String firstName, String lastName, String username, String email, String timezone, String locale) {
         public static UserInvitationRequestDto from(User user, String locale) {
-            return new UserInvitationRequestDto(user.getFirstName(), user.getLastName(), user.getUsername(), user.getTimeZone(), locale);
+            return new UserInvitationRequestDto(user.getFirstName(), user.getLastName(), user.getUsername(), user.getEmail(), user.getTimeZone(), locale);
+        }
+
+        public String getEmail() {
+            return StringUtils.isBlank(email) ? username : email;
         }
     }
 

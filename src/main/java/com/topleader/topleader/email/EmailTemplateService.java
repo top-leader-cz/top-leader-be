@@ -83,7 +83,7 @@ public class EmailTemplateService {
         final var eventId = "session-" + sessionId;
 
         emailService.sendEmail(
-            user.getUsername(),
+            user.getEmail(),
             subjectUserInvitations.getOrDefault(user.getLocale(),
                 defaultLocale),
             velocityService.getMessage(
@@ -121,7 +121,7 @@ public class EmailTemplateService {
         final var eventId = "session-" + sessionId;
 
         emailService.sendEmail(
-            coach.getUsername(),
+                coach.getEmail(),
             subjects.getOrDefault(coach.getLocale(),
                 defaultLocale),
             velocityService.getMessage(
@@ -145,7 +145,7 @@ public class EmailTemplateService {
         );
 
         emailService.sendEmail(
-            user.getUsername(),
+             user.getEmail(),
             subjectUserInvitations.getOrDefault(user.getLocale(),
                 defaultLocale),
             velocityService.getMessage(
@@ -187,7 +187,7 @@ public class EmailTemplateService {
         final var eventId = "session-" + sessionId;
 
         emailService.sendEmail(
-            coach.getUsername(),
+            coach.getEmail(),
             subjects.getOrDefault(coach.getLocale(),
                 defaultLocale),
             velocityService.getMessage(
@@ -211,7 +211,7 @@ public class EmailTemplateService {
         );
 
         emailService.sendEmail(
-            user.getUsername(),
+            user.getEmail(),
             subjects.getOrDefault(user.getLocale(),
                 defaultLocale),
             velocityService.getMessage(
@@ -250,7 +250,7 @@ public class EmailTemplateService {
         final var eventId = "session-" + sessionId;
 
         emailService.sendEmail(
-            user.getUsername(),
+            user.getEmail(),
             subjects.getOrDefault(user.getLocale(),
                 defaultLocale),
             velocityService.getMessage(
@@ -281,7 +281,7 @@ public class EmailTemplateService {
                 .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", coachUsername, "User not found " + coachUsername ));
 
         emailService.sendEmail(
-                user.getCoachData().getCoachEmail(),
+                user.getEmail(),
                 pickedCoachSubjects.getOrDefault(user.getLocale(), defaultLocale),
                 velocityService.getMessage(
                         new HashMap<>(

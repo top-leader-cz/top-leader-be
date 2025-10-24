@@ -165,7 +165,7 @@ class CoachListControllerIT extends IntegrationTest {
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("coach1");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("coach1.johnson@example.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(body)
@@ -226,7 +226,7 @@ class CoachListControllerIT extends IntegrationTest {
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("coach1");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("coach1.johnson@example.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(body)
@@ -570,7 +570,7 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.content[0].username", is("coach3")))
                 .andExpect(jsonPath("$.content[0].firstName", is("Michael")))
                 .andExpect(jsonPath("$.content[0].lastName", is("Johnson")))
-                .andExpect(jsonPath("$.content[0].email", is("michael.johnson@example.com")))
+                .andExpect(jsonPath("$.content[0].email", is("coach3.johnson@example.com")))
                 .andExpect(jsonPath("$.content[0].bio", is("Certified fitness coach")))
                 .andExpect(jsonPath("$.content[0].experience", is(exp)))
                 .andExpect(jsonPath("$.content[0].rate", is("$$$")))
@@ -590,7 +590,7 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.username", is("coach3")))
                 .andExpect(jsonPath("$.firstName", is("Michael")))
                 .andExpect(jsonPath("$.lastName", is("Johnson")))
-                .andExpect(jsonPath("$.email", is("michael.johnson@example.com")))
+                .andExpect(jsonPath("$.email", is("coach3.johnson@example.com")))
                 .andExpect(jsonPath("$.bio", is("Certified fitness coach")))
                 .andExpect(jsonPath("$.experience", is(exp)))
                 .andExpect(jsonPath("$.rate", is("$$$")))

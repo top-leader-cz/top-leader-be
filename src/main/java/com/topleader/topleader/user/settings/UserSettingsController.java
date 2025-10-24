@@ -54,7 +54,7 @@ public class UserSettingsController {
         return managerService.listManagerByCompany(foundUser.getCompanyId()).stream()
                 .map(m -> {
                     var found = userDetailService.find(m.getUsername());
-                    return new ManagerDto(found.getUsername(), found.getFirstName(), found.getLastName());
+                    return new ManagerDto(found.getUsername(), found.getEmail(), found.getFirstName(), found.getLastName());
                 })
                 .collect(Collectors.toList());
     }
@@ -86,6 +86,7 @@ public class UserSettingsController {
 
         user.setFirstName(request.getFirstName())
                 .setLastName(request.getLastName())
+                .setEmail(request.getEmail())
                 .setPosition(request.getPosition())
                 .setAspiredPosition(request.getAspiredPosition())
                 .setAspiredCompetency(request.getAspiredCompetency());

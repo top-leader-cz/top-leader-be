@@ -4,10 +4,10 @@ values ('coach', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO',
 insert into users (username, password, status, authorities, time_zone)
 values ('coach2', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC');
 
-insert into coach (username, bio, email, experience_since, web_link, public_profile, rate)
-values ('coach', 'some bio', 'cool@email.cz', '2023-08-06', 'http://some_video1', true, '$$$');
-insert into coach (username, bio, email, experience_since, web_link, public_profile, rate)
-values ('coach2', 'some bio', 'cool@email.cz', '2023-08-06', 'http://some_video1', true, '$$$');
+insert into coach (username, bio,  experience_since, web_link, public_profile, rate)
+values ('coach', 'some bio',  '2023-08-06', 'http://some_video1', true, '$$$');
+insert into coach (username, bio,  experience_since, web_link, public_profile, rate)
+values ('coach2', 'some bio',  '2023-08-06', 'http://some_video1', true, '$$$');
 
 
 
