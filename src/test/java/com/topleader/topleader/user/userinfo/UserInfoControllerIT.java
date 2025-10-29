@@ -332,7 +332,7 @@ class UserInfoControllerIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("coach2");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Byli jste vybráni jako kouč na platformě TopLeader!");
     }

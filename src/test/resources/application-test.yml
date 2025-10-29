@@ -28,3 +28,5 @@ openai:
     url: http://localhost:8060/image
 
 
+thumbmail: http://localhost:8060/hqdefault
+

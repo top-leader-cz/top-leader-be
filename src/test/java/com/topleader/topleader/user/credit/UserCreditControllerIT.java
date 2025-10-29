@@ -42,7 +42,7 @@ class UserCreditControllerIT extends IntegrationTest {
                 .andExpect(content().json("{\"firstName\":\"Alice\",\"lastName\":\"Smith\",\"username\":\"user1\",\"credit\":50,\"requestedCredit\":1000,\"scheduledCredit\":20,\"paidCredit\":222}"));
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("info@topleader.io");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Credits requested in the TopLeader platform");
         var body = GreenMailUtil.getBody(receivedMessage);

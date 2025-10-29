@@ -44,7 +44,7 @@ class TriggerNotificationJobControllerIT extends IntegrationTest {
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("pepa@cerny.cz");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Friendly Reminder: Please Share Your Feedback for Jakub Svezi");
         var body = GreenMailUtil.getBody(receivedMessage);

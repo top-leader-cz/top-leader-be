@@ -7,12 +7,10 @@ import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.ical.ICalService;
 import com.topleader.topleader.scheduled_session.ScheduledSessionService;
-import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -99,7 +97,7 @@ public class EmailTemplateService {
             iCalService.createCalendarPrivateEvent(
                 session.getTime(),
                 session.getTime().plusHours(1),
-                user.getUsername(),
+                user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 PRIVATE_SESSION_EVENT_NAME,
                 eventId
@@ -135,9 +133,9 @@ public class EmailTemplateService {
             iCalService.createCalendarEvent(
                 session.getTime(),
                 session.getTime().plusHours(1),
-                coach.getUsername(),
+                coach.getEmail(),
                 coach.getFirstName() + " " + coach.getLastName(),
-                user.getUsername(),
+                user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 "Session with " + user.getFirstName() + " " + user.getLastName(),
                 eventId
@@ -161,9 +159,9 @@ public class EmailTemplateService {
             iCalService.createCalendarEvent(
                 session.getTime(),
                 session.getTime().plusHours(1),
-                coach.getUsername(),
+                coach.getEmail(),
                 coach.getFirstName() + " " + coach.getLastName(),
-                user.getUsername(),
+                user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 "Session with " + coach.getFirstName() + " " + coach.getLastName(),
                 eventId
@@ -201,9 +199,9 @@ public class EmailTemplateService {
             iCalService.cancelCalendarEvent(
                 session.getTime(),
                 session.getTime().plusHours(1),
-                coach.getUsername(),
+                coach.getEmail(),
                 coach.getFirstName() + " " + coach.getLastName(),
-                user.getUsername(),
+                user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 "Session with " + user.getFirstName() + " " + user.getLastName(),
                 eventId
@@ -227,9 +225,9 @@ public class EmailTemplateService {
             iCalService.cancelCalendarEvent(
                 session.getTime(),
                 session.getTime().plusHours(1),
-                coach.getUsername(),
+                coach.getEmail(),
                 coach.getFirstName() + " " + coach.getLastName(),
-                user.getUsername(),
+                user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 "Session with " + coach.getFirstName() + " " + coach.getLastName(),
                 eventId
@@ -266,7 +264,7 @@ public class EmailTemplateService {
             iCalService.cancelCalendarPrivateEvent(
                 session.getTime(),
                 session.getTime().plusHours(1),
-                user.getUsername(),
+                user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 PRIVATE_SESSION_EVENT_NAME,
                 eventId

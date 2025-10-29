@@ -84,7 +84,7 @@ public class UserInsightService {
             var values = userInfo.getValues();
             var locale = user.getLocale();
             savedUserInsight.setUsername(username);
-            savedUserInsight.setLeadershipTip(aiClient.findLeadershipTip(UserUtils.localeToLanguage(locale), strengths, values));
+//            savedUserInsight.setLeadershipTip(aiClient.findLeadershipTip(UserUtils.localeToLanguage(locale), strengths, values));
             savedUserInsight.setTipsGeneratedAt(LocalDateTime.now());
             savedUserInsight.setDailyTipsPending(false);
             userInsightRepository.save(savedUserInsight);

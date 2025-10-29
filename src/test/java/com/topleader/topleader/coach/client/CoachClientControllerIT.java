@@ -227,7 +227,7 @@ class CoachClientControllerIT extends IntegrationTest {
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("user4@gmail.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Unlock Your Potential with TopLeader!");
         Assertions.assertThat(body)
