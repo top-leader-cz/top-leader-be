@@ -208,7 +208,7 @@ public class CoachController {
         public static CoachDto from(Coach c) {
             var user = c.getUser();
             return new CoachDto(
-                    c.getPublicProfile() != null,
+                    c.isPublicProfile(),
                     user.getFirstName(),
                     user.getLastName(),
                     c.getUserEmail(),

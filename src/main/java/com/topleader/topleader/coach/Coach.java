@@ -33,7 +33,7 @@ public class Coach {
     @Id
     private String username;
 
-    private Boolean publicProfile;
+    private boolean publicProfile;
 
     @Column(length = 1000)
     private String webLink;
