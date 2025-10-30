@@ -164,7 +164,7 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(creditHistoryEvent.getType(), is(CreditHistory.Type.SCHEDULED));
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("coach1.johnson@example.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);
@@ -225,7 +225,7 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(creditHistoryEvent.getType(), is(CreditHistory.Type.SCHEDULED));
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("coach1.johnson@example.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Upozornění na novou rezervaci na TopLeader");
         var body = GreenMailUtil.getBody(receivedMessage);

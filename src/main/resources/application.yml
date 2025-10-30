@@ -59,7 +59,7 @@ top-leader:
   app-url: http://localhost:8080
   supported-invitations: en, cs, fr, de
   default-locale: en
-  default-from: top-leader
+  default-from: TopLeaderPlatform@topleader.io
   feedback:
     summary-limit: 1
   calendly:

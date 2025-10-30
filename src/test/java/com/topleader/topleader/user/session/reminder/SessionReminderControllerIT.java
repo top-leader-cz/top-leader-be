@@ -44,7 +44,7 @@ class SessionReminderControllerIT extends IntegrationTest {
 
     private void testEmail(MimeMessage receivedMessage, String subject, String message) throws MessagingException {
         final var body = GreenMailUtil.getBody(receivedMessage);
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo(subject);
         Assertions.assertThat(body).contains(message).contains("http://app-test-url");
 

@@ -121,7 +121,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
                 .containsExactly("pepa@cerny.cz", "Pepa", "Cerny", Set.of(RESPONDENT), PENDING, "test.hr@email.com");
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("info@topleader.io");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("New Pending user in the TopLeader platform");
         var body = GreenMailUtil.getBody(receivedMessage);
