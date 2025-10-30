@@ -134,7 +134,7 @@ class HrControllerIT extends IntegrationTest {
                 """)).andExpect(status().isOk()).andExpect(content().contentType("application/json")).andExpect(content().json("{\"username\":\"user1\",\"coach\":\"Coach2\",\"credit\":50,\"requestedCredit\":1000}"));
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("info@topleader.io");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Credits requested in the TopLeader platform");
         var body = GreenMailUtil.getBody(receivedMessage);
@@ -182,7 +182,7 @@ class HrControllerIT extends IntegrationTest {
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("jakub.svezi@dummy.com");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Odemkněte svůj potenciál s TopLeader!");
         Assertions.assertThat(body).contains("Jakub Svezi,").contains("http://app-test-url/#/api/public/set-password/").contains("Odemkn=C4=9Bte");
@@ -239,7 +239,7 @@ class HrControllerIT extends IntegrationTest {
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("hrUser");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Odemkněte svůj potenciál s TopLeader!");
         Assertions.assertThat(body).contains("Jakub1 Svezi2,").contains("http://app-test-url/#/api/public/set-password/");

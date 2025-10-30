@@ -58,7 +58,7 @@ public class TokenControllerIT extends IntegrationTest {
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("jakub@svezi.cz");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Instrukce pro obnovení hesla k vašemu účtu v TopLeader");
         Assertions.assertThat(body).contains("Jakub Svezi,").contains("http://app-test-url/#/api/public/set-password/");

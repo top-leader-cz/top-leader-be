@@ -32,7 +32,7 @@ public class MessageJobControllerIT extends IntegrationTest {
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(1);
-        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("top-leader");
+        Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getAllRecipients())).isEqualTo("user1");
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Nová zpráva na platformě TopLeader");
         Assertions.assertThat(body).contains("Cool user1,").contains("http://app-test-url");
