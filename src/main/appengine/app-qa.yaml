@@ -1,11 +1,13 @@
 runtime: java21
 entrypoint: java -Dspring.profiles.active=qa -jar top-leader.jar
-instance_class: B2
 service: qa
 basic_scaling:
   max_instances: 1
 env_variables:
-  SPRING_DATASOURCE_PASSWORD: past1520$A@B
-  SPRING_MAIL_PASSWORD: abeqnppzvjspgwnn
-  SPRING_MAIL_USERNAME: topleaderplatform@gmail.com
-
+  SPRING_DATASOURCE_URL: "jdbc:postgresql:///top_leader"
+  SPRING_DATASOURCE_PASSWORD: "past1520$A@B"
+  SPRING_MAIL_PASSWORD: "sjkpmwhbxcbshbxv"
+  SPRING_MAIL_USERNAME: "topleaderplatform@topleader.io"
+  SPRING_MAIL_HOST: "smtp.gmail.com"
+  SPRING_MAIL_PORT: 587
+  SPRING_AI_OPENAI_APIKEY: "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"
