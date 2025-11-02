@@ -62,7 +62,7 @@ public class UserInsightService {
     }
 
     public UserInsight save(UserInsight userInsight) {
-        return userInsightRepository.save(userInsight);
+        return userInsightRepository.saveAndFlush(userInsight);
     }
 
     @Async

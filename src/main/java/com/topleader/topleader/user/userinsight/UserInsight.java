@@ -42,5 +42,7 @@ public class UserInsight {
 
     private String suggestion;
 
+    private boolean suggestionPending;
+
     private boolean actionGoalsPending;
 }

@@ -193,7 +193,6 @@ public class CoachController {
 
         LocalDate experienceSince,
 
-        @NotNull
         Coach.CertificateType certificate,
 
         String timeZone,

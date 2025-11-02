@@ -64,8 +64,8 @@ public class UserInsightController {
                 "leadershipTip", new InsightItem(userInsight.getLeadershipTip(), userInsight.isDailyTipsPending()),
                 "personalGrowthTip", new InsightItem(userInsight.getPersonalGrowthTip(), userInsight.isActionGoalsPending()),
                 "userPreviews", new InsightItem(userInsight.getUserPreviews(), userInsight.isActionGoalsPending()),
-                "userArticles", new InsightItem(userInsight.getUserArticles(), userInsight.isActionGoalsPending())
-        );
+                "userArticles", new InsightItem(userInsight.getUserArticles(), userInsight.isActionGoalsPending()),
+                "suggestion", new InsightItem(userInsight.getSuggestion(), userInsight.isSuggestionPending()));
     }
 
     @GetMapping("/generate-tips")
@@ -73,7 +73,7 @@ public class UserInsightController {
         userInsightService.generateTipsAsync(user.getUsername());
     }
 
-    @Secured({"USER"})
+    @Secured({"USER", "COACH", "ADMIN", "HR"})
     @GetMapping("/article/{articleId}")
     public UserArticle fetchArticle(@PathVariable long articleId) {
         return articlesRepository.findById(articleId)
@@ -88,52 +88,59 @@ public class UserInsightController {
     public record InsightItem(String text, boolean isPending) {
     }
 
-    @Secured({"USER"})
+    @Secured({"USER", "COACH", "ADMIN", "HR"})
     @PostMapping("/dashboard")
     public void dashboard(@AuthenticationPrincipal UserDetails authUser, @RequestBody DashboardRequest dashboardRequest) {
         var username = authUser.getUsername();
         var query = List.of(dashboardRequest.query());
         var userInsight = userInsightService.getInsight(username);
         userInsight.setActionGoalsPending(true);
+        userInsight.setSuggestionPending(true);
+        userInsightService.save(userInsight);
         var user = userDetailService.getUser(username).orElseThrow(EntityNotFoundException::new);
         var userInfo = userInfoService.find(username);
 
-        try (ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        Thread.ofVirtual().start(() ->
+                Try.run(() -> {
+                            var suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, userInfo.getStrengths(), userInfo.getValues(), user.getLocale());
+                            var insight = userInsightService.getInsight(username);
+                            insight.setSuggestion(suggestion);
+                            insight.setSuggestionPending(false);
+                            userInsightService.save(insight);
+                        }).onSuccess(result -> log.info("Suggestion generated: [{}] ", username))
+                        .onFailure(e -> {
+                                    var insight = userInsightService.getInsight(username);
+                                    insight.setSuggestionPending(false);
+                                    userInsightService.save(insight);
+                                    log.error("Error generating suggestions [{}]", username, e);
+                                }
+                        ));
 
-            var previewsFuture = CompletableFuture.supplyAsync(
-                    () -> userSessionService.handleUserPreview(username, query),
-                    executor
-            );
+        Thread.ofVirtual().start(() ->
+                Try.run(() -> {
+                            var previews = userSessionService.handleUserPreview(username, query);
+                            var articles = userSessionService.handleUserArticles(username, query);
+                            var insight = userInsightService.getInsight(username);
+                            insight.setUserPreviews(previews);
+                            userInsightService.save(insight);
+                            if (!articles.isEmpty()) {
+                                articlesRepository.deleteAllByUsername(username);
+                                articles.forEach(article -> articlesRepository.save(new Article()
+                                        .setUsername(username)
+                                        .setContent(article))
+                                );
+                            }
+                            insight.setActionGoalsPending(false);
+                            userInsightService.save(insight);
+                        }).onFailure(e -> {
+                            var insight = userInsightService.getInsight(username);
+                            insight.setActionGoalsPending(false);
+                            userInsightService.save(insight);
+                            log.error("Error converting user articles to JSON", e);
+                        })
+                        .onSuccess(i -> log.info("Videos and articles generated: [{}] ", username))
+        );
 
-            var articlesFuture = CompletableFuture.supplyAsync(
-                    () -> userSessionService.handleUserArticles(username, query),
-                    executor
-            );
-
-            var suggestionFuture = CompletableFuture.supplyAsync(
-                    () -> aiClient.generateSuggestion(username, dashboardRequest.query, userInfo.getStrengths(), userInfo.getValues(), user.getLocale()),
-                    executor
-            );
-
-
-            var previews = previewsFuture.join();
-            var articles = articlesFuture.join();
-            var suggestion = suggestionFuture.join();
-
-            userInsight.setUserPreviews(previews);
-
-            if (!articles.isEmpty()) {
-                articlesRepository.deleteAllByUsername(username);
-                articles.forEach(article -> articlesRepository.save(new Article()
-                        .setUsername(username)
-                        .setContent(article))
-                );
-            }
-            userInsight.setSuggestion(suggestion);
-
-            userInsight.setActionGoalsPending(false);
-            userInsightService.save(userInsight);
-        }
 
     }
 

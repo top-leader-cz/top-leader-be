@@ -21,9 +21,11 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -55,20 +57,43 @@ class UserInsightControllerIT extends IntegrationTest {
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/user-insight.sql"})
     void getInsight() throws Exception {
-        mvc.perform(get("/api/latest/user-insight"))
-                .andDo(print())
-                .andExpect(content().json("""
-                                {
-                                "personalGrowthTip":{"text":null,"isPending":false},
-                                "leaderShipStyle":{"text":"leadership-response","isPending":false},
-                                "leaderPersona":{"text": "world-leader-persona","isPending":false},
-                                "animalSpirit":{"text":"animal-response","isPending":false},
-                                "leadershipTip":{"text":null,"isPending":false},
-                                "userPreviews":{"text":"test-user-previews","isPending":false},
-                                "userArticles":{"text":"[{\\\"url\\\":\\\"https://hbr.org/2018/04/better-brainstorming\\\",\\\"perex\\\":\\\"perex\\\",\\\"title\\\":\\\"title\\\",\\\"author\\\":\\\"Scott Berinato\\\",\\\"source\\\":\\\"Harvard Business Review\\\",\\\"language\\\":\\\"en\\\",\\\"readTime\\\":\\\"6 min read\\\",\\\"imageData\\\":\\\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==\\\",\\\"application\\\":\\\"application\\\",\\\"imagePrompt\\\":\\\"prompt\\\",\\\"summaryText\\\":\\\"summary\\\",\\\"id\\\":1,\\\"imageUrl\\\":\\\"gs://ai-images-top-leader/test_image.png\\\",\\\"date\\\":\\\"2025-08-25\\\"}]","isPending":false}
-                          }
-                        """))
-                .andExpect(status().isOk());
+        mvc.perform(get("/api/latest/user-insight")).andDo(print()).andExpect(content().json("""
+                
+                      {
+                  "animalSpirit": {
+                    "text": "animal-response",
+                    "isPending": false
+                  },
+                  "leaderShipStyle": {
+                    "text": "leadership-response",
+                    "isPending": false
+                  },
+                  "userArticles": {
+                    "text": "[{\\"url\\":\\"https://hbr.org/2018/04/better-brainstorming\\",\\"perex\\":\\"perex\\",\\"title\\":\\"title\\",\\"author\\":\\"Scott Berinato\\",\\"source\\":\\"Harvard Business Review\\",\\"language\\":\\"en\\",\\"readTime\\":\\"6 min read\\",\\"imageData\\":\\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==\\",\\"application\\":\\"application\\",\\"imagePrompt\\":\\"prompt\\",\\"summaryText\\":\\"summary\\",\\"id\\":1,\\"imageUrl\\":\\"gs://ai-images-top-leader/test_image.png\\",\\"date\\":\\"2025-08-25\\"}]",
+                    "isPending": false
+                  },
+                  "userPreviews": {
+                    "text": "test-user-previews",
+                    "isPending": false
+                  },
+                  "leadershipTip": {
+                    "text": null,
+                    "isPending": false
+                  },
+                  "suggestion": {
+                    "text": "suggestion",
+                    "isPending": false
+                  },
+                  "personalGrowthTip": {
+                    "text": null,
+                    "isPending": false
+                  },
+                  "leaderPersona": {
+                    "text": "world-leader-persona",
+                    "isPending": false
+                  }
+                }
+                """)).andExpect(status().isOk());
 
     }
 
@@ -80,13 +105,9 @@ class UserInsightControllerIT extends IntegrationTest {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
-        mvc.perform(get("/api/latest/user-insight/generate-tips"))
-                .andDo(print())
-                .andExpect(status().isOk());
+        mvc.perform(get("/api/latest/user-insight/generate-tips")).andDo(print()).andExpect(status().isOk());
 
-        Assertions.assertThat(userInsightRepository.findAll())
-                .extracting(UserInsight::getLeadershipTip, UserInsight::getPersonalGrowthTip)
-                .containsExactly(new Tuple("leadershipTip-response", null));
+        Assertions.assertThat(userInsightRepository.findAll()).extracting(UserInsight::getLeadershipTip, UserInsight::getPersonalGrowthTip).containsExactly(new Tuple("leadershipTip-response", null));
 
     }
 
@@ -98,13 +119,10 @@ class UserInsightControllerIT extends IntegrationTest {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
         Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
-        mvc.perform(get("/api/latest/user-insight/generate-tips"))
-                .andExpect(status().isOk());
+        mvc.perform(get("/api/latest/user-insight/generate-tips")).andExpect(status().isOk());
 
 
-        Assertions.assertThat(userInsightRepository.findAll())
-                .extracting(UserInsight::getLeadershipTip, UserInsight::getPersonalGrowthTip)
-                .containsExactly(new Tuple(null, null));
+        Assertions.assertThat(userInsightRepository.findAll()).extracting(UserInsight::getLeadershipTip, UserInsight::getPersonalGrowthTip).containsExactly(new Tuple(null, null));
 
     }
 
@@ -112,39 +130,32 @@ class UserInsightControllerIT extends IntegrationTest {
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/user-insight.sql"})
     void fetchArticle() throws Exception {
-        mvc.perform(get("/api/latest/user-insight/article/1"))
-                .andExpect(status().isOk())
-                .andDo(print())
-                .andExpect(content().json("""
-                                    {
-                                      "id": 1,
-                                      "url": "https://hbr.org/2018/04/better-brainstorming",
-                                      "perex": "perex",
-                                      "title": "title",
-                                      "author": "Scott Berinato",
-                                      "source": "Harvard Business Review",
-                                      "language": "en",
-                                      "readTime": "6 min read",
-                                      "imageData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
-                                      "application": "application",
-                                      "imagePrompt": "prompt",
-                                      "summaryText": "summary",
-                                      "date": "2025-08-25",
-                                      "imageUrl": "gs://ai-images-top-leader/test_image.png"
-                                    }
-                        
-                        """));
+        mvc.perform(get("/api/latest/user-insight/article/1")).andExpect(status().isOk()).andDo(print()).andExpect(content().json("""
+                            {
+                              "id": 1,
+                              "url": "https://hbr.org/2018/04/better-brainstorming",
+                              "perex": "perex",
+                              "title": "title",
+                              "author": "Scott Berinato",
+                              "source": "Harvard Business Review",
+                              "language": "en",
+                              "readTime": "6 min read",
+                              "imageData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+                              "application": "application",
+                              "imagePrompt": "prompt",
+                              "summaryText": "summary",
+                              "date": "2025-08-25",
+                              "imageUrl": "gs://ai-images-top-leader/test_image.png"
+                            }
+                
+                """));
     }
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/dashboard-data.sql"})
     void dashboard() throws Exception {
-        mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withBody("ok")));
-
+        mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
 
         Mockito.when(chatClient.call("video [query]")).thenReturn("""
                                [
@@ -177,30 +188,30 @@ class UserInsightControllerIT extends IntegrationTest {
                     "date": "2025-11-01"
                   }
                   ]
-
+                
                 
                 """);
 
-        mvc.perform(post("/api/latest/user-insight/dashboard")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                  "query": "query"
-                                }
-                                """))
-                .andDo(print())
-                .andExpect(status().isOk());
+        mvc.perform(post("/api/latest/user-insight/dashboard").contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                  "query": "query"
+                }
+                """)).andDo(print()).andExpect(status().isOk());
 
 
-        var userInsight = userInsightRepository.findById("user").orElseThrow();
-        TestUtils.assertJsonEquals(userInsight.getUserPreviews(), "[{\"title\":\"Test Preview\",\"url\":\"https://youtube.com/watch?v=test\",\"length\":null,\"thumbnail\":\"http://localhost:8060/hqdefault\"}]");
-        assertThat(userInsight.isActionGoalsPending()).isFalse();
+        await().atMost(3, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    var userInsight = userInsightRepository.findById("user").orElseThrow();
+                    TestUtils.assertJsonEquals(userInsight.getUserPreviews(), "[{\"title\":\"Test Preview\",\"url\":\"https://youtube.com/watch?v=test\",\"length\":null,\"thumbnail\":\"http://localhost:8060/hqdefault\"}]");
+                    assertThat(userInsight.isActionGoalsPending()).isFalse();
 
-        var articles = articleRepository.findByUsername("user");
-        assertThat(articles).hasSize(1);
-        assertThat(articles.get(0).getContent().getTitle()).isEqualTo("5 Essential Leadership Principles for Modern Teams");
-        assertThat(articles.get(0).getContent().getAuthor()).isEqualTo("Jane Smith");
-        assertThat(userInsight.getSuggestion()).isEqualTo("suggestion response");
+                    var articles = articleRepository.findByUsername("user");
+                    assertThat(articles).hasSize(1);
+                    assertThat(articles.get(0).getContent().getTitle()).isEqualTo("5 Essential Leadership Principles for Modern Teams");
+                    assertThat(articles.get(0).getContent().getAuthor()).isEqualTo("Jane Smith");
+                    assertThat(userInsight.isSuggestionPending()).isFalse();
+                    assertThat(userInsight.getSuggestion()).isEqualTo("suggestion response");
+                });
     }
 
 

@@ -69,7 +69,7 @@ public class Coach {
     @JoinColumn(name = "username", referencedColumnName = "username")
     private User user;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = CertificateTypeConverter.class)
     private CertificateType certificate;
 
     public enum CertificateType {
