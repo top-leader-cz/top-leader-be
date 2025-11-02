@@ -116,6 +116,17 @@ public class AiClient {
         log.info("AI user articles response: {}  User:[{}]", res, username);
         return AiUtils.replaceNonJsonString(res);
     }
+
+    public String generateSuggestion(String username, String userQuery,  List<String> strengths, List<String> values, String language) {
+        log.info("Findings Suggestions strengths: {} and values: {} locale: {}", strengths, values, language);
+        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.SUGGESTION);
+        var query = String.format(prompt, userQuery, strengths, values, language);
+        log.info("Suggestions query: {}", query);
+
+        var res = chatClient.call(query);
+        log.info("Suggestions response: {}  User:[{}]", res, username);
+        return AiUtils.replaceNonJsonString(res);
+    }
 }
 
 

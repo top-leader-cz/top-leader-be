@@ -40,6 +40,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -81,6 +82,9 @@ public class UserSessionService {
     private final ArticleImageService articleImageService;
 
     private final ArticleRepository articlesRepository;
+
+    @Value("${thumbmail}")
+    private String thumbmail;
 
     @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
@@ -193,7 +197,7 @@ public class UserSessionService {
         var filtered = previews.stream()
                 .map(p -> {
                     var videoId = p.getUrl().split("v=")[1]; //
-                    var thumbnail = String.format("http://i3.ytimg.com/vi/%s/hqdefault.jpg", videoId);
+                    var thumbnail = String.format(thumbmail, videoId);
                     p.setThumbnail(thumbnail);
                     return p;
                 })
