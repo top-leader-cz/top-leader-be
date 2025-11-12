@@ -52,7 +52,6 @@ class UserSessionControllerIT extends IntegrationTest {
     @Autowired
     private UserActionStepRepository userActionStepRepository;
 
-
     @Autowired
     ChatModel chatClient;
 

@@ -5,7 +5,9 @@ package com.topleader.topleader.user.session;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.util.Base64;
+
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
@@ -40,7 +42,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -81,6 +86,9 @@ public class UserSessionService {
     private final ArticleImageService articleImageService;
 
     private final ArticleRepository articlesRepository;
+
+    @Value("${thumbmail}")
+    private String thumbmail;
 
     @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
@@ -175,12 +183,17 @@ public class UserSessionService {
                         .setContent(article))
                 );
             }
-       }
+        }
         userInsight.setActionGoalsPending(false);
 
         userInsightService.save(userInsight);
     }
 
+    @Retryable(
+            value = { Exception.class },
+            maxAttempts = 2,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     public String handleUserPreview(String username, List<String> actionGoals) {
         var previews = Try.of(() -> {
                     var res = aiClient.generateUserPreviews(username, actionGoals);
@@ -192,10 +205,13 @@ public class UserSessionService {
 
         var filtered = previews.stream()
                 .map(p -> {
-                    var videoId = p.getUrl().split("v=")[1]; //
-                    var thumbnail = String.format("http://i3.ytimg.com/vi/%s/hqdefault.jpg", videoId);
-                    p.setThumbnail(thumbnail);
-                    return p;
+                    return Try.of(() -> {
+                                var videoId = p.getUrl().split("v=")[1];
+                                var thumbnail = String.format(thumbmail, videoId);
+                                p.setThumbnail(thumbnail);
+                                return p;
+                            }).onFailure(e -> log.warn("Failed to parse video url for user: [{}] url: [{}] ", username, p.getUrl(), e))
+                            .getOrElse(p); //
                 })
                 .filter(p -> urlValid(p.getThumbnail())
                 ).toList();
@@ -205,6 +221,11 @@ public class UserSessionService {
                 .getOrElse(() -> null);
     }
 
+    @Retryable(
+            value = { Exception.class },
+            maxAttempts = 2,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
     public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
         var user = userDetailService.find(username);
         return Try.of(() -> {
@@ -216,12 +237,12 @@ public class UserSessionService {
                 .getOrElse(List.of())
                 .stream()
                 .map(article -> {
-                    if(!urlValid(article.getUrl())) {
+                    if (!urlValid(article.getUrl())) {
                         article.setUrl(null);
                     }
                     return article;
                 })
-                .map(article ->  article.setImageUrl(articleImageService.generateImage(article.getImagePrompt())))
+                .map(article -> article.setImageUrl(articleImageService.generateImage(article.getImagePrompt())))
                 .toList();
     }
 
@@ -349,7 +370,8 @@ public class UserSessionService {
         }
         return Try.of(() -> {
                     var res = aiClient.generateRecommendedGrowths(user, businessStrategy, position, aspiredCompetency);
-                    return objectMapper.readValue(res, new TypeReference<List<RecommendedGrowth>>() {});
+                    return objectMapper.readValue(res, new TypeReference<List<RecommendedGrowth>>() {
+                    });
                 })
                 .onFailure(e -> log.error("Failed to generate recommended growths", e))
                 .getOrElseThrow(() -> null);

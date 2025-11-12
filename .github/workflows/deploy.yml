@@ -10,9 +10,9 @@ name: Build/Deploy top-leader-be
 
 on:
   push:
-    branches: [ "main", "deploy-test" ]
+    branches: [ "main", "dep" ]
   pull_request:
-    branches: [ "main", "deploy-test" ]
+    branches: [ "main", "dep" ]
 
 jobs:
   build:
@@ -38,14 +38,16 @@ jobs:
     environment: production
     steps:
       - uses: actions/checkout@v4
-      - uses: 73h/gae-app-yaml-replace-env-variables@v0.3
+
+      - name: Replace environment variables in app.yaml
+        uses: 73h/gae-app-yaml-replace-env-variables@v0.3
         with:
-          app_yaml_path: src/main/appengine/qa/app.yaml
+          app_yaml_path: src/main/appengine/app-qa.yaml
         env:
           SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD_QA }}
           SPRING_MAIL_PASSWORD: ${{ secrets.SPRING_MAIL_PASSWORD }}
 
-      - name: Deploy top-leader-be
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
@@ -65,10 +67,13 @@ jobs:
       - name: Install app-engine-java
         run: gcloud components install app-engine-java
 
-      - name:  gcloud config set storage/use_gsutil true
-        run:  gcloud config set storage/use_gsutil true
+      - name: Configure gcloud storage
+        run: gcloud config set storage/use_gsutil true
 
-#      - name: App Deploy
-#        run: gcloud app deploy --project=topleader-394306 --appyaml=src/main/appengine/qa/app.yaml --version=$(git rev-parse --short "$GITHUB_SHA")  --verbosity=debug
-      - name: Deploy with Maven
-        run: mvn clean package appengine:deploy -Dapp.stage.appEngineDirectory=src/main/appengine/qa -Dgcloud.verbosity=debug -Dpromote -Dmaven.test.skip=true -e
+      - name: Build Application
+        run: mvn clean package -DskipTests
+
+      - name: Deploy to App Engine
+        run: gcloud app deploy src/main/appengine/app-qa.yaml --project=topleader-394306 --version=$(git rev-parse --short "$GITHUB_SHA") --promote --quiet
+#      - name: Deploy with Maven
+#        run: mvn clean package appengine:deploy -Dapp.stage.appEngineDirectory=src/main/appengine/qa -Dgcloud.verbosity=debug -Dpromote -Dmaven.test.skip=true -e

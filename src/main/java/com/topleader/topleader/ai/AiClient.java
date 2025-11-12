@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
@@ -114,6 +116,22 @@ public class AiClient {
 
         var res = chatClient.call(query);
         log.info("AI user articles response: {}  User:[{}]", res, username);
+        return AiUtils.replaceNonJsonString(res);
+    }
+
+    @Retryable(
+            value = { Exception.class },
+            maxAttempts = 2,
+            backoff = @Backoff(delay = 1000, multiplier = 2)
+    )
+    public String generateSuggestion(String username, String userQuery,  List<String> strengths, List<String> values, String language) {
+        log.info("Findings Suggestions strengths: {} and values: {} locale: {}", strengths, values, language);
+        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.SUGGESTION);
+        var query = String.format(prompt, userQuery, strengths, values, language);
+        log.info("Suggestions query: {}", query);
+
+        var res = chatClient.call(query);
+        log.info("Suggestions response: {}  User:[{}]", res, username);
         return AiUtils.replaceNonJsonString(res);
     }
 }
