@@ -6,6 +6,7 @@ package com.topleader.topleader;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.icegreen.greenmail.store.FolderException;
 import com.icegreen.greenmail.util.GreenMail;
+import com.topleader.topleader.config.TestBeanConfiguration;
 import com.topleader.topleader.configuration.EnablePostgresTestContainerContextCustomizerFactory;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,7 +35,9 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 
 @ActiveProfiles("test")
 @Testcontainers
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, classes = {
+        TopLeaderApplication.class,
+        TestBeanConfiguration.class})
 @TestExecutionListeners(mergeMode =
     TestExecutionListeners.MergeMode.MERGE_WITH_DEFAULTS,
     listeners = {ResetDatabaseAfterTestMethodListener.class}

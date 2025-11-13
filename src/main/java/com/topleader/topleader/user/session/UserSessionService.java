@@ -221,11 +221,6 @@ public class UserSessionService {
                 .getOrElse(() -> null);
     }
 
-    @Retryable(
-            value = { Exception.class },
-            maxAttempts = 2,
-            backoff = @Backoff(delay = 1000, multiplier = 2)
-    )
     public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
         var user = userDetailService.find(username);
         return Try.of(() -> {

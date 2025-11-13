@@ -6,16 +6,19 @@ import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.ai.AiPrompt;
 import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.user.session.UserSessionService;
-import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -35,7 +38,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
-    ChatModel chatClient;
+    ChatModel chatModel;
+
+    @Autowired
+    ChatClient chatClient;
 
     @Autowired
     UserInfoRepository userInfoRepository;
@@ -103,7 +109,7 @@ class UserInsightControllerIT extends IntegrationTest {
     @Sql(scripts = {"/user_insight/user-insight.sql", "/user_insight/ai-prompt.sql"})
     void generateTips() throws Exception {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
+        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
         mvc.perform(get("/api/latest/user-insight/generate-tips")).andDo(print()).andExpect(status().isOk());
 
@@ -117,7 +123,7 @@ class UserInsightControllerIT extends IntegrationTest {
     void generateTipsNoStrengthsAndValues() throws Exception {
         userInfoRepository.deleteAll();
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
-        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadershipTip-response");
+        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
         mvc.perform(get("/api/latest/user-insight/generate-tips")).andExpect(status().isOk());
 
@@ -157,7 +163,7 @@ class UserInsightControllerIT extends IntegrationTest {
     void dashboard() throws Exception {
         mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
 
-        Mockito.when(chatClient.call("video [query]")).thenReturn("""
+        Mockito.when(chatModel.call("video [query]")).thenReturn("""
                                [
                   {
                     "title": "Test Preview",
@@ -167,9 +173,11 @@ class UserInsightControllerIT extends IntegrationTest {
                 ]
                 """);
 
-        Mockito.when(chatClient.call("suggestion query [] [] en")).thenReturn("suggestion response");
+        // Mock ChatClient with deep stubs - when().thenReturn() works with RETURNS_DEEP_STUBS
+        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().content())
+                .thenReturn("suggestion response");
 
-        Mockito.when(chatClient.call("article [query]")).thenReturn("""
+        Mockito.when(chatModel.call("article [query]")).thenReturn("""
                   [
                   {
                     "url": "https://example.com/articles/leadership-principles",

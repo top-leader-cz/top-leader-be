@@ -9,8 +9,10 @@ import com.icegreen.greenmail.util.ServerSetup;
 import org.mockito.Mockito;
 
 
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,8 +23,6 @@ import java.util.Base64;
 @Configuration
 public class TestBeanConfiguration {
 
-
-
     @Bean
     public GreenMail greenMail(@Value("${spring.mail.port}") final Integer emailPort) {
         return new GreenMail(new ServerSetup(emailPort, null, ServerSetup.PROTOCOL_SMTP))
@@ -30,8 +30,13 @@ public class TestBeanConfiguration {
     }
 
     @Bean
-    public ChatModel chatClient() {
-        return Mockito.mock(ChatModel.class);
+    public ChatModel chatModel() {
+         return Mockito.mock(ChatModel.class);
+    }
+
+    @Bean
+    public ChatClient chatClient() {
+        return Mockito.mock(ChatClient.class, Mockito.RETURNS_DEEP_STUBS);
     }
 
     @Bean
