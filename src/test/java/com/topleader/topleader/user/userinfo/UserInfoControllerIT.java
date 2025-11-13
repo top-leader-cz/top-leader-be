@@ -70,7 +70,7 @@ class UserInfoControllerIT extends IntegrationTest {
     private CreditHistoryRepository creditHistoryRepository;
 
     @Autowired
-    ChatModel chatClient;
+    ChatModel chatModel;
 
     @Autowired
     UserInsightRepository userInsightRepository;
@@ -515,13 +515,13 @@ class UserInfoControllerIT extends IntegrationTest {
     void setUserValues() throws Exception {
 
         var leaderShipQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_STYLE), List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
+        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadership-response");
 
         var animalQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ANIMAL_SPIRIT), List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatClient.call(animalQuery)).thenReturn("animal-response");
+        Mockito.when(chatModel.call(animalQuery)).thenReturn("animal-response");
 
         var worldLeaderPersona  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.WORLD_LEADER_PERSONA), List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatClient.call(worldLeaderPersona)).thenReturn("world-leader-response");
+        Mockito.when(chatModel.call(worldLeaderPersona)).thenReturn("world-leader-response");
 
         mvc.perform(post("/api/latest/user-info/values")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -546,13 +546,13 @@ class UserInfoControllerIT extends IntegrationTest {
     void setUserStrength() throws Exception {
 
         var leaderShipQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_STYLE), List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
-        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("leadership-response");
+        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadership-response");
 
         var animalQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ANIMAL_SPIRIT), List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
-        Mockito.when(chatClient.call(animalQuery)).thenReturn("animal-response");
+        Mockito.when(chatModel.call(animalQuery)).thenReturn("animal-response");
 
         var worldLeaderPersona  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.WORLD_LEADER_PERSONA), List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
-        Mockito.when(chatClient.call(worldLeaderPersona)).thenReturn("world-leader-response");
+        Mockito.when(chatModel.call(worldLeaderPersona)).thenReturn("world-leader-response");
 
         mvc.perform(post("/api/latest/user-info/strengths")
                         .contentType(MediaType.APPLICATION_JSON)

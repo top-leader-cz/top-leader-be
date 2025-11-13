@@ -53,7 +53,7 @@ class UserSessionControllerIT extends IntegrationTest {
     private UserActionStepRepository userActionStepRepository;
 
     @Autowired
-    ChatModel chatClient;
+    ChatModel chatModel;
 
     @Autowired
     AiPromptService aiPromptService;
@@ -188,7 +188,7 @@ class UserSessionControllerIT extends IntegrationTest {
     void generateLongTermGoal() throws Exception {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LONG_TERM_GOALS),
                 List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "English");
-        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("1. generated-long-term-goal-a. 2. generated-long-term-goal-b.");
+        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("1. generated-long-term-goal-a. 2. generated-long-term-goal-b.");
         mvc.perform(post("/api/latest/user-sessions/generate-long-term-goal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -209,7 +209,7 @@ class UserSessionControllerIT extends IntegrationTest {
     void generateActionsSteps() throws Exception {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ACTIONS_STEPS),
                 List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "generated-long-term-goal", "English");
-        Mockito.when(chatClient.call(leaderShipQuery)).thenReturn("1. generated-actions-steps-a. 2. generated-actions-steps-b.");
+        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("1. generated-actions-steps-a. 2. generated-actions-steps-b.");
         mvc.perform(post("/api/latest/user-sessions/generate-action-steps")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -230,7 +230,7 @@ class UserSessionControllerIT extends IntegrationTest {
     @WithUserDetails("user2")
     void generateRecommendedGrowth() throws Exception {
         var query = String.format("test query Dummy business strategy position competency English");
-        Mockito.when(chatClient.call(query)).thenReturn("```json\n" +
+        Mockito.when(chatModel.call(query)).thenReturn("```json\n" +
                 "[\n" +
                 "    {\n" +
                 "        \"area\": \"Advanced Programming Skills\",\n" +

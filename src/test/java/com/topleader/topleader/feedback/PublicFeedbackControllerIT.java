@@ -39,7 +39,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
     FeedbackFormRepository feedbackFormRepository;
 
     @Autowired
-    ChatModel chatClient;
+    ChatModel chatModel;
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
@@ -77,7 +77,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/submit-feedback.sql", "/user_insight/ai-prompt.sql"})
     void submitForm() throws Exception {
-        Mockito.when(chatClient.call(PROMPT_QUERY)).thenReturn("""
+        Mockito.when(chatModel.call(PROMPT_QUERY)).thenReturn("""
                  {
                        "strongAreas" : "strong areas",
                         "areasOfImprovement": "areas of improvement"

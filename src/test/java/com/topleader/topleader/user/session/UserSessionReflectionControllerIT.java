@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -53,7 +52,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     BadgeRepository badgeRepository;
 
     @Autowired
-    ChatModel chatClient;
+    ChatModel chatModel;
 
     @Autowired
     ArticleRepository articleRepository;
@@ -63,7 +62,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     @WithMockUser("user2")
     void setUserSessionReflectionData() throws Exception {
         var actionGoal = "test {0} test {1} test {2} test {4} test {5} test {6}";
-        Mockito.when(chatClient.call(actionGoal)).thenReturn("action-goal-response");
+        Mockito.when(chatModel.call(actionGoal)).thenReturn("action-goal-response");
         
         // Mock AI client response for user articles generation
         var expectedArticlesJson = """
@@ -97,7 +96,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                 ]
                 """;
 
-        Mockito.when(chatClient.call(Mockito.anyString()))
+        Mockito.when(chatModel.call(Mockito.anyString()))
                 .thenReturn("action-goal-response")
                 .thenReturn(expectedArticlesJson);
 
