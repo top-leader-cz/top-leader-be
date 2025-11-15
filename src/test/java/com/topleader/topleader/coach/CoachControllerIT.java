@@ -29,6 +29,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -134,8 +135,23 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("languages", hasSize(0)))
             .andExpect(jsonPath("fields", hasSize(0)))
             .andExpect(jsonPath("experienceSince", nullValue()))
-            .andExpect(jsonPath("certificate", nullValue()))
+            .andExpect(jsonPath("rate", nullValue()))
+            .andExpect(jsonPath("rateOrder", nullValue()))
+            .andExpect(jsonPath("internalRate", nullValue()))
+            .andExpect(jsonPath("linkedinProfile", nullValue()))
+            .andExpect(jsonPath("freeSlots", is(false)))
+            .andExpect(jsonPath("priority", is(0)))
             .andExpect(jsonPath("primaryRoles", hasItems(Coach.PrimaryRole.COACH.name())))
+            .andExpect(jsonPath("certificate", hasSize(0)))
+            .andExpect(jsonPath("baseLocations", hasSize(0)))
+            .andExpect(jsonPath("travelWillingness", nullValue()))
+            .andExpect(jsonPath("deliveryFormat", hasSize(0)))
+            .andExpect(jsonPath("serviceType", hasSize(0)))
+            .andExpect(jsonPath("topics", hasSize(0)))
+            .andExpect(jsonPath("diagnosticTools", hasSize(0)))
+            .andExpect(jsonPath("industryExperience", hasSize(0)))
+            .andExpect(jsonPath("references", nullValue()))
+            .andExpect(jsonPath("timeZone", nullValue()))
         ;
 
     }
@@ -145,6 +161,7 @@ class CoachControllerIT extends IntegrationTest {
     void getCoachInfo() throws Exception {
 
         mvc.perform(get("/api/latest/coach-info"))
+                .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("publicProfile", is(true)))
             .andExpect(jsonPath("firstName", is("firstName")))
@@ -157,7 +174,24 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("fields", hasSize(2)))
             .andExpect(jsonPath("fields", hasItems("field1", "field2")))
             .andExpect(jsonPath("experienceSince", is("2023-08-06")))
-            .andExpect(jsonPath("certificate", is("ACC")))
+            .andExpect(jsonPath("certificate", hasItems("ACC")))
+            .andExpect(jsonPath("linkedinProfile", is("http://linkedin.com/coach")))
+            .andExpect(jsonPath("freeSlots", is(true)))
+            .andExpect(jsonPath("priority", is(10)))
+            .andExpect(jsonPath("baseLocations", hasSize(2)))
+            .andExpect(jsonPath("baseLocations", hasItems("Prague", "Brno")))
+            .andExpect(jsonPath("travelWillingness", is("WITHIN_COUNTRY")))
+            .andExpect(jsonPath("deliveryFormat", hasSize(2)))
+            .andExpect(jsonPath("deliveryFormat", hasItems("ONLINE", "HYBRID")))
+            .andExpect(jsonPath("serviceType", hasSize(2)))
+            .andExpect(jsonPath("serviceType", hasItems("ONE_TO_ONE", "TEAM")))
+            .andExpect(jsonPath("topics", hasSize(2)))
+            .andExpect(jsonPath("topics", hasItems("LEADERSHIP", "COMMUNICATION")))
+            .andExpect(jsonPath("diagnosticTools", hasSize(2)))
+            .andExpect(jsonPath("diagnosticTools", hasItems("MBTI", "DISC")))
+            .andExpect(jsonPath("industryExperience", hasSize(2)))
+            .andExpect(jsonPath("industryExperience", hasItems("TECH", "FINANCE")))
+            .andExpect(jsonPath("references", is("Experienced coach")))
             .andExpect(jsonPath("timeZone", is("Europe/Prague")))
             .andExpect(jsonPath("primaryRoles", hasItems(Coach.PrimaryRole.COACH.name())))
         ;
@@ -195,9 +229,25 @@ class CoachControllerIT extends IntegrationTest {
             .andExpect(jsonPath("fields", hasSize(2)))
             .andExpect(jsonPath("fields", hasItems("field1", "field2")))
             .andExpect(jsonPath("experienceSince", is("2023-08-06")))
-            .andExpect(jsonPath("certificate", is("ACC")))
-            .andExpect(jsonPath("timeZone", is("UTC")))
+            .andExpect(jsonPath("certificate", hasItems("ACC", "PCC")))
             .andExpect(jsonPath("linkedinProfile", is("http://linkedin.com")))
+            .andExpect(jsonPath("freeSlots", is(true)))
+            .andExpect(jsonPath("priority", is(5)))
+            .andExpect(jsonPath("baseLocations", hasSize(2)))
+            .andExpect(jsonPath("baseLocations", hasItems("Prague", "Vienna")))
+            .andExpect(jsonPath("travelWillingness", is("WITHIN_COUNTRY")))
+            .andExpect(jsonPath("deliveryFormat", hasSize(2)))
+            .andExpect(jsonPath("deliveryFormat", hasItems("ONLINE", "HYBRID")))
+            .andExpect(jsonPath("serviceType", hasSize(3)))
+            .andExpect(jsonPath("serviceType", hasItems("ONE_TO_ONE", "TEAM", "WORKSHOPS")))
+            .andExpect(jsonPath("topics", hasSize(3)))
+            .andExpect(jsonPath("topics", hasItems("LEADERSHIP", "COMMUNICATION", "EMOTIONAL_INTELLIGENCE")))
+            .andExpect(jsonPath("diagnosticTools", hasSize(2)))
+            .andExpect(jsonPath("diagnosticTools", hasItems("MBTI", "DISC")))
+            .andExpect(jsonPath("industryExperience", hasSize(2)))
+            .andExpect(jsonPath("industryExperience", hasItems("TECH", "FINANCE")))
+            .andExpect(jsonPath("references", is("Great coach with 10 years of experience")))
+            .andExpect(jsonPath("timeZone", is("UTC")))
             .andExpect(jsonPath("primaryRoles", hasItems(Coach.PrimaryRole.COACH.name(), Coach.PrimaryRole.MENTOR.name())))
 
         ;

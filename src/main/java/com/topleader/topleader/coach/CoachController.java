@@ -193,16 +193,45 @@ public class CoachController {
 
         LocalDate experienceSince,
 
-        Coach.CertificateType certificate,
+        String rate,
 
-        String timeZone,
+        Integer rateOrder,
+
+        Integer internalRate,
 
         String linkedinProfile,
 
+        boolean freeSlots,
+
+        int priority,
+
         @NotEmpty
-        Set<Coach.PrimaryRole> primaryRoles
+        Set<Coach.PrimaryRole> primaryRoles,
+
+        Set<String> certificate,
+
+        Set<String> baseLocations,
+
+        String travelWillingness,
+
+        Set<String> deliveryFormat,
+
+        Set<String> serviceType,
+
+        Set<String> topics,
+
+        Set<String> diagnosticTools,
+
+        Set<String> industryExperience,
+
+        String references,
+
+        String timeZone
     ) {
-        public static final CoachDto EMPTY = new CoachDto(false, null, null, null, null, null, Set.of(), Set.of(), null, null, null, null, Set.of(Coach.PrimaryRole.COACH));
+        public static final CoachDto EMPTY = new CoachDto(
+            false, null, null, null, null, null, Set.of(), Set.of(), null, null, null, null, null, false, 0,
+            Set.of(Coach.PrimaryRole.COACH), Set.of(), Set.of(), null, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), null, null
+        );
 
         public static CoachDto from(Coach c) {
             var user = c.getUser();
@@ -216,10 +245,23 @@ public class CoachController {
                     c.getLanguages(),
                     c.getFields(),
                     c.getExperienceSince(),
-                    c.getCertificate(),
-                    user.getTimeZone(),
+                    c.getRate(),
+                    c.getRateOrder(),
+                    c.getInternalRate(),
                     c.getLinkedinProfile(),
-                    c.getPrimaryRoles()
+                    c.isFreeSlots(),
+                    c.getPriority(),
+                    c.getPrimaryRoles(),
+                    c.getCertificate(),
+                    c.getBaseLocations(),
+                    c.getTravelWillingness(),
+                    c.getDeliveryFormat(),
+                    c.getServiceType(),
+                    c.getTopics(),
+                    c.getDiagnosticTools(),
+                    c.getIndustryExperience(),
+                    c.getReferences(),
+                    user.getTimeZone()
             );
         }
 
@@ -232,9 +274,22 @@ public class CoachController {
                     .setLanguages(languages)
                     .setFields(fields)
                     .setExperienceSince(experienceSince)
+                    .setRate(rate)
+                    .setRateOrder(rateOrder)
+                    .setInternalRate(internalRate)
                     .setLinkedinProfile(linkedinProfile)
-                    .setCertificate(certificate)
+                    .setFreeSlots(freeSlots)
+                    .setPriority(priority)
                     .setPrimaryRoles(primaryRoles)
+                    .setCertificate(certificate)
+                    .setBaseLocations(baseLocations)
+                    .setTravelWillingness(travelWillingness)
+                    .setDeliveryFormat(deliveryFormat)
+                    .setServiceType(serviceType)
+                    .setTopics(topics)
+                    .setDiagnosticTools(diagnosticTools)
+                    .setIndustryExperience(industryExperience)
+                    .setReferences(references)
                     .setUser(updateUser(coach.getUser()));
         }
 

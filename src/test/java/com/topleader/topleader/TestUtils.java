@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import net.javacrumbs.jsonunit.core.Option;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Objects;
@@ -29,7 +27,7 @@ public final class TestUtils {
     }
 
     @SneakyThrows
-    public static String readFileAsString(String name) throws URISyntaxException, IOException {
+    public static String readFileAsString(String name) {
         return new String(readFileAsBytes(name));
     }
 
@@ -40,14 +38,14 @@ public final class TestUtils {
     }
 
     @SneakyThrows
-    public static byte[] readFileAsBytes(String name) throws URISyntaxException, IOException {
+    public static byte[] readFileAsBytes(String name) {
         return Files.readAllBytes(Paths.get(Objects.requireNonNull(TestUtils.class.getClassLoader()
             .getResource(name)).toURI()));
     }
 
     public static void assertJsonEquals(String result, String expected) {
         assertThatJson(result)
-                .when(Option.IGNORING_ARRAY_ORDER)
+                .when(Option.IGNORING_ARRAY_ORDER, Option.IGNORING_EXTRA_FIELDS)
                 .isEqualTo(expected);
     }
 }

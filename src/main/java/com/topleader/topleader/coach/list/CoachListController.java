@@ -268,7 +268,7 @@ public class CoachListController {
 
         String rate,
 
-        Coach.CertificateType certificate,
+        Set<Coach.CertificateType> certificate,
 
         String timeZone,
 

@@ -10,21 +10,31 @@ import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeRepository;
+import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
+import com.topleader.topleader.util.common.JsonUtils;
 import org.assertj.core.api.Assertions;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+
+import java.time.Duration;
+import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -55,15 +65,15 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     ChatModel chatModel;
 
     @Autowired
+    ChatClient chatClient;
+
+    @Autowired
     ArticleRepository articleRepository;
 
 
     @Test
     @WithMockUser("user2")
     void setUserSessionReflectionData() throws Exception {
-        var actionGoal = "test {0} test {1} test {2} test {4} test {5} test {6}";
-        Mockito.when(chatModel.call(actionGoal)).thenReturn("action-goal-response");
-        
         // Mock AI client response for user articles generation
         var expectedArticlesJson = """
                 [
@@ -99,6 +109,9 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
         Mockito.when(chatModel.call(Mockito.anyString()))
                 .thenReturn("action-goal-response")
                 .thenReturn(expectedArticlesJson);
+
+        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().entity(new ParameterizedTypeReference<List<UserArticle>>() {}))
+                .thenReturn(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<>() {}));
 
         mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article1"))
                 .willReturn(WireMock.aResponse()
@@ -154,14 +167,26 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
         Assertions.assertThat(userInfoRepository.findById("user2").orElseThrow().getLastReflection()).isEqualTo("you can do it!");
 
-        Thread.sleep(100);
-        Assertions.assertThat(userInsightRepository.findAll())
-                .extracting("personalGrowthTip")
-                .contains("action-goal-response");
+
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(3))
+                .pollInterval(Duration.ofMillis(100))
+                .untilAsserted(() -> {
+                    Assertions.assertThat(userInsightRepository.findAll())
+                            .extracting("personalGrowthTip")
+                            .contains("action-goal-response");
+                });
+
+
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(5))
+                .pollInterval(Duration.ofMillis(500))
+                .untilAsserted(() -> {
+                    var articles = articleRepository.findByUsername("user2");
+                    Assertions.assertThat(articles).hasSize(2);
+                });
 
         var articles = articleRepository.findByUsername("user2");
-
-        Assertions.assertThat(articles).hasSize(2);
         Assertions.assertThat(articles)
                 .extracting("content.title")
                 .contains("Effective Leadership Communication", "Building Team Motivation");

@@ -82,7 +82,7 @@ class AdminViewControllerIT extends IntegrationTest {
     void testCreateUser() throws Exception {
         final var createUserRequestDto = new AdminViewController.CreateUserRequestDto(
             "NewUser@gmail.com", "John", "Doe", "UTC", 1L,
-            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "en", "$", 165, Coach.CertificateType.ACC
+            true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "en", "$", 165, Set.of("ACC")
         );
 
         mvc.perform(post("/api/latest/admin/users")
@@ -102,7 +102,7 @@ class AdminViewControllerIT extends IntegrationTest {
         var coach = coachRepository.findById("newuser@gmail.com").orElseThrow();
         assertThat(coach.getRate()).isEqualTo("$");
         assertThat(coach.getInternalRate()).isEqualTo(165);
-        assertThat(coach.getCertificate()).isEqualTo(Coach.CertificateType.ACC);
+        assertThat(coach.getCertificate()).isEqualTo(Set.of("ACC"));
 
     }
 
@@ -112,7 +112,7 @@ class AdminViewControllerIT extends IntegrationTest {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", 2L,
             true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, "updatedCoach", 150, "updatedCoach", "en",
-            Set.of("$$"), null, null, Coach.CertificateType.ACC
+            Set.of("$$"), null, null, Set.of("ACC")
         );
         mvc.perform(post("/api/latest/admin/users/user4")
                 .contentType("application/json")
@@ -174,7 +174,7 @@ class AdminViewControllerIT extends IntegrationTest {
         final var updatedUser = new AdminViewController.UpdateUserRequestDto(
             "John", "UpdatedDoe", "PST", null,
             true, Set.of(User.Authority.USER, User.Authority.ADMIN), User.Status.AUTHORIZED, null, 150, null, "en",
-            null, null, null, Coach.CertificateType.ACC
+            null, null, null, Set.of("ACC")
         );
         mvc.perform(post("/api/latest/admin/users/user1")
                 .contentType("application/json")

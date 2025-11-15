@@ -5,6 +5,8 @@ spring:
     gcp:
       sql:
         database-name: top_leader
+      logging:
+        enabled: true
   docker:
     compose:
       enabled: false

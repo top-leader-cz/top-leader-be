@@ -13,11 +13,11 @@ values ('user3', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO',
 insert into users (username, password, status, authorities, first_name, last_name)
 values ('coach3', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'coach3FirstName', 'coach3lastName');
 
-insert into coach (username, bio,  experience_since, web_link, public_profile, rate, certificate, primary_roles)
-values ('coach', 'some bio', '2023-08-06', 'http://some_video1', true, '$', 'ACC', '["COACH"]');
+insert into coach (username, bio,  experience_since, web_link, public_profile, rate, certificate, primary_roles, linkedin_profile, free_slots, priority, base_locations, travel_willingness, delivery_format, service_type, topics, diagnostic_tools, industry_experience, user_references)
+values ('coach', 'some bio', '2023-08-06', 'http://some_video1', true, '$', '["ACC"]', '["COACH"]', 'http://linkedin.com/coach', true, 10, '["Prague", "Brno"]', 'WITHIN_COUNTRY', '["ONLINE", "HYBRID"]', '["ONE_TO_ONE", "TEAM"]', '["LEADERSHIP", "COMMUNICATION"]', '["MBTI", "DISC"]', '["TECH", "FINANCE"]', 'Experienced coach');
 
-insert into coach (username, bio, experience_since, web_link, rate, certificate)
-values ('coach3', 'some bio',  '2023-08-06', 'http://some_video1',  '$', 'ACC');
+insert into coach (username, bio, experience_since, web_link, rate, certificate, primary_roles)
+values ('coach3', 'some bio',  '2023-08-06', 'http://some_video1',  '$', '["ACC"]', '["COACH"]');
 
 insert into coach_fields (coach_username, fields) values ('coach', 'field1');
 insert into coach_fields (coach_username, fields) values ('coach', 'field2');

@@ -69,15 +69,54 @@ public class Coach {
     @JoinColumn(name = "username", referencedColumnName = "username")
     private User user;
 
-    @Convert(converter = CertificateTypeConverter.class)
-    private CertificateType certificate;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<String> certificate;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<String> baseLocations;
+
+    @Column(length = 255)
+    private String travelWillingness;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<String> deliveryFormat;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<String> serviceType;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<String> topics;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<String> diagnosticTools;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<String> industryExperience;
+
+    @Column(name = "user_references")
+    private String references;
 
     public enum CertificateType {
         ACC,
         PCC,
-        MCC
+        MCC,
+        MBTI,
+        GALLUP_STRENGTHSFINDER,
+        DISC,
+        HOGAN,
+        LPI,
+        FEEDBACK_360,
+        SHL,
+        INSIGHTS_DISCOVERY,
+        OTHER
     }
-
 
     public enum PrimaryRole {
         COACH,
@@ -86,6 +125,111 @@ public class Coach {
         FACILITATOR,
         CONSULTANT,
         SPEAKER
+    }
+
+    public enum TravelWillingness {
+        NO,
+        WITHIN_CITY,
+        WITHIN_COUNTRY,
+        WITHIN_REGION,
+        WITHIN_EUROPE,
+        GLOBALLY,
+        OTHER
+    }
+
+    public enum DeliveryFormat {
+        ONLINE,
+        ONSITE,
+        HYBRID,
+        OTHER
+    }
+
+    public enum ServiceType {
+        ONE_TO_ONE,
+        EXECUTIVE,
+        TEAM,
+        CAREER,
+        GROUP,
+        PEER_MENTORING,
+        WORKSHOPS,
+        LONGER_PROGRAMS,
+        OTHER
+    }
+
+    public enum Topic {
+        AI_ADOPTION_FOR_LEADERS,
+        AI_GOVERNANCE_AND_ETHICS,
+        BUSINESS,
+        CAREER,
+        CHANGE,
+        COACHING_SKILLS_FOR_MANAGERS,
+        COMMUNICATION,
+        CONFIDENCE,
+        CONFLICT,
+        CROSS_CULTURAL_LEADERSHIP,
+        CULTURAL_DIFFERENCES,
+        DECISION_MAKING,
+        DELEGATION,
+        DIVERSITY,
+        EMOTIONAL_INTELLIGENCE,
+        ENTREPRENEURSHIP,
+        EXECUTIVE,
+        FACILITATION,
+        FEEDBACK_CULTURE,
+        FITNESS,
+        HEALTH,
+        IMPOSTER_SYNDROME,
+        INFLUENCING_SKILLS,
+        INNOVATION_AND_CREATIVITY,
+        LEADERSHIP,
+        LEADING_WITHOUT_AUTHORITY,
+        LIFE,
+        MANAGEMENT,
+        MENTAL_FITNESS,
+        MENTORSHIP,
+        NEGOTIATIONS,
+        ORGANIZATIONAL_DEVELOPMENT,
+        PERFORMANCE,
+        PSYCHOLOGICAL_SAFETY,
+        RELATIONSHIPS,
+        REMOTE_LEADERSHIP,
+        RESILIENCE,
+        SALES,
+        SELF_CRITICISM,
+        SELF_LEADERSHIP,
+        STRATEGIC_THINKING,
+        STRESS_MANAGEMENT,
+        TEAMS,
+        TIME_MANAGEMENT,
+        TRANSFORMATIONS,
+        WELLBEING,
+        WOMEN,
+        OTHER
+    }
+
+    public enum DiagnosticTool {
+        MBTI,
+        GALLUP_STRENGTHSFINDER,
+        DISC,
+        HOGAN,
+        LPI,
+        FEEDBACK_360,
+        SHL,
+        INSIGHTS_DISCOVERY,
+        OTHER
+    }
+
+    public enum IndustryExperience {
+        TECH,
+        FINANCE,
+        PHARMA,
+        RETAIL,
+        MANUFACTURING,
+        LOGISTICS,
+        TELECOMMUNICATIONS,
+        PUBLIC_SECTOR,
+        GENERAL_CROSS_INDUSTRY,
+        OTHER
     }
 
     public String getUserEmail() {

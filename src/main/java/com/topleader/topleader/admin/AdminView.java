@@ -77,8 +77,9 @@ public class AdminView {
 
     private String rate;
 
-    @Enumerated(EnumType.STRING)
-    private Coach.CertificateType certificate;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<String> certificate;
 
     private Integer internalRate;
 

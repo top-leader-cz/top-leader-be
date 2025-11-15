@@ -158,7 +158,7 @@ public class AdminViewController {
         Set<String> allowedCoachRates,
         String rate,
         Integer internalRate,
-        Coach.CertificateType certificate
+        Set<String> certificate
     ) {
         public User updateUser(User user) {
             Optional.ofNullable(firstName).ifPresent(user::setFirstName);
@@ -208,7 +208,7 @@ public class AdminViewController {
             String locale,
             String rate,
             Integer internalRate,
-            Coach.CertificateType certificate
+            Set<String> certificate
             ) {
         public User toUser(String requestedBy) {
             return new User()

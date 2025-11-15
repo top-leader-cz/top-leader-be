@@ -7,8 +7,6 @@ import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
@@ -16,7 +14,7 @@ import java.time.LocalTime;
 class AvailabilityUtilsTest {
 
     @Test
-    public void test() throws URISyntaxException, IOException {
+    public void test() {
         var data = TestUtils.readFileAsJson("availability/calendly-availability.json");
         Assertions.assertThat(AvailabilityUtils.toReoccurringEvent(data)).
                 containsExactly(new ReoccurringEventDto(

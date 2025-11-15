@@ -55,7 +55,7 @@
       "locale": "en",
       "allowedCoachRates": null,
       "rate": "$$$",
-      "certificate": "MCC",
+      "certificate": ["MCC", "CUSTOM"],
       "internalRate": 275,
       "primaryRoles": [
         "COACH",

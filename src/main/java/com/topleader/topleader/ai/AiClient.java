@@ -3,12 +3,15 @@ package com.topleader.topleader.ai;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.session.domain.UserArticle;
+import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.util.common.user.UserUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
@@ -123,15 +126,18 @@ public class AiClient {
             maxAttempts = 2,
             backoff = @Backoff(delay = 1000, multiplier = 2)
     )
-    public String generateUserArticles(String username, List<String> actionGoals, String language) {
+    public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
         log.info("AI api call for user articles. User:[{}], short term goals: {} ", username, actionGoals);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
-        var query = String.format(prompt, actionGoals, language);
-        log.info("AI articles query: {}", query);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.USER_ARTICLES,
+                Map.of("actionGoals", String.join(", ", actionGoals),
+                        "language", language));
+        log.info("AI articles query: {}", prompt.getContents());
 
-        var res = chatModel.call(query);
+        var res = chatClient.prompt(prompt)
+                .call()
+                .entity(new ParameterizedTypeReference<List<UserArticle>>() {});
         log.info("AI user articles response: {}  User:[{}]", res, username);
-        return AiUtils.replaceNonJsonString(res);
+        return res;
     }
 
     @Retryable(

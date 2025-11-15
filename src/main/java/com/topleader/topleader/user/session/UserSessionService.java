@@ -223,11 +223,7 @@ public class UserSessionService {
 
     public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
         var user = userDetailService.find(username);
-        return Try.of(() -> {
-                    var res = aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()));
-                    return objectMapper.readValue(res, new TypeReference<List<UserArticle>>() {
-                    });
-                })
+        return Try.of(() -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()))                    )
                 .onFailure(e -> log.error("Failed to generate user articles for user: [{}] ", username, e))
                 .getOrElse(List.of())
                 .stream()

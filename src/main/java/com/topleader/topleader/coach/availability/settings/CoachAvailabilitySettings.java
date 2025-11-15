@@ -1,7 +1,6 @@
 package com.topleader.topleader.coach.availability.settings;
 
 import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
-import groovyjarjarantlr4.v4.codegen.model.Sync;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;

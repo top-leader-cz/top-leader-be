@@ -6,8 +6,11 @@ import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.ai.AiPrompt;
 import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.user.session.UserSessionService;
+import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
+import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
+import com.topleader.topleader.util.common.JsonUtils;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Disabled;
@@ -19,6 +22,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -173,11 +177,8 @@ class UserInsightControllerIT extends IntegrationTest {
                 ]
                 """);
 
-        // Mock ChatClient with deep stubs - when().thenReturn() works with RETURNS_DEEP_STUBS
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().content())
-                .thenReturn("suggestion response");
 
-        Mockito.when(chatModel.call("article [query]")).thenReturn("""
+        var articlesJson = """
                   [
                   {
                     "url": "https://example.com/articles/leadership-principles",
@@ -196,9 +197,16 @@ class UserInsightControllerIT extends IntegrationTest {
                     "date": "2025-11-01"
                   }
                   ]
-                
-                
-                """);
+                """;
+
+        // Mock the intermediate response spec so both content() and entity() work
+        var mockResponseSpec = Mockito.mock(ChatClient.CallResponseSpec.class);
+        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call()).thenReturn(mockResponseSpec);
+        Mockito.when(mockResponseSpec.content()).thenReturn("suggestion response");
+        Mockito.when(mockResponseSpec.entity(ArgumentMatchers.any(ParameterizedTypeReference.class)))
+                .thenReturn(JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {
+                }));
+
 
         mvc.perform(post("/api/latest/user-insight/dashboard").contentType(MediaType.APPLICATION_JSON).content("""
                 {
@@ -208,9 +216,16 @@ class UserInsightControllerIT extends IntegrationTest {
 
 
         await().atMost(3, TimeUnit.SECONDS)
+                .pollInterval(1, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
                     var userInsight = userInsightRepository.findById("user").orElseThrow();
-                    TestUtils.assertJsonEquals(userInsight.getUserPreviews(), "[{\"title\":\"Test Preview\",\"url\":\"https://youtube.com/watch?v=test\",\"length\":null,\"thumbnail\":\"http://localhost:8060/hqdefault\"}]");
+                    TestUtils.assertJsonEquals(userInsight.getUserPreviews(), """
+                                                        [ {
+                              "title" : "Test Preview",
+                              "url" : "https://youtube.com/watch?v=test",
+                              "thumbnail" : "http://localhost:8060/hqdefault"
+                            } ]
+                            """);
                     assertThat(userInsight.isActionGoalsPending()).isFalse();
 
                     var articles = articleRepository.findByUsername("user");

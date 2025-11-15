@@ -13,6 +13,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 
 /**
@@ -62,10 +64,13 @@ public class CoachListView {
     @Column(length = 1000)
     private String linkedinProfile;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private Set<Coach.PrimaryRole> primaryRoles;
 
-    @Enumerated(EnumType.STRING)
-    private Coach.CertificateType certificate;
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
+    private Set<Coach.CertificateType> certificate;
 
     private int priority;
 

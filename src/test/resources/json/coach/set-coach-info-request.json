@@ -15,8 +15,20 @@
   ],
   "experienceSince": "2023-08-06",
   "rate": "$",
-  "timeZone": "UTC",
+  "rateOrder": null,
+  "internalRate": null,
   "linkedinProfile": "http://linkedin.com",
-  "certificate": "ACC",
-  "primaryRoles": ["COACH", "MENTOR"]
+  "freeSlots": true,
+  "priority": 5,
+  "primaryRoles": ["COACH", "MENTOR"],
+  "certificate": ["ACC", "PCC"],
+  "baseLocations": ["Prague", "Vienna"],
+  "travelWillingness": "WITHIN_COUNTRY",
+  "deliveryFormat": ["ONLINE", "HYBRID"],
+  "serviceType": ["ONE_TO_ONE", "TEAM", "WORKSHOPS"],
+  "topics": ["LEADERSHIP", "COMMUNICATION", "EMOTIONAL_INTELLIGENCE"],
+  "diagnosticTools": ["MBTI", "DISC"],
+  "industryExperience": ["TECH", "FINANCE"],
+  "references": "Great coach with 10 years of experience",
+  "timeZone": "UTC"
 }
