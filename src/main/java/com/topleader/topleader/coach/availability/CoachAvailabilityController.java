@@ -93,39 +93,26 @@ public class CoachAvailabilityController {
 
     @Secured("COACH")
     @GetMapping("/recurring")
-    public List<ReoccurringEventDto> getRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user, @RequestParam(required = false) String uuid) {
+    public List<ReoccurringEventDto> getRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user) {
         final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
 
-        if(uuid != null) {
-            return calendlyService.getEventAvailability(user.getUsername(), uuid);
-        }
-
-        var setting = availabilitySettingRepository.findByActive(user.getUsername())
-                .map(s -> new ReoccurringAvailabilityDto(s.getResource(), s.getType(), s.isActive()))
-                .orElse(ReoccurringAvailabilityDto.empty());
-
-        if(setting.isActive()) {
-            return coachAvailabilityService.getReoccurring(user.getUsername()).stream()
-                    .map(e ->
-                    {
-                        final var userTimeFrom = LocalDateTime.of(
-                                LocalDate.now().with(TemporalAdjusters.next(e.getDayFrom())),
-                                e.getTimeFrom()
-                        ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
-                        final var userTimeTo = LocalDateTime.of(
-                                LocalDate.now().with(TemporalAdjusters.next(e.getDayTo())),
-                                e.getTimeTo()
-                        ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
-                        return new ReoccurringEventDto(
-                                new ReoccurringEventTimeDto(userTimeFrom.getDayOfWeek(), userTimeFrom.toLocalTime()),
-                                new ReoccurringEventTimeDto(userTimeTo.getDayOfWeek(), userTimeTo.toLocalTime())
-                        );
-                    })
-                    .toList();
-        }
-
-        return List.of();
-
+        return coachAvailabilityService.getReoccurring(user.getUsername()).stream()
+                .map(e ->
+                {
+                    final var userTimeFrom = LocalDateTime.of(
+                            LocalDate.now().with(TemporalAdjusters.next(e.getDayFrom())),
+                            e.getTimeFrom()
+                    ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
+                    final var userTimeTo = LocalDateTime.of(
+                            LocalDate.now().with(TemporalAdjusters.next(e.getDayTo())),
+                            e.getTimeTo()
+                    ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
+                    return new ReoccurringEventDto(
+                            new ReoccurringEventTimeDto(userTimeFrom.getDayOfWeek(), userTimeFrom.toLocalTime()),
+                            new ReoccurringEventTimeDto(userTimeTo.getDayOfWeek(), userTimeTo.toLocalTime())
+                    );
+                })
+                .toList();
     }
 
     @Secured("COACH")
