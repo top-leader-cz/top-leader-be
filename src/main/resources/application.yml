@@ -16,8 +16,8 @@ spring:
       enabled: true
   ai:
     openai:
-      api-key: dummy-api-keystop
-      chat:
+      api-key: dummy-api-keys
+      chat :
         options:
           model: gpt-3.5-turbo
   datasource:
