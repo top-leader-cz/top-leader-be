@@ -70,7 +70,7 @@ public class CoachListView {
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(columnDefinition = "jsonb")
-    private Set<Coach.CertificateType> certificate;
+    private Set<String> certificate;
 
     private int priority;
 
