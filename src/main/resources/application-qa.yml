@@ -29,8 +29,6 @@ top-leader:
   feedback:
     summary-limit: 1
   calendly:
-    client-id: PJ2FbDI-YAyzEJya2H4RqHv_Sv0F-Hl0d-i93FkAuH8
-    client-secrets: svzREsGYP5AHGC8J1PnpaLkWOcJ-bJCQIBuOusdPFbU
     redirect-uri: https://qa.topleaderplatform.io/login/calendly
 
 google:

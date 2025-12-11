@@ -16,8 +16,8 @@ spring:
       enabled: true
   ai:
     openai:
-      api-key: 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
-      chat:
+      api-key: dummy-api-keys
+      chat :
         options:
           model: gpt-3.5-turbo
   datasource:
@@ -84,8 +84,8 @@ top-leader:
   feedback:
     summary-limit: 1
   calendly:
-    client-id: N-KXDNA47C_aFv-ulHf4BFsrh7tOAzDSAcRtKuMDDXI
-    client-secrets: 2QRDTi20NWWABNZLs41bi8pPF1R74BBNqOmLCS4CFrs
+    client-id: client-id
+    client-secrets: client-secrets
     redirect-uri: http://localhost:8080/login/calendly
     base-api-url: https://api.calendly.com
     base-auth-url: https://auth.calendly.com
@@ -93,8 +93,8 @@ top-leader:
 google:
   application-name: "qa.topleaderplatform.io"
   client:
-    client-id: 572595541175-n58eajajt5iqc5rsn25rv2mt8iejojsi.apps.googleusercontent.com
-    client-secret: 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
+    client-id: client-id
+    client-secret:  client-id
     access-token-uri: https://www.googleapis.com/oauth2/v3/token
     user-authorization-uri: https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent
     client-authentication-scheme: query
