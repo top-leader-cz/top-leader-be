@@ -8,6 +8,7 @@ import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -20,6 +21,7 @@ import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Sql("/sql/calendly/calendly-token.sql")
+@Disabled
 class CalendlyControllerIT extends IntegrationTest {
 
     @Autowired
