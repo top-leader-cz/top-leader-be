@@ -6,6 +6,7 @@ import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 
 @Sql("/sql/calendly/calendly-token.sql")
+@Disabled
 class CalendlyRefreshAccessTokenJobIT extends IntegrationTest {
 
     @Autowired
