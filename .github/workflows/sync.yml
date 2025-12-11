@@ -1,0 +1,41 @@
+name: Sync fork with upstream
+
+on:
+  schedule:
+    - cron: "0 3 * * *"   # každý den v 03:00 UTC
+  workflow_dispatch:        # abys to mohl spustit i ručně
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/top-leader-cz/top-leader-be.git
+
+      - name: Fetch upstream
+        run: git fetch upstream
+
+      - name: Configure Git author
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge upstream/main into main
+        run: |
+          git checkout main
+          git merge upstream/main --no-edit || {
+            echo "Merge failed – resolve conflicts manually.";
+            exit 1;
+          }
+
+      - name: Push changes back to fork
+        run: git push origin main
