@@ -1,16 +1,15 @@
 package com.topleader.topleader.user.session.feedback;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import lombok.SneakyThrows;
 
 import java.util.Map;
 
+import static com.topleader.topleader.util.common.JsonUtils.MAPPER;
+
 public class SessionFeedbackAnswerConverter implements AttributeConverter<Map<String, Integer>, String> {
 
-    private static final ObjectMapper OB = new ObjectMapper();
 
     @Override
     @SneakyThrows
@@ -19,7 +18,7 @@ public class SessionFeedbackAnswerConverter implements AttributeConverter<Map<St
             return null;
         }
 
-        return OB.writeValueAsString(data);
+        return MAPPER.writeValueAsString(data);
     }
 
     @Override
@@ -29,7 +28,7 @@ public class SessionFeedbackAnswerConverter implements AttributeConverter<Map<St
             return Map.of();
         }
 
-        return OB.readValue(dbData, new TypeReference<>() {
+        return MAPPER.readValue(dbData, new TypeReference<>() {
         });
     }
 }

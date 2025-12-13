@@ -4,12 +4,11 @@
 package com.topleader.topleader.history;
 
 import com.topleader.topleader.history.data.StoredData;
-import com.topleader.topleader.util.ObjectMapperUtils;
+import com.topleader.topleader.util.common.JsonUtils;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.util.Optional;
 
-import static com.topleader.topleader.util.ObjectMapperUtils.fromJsonString;
 
 
 /**
@@ -21,14 +20,14 @@ public class HistoryDataConverter implements AttributeConverter<StoredData, Stri
     @Override
     public String convertToDatabaseColumn(StoredData data) {
         return Optional.ofNullable(data)
-            .map(ObjectMapperUtils::toJsonString)
+            .map(JsonUtils::toJsonString)
             .orElse(null);
     }
 
     @Override
     public StoredData convertToEntityAttribute(String dbData) {
         return Optional.ofNullable(dbData)
-            .map(d -> fromJsonString(d, StoredData.class))
+            .map(d -> JsonUtils.fromJsonString(d, StoredData.class))
             .orElse(null);
     }
 }

@@ -4,13 +4,12 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
+import io.github.resilience4j.retry.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -31,6 +30,8 @@ public class ArticleImageService {
 
     private final Storage storage;
 
+    private final Retry retry;
+
     @Value("${spring.ai.openai.api-key}")
     private String openaiApiKey;
 
@@ -40,19 +41,15 @@ public class ArticleImageService {
     @Value("${gcp.storage.bucket-name}")
     private String bucketName;
 
-
-    @Retryable(
-            value = { Exception.class },
-            maxAttempts = 2,
-            backoff = @Backoff(delay = 1000, multiplier = 2)
-    )
     public String generateImage(String imagePrompt) {
         try {
-            var response = generate(imagePrompt);
-            var imageUrl = extractImageUrl(response);
-            var revisedPrompt = extractRevisedPrompt(response);
-            var image = downloadImage(imageUrl);
-            return storeImageInGcp(image, imagePrompt, revisedPrompt);
+           return retry.executeSupplier(() -> {
+                var response = generate(imagePrompt);
+                var imageUrl = extractImageUrl(response);
+                var revisedPrompt = extractRevisedPrompt(response);
+                var image = downloadImage(imageUrl);
+                return storeImageInGcp(image, imagePrompt, revisedPrompt);
+            });
 
         } catch (Exception e) {
             log.error("Failed to generate or store image for prompt: {}", imagePrompt, e);

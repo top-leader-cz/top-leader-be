@@ -3,11 +3,9 @@
  */
 package com.topleader.topleader.admin;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
-import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
@@ -20,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+import tools.jackson.databind.json.JsonMapper;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -39,13 +38,14 @@ class AdminViewControllerIT extends IntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private JsonMapper jsonMapper;
 
     @Autowired
     private CoachRepository coachRepository;
 
     @Autowired
     ArticleImageService articleImageService;
+
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
     void listUser() throws Exception {
@@ -87,7 +87,7 @@ class AdminViewControllerIT extends IntegrationTest {
 
         mvc.perform(post("/api/latest/admin/users")
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(createUserRequestDto)))
+                .content(jsonMapper.writeValueAsString(createUserRequestDto)))
             .andExpect(status().isOk());
 
         final var fetchedUser = userRepository.findById("newuser@gmail.com").orElseThrow();
@@ -116,7 +116,7 @@ class AdminViewControllerIT extends IntegrationTest {
         );
         mvc.perform(post("/api/latest/admin/users/user4")
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(updatedUser)))
+                .content(jsonMapper.writeValueAsString(updatedUser)))
             .andExpect(status().isOk());
 
         final var fetchedUser = userRepository.findById("user4").orElseThrow();
@@ -152,7 +152,7 @@ class AdminViewControllerIT extends IntegrationTest {
 
         mvc.perform(post("/api/latest/admin/users/user4/resent-invitation")
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(new AdminViewController.ResentInvitationRequestDto("en"))))
+                .content(jsonMapper.writeValueAsString(new AdminViewController.ResentInvitationRequestDto("en"))))
             .andExpect(status().isOk());
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
@@ -178,7 +178,7 @@ class AdminViewControllerIT extends IntegrationTest {
         );
         mvc.perform(post("/api/latest/admin/users/user1")
                 .contentType("application/json")
-                .content(objectMapper.writeValueAsString(updatedUser)))
+                .content(jsonMapper.writeValueAsString(updatedUser)))
             .andExpect(status().isOk());
 
         final var fetchedUser = userRepository.findById("user1").orElseThrow();

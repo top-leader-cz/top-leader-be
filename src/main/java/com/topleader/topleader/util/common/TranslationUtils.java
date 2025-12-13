@@ -1,7 +1,6 @@
 package com.topleader.topleader.util.common;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.topleader.topleader.util.ObjectMapperUtils;
 import lombok.experimental.UtilityClass;
 
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.stream.Collectors;
 public class TranslationUtils {
 
     public Map<String, String> getTranslation() {
-        var translations =  ObjectMapperUtils.fromJsonString(
+        var translations =  JsonUtils.fromJsonString(
                 FileUtils.loadFileAsString("translation/questions-translation.json"),
                 new  TypeReference<List<Translation>>() {});
         return translations.stream()

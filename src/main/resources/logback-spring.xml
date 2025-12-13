@@ -33,7 +33,7 @@
         </root>
     </springProfile>
 
-    <springProfile name="default">
+    <springProfile name="default | test">
         <root level="INFO">
             <appender-ref ref="CONSOLE"/>
         </root>

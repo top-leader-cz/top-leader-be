@@ -12,7 +12,7 @@ import com.topleader.topleader.credit.history.CreditHistoryRepository;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.util.ObjectMapperUtils;
+import com.topleader.topleader.util.common.JsonUtils;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -102,7 +102,7 @@ public class CreditService {
                 .setUsername(user.getUsername())
                 .setType(CreditHistory.Type.SCHEDULED)
                 .setCredit(coachRate)
-                .setContext(ObjectMapperUtils.toJsonString(session))
+                .setContext(JsonUtils.toJsonString(session))
         );
     }
 
@@ -130,7 +130,7 @@ public class CreditService {
                     .setUsername(user.getUsername())
                     .setType(CreditHistory.Type.CANCELED)
                     .setCredit(coachRate)
-                    .setContext(ObjectMapperUtils.toJsonString(session))
+                    .setContext(JsonUtils.toJsonString(session))
         );
     }
 
@@ -172,13 +172,13 @@ public class CreditService {
                     .setUsername(user.getUsername())
                     .setType(CreditHistory.Type.PAID)
                     .setCredit(coachRate)
-                    .setContext(ObjectMapperUtils.toJsonString(session)),
+                    .setContext(JsonUtils.toJsonString(session)),
                 new CreditHistory()
                     .setTime(now)
                     .setUsername(coach.getUsername())
                     .setType(CreditHistory.Type.RECEIVED)
                     .setCredit(coachData.map(Coach::getInternalRate).orElse(1))
-                    .setContext(ObjectMapperUtils.toJsonString(session))
+                    .setContext(JsonUtils.toJsonString(session))
             )
         );
     }

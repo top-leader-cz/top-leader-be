@@ -1,6 +1,6 @@
 package com.topleader.topleader.calendar.calendly;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.topleader.topleader.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.calendar.CalendarToErrorHandler;
 import com.topleader.topleader.calendar.calendly.domain.EventType;
@@ -108,7 +108,7 @@ public class CalendlyService {
 
                         var events = new ArrayList<SyncEvent>();
                         response.get("collection").forEach(node ->
-                                events.add(new SyncEvent(username, fromCalendlyFormat(node.get("start_time").asText()), fromCalendlyFormat(node.get("end_time").asText())))
+                                events.add(new SyncEvent(username, fromCalendlyFormat(node.get("start_time").textValue()), fromCalendlyFormat(node.get("end_time").textValue())))
                         );
 
                         return events;
@@ -133,11 +133,11 @@ public class CalendlyService {
 
                         var events = new ArrayList<EventType>();
                         response.get("collection").forEach(node -> {
-                                    if (node.get("active").asBoolean()) {
-                                        var uri = node.get("uri").asText();
+                                    if (node.get("active").booleanValue()) {
+                                        var uri = node.get("uri").textValue();
                                         var scheduleUuid = uri.replace(EVENT_URI_REPLACEMENT, StringUtils.EMPTY);
                                         var active = availabilitySettingRepository.isActive(username, CalendarSyncInfo.SyncType.CALENDLY, scheduleUuid);
-                                        events.add(new EventType(node.get("name").asText(), scheduleUuid, Boolean.TRUE.equals(active)));
+                                        events.add(new EventType(node.get("name").textValue(), scheduleUuid, Boolean.TRUE.equals(active)));
                                     }
                                 }
                         );

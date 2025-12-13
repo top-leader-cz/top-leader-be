@@ -1,38 +1,36 @@
 package com.topleader.topleader.ai;
 
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.session.domain.UserArticle;
-import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.util.common.user.UserUtils;
+import io.github.resilience4j.retry.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+
+import static com.topleader.topleader.util.common.JsonUtils.MAPPER;
 
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class AiClient {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private final ChatModel chatModel;
 
     private final ChatClient chatClient;
 
     private final AiPromptService aiPromptService;
+
+    private final Retry retry;
 
     public String findLeaderShipStyle(String locale, List<String> strengths, List<String> values) {
         log.info("Finding leadership style for strengths: {} and values: {} locale: {}", strengths, values, locale);
@@ -92,19 +90,13 @@ public class AiClient {
         return AiUtils.replaceNonJsonString(res);
     }
 
-    @Retryable(
-            value = {Exception.class},
-            maxAttempts = 2,
-            backoff = @Backoff(delay = 1000, multiplier = 2)
-    )
-
     public String generateUserPreviews(String username, List<String> actionsSteps) {
         log.info("AI api call for user previews. User:[{}], short term goals: {} ", username, actionsSteps);
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_PREVIEWS);
         var query = String.format(prompt, actionsSteps);
         log.info("AI query: {}", query);
 
-        var res = chatModel.call(query);
+        var res = retry.executeSupplier(() -> chatModel.call(query));
         log.info("AI user preview response: {}  User:[{}]", res, username);
         return AiUtils.replaceNonJsonString(res);
     }
@@ -121,11 +113,6 @@ public class AiClient {
         return AiUtils.replaceNonJsonString(res);
     }
 
-    @Retryable(
-            value = {Exception.class},
-            maxAttempts = 2,
-            backoff = @Backoff(delay = 1000, multiplier = 2)
-    )
     public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
         log.info("AI api call for user articles. User:[{}], short term goals: {} ", username, actionGoals);
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.USER_ARTICLES,
@@ -133,18 +120,13 @@ public class AiClient {
                         "language", language));
         log.info("AI articles query: {}", prompt.getContents());
 
-        var res = chatClient.prompt(prompt)
+        var res = retry.executeSupplier(() -> chatClient.prompt(prompt)
                 .call()
-                .entity(new ParameterizedTypeReference<List<UserArticle>>() {});
+                .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
         log.info("AI user articles response: {}  User:[{}]", res, username);
         return res;
     }
 
-    @Retryable(
-            value = {Exception.class},
-            maxAttempts = 2,
-            backoff = @Backoff(delay = 1000, multiplier = 2)
-    )
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {
         log.info("Findings Suggestions strengths: {} and values: {} locale: {}", strengths, values, language);
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.SUGGESTION,
@@ -154,9 +136,9 @@ public class AiClient {
                 "language", language));
         log.info("Suggestions query: {}", prompt.getContents());
 
-        var res = chatClient.prompt(prompt)
+        var res = retry.executeSupplier(() ->chatClient.prompt(prompt)
                 .call()
-                .content();
+                .content());
         log.info("Suggestions response: {}  User:[{}]", res, username);
         return AiUtils.replaceNonJsonString(res);
     }

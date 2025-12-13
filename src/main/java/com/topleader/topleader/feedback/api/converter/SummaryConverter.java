@@ -1,15 +1,15 @@
 package com.topleader.topleader.feedback.api.converter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.feedback.api.Summary;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import lombok.SneakyThrows;
 
+import static com.topleader.topleader.util.common.JsonUtils.MAPPER;
+
 
 @Converter
 public class SummaryConverter implements AttributeConverter<Summary, String> {
-    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     @SneakyThrows
     @Override
