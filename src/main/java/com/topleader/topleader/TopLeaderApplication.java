@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
     jsr250Enabled = true)
 @RestController
 @SpringBootApplication
+@RequestMapping("/")
 public class TopLeaderApplication {
 
     public static void main(String[] args) {
@@ -27,8 +29,13 @@ public class TopLeaderApplication {
         SpringApplication.run(TopLeaderApplication.class, args);
     }
 
-    @GetMapping("/_ah/start")
+    @GetMapping("_ah/start")
     public String legacyHealthCheck() {
+        return "App ok";
+    }
+
+    @GetMapping("_ah/warmup")
+    public String legacyWarm() {
         return "App ok";
     }
 
