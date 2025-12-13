@@ -12,6 +12,7 @@ import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeRepository;
 import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -36,6 +37,8 @@ import org.springframework.test.context.jdbc.Sql;
 import java.time.Duration;
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -106,12 +109,42 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                 ]
                 """;
 
-        Mockito.when(chatModel.call(Mockito.anyString()))
-                .thenReturn("action-goal-response")
-                .thenReturn(expectedArticlesJson);
+        // Configure the mock to return "action-goal-response" for all chatModel.call() invocations
+        Mockito.when(chatModel.call(Mockito.anyString())).thenReturn("action-goal-response");
+        Mockito.when(chatModel.call(Mockito.eq("test preview prompt [do not lose]"))).thenReturn("""
+                               [
+                  {
+                    "title": "Test Preview",
+                    "url": "https://youtube.com/watch?v=test",
+                    "thumbnail": "http://localhost:8060/hqdefault"
+                  }
+                ]
+                """);
 
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().entity(new ParameterizedTypeReference<List<UserArticle>>() {}))
-                .thenReturn(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<>() {}));
+        mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
+        mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200)
+                .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                .withBody("""
+                        {
+                            "created": 1765729064,
+                            "data": [
+                                {
+                                    "revised_prompt": "Paint a tranquil environment",
+                                    "url": "http://localhost:8060/test-image.png"
+                                }
+                            ]
+                        }
+                                """)));
+        mockServer.stubFor(WireMock.get(urlEqualTo("/test-image.png")).willReturn(aResponse().withStatus(200)
+                .withHeader("Content-Type", "image/png")
+                .withBody(java.util.Base64.getDecoder().decode(
+                        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+                ))));
+
+        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().entity(new ParameterizedTypeReference<List<UserArticle>>() {
+                }))
+                .thenReturn(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<>() {
+                }));
 
         mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article1"))
                 .willReturn(WireMock.aResponse()
@@ -141,67 +174,58 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
         ;
 
-        final var historyData = dataHistoryRepository.findAllByUsernameAndType("user2", DataHistory.Type.USER_SESSION);
-
-        Assertions.assertThat(historyData).hasSize(1);
-        Assertions.assertThat(historyData.get(0).getData()).isInstanceOf(UserSessionStoredData.class);
-
-        final var sessionData = (UserSessionStoredData) historyData.get(0).getData();
-
-        Assertions.assertThat(sessionData.getMotivation()).isNull();
-        Assertions.assertThat(sessionData.getReflection()).isEqualTo("you can do it!");
-        Assertions.assertThat(sessionData.getLongTermGoal()).isEqualTo("newGoal");
-        Assertions.assertThat(sessionData.getAreaOfDevelopment()).hasSize(2);
-        Assertions.assertThat(sessionData.getAreaOfDevelopment()).contains("b1", "b2");
-
-        final var userActionSteps = userActionStepRepository.findAllByUsername("user2");
-        Assertions.assertThat(userActionSteps).hasSize(2);
-        final var doNotLoseStep = userActionSteps.stream().filter(s -> "do not lose".equals(s.getLabel())).findAny().orElseThrow();
-        Assertions.assertThat(doNotLoseStep.getChecked()).isEqualTo(false);
-        Assertions.assertThat(doNotLoseStep.getLabel()).isEqualTo("do not lose");
-        Assertions.assertThat(doNotLoseStep.getDate()).isEqualTo(LocalDate.parse("2023-08-15"));
-        final var action2Step = userActionSteps.stream().filter(s -> "action 2".equals(s.getLabel())).findAny().orElseThrow();
-        Assertions.assertThat(action2Step.getChecked()).isEqualTo(true);
-        Assertions.assertThat(action2Step.getLabel()).isEqualTo("action 2");
-        Assertions.assertThat(action2Step.getDate()).isEqualTo(LocalDate.parse("2023-08-15"));
-
-        Assertions.assertThat(userInfoRepository.findById("user2").orElseThrow().getLastReflection()).isEqualTo("you can do it!");
-
-
         Awaitility.await()
-                .atMost(Duration.ofSeconds(3))
-                .pollInterval(Duration.ofMillis(100))
+                .atMost(Duration.ofSeconds(1))
+                .pollInterval(Duration.ofMillis(500))
                 .untilAsserted(() -> {
+                    final var historyData = dataHistoryRepository.findAllByUsernameAndType("user2", DataHistory.Type.USER_SESSION);
+
+                    Assertions.assertThat(historyData).hasSize(1);
+                    Assertions.assertThat(historyData.get(0).getData()).isInstanceOf(UserSessionStoredData.class);
+
+                    final var sessionData = (UserSessionStoredData) historyData.get(0).getData();
+
+                    Assertions.assertThat(sessionData.getMotivation()).isNull();
+                    Assertions.assertThat(sessionData.getReflection()).isEqualTo("you can do it!");
+                    Assertions.assertThat(sessionData.getLongTermGoal()).isEqualTo("newGoal");
+                    Assertions.assertThat(sessionData.getAreaOfDevelopment()).hasSize(2);
+                    Assertions.assertThat(sessionData.getAreaOfDevelopment()).contains("b1", "b2");
+
+                    final var userActionSteps = userActionStepRepository.findAllByUsername("user2");
+                    Assertions.assertThat(userActionSteps).hasSize(2);
+                    final var doNotLoseStep = userActionSteps.stream().filter(s -> "do not lose".equals(s.getLabel())).findAny().orElseThrow();
+                    Assertions.assertThat(doNotLoseStep.getChecked()).isEqualTo(false);
+                    Assertions.assertThat(doNotLoseStep.getLabel()).isEqualTo("do not lose");
+                    Assertions.assertThat(doNotLoseStep.getDate()).isEqualTo(LocalDate.parse("2023-08-15"));
+                    final var action2Step = userActionSteps.stream().filter(s -> "action 2".equals(s.getLabel())).findAny().orElseThrow();
+                    Assertions.assertThat(action2Step.getChecked()).isEqualTo(true);
+                    Assertions.assertThat(action2Step.getLabel()).isEqualTo("action 2");
+                    Assertions.assertThat(action2Step.getDate()).isEqualTo(LocalDate.parse("2023-08-15"));
+
+                    Assertions.assertThat(userInfoRepository.findById("user2").orElseThrow().getLastReflection()).isEqualTo("you can do it!");
                     Assertions.assertThat(userInsightRepository.findAll())
                             .extracting("personalGrowthTip")
                             .contains("action-goal-response");
-                });
-
-
-        Awaitility.await()
-                .atMost(Duration.ofSeconds(5))
-                .pollInterval(Duration.ofMillis(500))
-                .untilAsserted(() -> {
                     var articles = articleRepository.findByUsername("user2");
                     Assertions.assertThat(articles).hasSize(2);
+
+                    Assertions.assertThat(articles)
+                            .extracting("content.title")
+                            .contains("Effective Leadership Communication", "Building Team Motivation");
+                    Assertions.assertThat(articles)
+                            .extracting("content.author")
+                            .contains("John Doe", "Jane Smith");
+                    Assertions.assertThat(articles)
+                            .extracting("content.imagePrompt")
+                            .contains("leadership communication meeting", "team motivation office");
+                    Assertions.assertThat(articles)
+                            .extracting("content.date")
+                            .contains("2023-10-01", "2023-10-02");
+
+                    Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETED_SHORT_GOAL)))).isNotEmpty();
+                    Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();
                 });
 
-        var articles = articleRepository.findByUsername("user2");
-        Assertions.assertThat(articles)
-                .extracting("content.title")
-                .contains("Effective Leadership Communication", "Building Team Motivation");
-        Assertions.assertThat(articles)
-                .extracting("content.author") 
-                .contains("John Doe", "Jane Smith");
-        Assertions.assertThat(articles)
-                .extracting("content.imagePrompt")
-                .contains("leadership communication meeting", "team motivation office");
-        Assertions.assertThat(articles)
-                .extracting("content.date")
-                .contains( "2023-10-01",  "2023-10-02");
-
-        Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETED_SHORT_GOAL)))).isNotEmpty();
-        Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();
     }
 
     private Badge badge(Badge.AchievementType type) {

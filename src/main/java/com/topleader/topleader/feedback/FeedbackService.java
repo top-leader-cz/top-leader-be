@@ -1,6 +1,5 @@
 package com.topleader.topleader.feedback;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.email.EmailService;
 import com.topleader.topleader.email.VelocityService;
@@ -27,6 +26,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -63,7 +63,7 @@ public class FeedbackService {
 
     private final AiClient aiClient;
 
-    private final ObjectMapper objectMapper;
+    private final JsonMapper jsonMapper;
 
     private final FeedbackNotificationService feedbackNotificationService;
 
@@ -169,7 +169,7 @@ public class FeedbackService {
         log.info("Generating summary for form: [{}] with questions: [{}]", formId, questions);
 
         if (formDto.allowSummary(summaryLimit)) {
-            var summary = Try.of(() -> objectMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class))
+            var summary = Try.of(() -> jsonMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class))
                     .onFailure(e -> log.error("Failed to generate summary for form: [" + formId + "] ", e))
                             .getOrElse(new Summary());
             form.setSummary(summary);

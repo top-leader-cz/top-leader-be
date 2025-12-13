@@ -8,10 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.retry.annotation.EnableRetry;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -21,8 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
     securedEnabled = true,
     jsr250Enabled = true)
 @RestController
-@EnableRetry
 @SpringBootApplication
+@RequestMapping("/")
 public class TopLeaderApplication {
 
     public static void main(String[] args) {
@@ -30,8 +29,13 @@ public class TopLeaderApplication {
         SpringApplication.run(TopLeaderApplication.class, args);
     }
 
-    @GetMapping("/_ah/start")
+    @GetMapping("_ah/start")
     public String legacyHealthCheck() {
+        return "App ok";
+    }
+
+    @GetMapping("_ah/warmup")
+    public String legacyWarm() {
         return "App ok";
     }
 

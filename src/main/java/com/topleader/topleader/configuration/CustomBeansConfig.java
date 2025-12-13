@@ -3,17 +3,25 @@
  */
 package com.topleader.topleader.configuration;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.github.resilience4j.retry.Retry;
+import io.github.resilience4j.retry.RetryConfig;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.http.HttpClient;
+import java.time.Duration;
 
 
 /**
@@ -21,6 +29,12 @@ import java.net.http.HttpClient;
  */
 @Configuration
 public class CustomBeansConfig {
+
+    @Bean
+    @Lazy
+    public LocalValidatorFactoryBean validator() {
+        return new LocalValidatorFactoryBean();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -35,6 +49,9 @@ public class CustomBeansConfig {
     @Bean
     RestClient restClient() {
         return RestClient.builder()
+                .requestFactory(new JdkClientHttpRequestFactory(HttpClient.newBuilder()
+                        .connectTimeout(Duration.ofSeconds(30))
+                        .build()))
                 .build();
     }
 
@@ -42,4 +59,22 @@ public class CustomBeansConfig {
     public ChatClient chatClient(OpenAiChatModel openAiChatModel) {
         return ChatClient.builder(openAiChatModel).build();
     }
+
+    @Bean
+    public Retry retry() {
+        return Retry.of("defaultRetry", RetryConfig.custom()
+                .maxAttempts(2)
+                .waitDuration(Duration.ofMillis(500))
+                .retryExceptions(Exception.class)
+                .build());
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        var mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
+
 }
