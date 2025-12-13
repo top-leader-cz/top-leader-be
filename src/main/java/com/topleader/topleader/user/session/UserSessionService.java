@@ -188,7 +188,7 @@ public class UserSessionService {
     }
 
     public String handleUserPreview(String username, List<String> actionGoals) {
-        var previews = Try.of(() -> {
+          var previews = Try.of(() -> {
                     var res = aiClient.generateUserPreviews(username, actionGoals);
                     return jsonMapper.readValue(res, new TypeReference<List<UserPreview>>() {
                     });
@@ -216,7 +216,7 @@ public class UserSessionService {
 
     public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
         var user = userDetailService.find(username);
-        return Try.of(() -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()))                    )
+         return Try.of(() -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()))                    )
                 .onFailure(e -> log.error("Failed to generate user articles for user: [{}] ", username, e))
                 .getOrElse(List.of())
                 .stream()

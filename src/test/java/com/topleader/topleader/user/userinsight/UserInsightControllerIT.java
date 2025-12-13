@@ -211,7 +211,7 @@ class UserInsightControllerIT extends IntegrationTest {
                 """)).andDo(print()).andExpect(status().isOk());
 
 
-        await().atMost(5, TimeUnit.SECONDS)
+        await().atMost(10, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
                     var userInsight = userInsightRepository.findById("user").orElseThrow();

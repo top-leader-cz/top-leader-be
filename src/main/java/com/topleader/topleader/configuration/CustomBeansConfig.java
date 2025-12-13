@@ -58,8 +58,8 @@ public class CustomBeansConfig {
     @Bean
     public Retry retry() {
         return Retry.of("defaultRetry", RetryConfig.custom()
-                .maxAttempts(3)
-                .waitDuration(Duration.ofSeconds(1))
+                .maxAttempts(2)
+                .waitDuration(Duration.ofMillis(500))
                 .retryExceptions(Exception.class)
                 .build());
     }
