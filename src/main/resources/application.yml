@@ -55,6 +55,7 @@ spring:
     baseline-on-migrate: true
     validate-on-migrate: true
   mail:
+
     host: smtp-relay.gmail.com
     port: 587
     properties:
@@ -117,4 +118,7 @@ gcp:
 
 thumbmail: http://i3.ytimg.com/vi/%s/hqdefault.jpg
 
-
+management:
+  health:
+    mail:
+      enabled: false
