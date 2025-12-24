@@ -1,5 +1,5 @@
-runtime: java21
-entrypoint: java -jar top-leader.jar
+runtime: java25
+entrypoint: java -XX:+UseCompactObjectHeaders -XX:+UseStringDeduplication -XX:+DisableExplicitGC -XX:+OptimizeStringConcat -jar top-leader.jar
 service: prod
 instance_class: F2
 automatic_scaling:

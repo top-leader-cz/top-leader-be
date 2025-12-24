@@ -1,5 +1,5 @@
 runtime: java25
-entrypoint: java -XX:+UseCompactObjectHeaders -jar top-leader.jar
+entrypoint: java -XX:+UseCompactObjectHeaders -XX:MaxRAMPercentage=80.0 -XX:+UseStringDeduplication -XX:+DisableExplicitGC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -jar top-leader.jar
 service: qa
 basic_scaling:
   max_instances: 1
