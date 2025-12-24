@@ -9,6 +9,7 @@ import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -42,10 +43,12 @@ public class Coach {
     private String bio;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> languages;
+    @CollectionTable(name = "coach_languages", joinColumns = @JoinColumn(name = "coach_username"))
+    private List<String> languages;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private Set<String> fields;
+    @CollectionTable(name = "coach_fields", joinColumns = @JoinColumn(name = "coach_username"))
+    private List<String> fields;
 
     private LocalDate experienceSince;
 
