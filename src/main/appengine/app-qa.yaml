@@ -1,16 +1,49 @@
-runtime: java25
-entrypoint: java -XX:+UseCompactObjectHeaders -XX:MaxRAMPercentage=80.0 -XX:+UseStringDeduplication -XX:+DisableExplicitGC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -jar top-leader.jar
+runtime: custom
+env: flex
 service: qa
-basic_scaling:
-  max_instances: 1
+
+# Resources for Flex environment
+resources:
+  cpu: 1
+  memory_gb: 2
+  disk_size_gb: 10
+
+# Scaling configuration
+automatic_scaling:
+  min_num_instances: 1
+  max_num_instances: 2
+  cpu_utilization:
+    target_utilization: 0.65
+
+# Health checks for native image (fast startup)
+liveness_check:
+  path: "/_ah/start"
+  initial_delay_sec: 10
+  check_interval_sec: 30
+  timeout_sec: 10
+  failure_threshold: 3
+  success_threshold: 1
+
+readiness_check:
+  path: "/_ah/warmup"
+  check_interval_sec: 10
+  timeout_sec: 10
+  failure_threshold: 3
+  success_threshold: 1
+  app_start_timeout_sec: 120
+
+# Cloud SQL connection
+beta_settings:
+  cloud_sql_instances: "topleader-394306:europe-west3:top-leader-db"
+
 env_variables:
   SPRING_PROFILES_ACTIVE: "qa"
   SPRING_DATASOURCE_URL: "jdbc:postgresql:///top_leader"
   SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD}"
-  SPRING_MAIL_PASSWORD:  "${SPRING_MAIL_PASSWORD}"
+  SPRING_MAIL_PASSWORD: "${SPRING_MAIL_PASSWORD}"
   SPRING_MAIL_USERNAME: "topleaderplatform@topleader.io"
   SPRING_MAIL_HOST: "smtp.gmail.com"
-  SPRING_MAIL_PORT: 587
+  SPRING_MAIL_PORT: "587"
   SPRING_AI_OPENAI_APIKEY: "${SPRING_AI_OPENAI_APIKEY}"
 
   # Calendly

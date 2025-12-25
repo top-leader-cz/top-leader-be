@@ -1,11 +1,5 @@
-# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
-name: Build/Deploy top-leader-be
+# Build and deploy Spring Boot native image to App Engine Flexible
+name: Build/Deploy top-leader-be (Native)
 
 on:
   push:
@@ -13,7 +7,14 @@ on:
   pull_request:
     branches: [ "develop", "main" ]
 
+env:
+  PROJECT_ID: topleader-394306
+  REGION: europe-west3
+  GAR_LOCATION: europe-west3-docker.pkg.dev
+  REPOSITORY: top-leader-images
+
 jobs:
+  # Build and test with standard JVM
   build:
     if: github.ref == 'refs/heads/develop' || github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -27,9 +28,10 @@ jobs:
         distribution: 'corretto'
         cache: maven
 
-    - name: Build with Maven
+    - name: Build and Test with Maven
       run: mvn -B verify --file pom.xml
 
+  # Build native image and deploy to QA
   deploy-qa:
     needs: build
     if: github.ref == 'refs/heads/develop'
@@ -43,21 +45,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Replace repository-secrets in app-qa.yaml
+      - name: Replace secrets in app-qa.yaml
         run: |
           sed -i 's|\${SPRING_DATASOURCE_PASSWORD}|'"$SPRING_DATASOURCE_PASSWORD"'|g' src/main/appengine/app-qa.yaml
           sed -i 's|\${SPRING_MAIL_PASSWORD}|'"$SPRING_MAIL_PASSWORD"'|g' src/main/appengine/app-qa.yaml
           sed -i 's|\${TOP_LEADER_CALENDLY_CLIENT_SECRETS}|'"$TOP_LEADER_CALENDLY_CLIENT_SECRETS"'|g' src/main/appengine/app-qa.yaml
           sed -i 's|\${GOOGLE_CLIENT_CLIENT_SECRET}|'"$GOOGLE_CLIENT_CLIENT_SECRET"'|g' src/main/appengine/app-qa.yaml
           sed -i 's|\${SPRING_AI_OPENAI_APIKEY}|'"$SPRING_AI_OPENAI_APIKEY"'|g' src/main/appengine/app-qa.yaml
-          echo "=== app-qa.yaml after replacement (secrets masked) ==="
-          cat src/main/appengine/app-qa.yaml | sed 's/\(PASSWORD\|SECRET\|APIKEY\): "[^"]*"/\1: "***"/g'
-      - name: Set up JDK 25
-        uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-          cache: maven
 
       - name: Cloud Authentication
         uses: google-github-actions/auth@v2
@@ -67,26 +61,37 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          version: '>= 445.0.0'
+          version: '>= 510.0.0'
 
-      - name: Install app-engine-java
-        run: gcloud components install app-engine-java
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}
 
-      - name: Configure gcloud storage
-        run: gcloud config set storage/use_gsutil true
-
-      - name: Build Application
-        run: mvn clean package -DskipTests
-
-      - name: Copy JAR to appengine directory
+      - name: Build Native Docker Image
         run: |
-          cp target/*.jar src/main/appengine/top-leader.jar
-          echo "=== JAR file info ==="
-          ls -lh src/main/appengine/top-leader.jar
+          docker build \
+            -t ${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-qa:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-qa:latest \
+            -f Dockerfile .
+        timeout-minutes: 60
 
-      - name: Deploy to App Engine QA
-        run: gcloud app deploy src/main/appengine/app-qa.yaml --project=topleader-394306 --version=$(git rev-parse --short "$GITHUB_SHA") --promote --verbosity=debug
+      - name: Push Docker Image to Artifact Registry
+        run: |
+          docker push ${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-qa:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-qa:latest
 
+      - name: Copy Dockerfile to appengine directory
+        run: cp Dockerfile src/main/appengine/Dockerfile
+
+      - name: Deploy to App Engine Flex QA
+        run: |
+          gcloud app deploy src/main/appengine/app-qa.yaml \
+            --project=${{ env.PROJECT_ID }} \
+            --version=$(git rev-parse --short "$GITHUB_SHA") \
+            --image-url=${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-qa:${{ github.sha }} \
+            --promote \
+            --quiet
+
+  # Build native image and deploy to PROD
   deploy-prod:
     needs: build
     if: github.ref == 'refs/heads/main'
@@ -100,21 +105,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Replace repository-secrets in app-prod.yaml
+      - name: Replace secrets in app-prod.yaml
         run: |
-          sed -i 's|\${SPRING_DATASOURCE_PASSWORD_PROD}|'"SPRING_DATASOURCE_PASSWORD_PROD"'|g' src/main/appengine/app-prod.yaml
+          sed -i 's|\${SPRING_DATASOURCE_PASSWORD_PROD}|'"$SPRING_DATASOURCE_PASSWORD"'|g' src/main/appengine/app-prod.yaml
           sed -i 's|\${SPRING_MAIL_PASSWORD}|'"$SPRING_MAIL_PASSWORD"'|g' src/main/appengine/app-prod.yaml
           sed -i 's|\${TOP_LEADER_CALENDLY_CLIENT_SECRETS}|'"$TOP_LEADER_CALENDLY_CLIENT_SECRETS"'|g' src/main/appengine/app-prod.yaml
           sed -i 's|\${GOOGLE_CLIENT_CLIENT_SECRET}|'"$GOOGLE_CLIENT_CLIENT_SECRET"'|g' src/main/appengine/app-prod.yaml
           sed -i 's|\${SPRING_AI_OPENAI_APIKEY}|'"$SPRING_AI_OPENAI_APIKEY"'|g' src/main/appengine/app-prod.yaml
-          echo "=== app-prod.yaml after replacement (secrets masked) ==="
-          cat src/main/appengine/app-prod.yaml | sed 's/\(PASSWORD\|SECRET\|APIKEY\): "[^"]*"/\1: "***"/g'
-      - name: Set up JDK 25
-        uses: actions/setup-java@v4
-        with:
-          java-version: '25'
-          distribution: 'temurin'
-          cache: maven
 
       - name: Cloud Authentication
         uses: google-github-actions/auth@v2
@@ -124,22 +121,32 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          version: '>= 445.0.0'
+          version: '>= 510.0.0'
 
-      - name: Install app-engine-java
-        run: gcloud components install app-engine-java
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.GAR_LOCATION }}
 
-      - name: Configure gcloud storage
-        run: gcloud config set storage/use_gsutil true
-
-      - name: Build Application
-        run: mvn clean package -DskipTests
-
-      - name: Copy JAR to appengine directory
+      - name: Build Native Docker Image
         run: |
-          cp target/*.jar src/main/appengine/top-leader.jar
-          echo "=== JAR file info ==="
-          ls -lh src/main/appengine/top-leader.jar
+          docker build \
+            -t ${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-prod:${{ github.sha }} \
+            -t ${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-prod:latest \
+            -f Dockerfile .
+        timeout-minutes: 60
 
-      - name: Deploy to App Engine PROD
-        run: gcloud app deploy src/main/appengine/app-prod.yaml --project=topleader-394306 --version=$(git rev-parse --short "$GITHUB_SHA") --promote --quiet
+      - name: Push Docker Image to Artifact Registry
+        run: |
+          docker push ${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-prod:${{ github.sha }}
+          docker push ${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-prod:latest
+
+      - name: Copy Dockerfile to appengine directory
+        run: cp Dockerfile src/main/appengine/Dockerfile
+
+      - name: Deploy to App Engine Flex PROD
+        run: |
+          gcloud app deploy src/main/appengine/app-prod.yaml \
+            --project=${{ env.PROJECT_ID }} \
+            --version=$(git rev-parse --short "$GITHUB_SHA") \
+            --image-url=${{ env.GAR_LOCATION }}/${{ env.PROJECT_ID }}/${{ env.REPOSITORY }}/top-leader-prod:${{ github.sha }} \
+            --promote \
+            --quiet
