@@ -352,13 +352,9 @@ public class UserSessionService {
             log.warn("Cannot generate recommended growths for user. Requirement dis not met");
             return null;
         }
-        return Try.of(() -> {
-                    var res = aiClient.generateRecommendedGrowths(user, businessStrategy, position, aspiredCompetency);
-                    return jsonMapper.readValue(res, new TypeReference<List<RecommendedGrowth>>() {
-                    });
-                })
+        return Try.of(() -> aiClient.generateRecommendedGrowths(user, businessStrategy, position, aspiredCompetency))
                 .onFailure(e -> log.error("Failed to generate recommended growths", e))
-                .getOrElseThrow(() -> null);
+                .getOrElse(() -> null);
     }
 
     boolean canGenerateRecommendedGrowths(String businessStrategy, String position, String competency) {

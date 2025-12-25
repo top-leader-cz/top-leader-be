@@ -2,6 +2,7 @@ package com.topleader.topleader.ai;
 
 
 import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.util.common.user.UserUtils;
 import io.github.resilience4j.retry.Retry;
@@ -101,16 +102,21 @@ public class AiClient {
         return AiUtils.replaceNonJsonString(res);
     }
 
-    public String generateRecommendedGrowths(User user, String businessStrategy, String position, String competency) {
+    public List<RecommendedGrowth> generateRecommendedGrowths(User user, String businessStrategy, String position, String competency) {
         var username = user.getUsername();
         log.info("AI api call for user generateRecommendedGrowths. User:[{}] ", username);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.RECOMMENDED_GROWTH);
-        var query = String.format(prompt, businessStrategy, position, competency, UserUtils.localeToLanguage(user.getLocale()));
-        log.info("generateRecommendedGrowths query: {} User:[{}]", query, username);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.RECOMMENDED_GROWTH,
+                Map.of("businessStrategy", businessStrategy,
+                        "position", position,
+                        "competency", competency,
+                        "language", UserUtils.localeToLanguage(user.getLocale())));
+        log.info("generateRecommendedGrowths query: {} User:[{}]", prompt.getContents(), username);
 
-        var res = chatModel.call(query);
-        log.info("AI user preview response: {} User:[{}]", res, username);
-        return AiUtils.replaceNonJsonString(res);
+        var res = retry.executeSupplier(() -> chatClient.prompt(prompt)
+                .call()
+                .entity(new ParameterizedTypeReference<List<RecommendedGrowth>>() {}));
+        log.info("AI generateRecommendedGrowths response: {} User:[{}]", res, username);
+        return res;
     }
 
     public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
@@ -136,7 +142,7 @@ public class AiClient {
                 "language", language));
         log.info("Suggestions query: {}", prompt.getContents());
 
-        var res = retry.executeSupplier(() ->chatClient.prompt(prompt)
+        var res = retry.executeSupplier(() -> chatClient.prompt(prompt)
                 .call()
                 .content());
         log.info("Suggestions response: {}  User:[{}]", res, username);
