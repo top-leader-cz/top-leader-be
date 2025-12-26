@@ -98,7 +98,8 @@ public class UserInsightController {
 
         Thread.ofVirtual().start(() ->
                 Try.run(() -> {
-                            var suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, userInfo.getStrengths(), userInfo.getValues(), user.getLocale());
+                            var strengths = userInfo.getStrengths().stream().limit(5).toList();
+                            var suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, strengths, userInfo.getValues(), user.getLocale());
                             var insight = userInsightService.getInsight(username);
                             insight.setSuggestion(suggestion);
                             insight.setSuggestionPending(false);
