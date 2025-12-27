@@ -186,10 +186,10 @@ public class CoachController {
         String bio,
 
         @NotNull
-        Set<String> languages,
+        List<String> languages,
 
         @NotNull
-        Set<String> fields,
+        List<String> fields,
 
         LocalDate experienceSince,
 
@@ -229,7 +229,7 @@ public class CoachController {
         String timeZone
     ) {
         public static final CoachDto EMPTY = new CoachDto(
-            false, null, null, null, null, null, Set.of(), Set.of(), null, null, null, null, null, false, 0,
+            false, null, null, null, null, null, List.of(), List.of(), null, null, null, null, null, false, 0,
             Set.of(Coach.PrimaryRole.COACH), Set.of(), Set.of(), null, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), null, null
         );
 
@@ -242,8 +242,8 @@ public class CoachController {
                     c.getUserEmail(),
                     c.getWebLink(),
                     c.getBio(),
-                    c.getLanguages() != null ? c.getLanguages() : Set.of(),
-                    c.getFields() != null ? c.getFields() : Set.of(),
+                    c.getLanguages() != null ? c.getLanguages() : List.of(),
+                    c.getFields() != null ? c.getFields() : List.of(),
                     c.getExperienceSince(),
                     c.getRate(),
                     c.getRateOrder(),

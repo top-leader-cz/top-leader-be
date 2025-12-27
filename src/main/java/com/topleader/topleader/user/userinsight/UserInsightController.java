@@ -7,7 +7,6 @@ import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
-import com.topleader.topleader.util.common.JsonUtils;
 import com.topleader.topleader.util.image.ArticleImageService;
 import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
@@ -21,11 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 @Slf4j
 @RestController
@@ -35,7 +31,7 @@ public class UserInsightController {
 
     public final UserInsightService userInsightService;
     public final ArticleRepository articlesRepository;
-    public final ObjectMapper objectMapper;
+    public final JsonMapper jsonMapper;
     public final ArticleImageService articleImageService;
     public final UserSessionService userSessionService;
     private final UserInfoService userInfoService;
@@ -54,7 +50,7 @@ public class UserInsightController {
                 })
                 .toList();
 
-        Try.run(() -> userInsight.setUserArticles(objectMapper.writeValueAsString(articles)))
+        Try.run(() -> userInsight.setUserArticles(jsonMapper.writeValueAsString(articles)))
                 .onFailure(e -> log.error("Error converting user articles to JSON", e));
 
         return Map.of(
@@ -102,7 +98,8 @@ public class UserInsightController {
 
         Thread.ofVirtual().start(() ->
                 Try.run(() -> {
-                            var suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, userInfo.getStrengths(), userInfo.getValues(), user.getLocale());
+                            var strengths = userInfo.getStrengths().stream().limit(5).toList();
+                            var suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, strengths, userInfo.getValues(), user.getLocale());
                             var insight = userInsightService.getInsight(username);
                             insight.setSuggestion(suggestion);
                             insight.setSuggestionPending(false);

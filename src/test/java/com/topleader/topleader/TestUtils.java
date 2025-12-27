@@ -3,9 +3,9 @@
  */
 package com.topleader.topleader;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.JsonNode;
 import net.javacrumbs.jsonunit.core.Option;
 
 import java.nio.file.Files;
@@ -20,7 +20,7 @@ import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
  */
 public final class TestUtils {
 
-    private final static ObjectMapper MAPPER = new ObjectMapper();
+    private final static JsonMapper MAPPER_V3 = JsonMapper.builder().build();
 
     private TestUtils() {
         //util class
@@ -34,7 +34,7 @@ public final class TestUtils {
     @SneakyThrows
     public static JsonNode readFileAsJson(String name) {
         var data = readFileAsString(name);
-        return MAPPER.readTree(data);
+        return MAPPER_V3.readTree(data);
     }
 
     @SneakyThrows

@@ -5,10 +5,11 @@ package com.topleader.topleader.user;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.util.Set;
+
+import static com.topleader.topleader.util.common.JsonUtils.MAPPER;
 
 
 /**
@@ -17,10 +18,6 @@ import java.util.Set;
 @Converter
 public class RoleConverter implements AttributeConverter<Set<User.Authority>, String> {
 
-
-
-    private static final ObjectMapper OB = new ObjectMapper();
-
     @Override
     public String convertToDatabaseColumn(Set<User.Authority> data) {
         if (data == null) {
@@ -28,7 +25,7 @@ public class RoleConverter implements AttributeConverter<Set<User.Authority>, St
         }
 
         try {
-            return OB.writeValueAsString(data);
+            return MAPPER.writeValueAsString(data);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }
@@ -41,7 +38,7 @@ public class RoleConverter implements AttributeConverter<Set<User.Authority>, St
         }
 
         try {
-            return OB.readValue(dbData, new TypeReference<>() {});
+            return MAPPER.readValue(dbData, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }

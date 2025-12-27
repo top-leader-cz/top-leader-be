@@ -19,10 +19,9 @@ values ('coach', 'some bio', '2023-08-06', 'http://some_video1', true, '$', '["A
 insert into coach (username, bio, experience_since, web_link, rate, certificate, primary_roles)
 values ('coach3', 'some bio',  '2023-08-06', 'http://some_video1',  '$', '["ACC"]', '["COACH"]');
 
-insert into coach_fields (coach_username, fields) values ('coach', 'field1');
-insert into coach_fields (coach_username, fields) values ('coach', 'field2');
-insert into coach_languages (coach_username, languages) values ('coach', 'cz');
-insert into coach_languages (coach_username, languages) values ('coach', 'aj');
+insert into coach_fields (coach_username, fields) values ('coach', 'field1'), ('coach', 'field2');
+insert into coach_languages (coach_username, languages) values ('coach', 'cz'), ('coach', 'aj');
+
 
 insert into scheduled_session (id, coach_username, username, time)
 values (nextval('scheduled_session_id_seq'), 'coach', 'user1', '2023-08-14 10:30:00'),

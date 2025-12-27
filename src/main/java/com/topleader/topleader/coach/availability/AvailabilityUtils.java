@@ -1,7 +1,6 @@
 package com.topleader.topleader.coach.availability;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ArrayListMultimap;
+import tools.jackson.databind.JsonNode;
 import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
 import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
 import lombok.experimental.UtilityClass;
@@ -18,8 +17,8 @@ public class AvailabilityUtils {
     public List<ReoccurringEventDto> toReoccurringEvent(JsonNode data) {
         var evetns = new ArrayList<>(List.of(new ReoccurringEventDto(null, null)));
         data.get("collection").forEach(node -> {
-            var startTime = node.get("start_time").asText();
-            var status = node.get("status").asText();
+            var startTime = node.get("start_time").textValue();
+            var status = node.get("status").textValue();
             if ("available".equals(status)) {
                 var date = ZonedDateTime.parse(startTime).toLocalDateTime();
                 var dayOfTheWeek = date.getDayOfWeek();

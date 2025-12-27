@@ -10,6 +10,7 @@ import com.topleader.topleader.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
+import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -19,9 +20,13 @@ import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -54,6 +59,9 @@ class UserSessionControllerIT extends IntegrationTest {
 
     @Autowired
     ChatModel chatModel;
+
+    @Autowired
+    ChatClient chatClient;
 
     @Autowired
     AiPromptService aiPromptService;
@@ -229,22 +237,18 @@ class UserSessionControllerIT extends IntegrationTest {
     @Test
     @WithUserDetails("user2")
     void generateRecommendedGrowth() throws Exception {
-        var query = String.format("test query Dummy business strategy position competency English");
-        Mockito.when(chatModel.call(query)).thenReturn("```json\n" +
-                "[\n" +
-                "    {\n" +
-                "        \"area\": \"Advanced Programming Skills\",\n" +
-                "        \"recommendation\": \"Enhance your programming expertise by learning advanced languages and frameworks that are in high demand, which can lead to higher-paying roles.\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "        \"area\": \"Business Acumen in Tech\",\n" +
-                "        \"recommendation\": \"Develop a deeper understanding of the business side of technology, including how tech solutions can drive revenue, to align your technical skills with business growth strategies.\"\n" +
-                "    },\n" +
-                "    {\n" +
-                "        \"area\": \"Project Management\",\n" +
-                "        \"recommendation\": \"Learn project management methodologies like Agile or Scrum to take on leadership roles in projects, which often come with increased salary potential.\"\n" +
-                "    }\n" +
-                "] ");
+        var expectedGrowths = List.of(
+                createRecommendedGrowth("Advanced Programming Skills",
+                        "Enhance your programming expertise by learning advanced languages and frameworks that are in high demand, which can lead to higher-paying roles."),
+                createRecommendedGrowth("Business Acumen in Tech",
+                        "Develop a deeper understanding of the business side of technology, including how tech solutions can drive revenue, to align your technical skills with business growth strategies."),
+                createRecommendedGrowth("Project Management",
+                        "Learn project management methodologies like Agile or Scrum to take on leadership roles in projects, which often come with increased salary potential.")
+        );
+
+        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().entity(new ParameterizedTypeReference<List<RecommendedGrowth>>() {}))
+                .thenReturn(expectedGrowths);
+
         var result = mvc.perform(get("/api/latest/user-sessions/generate-recommended-growth"))
                 .andDo(print())
                 .andExpect(status().isOk())
@@ -253,6 +257,13 @@ class UserSessionControllerIT extends IntegrationTest {
                 .getContentAsString();
 
         TestUtils.assertJsonEquals(result, TestUtils.readFileAsString("session/json/recommended-growth-result.json"));
+    }
+
+    private RecommendedGrowth createRecommendedGrowth(String area, String recommendation) {
+        var growth = new RecommendedGrowth();
+        growth.setArea(area);
+        growth.setRecommendation(recommendation);
+        return growth;
     }
 
     @Test

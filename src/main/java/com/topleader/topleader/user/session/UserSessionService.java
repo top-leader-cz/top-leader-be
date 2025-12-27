@@ -6,8 +6,6 @@ package com.topleader.topleader.user.session;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.util.Base64;
-
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
@@ -44,8 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.retry.annotation.Backoff;
-import org.springframework.retry.annotation.Retryable;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -75,7 +72,7 @@ public class UserSessionService {
 
     private final AiClient aiClient;
 
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper jsonMapper;
 
     private final RestTemplate restTemplate;
 
@@ -89,6 +86,7 @@ public class UserSessionService {
 
     @Value("${thumbmail}")
     private String thumbmail;
+
 
     @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
@@ -189,15 +187,10 @@ public class UserSessionService {
         userInsightService.save(userInsight);
     }
 
-    @Retryable(
-            value = { Exception.class },
-            maxAttempts = 2,
-            backoff = @Backoff(delay = 1000, multiplier = 2)
-    )
     public String handleUserPreview(String username, List<String> actionGoals) {
-        var previews = Try.of(() -> {
+          var previews = Try.of(() -> {
                     var res = aiClient.generateUserPreviews(username, actionGoals);
-                    return objectMapper.readValue(res, new TypeReference<List<UserPreview>>() {
+                    return jsonMapper.readValue(res, new TypeReference<List<UserPreview>>() {
                     });
                 })
                 .onFailure(e -> log.error("Failed to generate user preview for user: [{}] ", username, e))
@@ -216,14 +209,14 @@ public class UserSessionService {
                 .filter(p -> urlValid(p.getThumbnail())
                 ).toList();
 
-        return Try.of(() -> objectMapper.writeValueAsString(filtered))
+        return Try.of(() -> jsonMapper.writeValueAsString(filtered))
                 .onFailure(e -> log.error("Failed to convert user preview for user: [{}] ", username, e))
                 .getOrElse(() -> null);
     }
 
     public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
         var user = userDetailService.find(username);
-        return Try.of(() -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()))                    )
+         return Try.of(() -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()))                    )
                 .onFailure(e -> log.error("Failed to generate user articles for user: [{}] ", username, e))
                 .getOrElse(List.of())
                 .stream()
@@ -359,13 +352,9 @@ public class UserSessionService {
             log.warn("Cannot generate recommended growths for user. Requirement dis not met");
             return null;
         }
-        return Try.of(() -> {
-                    var res = aiClient.generateRecommendedGrowths(user, businessStrategy, position, aspiredCompetency);
-                    return objectMapper.readValue(res, new TypeReference<List<RecommendedGrowth>>() {
-                    });
-                })
+        return Try.of(() -> aiClient.generateRecommendedGrowths(user, businessStrategy, position, aspiredCompetency))
                 .onFailure(e -> log.error("Failed to generate recommended growths", e))
-                .getOrElseThrow(() -> null);
+                .getOrElse(() -> null);
     }
 
     boolean canGenerateRecommendedGrowths(String businessStrategy, String position, String competency) {

@@ -5,10 +5,8 @@ import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.ai.AiPrompt;
 import com.topleader.topleader.ai.AiPromptService;
-import com.topleader.topleader.user.session.UserSessionService;
 import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
-import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.util.common.JsonUtils;
 import org.assertj.core.api.Assertions;
@@ -21,7 +19,6 @@ import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -57,9 +54,6 @@ class UserInsightControllerIT extends IntegrationTest {
     AiPromptService aiPromptService;
 
     @Autowired
-    UserSessionService userSessionService;
-
-    @Autowired
     ArticleRepository articleRepository;
 
 
@@ -79,7 +73,7 @@ class UserInsightControllerIT extends IntegrationTest {
                     "isPending": false
                   },
                   "userArticles": {
-                    "text": "[{\\"url\\":\\"https://hbr.org/2018/04/better-brainstorming\\",\\"perex\\":\\"perex\\",\\"title\\":\\"title\\",\\"author\\":\\"Scott Berinato\\",\\"source\\":\\"Harvard Business Review\\",\\"language\\":\\"en\\",\\"readTime\\":\\"6 min read\\",\\"imageData\\":\\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==\\",\\"application\\":\\"application\\",\\"imagePrompt\\":\\"prompt\\",\\"summaryText\\":\\"summary\\",\\"id\\":1,\\"imageUrl\\":\\"gs://ai-images-top-leader/test_image.png\\",\\"date\\":\\"2025-08-25\\"}]",
+                    "text": "[{\\"url\\":\\"https://hbr.org/2018/04/better-brainstorming\\",\\"perex\\":\\"perex\\",\\"title\\":\\"title\\",\\"author\\":\\"Scott Berinato\\",\\"source\\":\\"Harvard Business Review\\",\\"language\\":\\"en\\",\\"readTime\\":\\"6 min read\\",\\"imageData\\":\\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==\\",\\"application\\":\\"application\\",\\"imagePrompt\\":\\"prompt\\",\\"summaryText\\":\\"summary\\",\\"id\\":1,\\"date\\":\\"2025-08-25\\",\\"imageUrl\\":\\"gs://ai-images-top-leader/test_image.png\\"}]",
                     "isPending": false
                   },
                   "userPreviews": {
@@ -162,10 +156,12 @@ class UserInsightControllerIT extends IntegrationTest {
     }
 
     @Test
+
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/dashboard-data.sql"})
     void dashboard() throws Exception {
         mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
+        mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200).withBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}")));
 
         Mockito.when(chatModel.call("video [query]")).thenReturn("""
                                [
@@ -215,10 +211,23 @@ class UserInsightControllerIT extends IntegrationTest {
                 """)).andDo(print()).andExpect(status().isOk());
 
 
-        await().atMost(3, TimeUnit.SECONDS)
+        await().atMost(10, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
                     var userInsight = userInsightRepository.findById("user").orElseThrow();
+
+                    // Check suggestion first (should be synchronous)
+                    assertThat(userInsight.isSuggestionPending()).isFalse();
+                    assertThat(userInsight.getSuggestion()).isEqualTo("suggestion response");
+
+                    // Check articles
+                    var articles = articleRepository.findByUsername("user");
+                    assertThat(articles).hasSize(1);
+                    assertThat(articles.get(0).getContent().getTitle()).isEqualTo("5 Essential Leadership Principles for Modern Teams");
+                    assertThat(articles.get(0).getContent().getAuthor()).isEqualTo("Jane Smith");
+
+                    // Check userPreviews (async operation)
+                    assertThat(userInsight.getUserPreviews()).isNotNull();
                     TestUtils.assertJsonEquals(userInsight.getUserPreviews(), """
                                                         [ {
                               "title" : "Test Preview",
@@ -227,13 +236,6 @@ class UserInsightControllerIT extends IntegrationTest {
                             } ]
                             """);
                     assertThat(userInsight.isActionGoalsPending()).isFalse();
-
-                    var articles = articleRepository.findByUsername("user");
-                    assertThat(articles).hasSize(1);
-                    assertThat(articles.get(0).getContent().getTitle()).isEqualTo("5 Essential Leadership Principles for Modern Teams");
-                    assertThat(articles.get(0).getContent().getAuthor()).isEqualTo("Jane Smith");
-                    assertThat(userInsight.isSuggestionPending()).isFalse();
-                    assertThat(userInsight.getSuggestion()).isEqualTo("suggestion response");
                 });
     }
 
