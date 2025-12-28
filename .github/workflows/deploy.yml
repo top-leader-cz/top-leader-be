@@ -100,7 +100,7 @@ jobs:
 
       - name: Replace repository-secrets in app-prod.yaml
         run: |
-          sed -i 's|\${SPRING_DATASOURCE_PASSWORD}|'"SPRING_DATASOURCE_PASSWORD"'|g' src/main/appengine/app-prod.yaml
+          sed -i 's|\${SPRING_DATASOURCE_PASSWORD}|'"$SPRING_DATASOURCE_PASSWORD"'|g' src/main/appengine/app-prod.yaml
           sed -i 's|\${SPRING_MAIL_PASSWORD}|'"$SPRING_MAIL_PASSWORD"'|g' src/main/appengine/app-prod.yaml
           sed -i 's|\${TOP_LEADER_CALENDLY_CLIENT_SECRETS}|'"$TOP_LEADER_CALENDLY_CLIENT_SECRETS"'|g' src/main/appengine/app-prod.yaml
           sed -i 's|\${GOOGLE_CLIENT_CLIENT_SECRET}|'"$GOOGLE_CLIENT_CLIENT_SECRET"'|g' src/main/appengine/app-prod.yaml

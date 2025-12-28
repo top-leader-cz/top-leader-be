@@ -1,15 +1,15 @@
 runtime: java25
 entrypoint: java -XX:+UseCompactObjectHeaders -XX:+UseStringDeduplication -XX:+DisableExplicitGC -XX:+OptimizeStringConcat -jar top-leader.jar
 service: prod
-instance_class: F2
+instance_class: F4
 automatic_scaling:
   max_instances: 4
   min_instances: 1
 env_variables:
   SPRING_PROFILES_ACTIVE: "prod"
-  SPRING_DATASOURCE_URL: "jdbc:postgresql:///top_leader_prod"
+  SPRING_DATASOURCE_URL: "jdbc:postgresql:///top_leader_prod?socketFactory=com.google.cloud.sql.postgres.SocketFactory&cloudSqlInstance=topleader-394306:europe-west3:top-leader-db"
   SPRING_DATASOURCE_USERNAME: "top-leader-prod"
-  SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD_PROD}"
+  SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD}"
   SPRING_MAIL_PASSWORD:  "${SPRING_MAIL_PASSWORD}"
   SPRING_MAIL_USERNAME: "topleaderplatform@topleader.io"
   SPRING_MAIL_HOST: "smtp.gmail.com"
