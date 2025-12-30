@@ -20,6 +20,7 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 
 
 /**
@@ -27,6 +28,7 @@ import org.springframework.security.web.context.SecurityContextHolderFilter;
  */
 @Configuration
 @EnableWebSecurity
+@EnableJdbcHttpSession
 public class WebSecurityConfig {
 
     private static final String  USER_MDC_KEY = "username";
