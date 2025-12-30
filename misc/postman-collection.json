@@ -1,0 +1,1741 @@
+{
+  "info": {
+    "name": "Top Leader API",
+    "_postman_id": "top-leader-api-collection",
+    "description": "Complete API collection for Top Leader platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8085",
+      "type": "string"
+    },
+    {
+      "key": "prodUrl",
+      "value": "https://topleaderplatform.io",
+      "type": "string"
+    },
+    {
+      "key": "qaUrl",
+      "value": "https://qa.topleaderplatform.io",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "username",
+                  "value": "user@example.com",
+                  "type": "text"
+                },
+                {
+                  "key": "password",
+                  "value": "password123",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["login"]
+            },
+            "description": "Form-based login. Returns 204 on success with session cookie."
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["logout"]
+            },
+            "description": "Logout and invalidate session"
+          }
+        },
+        {
+          "name": "Check Authentication",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/authentication",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "authentication"]
+            },
+            "description": "Validates current authentication status. Returns 204 if authenticated."
+          }
+        },
+        {
+          "name": "Request Password Reset Link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user@example.com\",\n  \"locale\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/public/reset-password-link",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "public", "reset-password-link"]
+            },
+            "description": "Send password reset email. No authentication required."
+          }
+        },
+        {
+          "name": "Set New Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"newSecurePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/public/set-password/:token",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "public", "set-password", ":token"],
+              "variable": [
+                {
+                  "key": "token",
+                  "value": "reset-token-from-email"
+                }
+              ]
+            },
+            "description": "Set new password using reset token from email."
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"currentPassword\",\n  \"newPassword\": \"newSecurePassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "password"]
+            },
+            "description": "Change password for authenticated user."
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Info",
+      "item": [
+        {
+          "name": "Get User Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info"]
+            },
+            "description": "Get current user profile information"
+          }
+        },
+        {
+          "name": "Set User Locale",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"locale\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/locale",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "locale"]
+            },
+            "description": "Set user's preferred locale (en, cs, fr, de)"
+          }
+        },
+        {
+          "name": "Get User Notes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/notes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "notes"]
+            }
+          }
+        },
+        {
+          "name": "Set User Notes",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"My personal notes content\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/notes",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "notes"]
+            }
+          }
+        },
+        {
+          "name": "Set User Strengths",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\"Leadership\", \"Communication\", \"Problem Solving\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/strengths",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "strengths"]
+            }
+          }
+        },
+        {
+          "name": "Set User Values",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"data\": [\"Integrity\", \"Innovation\", \"Teamwork\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/values",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "values"]
+            }
+          }
+        },
+        {
+          "name": "Set User Timezone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timezone\": \"Europe/Prague\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/timezone",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "timezone"]
+            }
+          }
+        },
+        {
+          "name": "Set User Coach",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coach\": \"coach@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/coach",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "coach"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "item": [
+        {
+          "name": "Get User Upcoming Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/upcoming-sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "upcoming-sessions"]
+            }
+          }
+        },
+        {
+          "name": "Schedule Private Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"time\": \"2025-01-15T10:00:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/private-session",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "private-session"]
+            },
+            "description": "Schedule a private (paid) session"
+          }
+        },
+        {
+          "name": "Cancel User Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-info/upcoming-sessions/:sessionId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-info", "upcoming-sessions", ":sessionId"],
+              "variable": [
+                {
+                  "key": "sessionId",
+                  "value": "123"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Coach Upcoming Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-info/upcoming-sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-info", "upcoming-sessions"]
+            },
+            "description": "Get upcoming sessions for coach (requires COACH role)"
+          }
+        },
+        {
+          "name": "Cancel Coach Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-info/upcoming-sessions/:sessionId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-info", "upcoming-sessions", ":sessionId"],
+              "variable": [
+                {
+                  "key": "sessionId",
+                  "value": "123"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Schedule with Specific Coach",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"time\": \"2025-01-15T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coaches/:username/schedule",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coaches", ":username", "schedule"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "coach@example.com"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Schedule with Assigned Coach",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"time\": \"2025-01-15T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coaches/schedule",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coaches", "schedule"]
+            }
+          }
+        },
+        {
+          "name": "Get Coach Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coaches/:username/availability?from=2025-01-01T00:00:00&to=2025-01-31T23:59:59",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coaches", ":username", "availability"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2025-01-01T00:00:00"
+                },
+                {
+                  "key": "to",
+                  "value": "2025-01-31T23:59:59"
+                }
+              ],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "coach@example.com"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coaches",
+      "item": [
+        {
+          "name": "Search Coaches",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"page\": {\n    \"pageNumber\": 0,\n    \"pageSize\": 20,\n    \"sort\": \"priority,desc\"\n  },\n  \"languages\": [\"English\"],\n  \"fields\": [\"Leadership\"],\n  \"experienceFrom\": 5,\n  \"experienceTo\": 20,\n  \"prices\": [\"100\", \"150\"],\n  \"name\": \"\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coaches",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coaches"]
+            }
+          }
+        },
+        {
+          "name": "Get Coach by Username",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coaches/:username",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coaches", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "coach@example.com"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Coach Photo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coaches/:username/photo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coaches", ":username", "photo"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "coach@example.com"
+                }
+              ]
+            },
+            "description": "Public endpoint - no auth required"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coach Profile",
+      "item": [
+        {
+          "name": "Get Coach Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-info",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-info"]
+            },
+            "description": "Get own coach profile (requires COACH role)"
+          }
+        },
+        {
+          "name": "Update Coach Info",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"publicProfile\": true,\n  \"firstName\": \"John\",\n  \"lastName\": \"Coach\",\n  \"email\": \"coach@example.com\",\n  \"webLink\": \"https://mycoaching.com\",\n  \"bio\": \"Experienced executive coach with 15+ years in leadership development.\",\n  \"languages\": [\"English\", \"Czech\"],\n  \"fields\": [\"Leadership\", \"Executive Coaching\", \"Team Development\"],\n  \"experienceSince\": \"2010-01-01\",\n  \"rate\": \"150\",\n  \"rateOrder\": 1,\n  \"internalRate\": 120,\n  \"linkedinProfile\": \"https://linkedin.com/in/johncoach\",\n  \"freeSlots\": true,\n  \"priority\": 10,\n  \"primaryRoles\": [\"COACH\"],\n  \"certificate\": [\"PCC\", \"ICF\"],\n  \"baseLocations\": [\"Prague\", \"Vienna\"],\n  \"travelWillingness\": \"EU\",\n  \"deliveryFormat\": [\"online\", \"in-person\"],\n  \"serviceType\": [\"individual\", \"group\"],\n  \"topics\": [\"leadership\", \"communication\", \"conflict-resolution\"],\n  \"diagnosticTools\": [\"DISC\", \"MBTI\"],\n  \"industryExperience\": [\"IT\", \"Finance\", \"Healthcare\"],\n  \"references\": \"Available upon request\",\n  \"timeZone\": \"Europe/Prague\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-info",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-info"]
+            }
+          }
+        },
+        {
+          "name": "Upload Coach Photo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "/path/to/photo.jpg"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-info/photo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-info", "photo"]
+            }
+          }
+        },
+        {
+          "name": "Get Own Coach Photo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-info/photo",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-info", "photo"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coach Clients",
+      "item": [
+        {
+          "name": "Get Coach Clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-clients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-clients"]
+            }
+          }
+        },
+        {
+          "name": "Invite Client (Coach)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newclient@example.com\",\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Client\",\n  \"isTrial\": true,\n  \"locale\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-clients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-clients"]
+            },
+            "description": "Coach invites a new client"
+          }
+        },
+        {
+          "name": "Remove Client",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-clients/:username",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-clients", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "client@example.com"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coach Availability",
+      "item": [
+        {
+          "name": "Get Non-Recurring Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-availability/non-recurring?from=2025-01-01T00:00:00&to=2025-01-31T23:59:59",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-availability", "non-recurring"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2025-01-01T00:00:00"
+                },
+                {
+                  "key": "to",
+                  "value": "2025-01-31T23:59:59"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Set Non-Recurring Availability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"timeFrame\": {\n    \"from\": \"2025-01-15T08:00:00\",\n    \"to\": \"2025-01-15T18:00:00\"\n  },\n  \"events\": [\n    {\n      \"from\": \"2025-01-15T09:00:00\",\n      \"to\": \"2025-01-15T10:00:00\"\n    },\n    {\n      \"from\": \"2025-01-15T14:00:00\",\n      \"to\": \"2025-01-15T15:00:00\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-availability/non-recurring",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-availability", "non-recurring"]
+            }
+          }
+        },
+        {
+          "name": "Get Recurring Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-availability/recurring",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-availability", "recurring"]
+            }
+          }
+        },
+        {
+          "name": "Set Recurring Availability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"from\": {\n      \"day\": \"MONDAY\",\n      \"time\": \"09:00:00\"\n    },\n    \"to\": {\n      \"day\": \"MONDAY\",\n      \"time\": \"17:00:00\"\n    }\n  },\n  {\n    \"from\": {\n      \"day\": \"WEDNESDAY\",\n      \"time\": \"09:00:00\"\n    },\n    \"to\": {\n      \"day\": \"WEDNESDAY\",\n      \"time\": \"17:00:00\"\n    }\n  }\n]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-availability/recurring",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-availability", "recurring"]
+            }
+          }
+        },
+        {
+          "name": "Get Recurring Settings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-availability/recurring/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-availability", "recurring", "settings"]
+            }
+          }
+        },
+        {
+          "name": "Update Recurring Settings",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uuid\": \"calendar-uuid\",\n  \"type\": \"CALENDLY\",\n  \"active\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-availability/recurring/settings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-availability", "recurring", "settings"]
+            }
+          }
+        },
+        {
+          "name": "Get Calendly Event Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-availability/event-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-availability", "event-types"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Calendar Integration",
+      "item": [
+        {
+          "name": "Get Google Calendar Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/google-info",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "google-info"]
+            }
+          }
+        },
+        {
+          "name": "Disconnect Google Calendar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/google-disconnect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "google-disconnect"]
+            }
+          }
+        },
+        {
+          "name": "Get Calendly Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/calendly-info",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "calendly-info"]
+            }
+          }
+        },
+        {
+          "name": "Disconnect Calendly",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/calendly-disconnect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "calendly-disconnect"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Credits",
+      "item": [
+        {
+          "name": "Get User Credits",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-credits",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-credits"]
+            }
+          }
+        },
+        {
+          "name": "Request Credits",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credit\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-credits",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-credits"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get Notifications",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/notifications?page=0&size=20&sort=createdAt,desc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "notifications"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "createdAt,desc"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark All as Read",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/notifications/mark-as-read",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "notifications", "mark-as-read"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Badges",
+      "item": [
+        {
+          "name": "Get User Badges",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-badges",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-badges"]
+            }
+          }
+        },
+        {
+          "name": "Record Video Watched",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-badges/watched-video",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-badges", "watched-video"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feedback",
+      "item": [
+        {
+          "name": "Get Feedback Form",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/feedback/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "feedback", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Feedback Forms",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/feedback/user/:username",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "feedback", "user", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "user@example.com"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Feedback Form",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"360 Feedback Request\",\n  \"description\": \"Please provide feedback on leadership skills\",\n  \"validTo\": \"2025-12-31\",\n  \"locale\": \"en\",\n  \"isDraft\": false,\n  \"questions\": [\n    {\n      \"key\": \"leadership\",\n      \"text\": \"How would you rate their leadership skills?\"\n    },\n    {\n      \"key\": \"communication\",\n      \"text\": \"How effective is their communication?\"\n    }\n  ],\n  \"recipients\": [\n    {\n      \"username\": \"colleague@example.com\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/feedback",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "feedback"]
+            }
+          }
+        },
+        {
+          "name": "Update Feedback Form",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Feedback Request\",\n  \"description\": \"Updated description\",\n  \"validTo\": \"2025-12-31\",\n  \"locale\": \"en\",\n  \"isDraft\": false,\n  \"questions\": [\n    {\n      \"key\": \"leadership\",\n      \"text\": \"How would you rate their leadership skills?\"\n    }\n  ],\n  \"recipients\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/feedback/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "feedback", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Feedback Form",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/feedback/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "feedback", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Assessments",
+      "item": [
+        {
+          "name": "Get User Assessments",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-assessments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-assessments"]
+            }
+          }
+        },
+        {
+          "name": "Get Assessment Answer",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-assessments/:assessmentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-assessments", ":assessmentId"],
+              "variable": [
+                {
+                  "key": "assessmentId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Set Assessment Answer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"answer\": 5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-assessments/:assessmentId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-assessments", ":assessmentId"],
+              "variable": [
+                {
+                  "key": "assessmentId",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete All Assessments",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/user-assessments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "user-assessments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Favorites",
+      "item": [
+        {
+          "name": "Get Favorite Coaches",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-favorite",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-favorite"]
+            }
+          }
+        },
+        {
+          "name": "Save Favorite Coaches",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "[\"coach1@example.com\", \"coach2@example.com\", \"coach3@example.com\"]"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-favorite",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-favorite"]
+            }
+          }
+        },
+        {
+          "name": "Remove Favorite Coach",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-favorite/:coach",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-favorite", ":coach"],
+              "variable": [
+                {
+                  "key": "coach",
+                  "value": "coach@example.com"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Coach Notes",
+      "item": [
+        {
+          "name": "Get Coach Note for User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-user-note/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-user-note", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "123"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Coach Note for User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Session notes: Client showed great progress in leadership skills...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/coach-user-note/:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "coach-user-note", ":userId"],
+              "variable": [
+                {
+                  "key": "userId",
+                  "value": "123"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "History",
+      "item": [
+        {
+          "name": "Get History by Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/history/:type",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "history", ":type"],
+              "variable": [
+                {
+                  "key": "type",
+                  "value": "STRENGTHS"
+                }
+              ]
+            },
+            "description": "Types: STRENGTHS, VALUES, etc."
+          }
+        }
+      ]
+    },
+    {
+      "name": "HR Management",
+      "item": [
+        {
+          "name": "List Users (HR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/hr-users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "hr-users"]
+            },
+            "description": "Requires HR role"
+          }
+        },
+        {
+          "name": "Get User (HR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/hr-users/:username",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "hr-users", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "user@example.com"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Managers (HR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/hr-users/managers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "hr-users", "managers"]
+            }
+          }
+        },
+        {
+          "name": "Create User (HR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"timeZone\": \"Europe/Prague\",\n  \"authorities\": [\"USER\"],\n  \"status\": \"AUTHORIZED\",\n  \"locale\": \"en\",\n  \"position\": \"Senior Manager\",\n  \"aspiredCompetency\": \"Leadership\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/hr-users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "hr-users"]
+            },
+            "description": "HR creates a new user"
+          }
+        },
+        {
+          "name": "Update User (HR)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe Updated\",\n  \"timeZone\": \"Europe/Prague\",\n  \"authorities\": [\"USER\", \"MANAGER\"],\n  \"status\": \"AUTHORIZED\",\n  \"locale\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/hr-users/:username",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "hr-users", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "user@example.com"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Request Credits for User (HR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credit\": 50\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/hr-users/:username/credit-request",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "hr-users", ":username", "credit-request"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "user@example.com"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "My Team (Manager)",
+      "item": [
+        {
+          "name": "Get Team Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/my-team?page=0&size=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "my-team"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Requires MANAGER role"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List Users (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/admin/users?page=0&size=20&sort=username,asc",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "admin", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "20"
+                },
+                {
+                  "key": "sort",
+                  "value": "username,asc"
+                },
+                {
+                  "key": "username",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "firstName",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "lastName",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "companyId",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Requires ADMIN role. Supports filtering by username, firstName, lastName, status, companyId, etc."
+          }
+        },
+        {
+          "name": "Create User (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"newuser@example.com\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"timeZone\": \"Europe/Prague\",\n  \"companyId\": 1,\n  \"isTrial\": false,\n  \"authorities\": [\"USER\"],\n  \"status\": \"AUTHORIZED\",\n  \"locale\": \"en\",\n  \"rate\": \"100\",\n  \"internalRate\": 80,\n  \"certificate\": []\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "admin", "users"]
+            },
+            "description": "Admin creates a new user"
+          }
+        },
+        {
+          "name": "Update User (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe Updated\",\n  \"timeZone\": \"Europe/Prague\",\n  \"companyId\": 1,\n  \"authorities\": [\"USER\", \"COACH\"],\n  \"status\": \"AUTHORIZED\",\n  \"locale\": \"en\",\n  \"rate\": \"150\",\n  \"internalRate\": 120,\n  \"credit\": 100,\n  \"requestedCredit\": 0,\n  \"coach\": \"coach@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/admin/users/:username",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "admin", "users", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "user@example.com"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Resend Invitation (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"locale\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/admin/users/:username/resent-invitation",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "admin", "users", ":username", "resent-invitation"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "user@example.com"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Confirm Requested Credits (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/admin/users/:username/confirm-requested-credits",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "admin", "users", ":username", "confirm-requested-credits"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "user@example.com"
+                }
+              ]
+            },
+            "description": "Top up user credits from requested amount"
+          }
+        },
+        {
+          "name": "Delete User (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/admin/users/:username",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "admin", "users", ":username"],
+              "variable": [
+                {
+                  "key": "username",
+                  "value": "user@example.com"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Companies",
+      "item": [
+        {
+          "name": "List Companies",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/companies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "companies"]
+            },
+            "description": "Requires ADMIN role"
+          }
+        },
+        {
+          "name": "Create Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Acme Corporation\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/companies",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "companies"]
+            }
+          }
+        },
+        {
+          "name": "Update Company",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"defaultAllowedCoachRate\": [\"100\", \"150\", \"200\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/latest/companies/:company",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "latest", "companies", ":company"],
+              "variable": [
+                {
+                  "key": "company",
+                  "value": "Acme Corporation"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Jobs (Protected)",
+      "item": [
+        {
+          "name": "Process Payments",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "auth": {
+              "type": "basic",
+              "basic": [
+                {
+                  "key": "username",
+                  "value": "job-trigger",
+                  "type": "string"
+                },
+                {
+                  "key": "password",
+                  "value": "V7s7REyHo4v2HM9T",
+                  "type": "string"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/protected/jobs/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "protected", "jobs", "payments"]
+            },
+            "description": "Internal job endpoint - requires JOB role with HTTP Basic Auth"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health & Monitoring",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Public health check endpoint"
+          }
+        },
+        {
+          "name": "Prometheus Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/prometheus",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "prometheus"]
+            },
+            "description": "Prometheus metrics endpoint"
+          }
+        },
+        {
+          "name": "Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/info",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "info"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

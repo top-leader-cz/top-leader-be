@@ -6,6 +6,7 @@ package com.topleader.topleader.coach.list;
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
+import io.micrometer.core.instrument.Counter;
 import com.topleader.topleader.email.EmailTemplateService;
 import com.topleader.topleader.company.Company;
 import com.topleader.topleader.company.CompanyRepository;
@@ -90,6 +91,8 @@ public class CoachListController {
 
     private final CompanyRepository companyRepository;
 
+    private final Counter sessionScheduledCounter;
+
 
     @Transactional
     @PostMapping("/{username}/schedule")
@@ -157,6 +160,7 @@ public class CoachListController {
                 .setPrivate(false)
         );
 
+        sessionScheduledCounter.increment();
         emailTemplateService.sendBookingAlertEmail(session.getId());
     }
 

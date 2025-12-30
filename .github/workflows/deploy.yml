@@ -40,18 +40,16 @@ jobs:
       TOP_LEADER_CALENDLY_CLIENT_SECRETS: ${{ secrets.TOP_LEADER_CALENDLY_CLIENT_SECRETS }}
       GOOGLE_CLIENT_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_CLIENT_SECRET }}
       SPRING_AI_OPENAI_APIKEY: ${{ secrets.SPRING_AI_OPENAI_APIKEY }}
+      GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Replace repository-secrets in app-qa.yaml
         run: |
-          sed -i 's|\${SPRING_DATASOURCE_PASSWORD}|'"$SPRING_DATASOURCE_PASSWORD"'|g' src/main/appengine/app-qa.yaml
-          sed -i 's|\${SPRING_MAIL_PASSWORD}|'"$SPRING_MAIL_PASSWORD"'|g' src/main/appengine/app-qa.yaml
-          sed -i 's|\${TOP_LEADER_CALENDLY_CLIENT_SECRETS}|'"$TOP_LEADER_CALENDLY_CLIENT_SECRETS"'|g' src/main/appengine/app-qa.yaml
-          sed -i 's|\${GOOGLE_CLIENT_CLIENT_SECRET}|'"$GOOGLE_CLIENT_CLIENT_SECRET"'|g' src/main/appengine/app-qa.yaml
-          sed -i 's|\${SPRING_AI_OPENAI_APIKEY}|'"$SPRING_AI_OPENAI_APIKEY"'|g' src/main/appengine/app-qa.yaml
+          envsubst < src/main/appengine/app-qa.yaml > src/main/appengine/app-qa.yaml.tmp
+          mv src/main/appengine/app-qa.yaml.tmp src/main/appengine/app-qa.yaml
           echo "=== app-qa.yaml after replacement (secrets masked) ==="
-          cat src/main/appengine/app-qa.yaml | sed 's/\(PASSWORD\|SECRET\|APIKEY\): "[^"]*"/\1: "***"/g'
+          cat src/main/appengine/app-qa.yaml | sed 's/\(PASSWORD\|SECRET\|APIKEY\|TOKEN\): "[^"]*"/\1: "***"/g'
       - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
@@ -96,18 +94,16 @@ jobs:
       TOP_LEADER_CALENDLY_CLIENT_SECRETS: ${{ secrets.TOP_LEADER_CALENDLY_CLIENT_SECRETS }}
       GOOGLE_CLIENT_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_CLIENT_SECRET }}
       SPRING_AI_OPENAI_APIKEY: ${{ secrets.SPRING_AI_OPENAI_APIKEY }}
+      GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
       - name: Replace repository-secrets in app-prod.yaml
         run: |
-          sed -i 's|\${SPRING_DATASOURCE_PASSWORD}|'"$SPRING_DATASOURCE_PASSWORD"'|g' src/main/appengine/app-prod.yaml
-          sed -i 's|\${SPRING_MAIL_PASSWORD}|'"$SPRING_MAIL_PASSWORD"'|g' src/main/appengine/app-prod.yaml
-          sed -i 's|\${TOP_LEADER_CALENDLY_CLIENT_SECRETS}|'"$TOP_LEADER_CALENDLY_CLIENT_SECRETS"'|g' src/main/appengine/app-prod.yaml
-          sed -i 's|\${GOOGLE_CLIENT_CLIENT_SECRET}|'"$GOOGLE_CLIENT_CLIENT_SECRET"'|g' src/main/appengine/app-prod.yaml
-          sed -i 's|\${SPRING_AI_OPENAI_APIKEY}|'"$SPRING_AI_OPENAI_APIKEY"'|g' src/main/appengine/app-prod.yaml
+          envsubst < src/main/appengine/app-prod.yaml > src/main/appengine/app-prod.yaml.tmp
+          mv src/main/appengine/app-prod.yaml.tmp src/main/appengine/app-prod.yaml
           echo "=== app-prod.yaml after replacement (secrets masked) ==="
-          cat src/main/appengine/app-prod.yaml | sed 's/\(PASSWORD\|SECRET\|APIKEY\): "[^"]*"/\1: "***"/g'
+          cat src/main/appengine/app-prod.yaml | sed 's/\(PASSWORD\|SECRET\|APIKEY\|TOKEN\): "[^"]*"/\1: "***"/g'
       - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:

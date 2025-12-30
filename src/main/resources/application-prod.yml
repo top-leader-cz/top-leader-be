@@ -36,3 +36,17 @@ google:
   application-name: "topleaderplatform.io"
   client:
     redirectUri: https://topleaderplatform.io/login/google
+
+management:
+  opentelemetry:
+    resource-attributes:
+      "service.name": top-leader
+      "service.namespace": topleader
+      "deployment.environment": prod
+  otlp:
+    metrics:
+      export:
+        enabled: true
+  metrics:
+    tags:
+      environment: prod
