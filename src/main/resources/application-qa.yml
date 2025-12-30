@@ -35,3 +35,16 @@ google:
   application-name: "qa.topleaderplatform.io"
   client:
     redirectUri: https://qa.topleaderplatform.io/login/google
+
+management:
+  otlp:
+    metrics:
+      export:
+        url: https://otlp-gateway-prod-eu-west-2.grafana.net/otlp/v1/metrics
+        headers:
+          Authorization: "Basic ${GRAFANA_OTLP_TOKEN}"
+        step: 30s
+  metrics:
+    tags:
+      application: top-leader
+      environment: qa

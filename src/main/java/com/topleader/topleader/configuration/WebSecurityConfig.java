@@ -86,7 +86,7 @@ public class WebSecurityConfig {
         http
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**",
-                        "/v3/api-docs/**", "/_ah/warmup").permitAll()
+                        "/v3/api-docs/**", "/_ah/warmup", "/actuator/health", "/actuator/prometheus").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(e ->

@@ -40,6 +40,7 @@ jobs:
       TOP_LEADER_CALENDLY_CLIENT_SECRETS: ${{ secrets.TOP_LEADER_CALENDLY_CLIENT_SECRETS }}
       GOOGLE_CLIENT_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_CLIENT_SECRET }}
       SPRING_AI_OPENAI_APIKEY: ${{ secrets.SPRING_AI_OPENAI_APIKEY }}
+      GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -50,8 +51,9 @@ jobs:
           sed -i 's|\${TOP_LEADER_CALENDLY_CLIENT_SECRETS}|'"$TOP_LEADER_CALENDLY_CLIENT_SECRETS"'|g' src/main/appengine/app-qa.yaml
           sed -i 's|\${GOOGLE_CLIENT_CLIENT_SECRET}|'"$GOOGLE_CLIENT_CLIENT_SECRET"'|g' src/main/appengine/app-qa.yaml
           sed -i 's|\${SPRING_AI_OPENAI_APIKEY}|'"$SPRING_AI_OPENAI_APIKEY"'|g' src/main/appengine/app-qa.yaml
+          sed -i 's|\${GRAFANA_OTLP_TOKEN}|'"$GRAFANA_OTLP_TOKEN"'|g' src/main/appengine/app-qa.yaml
           echo "=== app-qa.yaml after replacement (secrets masked) ==="
-          cat src/main/appengine/app-qa.yaml | sed 's/\(PASSWORD\|SECRET\|APIKEY\): "[^"]*"/\1: "***"/g'
+          cat src/main/appengine/app-qa.yaml | sed 's/\(PASSWORD\|SECRET\|APIKEY\|TOKEN\): "[^"]*"/\1: "***"/g'
       - name: Set up JDK 25
         uses: actions/setup-java@v4
         with:
