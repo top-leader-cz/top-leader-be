@@ -37,7 +37,6 @@ JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean package -DskipTests
 src/main/java/com/topleader/topleader/
 ├── admin/                  # Admin views and management
 ├── ai/                     # AI integrations
-├── authentication/         # Authentication logic
 ├── calendar/               # Calendar integrations
 ├── coach/                  # Coach profiles, availability
 ├── company/                # Company entity
@@ -47,13 +46,12 @@ src/main/java/com/topleader/topleader/
 ├── exception/              # Custom exceptions (NotFoundException, ApiValidationException)
 ├── feedback/               # Feedback forms
 ├── feedback_notification/  # Feedback notification handling
-├── health/                 # Health checks
 ├── history/                # History tracking
 ├── hr/                     # HR user management
 ├── ical/                   # iCal format handling
 ├── message/                # User messaging
 ├── myteam/                 # Team management
-├── notification/           # Notifications
+├── notification/            # Notifications
 ├── password/               # Password management
 ├── report/                 # Reports
 ├── scheduled_session/      # Scheduled sessions
