@@ -229,8 +229,9 @@ public class UserAllocationService {
             return; // Decreasing or no change is always allowed
         }
 
-        int currentTotal = userAllocationRepository.sumAllocatedUnitsByPackageId(pkg.getId());
-        int availableUnits = pkg.getTotalUnits() - currentTotal;
+        // Sum ACTIVE allocations (allocatedUnits) + INACTIVE allocations (consumedUnits)
+        int currentUsed = userAllocationRepository.sumUsedUnitsByPackageId(pkg.getId());
+        int availableUnits = pkg.getTotalUnits() - currentUsed;
 
         if (delta > availableUnits) {
             throw new ApiValidationException(CAPACITY_EXCEEDED, "allocatedUnits", String.valueOf(delta),

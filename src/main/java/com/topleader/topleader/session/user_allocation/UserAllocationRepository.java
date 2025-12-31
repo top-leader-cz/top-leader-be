@@ -26,6 +26,20 @@ public interface UserAllocationRepository extends JpaRepository<UserAllocation, 
     @Query("SELECT COALESCE(SUM(ua.allocatedUnits), 0) FROM UserAllocation ua WHERE ua.packageId = :packageId AND ua.status = 'ACTIVE'")
     int sumAllocatedUnitsByPackageId(Long packageId);
 
+    @Query("SELECT COALESCE(SUM(ua.consumedUnits), 0) FROM UserAllocation ua WHERE ua.packageId = :packageId AND ua.status = 'INACTIVE'")
+    int sumConsumedUnitsForInactiveByPackageId(Long packageId);
+
+    @Query("""
+        SELECT COALESCE(SUM(
+            CASE WHEN ua.status = 'ACTIVE' THEN ua.allocatedUnits
+                 ELSE ua.consumedUnits
+            END
+        ), 0)
+        FROM UserAllocation ua
+        WHERE ua.packageId = :packageId
+        """)
+    int sumUsedUnitsByPackageId(Long packageId);
+
     List<UserAllocation> findByUserId(String userId);
 
     List<UserAllocation> findByUserIdAndStatus(String userId, UserAllocation.AllocationStatus status);
