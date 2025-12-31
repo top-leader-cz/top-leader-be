@@ -105,7 +105,8 @@ class CoachingPackageControllerIT extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "status": "INACTIVE"
+                                    "status": "INACTIVE",
+                                    "totalUnits": 100
                                 }
                                 """))
                 .andExpect(status().isOk())
@@ -125,7 +126,8 @@ class CoachingPackageControllerIT extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "status": "INACTIVE"
+                                    "status": "INACTIVE",
+                                    "totalUnits": 200
                                 }
                                 """))
                 .andExpect(status().isOk())
