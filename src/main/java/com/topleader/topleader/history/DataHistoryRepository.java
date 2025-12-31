@@ -6,7 +6,6 @@ package com.topleader.topleader.history;
 import java.util.List;
 import java.util.Optional;
 
-import com.topleader.topleader.scheduled_session.ScheduledSession;
 import org.springframework.data.repository.CrudRepository;
 
 

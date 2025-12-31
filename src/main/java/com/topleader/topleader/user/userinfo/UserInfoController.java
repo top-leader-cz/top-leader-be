@@ -11,8 +11,8 @@ import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.notification.Notification;
 import com.topleader.topleader.notification.NotificationService;
 import com.topleader.topleader.notification.context.CoachLinkedNotificationContext;
-import com.topleader.topleader.scheduled_session.ScheduledSession;
-import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinsight.UserInsightService;
@@ -203,26 +203,30 @@ public class UserInfoController {
     }
 
     @GetMapping("/upcoming-sessions")
-    public List<UpcomingSessionDto> getUpcomingSessions(@AuthenticationPrincipal UserDetails user) {
+    public List<SessionDto> getUpcomingSessions(@AuthenticationPrincipal UserDetails user) {
+        return getSessionDtos(scheduledSessionService.listUsersFutureSessions(user.getUsername()));
+    }
 
-        final var sessions = scheduledSessionService.listUsersFutureSessions(user.getUsername());
+    @GetMapping("/sessions")
+    public List<SessionDto> getAllSessions(@AuthenticationPrincipal UserDetails user) {
+        return getSessionDtos(scheduledSessionService.listUsersSessions(user.getUsername()));
+    }
 
+    private List<SessionDto> getSessionDtos(List<ScheduledSession> sessions) {
         if (sessions.isEmpty()) {
             return List.of();
         }
 
-        final var coaches = userRepository.findAllById(sessions.stream()
+        var coaches = userRepository.findAllById(sessions.stream()
                 .map(ScheduledSession::getCoachUsername)
                 .collect(Collectors.toSet())
             ).stream()
             .collect(toMap(User::getUsername, Function.identity()));
 
-
         return sessions.stream()
-            .map(s -> UpcomingSessionDto.from(s, Optional.ofNullable(coaches.get(s.getCoachUsername()))))
-            .sorted(Comparator.comparing(UpcomingSessionDto::time))
+            .map(s -> SessionDto.from(s, Optional.ofNullable(coaches.get(s.getCoachUsername()))))
+            .sorted(Comparator.comparing(SessionDto::time).reversed())
             .toList();
-
     }
 
     @Transactional
@@ -290,10 +294,8 @@ public class UserInfoController {
         String firstName,
         String lastName,
         LocalDateTime time,
-
         boolean isPrivate
     ) {
-
         public static UpcomingSessionDto from(ScheduledSession s, Optional<User> u) {
             return new UpcomingSessionDto(
                 s.getId(),
@@ -302,6 +304,28 @@ public class UserInfoController {
                 u.map(User::getLastName).orElse(null),
                 s.getTime(),
                 s.isPrivate()
+            );
+        }
+    }
+
+    public record SessionDto(
+        Long id,
+        String coach,
+        String firstName,
+        String lastName,
+        LocalDateTime time,
+        boolean isPrivate,
+        ScheduledSession.Status status
+    ) {
+        public static SessionDto from(ScheduledSession s, Optional<User> u) {
+            return new SessionDto(
+                s.getId(),
+                u.map(User::getUsername).orElse(null),
+                u.map(User::getFirstName).orElse(null),
+                u.map(User::getLastName).orElse(null),
+                s.getTime(),
+                s.isPrivate(),
+                s.getStatus()
             );
         }
     }

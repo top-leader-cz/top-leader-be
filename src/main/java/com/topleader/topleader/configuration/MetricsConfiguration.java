@@ -3,8 +3,9 @@
  */
 package com.topleader.topleader.configuration;
 
-import com.topleader.topleader.scheduled_session.ScheduledSession;
-import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;

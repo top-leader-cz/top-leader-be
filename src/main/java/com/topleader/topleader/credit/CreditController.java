@@ -3,7 +3,7 @@
  */
 package com.topleader.topleader.credit;
 
-import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;

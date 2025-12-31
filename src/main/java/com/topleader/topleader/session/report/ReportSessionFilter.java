@@ -1,4 +1,4 @@
-package com.topleader.topleader.report;
+package com.topleader.topleader.session.report;
 
 import java.time.ZonedDateTime;
 

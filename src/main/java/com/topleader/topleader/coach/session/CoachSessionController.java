@@ -1,10 +1,9 @@
 package com.topleader.topleader.coach.session;
 
-import com.topleader.topleader.scheduled_session.ScheduledSession;
-import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;

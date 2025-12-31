@@ -1,10 +1,8 @@
 package com.topleader.topleader.coach.session;
 
-import com.topleader.topleader.scheduled_session.ScheduledSession;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import jakarta.persistence.criteria.Predicate;

@@ -11,7 +11,7 @@ import com.topleader.topleader.coach.availability.CoachAvailability;
 import com.topleader.topleader.coach.availability.CoachAvailabilityRepository;
 import com.topleader.topleader.credit.history.CreditHistory;
 import com.topleader.topleader.credit.history.CreditHistoryRepository;
-import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 
@@ -19,10 +19,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
-import java.util.List;
 
 import lombok.SneakyThrows;
-import net.fortuna.ical4j.model.WeekDay;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
