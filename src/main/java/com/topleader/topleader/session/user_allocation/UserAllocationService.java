@@ -198,6 +198,11 @@ public class UserAllocationService {
         allocation.setStatus(request.status())
                 .setUpdatedBy(updatedBy);
 
+        // When setting to INACTIVE, set allocated to consumed (release unused units)
+        if (request.status() == UserAllocation.AllocationStatus.INACTIVE) {
+            allocation.setAllocatedUnits(allocation.getConsumedUnits());
+        }
+
         var saved = userAllocationRepository.save(allocation);
         return UserAllocationDto.from(saved);
     }

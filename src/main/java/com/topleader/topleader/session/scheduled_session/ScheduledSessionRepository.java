@@ -42,13 +42,13 @@ public interface ScheduledSessionRepository extends JpaSpecificationExecutor<Sch
     @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status IN ('COMPLETED', 'NO_SHOW_CLIENT')")
     int countConsumedByUsername(String username);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'UPCOMING' AND s.time >= :from AND s.time < :to")
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'UPCOMING' AND s.time >= :from AND s.time < :to AND s.time < CURRENT_TIMESTAMP")
     int countUpcomingByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
 
     @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status IN ('COMPLETED', 'NO_SHOW_CLIENT') AND s.time >= :from AND s.time < :to")
     int countConsumedByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'UPCOMING' AND s.time >= :from AND s.time < :to")
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'UPCOMING' AND s.time >= :from AND s.time < :to AND s.time < CURRENT_TIMESTAMP")
     int countUpcomingByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
 
     @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status IN ('COMPLETED', 'NO_SHOW_CLIENT') AND s.time >= :from AND s.time < :to")
