@@ -26,13 +26,16 @@ class HrReportControllerIT extends IntegrationTest {
     private ScheduledSessionRepository scheduledSessionRepository;
 
     private void createSession(String username, LocalDateTime time, ScheduledSession.Status status) {
+        var now = LocalDateTime.now();
         scheduledSessionRepository.save(new ScheduledSession()
                 .setUsername(username)
                 .setCoachUsername("coach")
                 .setTime(time)
                 .setStatus(status)
                 .setPaid(status != ScheduledSession.Status.UPCOMING)
-                .setPrivate(false));
+                .setPrivate(false)
+                .setCreatedAt(now)
+                .setUpdatedAt(now));
     }
 
     @Test

@@ -1,4 +1,4 @@
-package com.topleader.topleader.coach.session;
+package com.topleader.topleader.session.coach_session;
 
 
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
@@ -12,6 +12,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -37,7 +38,7 @@ public class CoachSessionController {
     @PatchMapping
     public SessionDto updateSession(@AuthenticationPrincipal UserDetails user, @RequestBody SessionDto session) {
         return scheduledSessionRepository.findByCoachUsernameAndId(user.getUsername(), session.id())
-                .map(s -> s.setStatus(session.status()))
+                .map(s -> s.setStatus(session.status()).setUpdatedAt(LocalDateTime.now()))
                 .map(scheduledSessionRepository::save)
                 .map(SessionDto::toDto)
                 .orElseThrow(() -> new EntityNotFoundException("Entity not found session"));
