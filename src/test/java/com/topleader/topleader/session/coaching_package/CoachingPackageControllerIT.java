@@ -56,8 +56,8 @@ class CoachingPackageControllerIT extends IntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void createPackage_asHr_success() throws Exception {
+    @WithMockUser(username = "adminUser", authorities = {"ADMIN"})
+    void createPackage_asAdmin_success() throws Exception {
         mvc.perform(post("/api/latest/companies/1/coaching-packages")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -76,7 +76,7 @@ class CoachingPackageControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.totalUnits").value(75))
                 .andExpect(jsonPath("$.status").value("ACTIVE"))
                 .andExpect(jsonPath("$.contextRef").value("test-context"))
-                .andExpect(jsonPath("$.createdBy").value("hrUser"))
+                .andExpect(jsonPath("$.createdBy").value("adminUser"))
                 .andExpect(jsonPath("$.metrics.totalUnits").value(75))
                 .andExpect(jsonPath("$.metrics.remainingUnits").value(75));
     }
@@ -99,20 +99,21 @@ class CoachingPackageControllerIT extends IntegrationTest {
     }
 
     @Test
-    @WithMockUser(username = "hrUser", authorities = {"HR"})
+    @WithMockUser(username = "adminUser", authorities = {"ADMIN"})
     void updatePackage_deactivate_success() throws Exception {
         mvc.perform(patch("/api/latest/coaching-packages/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "status": "INACTIVE"
+                                    "status": "INACTIVE",
+                                    "totalUnits": 100
                                 }
                                 """))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.id").value(1))
                 .andExpect(jsonPath("$.status").value("INACTIVE"))
-                .andExpect(jsonPath("$.updatedBy").value("hrUser"));
+                .andExpect(jsonPath("$.updatedBy").value("adminUser"));
 
         var updated = coachingPackageRepository.findById(1L).orElseThrow();
         assertThat(updated.getStatus()).isEqualTo(CoachingPackage.PackageStatus.INACTIVE);
@@ -125,7 +126,8 @@ class CoachingPackageControllerIT extends IntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "status": "INACTIVE"
+                                    "status": "INACTIVE",
+                                    "totalUnits": 200
                                 }
                                 """))
                 .andExpect(status().isOk())

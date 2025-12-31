@@ -109,10 +109,11 @@ public class CoachingPackageService {
                 .orElseThrow(NotFoundException::new);
 
         entity.setStatus(request.status())
-                .setUpdatedBy(updatedBy);
+                        .setUpdatedBy(updatedBy)
+                        .setTotalUnits(request.totalUnits() > entity.getTotalUnits() ? request.totalUnits(): entity.getTotalUnits());
 
         var saved = coachingPackageRepository.save(entity);
-        log.info("Updated coaching package {} status to {}", packageId, request.status());
+        log.info("Updated coaching package {}", packageId);
 
         return toDto(saved);
     }
@@ -143,7 +144,10 @@ public class CoachingPackageService {
 
     private int computeConsumedUnits(Long packageId) {
         var userIds = getUserIdsForPackage(packageId);
-        return userIds.isEmpty() ? 0 : scheduledSessionRepository.countConsumedByUsernames(userIds);
+        if (userIds.isEmpty()) {
+            return 0;
+        }
+        return scheduledSessionRepository.countConsumedByUsernames(userIds);
     }
 
     private List<String> getUserIdsForPackage(Long packageId) {

@@ -11,6 +11,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.repository.CrudRepository;
 
 /**
  * Custom business metrics for monitoring.
@@ -39,7 +40,7 @@ public class MetricsConfiguration {
 
         // Gauge for upcoming sessions
         Gauge.builder("topleader.sessions.scheduled", repository,
-                        repo -> repo.count())
+                        CrudRepository::count)
                 .description("Total number of scheduled sessions")
                 .register(registry);
 

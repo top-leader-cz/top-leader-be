@@ -46,6 +46,7 @@ public class ScheduledSession {
 
     private LocalDateTime updatedAt;
 
+    private String updatedBy;
 
     public enum Status {
         COMPLETED,

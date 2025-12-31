@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1999043286724608,
+  "id": 0,
   "links": [],
   "panels": [
     {
@@ -536,7 +536,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "#9e9e9e",
                 "value": 0
               }
             ]
@@ -652,12 +652,142 @@
       "type": "stat"
     },
     {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 18,
+        "y": 9
+      },
+      "id": 23,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0-20160616057",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "topleader_sessions_by_status{service_name=~\"$service\", environment=~\"$environment\", status=\"completed\"}",
+          "legendFormat": "Completed",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Completed",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 3,
+        "x": 21,
+        "y": 9
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.4.0-20160616057",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "expr": "sum(topleader_sessions_by_status{service_name=~\"$service\", environment=~\"$environment\", status=~\"canceled_by_coach|canceled_by_client|canceled\"})",
+          "legendFormat": "Canceled",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Canceled",
+      "type": "stat"
+    },
+    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 13
       },
       "id": 100,
       "panels": [],
@@ -726,7 +856,7 @@
         "h": 8,
         "w": 6,
         "x": 0,
-        "y": 10
+        "y": 14
       },
       "id": 1,
       "options": {
@@ -870,7 +1000,7 @@
         "h": 8,
         "w": 6,
         "x": 6,
-        "y": 10
+        "y": 14
       },
       "id": 2,
       "options": {
@@ -897,7 +1027,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.5, sum by(le) (rate(http_server_requests_milliseconds_bucket{service_name=~\"$service\", environment=~\"$environment\"}[$__rate_interval]))) * 1000",
+          "expr": "histogram_quantile(0.5, sum by(le) (rate(http_server_requests_milliseconds_bucket{service_name=~\"$service\", environment=~\"$environment\"}[$__rate_interval]))) ",
           "legendFormat": "p50",
           "range": true,
           "refId": "A"
@@ -908,7 +1038,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_milliseconds_bucket{service_name=~\"$service\", environment=~\"$environment\"}[$__rate_interval])) by (le)) * 1000",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_milliseconds_bucket{service_name=~\"$service\", environment=~\"$environment\"}[$__rate_interval])) by (le)) ",
           "legendFormat": "p95",
           "range": true,
           "refId": "B"
@@ -919,7 +1049,7 @@
             "uid": "${datasource}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_milliseconds_bucket{service_name=~\"$service\", environment=~\"$environment\"}[$__rate_interval])) by (le)) * 1000",
+          "expr": "histogram_quantile(0.99, sum(rate(http_server_requests_milliseconds_bucket{service_name=~\"$service\", environment=~\"$environment\"}[$__rate_interval])) by (le)) ",
           "legendFormat": "p99",
           "range": true,
           "refId": "C"
@@ -996,7 +1126,7 @@
         "h": 8,
         "w": 6,
         "x": 12,
-        "y": 10
+        "y": 14
       },
       "id": 3,
       "options": {
@@ -1104,7 +1234,7 @@
         "h": 8,
         "w": 6,
         "x": 18,
-        "y": 10
+        "y": 14
       },
       "id": 4,
       "options": {
@@ -1157,7 +1287,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 22
       },
       "id": 101,
       "panels": [],
@@ -1245,21 +1375,6 @@
                 }
               }
             ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "System CPU"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "fixedColor": "orange",
-                  "mode": "fixed"
-                }
-              }
-            ]
           }
         ]
       },
@@ -1267,7 +1382,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 19
+        "y": 23
       },
       "id": 5,
       "options": {
@@ -1299,17 +1414,6 @@
           "legendFormat": "Process CPU",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "expr": "system_cpu_usage{service_name=~\"$service\", environment=~\"$environment\"} * 100",
-          "legendFormat": "System CPU",
-          "range": true,
-          "refId": "B"
         }
       ],
       "title": "CPU Utilization",
@@ -1442,7 +1546,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 19
+        "y": 23
       },
       "id": 6,
       "options": {
@@ -1539,7 +1643,7 @@
         "h": 4,
         "w": 4,
         "x": 0,
-        "y": 27
+        "y": 31
       },
       "id": 7,
       "options": {
@@ -1612,7 +1716,7 @@
         "h": 4,
         "w": 4,
         "x": 4,
-        "y": 27
+        "y": 31
       },
       "id": 8,
       "options": {
@@ -1675,7 +1779,7 @@
         "h": 4,
         "w": 4,
         "x": 8,
-        "y": 27
+        "y": 31
       },
       "id": 9,
       "options": {
@@ -1740,7 +1844,7 @@
         "h": 4,
         "w": 4,
         "x": 12,
-        "y": 27
+        "y": 31
       },
       "id": 10,
       "options": {
@@ -1776,19 +1880,6 @@
       ],
       "title": "Uptime",
       "type": "stat"
-    },
-    {
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 31
-      },
-      "id": 102,
-      "panels": [],
-      "title": "Garbage Collection",
-      "type": "row"
     },
     {
       "datasource": {
@@ -1852,7 +1943,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 32
+        "y": 35
       },
       "id": 11,
       "options": {
@@ -1950,7 +2041,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 32
+        "y": 35
       },
       "id": 12,
       "options": {
@@ -1992,11 +2083,11 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 38
+        "y": 41
       },
-      "id": 103,
+      "id": 102,
       "panels": [],
-      "title": "Database (HikariCP)",
+      "title": "Garbage Collection",
       "type": "row"
     },
     {
@@ -2133,7 +2224,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 39
+        "y": 42
       },
       "id": 13,
       "options": {
@@ -2266,7 +2357,7 @@
         "h": 6,
         "w": 12,
         "x": 12,
-        "y": 39
+        "y": 42
       },
       "id": 14,
       "options": {
@@ -2312,6 +2403,19 @@
       ],
       "title": "HikariCP Timing",
       "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "id": 103,
+      "panels": [],
+      "title": "Database (HikariCP)",
+      "type": "row"
     }
   ],
   "preload": false,
@@ -2340,8 +2444,8 @@
       },
       {
         "current": {
-          "text": "",
-          "value": ""
+          "text": "qa",
+          "value": "qa"
         },
         "datasource": {
           "type": "prometheus",
@@ -2396,6 +2500,6 @@
   "timezone": "browser",
   "title": "Top Leader - Golden Signals & JVM",
   "uid": "top-leader-golden-jvm",
-  "version": 9,
+  "version": 21,
   "weekStart": ""
 }

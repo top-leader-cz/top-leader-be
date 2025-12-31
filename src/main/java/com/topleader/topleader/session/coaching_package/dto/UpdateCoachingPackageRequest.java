@@ -4,14 +4,13 @@
 package com.topleader.topleader.session.coaching_package.dto;
 
 import com.topleader.topleader.session.coaching_package.CoachingPackage;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-
-/**
- * Request DTO for updating a coaching package (e.g., deactivating).
- */
 public record UpdateCoachingPackageRequest(
-        @NotNull(message = "Status is required")
-        CoachingPackage.PackageStatus status
+        @NotNull
+        CoachingPackage.PackageStatus status,
+        @Min(value = 0, message = "Total units must be non-negative")
+        int totalUnits
 ) {
 }

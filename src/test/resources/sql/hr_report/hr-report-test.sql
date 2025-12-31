@@ -14,10 +14,10 @@ VALUES ('hrUser', 'password', '["USER", "HR"]', 'AUTHORIZED', 'UTC', 'HR', 'User
        ('coach', 'password', '["USER", "COACH"]', 'AUTHORIZED', 'UTC', 'Coach', 'User', 1);
 
 INSERT INTO coaching_package (id, company_id, pool_type, total_units, valid_from, valid_to, status, context_ref, created_at, created_by, updated_at, updated_by)
-VALUES (nextval('coaching_package_id_seq'), 1, 'CORE', 100, '2024-01-01 00:00:00', '2024-12-31 23:59:59', 'ACTIVE', null, '2024-01-01 00:00:00', 'hrUser', '2024-01-01 00:00:00', 'hrUser'),
-       (nextval('coaching_package_id_seq'), 1, 'MASTER', 50, '2024-01-01 00:00:00', '2024-12-31 23:59:59', 'INACTIVE', null, '2024-01-01 00:00:00', 'hrUser', '2024-01-01 00:00:00', 'hrUser'),
-       (nextval('coaching_package_id_seq'), 2, 'CORE', 200, '2024-01-01 00:00:00', '2024-12-31 23:59:59', 'ACTIVE', null, '2024-01-01 00:00:00', 'hrUser2', '2024-01-01 00:00:00', 'hrUser2');
+VALUES (nextval('coaching_package_id_seq'), 1, 'CORE', 100, CURRENT_TIMESTAMP - INTERVAL '1 year', CURRENT_TIMESTAMP + INTERVAL '1 year', 'ACTIVE', null, CURRENT_TIMESTAMP, 'hrUser', CURRENT_TIMESTAMP, 'hrUser'),
+       (nextval('coaching_package_id_seq'), 1, 'MASTER', 50, CURRENT_TIMESTAMP - INTERVAL '1 year', CURRENT_TIMESTAMP + INTERVAL '1 year', 'INACTIVE', null, CURRENT_TIMESTAMP, 'hrUser', CURRENT_TIMESTAMP, 'hrUser'),
+       (nextval('coaching_package_id_seq'), 2, 'CORE', 200, CURRENT_TIMESTAMP - INTERVAL '1 year', CURRENT_TIMESTAMP + INTERVAL '1 year', 'ACTIVE', null, CURRENT_TIMESTAMP, 'hrUser2', CURRENT_TIMESTAMP, 'hrUser2');
 
 INSERT INTO user_allocation (id, company_id, package_id, user_id, allocated_units, consumed_units, status, created_at, created_by, updated_at, updated_by)
-VALUES (nextval('user_allocation_id_seq'), 1, 1, 'user1', 10, 0, 'ACTIVE', '2024-01-01 00:00:00', 'hrUser', '2024-01-01 00:00:00', 'hrUser'),
-       (nextval('user_allocation_id_seq'), 1, 1, 'user2', 20, 5, 'ACTIVE', '2024-01-01 00:00:00', 'hrUser', '2024-01-01 00:00:00', 'hrUser');
+VALUES (nextval('user_allocation_id_seq'), 1, 1, 'user1', 10, 0, 'ACTIVE', CURRENT_TIMESTAMP, 'hrUser', CURRENT_TIMESTAMP, 'hrUser'),
+       (nextval('user_allocation_id_seq'), 1, 1, 'user2', 20, 5, 'ACTIVE', CURRENT_TIMESTAMP, 'hrUser', CURRENT_TIMESTAMP, 'hrUser');
