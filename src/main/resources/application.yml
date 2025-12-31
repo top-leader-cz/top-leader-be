@@ -77,10 +77,6 @@ spring:
     deserialization:
       fail-on-null-for-primitives: false
 
-  session:
-    jdbc:
-      initialize-schema: never
-
 top-leader:
   app-url: http://localhost:8080
   supported-invitations: en, cs, fr, de

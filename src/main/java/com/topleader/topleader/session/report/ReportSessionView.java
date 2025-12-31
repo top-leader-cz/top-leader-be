@@ -1,6 +1,6 @@
-package com.topleader.topleader.report;
+package com.topleader.topleader.session.report;
 
-import com.topleader.topleader.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;

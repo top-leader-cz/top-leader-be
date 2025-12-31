@@ -1,6 +1,6 @@
 package com.topleader.topleader.coach.session;
 
-import com.topleader.topleader.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;

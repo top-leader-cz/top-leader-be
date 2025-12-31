@@ -1,9 +1,10 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.scheduled_session;
+package com.topleader.topleader.session.scheduled_session;
 
 import com.topleader.topleader.credit.CreditService;
+import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -86,5 +87,17 @@ public class ScheduledSessionService {
 
     public Optional<ScheduledSession> getSessionData(Long sessionId) {
         return scheduledSessionRepository.findById(sessionId);
+    }
+
+    @Transactional
+    public int markPendingSessionsAsNoShowClient() {
+        var threshold = LocalDateTime.now().minusHours(48);
+        var count = scheduledSessionRepository.markPendingSessionsAsCompleted(threshold);
+        log.info("Marked {} sessions as COMPLETED (older than 48h)", count);
+        return count;
+    }
+
+    public List<ScheduledSession> listUsersSessions(String username) {
+        return scheduledSessionRepository.findAllByUsername(username);
     }
 }

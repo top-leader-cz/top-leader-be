@@ -1,6 +1,7 @@
 package com.topleader.topleader.coach.session;
 
-import com.topleader.topleader.scheduled_session.ScheduledSession;
+
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;

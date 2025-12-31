@@ -1,0 +1,139 @@
+/*
+ * Copyright (c) 2023 Price f(x), s.r.o.
+ */
+package com.topleader.topleader.scheduled_session;
+
+import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.jdbc.Sql;
+
+import java.time.LocalDateTime;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@Sql(scripts = "/sql/scheduled_session/scheduled-session-admin-test.sql")
+class ScheduledSessionAdminControllerIT extends IntegrationTest {
+
+    @Autowired
+    private ScheduledSessionRepository scheduledSessionRepository;
+
+    @Test
+    @WithMockUser(authorities = {"JOB"})
+    void markSessionCompleted_marksPendingAndUpcomingOlderThan48h() throws Exception {
+        var now = LocalDateTime.now();
+
+        // PENDING session older than 48h - should be marked
+        var pendingOldId = scheduledSessionRepository.save(new ScheduledSession()
+                .setUsername("user1")
+                .setCoachUsername("coach")
+                .setTime(now.minusHours(50))
+                .setStatus(ScheduledSession.Status.PENDING)
+                .setPaid(true)
+                .setPrivate(false)).getId();
+
+        // UPCOMING session older than 48h - should be marked
+        var upcomingOldId = scheduledSessionRepository.save(new ScheduledSession()
+                .setUsername("user1")
+                .setCoachUsername("coach")
+                .setTime(now.minusHours(49))
+                .setStatus(ScheduledSession.Status.UPCOMING)
+                .setPaid(false)
+                .setPrivate(false)).getId();
+
+        // PENDING session within 48h - should NOT be marked
+        var pendingRecentId = scheduledSessionRepository.save(new ScheduledSession()
+                .setUsername("user1")
+                .setCoachUsername("coach")
+                .setTime(now.minusHours(47))
+                .setStatus(ScheduledSession.Status.PENDING)
+                .setPaid(true)
+                .setPrivate(false)).getId();
+
+        // Future UPCOMING session - should NOT be marked
+        var upcomingFutureId = scheduledSessionRepository.save(new ScheduledSession()
+                .setUsername("user1")
+                .setCoachUsername("coach")
+                .setTime(now.plusDays(1))
+                .setStatus(ScheduledSession.Status.UPCOMING)
+                .setPaid(false)
+                .setPrivate(false)).getId();
+
+        // COMPLETED session - should NOT be changed
+        var completedId = scheduledSessionRepository.save(new ScheduledSession()
+                .setUsername("user1")
+                .setCoachUsername("coach")
+                .setTime(now.minusHours(60))
+                .setStatus(ScheduledSession.Status.COMPLETED)
+                .setPaid(true)
+                .setPrivate(false)).getId();
+
+        mvc.perform(post("/api/protected/jobs/mark-session-completed"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                .andExpect(jsonPath("$.markedCount").value(2));
+
+        // Verify old PENDING was marked as COMPLETED
+        assertThat(scheduledSessionRepository.findById(pendingOldId))
+                .isPresent()
+                .hasValueSatisfying(s -> assertThat(s.getStatus()).isEqualTo(ScheduledSession.Status.COMPLETED));
+
+        // Verify old UPCOMING was marked as COMPLETED
+        assertThat(scheduledSessionRepository.findById(upcomingOldId))
+                .isPresent()
+                .hasValueSatisfying(s -> assertThat(s.getStatus()).isEqualTo(ScheduledSession.Status.COMPLETED));
+
+        // Verify recent PENDING was NOT changed
+        assertThat(scheduledSessionRepository.findById(pendingRecentId))
+                .isPresent()
+                .hasValueSatisfying(s -> assertThat(s.getStatus()).isEqualTo(ScheduledSession.Status.PENDING));
+
+        // Verify future UPCOMING was NOT changed
+        assertThat(scheduledSessionRepository.findById(upcomingFutureId))
+                .isPresent()
+                .hasValueSatisfying(s -> assertThat(s.getStatus()).isEqualTo(ScheduledSession.Status.UPCOMING));
+
+        // Verify already COMPLETED was NOT changed
+        assertThat(scheduledSessionRepository.findById(completedId))
+                .isPresent()
+                .hasValueSatisfying(s -> assertThat(s.getStatus()).isEqualTo(ScheduledSession.Status.COMPLETED));
+    }
+
+    @Test
+    @WithMockUser(authorities = {"JOB"})
+    void markSessionCompleted_noSessionsToMark_returnsZero() throws Exception {
+        // Only create a future session
+        scheduledSessionRepository.save(new ScheduledSession()
+                .setUsername("user1")
+                .setCoachUsername("coach")
+                .setTime(LocalDateTime.now().plusDays(1))
+                .setStatus(ScheduledSession.Status.UPCOMING)
+                .setPaid(false)
+                .setPrivate(false));
+
+        mvc.perform(post("/api/protected/jobs/mark-session-completed"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.markedCount").value(0));
+    }
+
+    @Test
+    @WithMockUser(username = "regularUser", authorities = {"USER"})
+    void markSessionCompleted_regularUserDenied() throws Exception {
+        mvc.perform(post("/api/protected/jobs/mark-session-completed"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "hrUser", authorities = {"HR"})
+    void markSessionCompleted_hrUserDenied() throws Exception {
+        mvc.perform(post("/api/protected/jobs/mark-session-completed"))
+                .andExpect(status().isForbidden());
+    }
+}

@@ -1,8 +1,8 @@
-package com.topleader.topleader.report;
+package com.topleader.topleader.session.report;
 
 
 import com.topleader.topleader.exception.ApiValidationException;
-import com.topleader.topleader.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import lombok.RequiredArgsConstructor;

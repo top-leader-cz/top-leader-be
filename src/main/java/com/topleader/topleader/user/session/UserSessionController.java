@@ -3,7 +3,6 @@ package com.topleader.topleader.user.session;
 import com.topleader.topleader.ai.AiClient;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
-import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.session.domain.RecommendedGrowth;

@@ -10,6 +10,9 @@ import com.topleader.topleader.session.coaching_package.dto.CoachingPackageDto;
 import com.topleader.topleader.session.coaching_package.dto.CoachingPackageMetricsDto;
 import com.topleader.topleader.session.coaching_package.dto.CreateCoachingPackageRequest;
 import com.topleader.topleader.session.coaching_package.dto.UpdateCoachingPackageRequest;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.session.user_allocation.UserAllocation;
+import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -17,12 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-
-/**
- * Service for managing coaching packages.
- *
- * Metrics calculation is centralized here to ensure consistency across all endpoints.
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -30,6 +27,8 @@ public class CoachingPackageService {
 
     private final CoachingPackageRepository coachingPackageRepository;
     private final CompanyRepository companyRepository;
+    private final UserAllocationRepository userAllocationRepository;
+    private final ScheduledSessionRepository scheduledSessionRepository;
 
     /**
      * Creates a new coaching package for a company.
@@ -124,21 +123,8 @@ public class CoachingPackageService {
         return CoachingPackageDto.from(entity, metrics);
     }
 
-    /**
-     * Computes metrics for a coaching package.
-     *
-     * In V1 (Epic 1):
-     * - allocated_units: 0 (no user allocation table yet, will be sum of active allocations later)
-     * - reserved_units: 0 (no booking logic yet)
-     * - consumed_units: 0 (no booking logic yet)
-     *
-     * @param entity the coaching package entity
-     * @return computed metrics
-     */
     private CoachingPackageMetricsDto computeMetrics(CoachingPackage entity) {
         int totalUnits = entity.getTotalUnits();
-
-        // V1: These will be computed from related tables in future epics
         int allocatedUnits = computeAllocatedUnits(entity.getId());
         int reservedUnits = computeReservedUnits(entity.getId());
         int consumedUnits = computeConsumedUnits(entity.getId());
@@ -146,48 +132,23 @@ public class CoachingPackageService {
         return CoachingPackageMetricsDto.of(totalUnits, allocatedUnits, reservedUnits, consumedUnits);
     }
 
-    /**
-     * Computes allocated units for a package.
-     *
-     * V1: Returns 0 (no user allocation table yet).
-     * Future: Will query user_allocation table for sum of active allocations.
-     *
-     * @param packageId the package ID
-     * @return allocated units
-     */
     private int computeAllocatedUnits(Long packageId) {
-        // TODO: In Epic 2, query user_allocation table:
-        // return userAllocationRepository.sumActiveAllocationsByPackageId(packageId);
-        return 0;
+        return userAllocationRepository.sumAllocatedUnitsByPackageId(packageId);
     }
 
-    /**
-     * Computes reserved units for a package.
-     *
-     * V1: Returns 0 (no booking logic yet).
-     * Future: Will query bookings table for scheduled bookings.
-     *
-     * @param packageId the package ID
-     * @return reserved units
-     */
     private int computeReservedUnits(Long packageId) {
-        // TODO: In Epic 2, query bookings table:
-        // return bookingRepository.sumReservedUnitsByPackageId(packageId);
-        return 0;
+        var userIds = getUserIdsForPackage(packageId);
+        return userIds.isEmpty() ? 0 : scheduledSessionRepository.countUpcomingByUsernames(userIds);
     }
 
-    /**
-     * Computes consumed units for a package.
-     *
-     * V1: Returns 0 (no booking logic yet).
-     * Future: Will query bookings table for completed/no-show bookings.
-     *
-     * @param packageId the package ID
-     * @return consumed units
-     */
     private int computeConsumedUnits(Long packageId) {
-        // TODO: In Epic 2, query bookings table:
-        // return bookingRepository.sumConsumedUnitsByPackageId(packageId);
-        return 0;
+        var userIds = getUserIdsForPackage(packageId);
+        return userIds.isEmpty() ? 0 : scheduledSessionRepository.countConsumedByUsernames(userIds);
+    }
+
+    private List<String> getUserIdsForPackage(Long packageId) {
+        return userAllocationRepository.findByPackageId(packageId).stream()
+                .map(UserAllocation::getUserId)
+                .toList();
     }
 }
