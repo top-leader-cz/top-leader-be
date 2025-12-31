@@ -144,7 +144,7 @@ public class CoachController {
         }
 
         emailTemplateService.sendCancelAlertEmail(sessionId);
-        sessionService.cancelSessionByCoach(sessionId);
+        sessionService.cancelSessionByCoach(sessionId, user.getUsername());
     }
 
     public record UpcomingSessionDto(

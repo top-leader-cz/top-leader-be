@@ -40,17 +40,14 @@ class ScheduledSessionAdminControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(authorities = {"JOB"})
-    void markSessionCompleted_marksPendingAndUpcomingOlderThan48h() throws Exception {
+    void markSessionCompleted_marksUpcomingOlderThan48h() throws Exception {
         var now = LocalDateTime.now();
-
-        // PENDING session older than 48h - should be marked
-        var pendingOldId = createSession(now.minusHours(50), ScheduledSession.Status.PENDING, true).getId();
 
         // UPCOMING session older than 48h - should be marked
         var upcomingOldId = createSession(now.minusHours(49), ScheduledSession.Status.UPCOMING, false).getId();
 
-        // PENDING session within 48h - should NOT be marked
-        var pendingRecentId = createSession(now.minusHours(47), ScheduledSession.Status.PENDING, true).getId();
+        // Another UPCOMING session older than 48h - should be marked
+        var upcomingOld2Id = createSession(now.minusHours(50), ScheduledSession.Status.UPCOMING, false).getId();
 
         // Future UPCOMING session - should NOT be marked
         var upcomingFutureId = createSession(now.plusDays(1), ScheduledSession.Status.UPCOMING, false).getId();
@@ -63,20 +60,15 @@ class ScheduledSessionAdminControllerIT extends IntegrationTest {
                 .andDo(print())
                 .andExpect(jsonPath("$.markedCount").value(2));
 
-        // Verify old PENDING was marked as COMPLETED
-        assertThat(scheduledSessionRepository.findById(pendingOldId))
-                .isPresent()
-                .hasValueSatisfying(s -> assertThat(s.getStatus()).isEqualTo(ScheduledSession.Status.COMPLETED));
-
         // Verify old UPCOMING was marked as COMPLETED
         assertThat(scheduledSessionRepository.findById(upcomingOldId))
                 .isPresent()
                 .hasValueSatisfying(s -> assertThat(s.getStatus()).isEqualTo(ScheduledSession.Status.COMPLETED));
 
-        // Verify recent PENDING was NOT changed
-        assertThat(scheduledSessionRepository.findById(pendingRecentId))
+        // Verify second old UPCOMING was marked as COMPLETED
+        assertThat(scheduledSessionRepository.findById(upcomingOld2Id))
                 .isPresent()
-                .hasValueSatisfying(s -> assertThat(s.getStatus()).isEqualTo(ScheduledSession.Status.PENDING));
+                .hasValueSatisfying(s -> assertThat(s.getStatus()).isEqualTo(ScheduledSession.Status.COMPLETED));
 
         // Verify future UPCOMING was NOT changed
         assertThat(scheduledSessionRepository.findById(upcomingFutureId))

@@ -11,5 +11,4 @@ public interface CoachingPackageRepository extends JpaRepository<CoachingPackage
 
     List<CoachingPackage> findByCompanyId(Long companyId);
 
-    List<CoachingPackage> findByCompanyIdAndStatus(Long companyId, CoachingPackage.PackageStatus status);
 }

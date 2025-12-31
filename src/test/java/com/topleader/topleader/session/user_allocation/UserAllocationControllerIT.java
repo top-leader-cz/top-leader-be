@@ -301,13 +301,14 @@ class UserAllocationControllerIT extends IntegrationTest {
     @WithMockUser(username = "hrUser", authorities = {"HR"})
     void createAllocation_inactiveAllocationConsumedUnitsCountTowardsCapacity() throws Exception {
         // Package has 100 total, 30 allocated (10+20)
-        // Deactivate user1's allocation (10 allocated, 0 consumed) - this frees up 10 units
+        // Deactivate user1's allocation (10 allocated, 0 consumed) - this sets allocatedUnits to consumedUnits (0)
         userAllocationRepository.findByPackageIdAndUserId(1L, "user1").ifPresent(a -> {
             a.setStatus(UserAllocation.AllocationStatus.INACTIVE);
+            a.setAllocatedUnits(a.getConsumedUnits()); // Service logic: set allocated to consumed
             userAllocationRepository.save(a);
         });
 
-        // Now available should be 80 (100 - 20 active - 0 inactive consumed)
+        // Now available should be 80 (100 - 20 active - 0 inactive)
         // Try to allocate 75 - should succeed
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user3")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -324,13 +325,14 @@ class UserAllocationControllerIT extends IntegrationTest {
     @WithMockUser(username = "hrUser", authorities = {"HR"})
     void createAllocation_inactiveAllocationWithConsumedUnitsBlocksCapacity() throws Exception {
         // Package has 100 total, 30 allocated (10+20), user2 has 5 consumed
-        // Deactivate user2's allocation - consumed units (5) still count!
+        // Deactivate user2's allocation - this sets allocatedUnits to consumedUnits (5)
         userAllocationRepository.findByPackageIdAndUserId(1L, "user2").ifPresent(a -> {
             a.setStatus(UserAllocation.AllocationStatus.INACTIVE);
+            a.setAllocatedUnits(a.getConsumedUnits()); // Service logic: set allocated to consumed
             userAllocationRepository.save(a);
         });
 
-        // Now used capacity: 10 (user1 active) + 5 (user2 inactive consumed) = 15
+        // Now used capacity: 10 (user1 active) + 5 (user2 inactive, allocatedUnits=consumedUnits) = 15
         // Available: 100 - 15 = 85
         // Try to allocate 90 - should fail
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user3")

@@ -36,10 +36,11 @@ public class ScheduledSessionService {
         return creditService.canScheduleSession(user, coach);
     }
 
-    public ScheduledSession scheduleSession(ScheduledSession scheduledSession) {
+    public ScheduledSession scheduleSession(ScheduledSession scheduledSession, String createdBy) {
         var now = LocalDateTime.now();
         scheduledSession.setCreatedAt(now);
         scheduledSession.setUpdatedAt(now);
+        scheduledSession.setUpdatedBy(createdBy);
         final var session = scheduledSessionRepository.save(scheduledSession);
         creditService.scheduleSession(session.getId());
         return session;
@@ -68,19 +69,20 @@ public class ScheduledSessionService {
             }));
     }
 
-    public void cancelSession(Long sessionId) {
-        cancelSession(sessionId, ScheduledSession.Status.CANCELED_BY_CLIENT);
+    public void cancelSession(Long sessionId, String canceledBy) {
+        cancelSession(sessionId, ScheduledSession.Status.CANCELED_BY_CLIENT, canceledBy);
     }
 
-    public void cancelSessionByCoach(Long sessionId) {
-        cancelSession(sessionId, ScheduledSession.Status.CANCELED_BY_COACH);
+    public void cancelSessionByCoach(Long sessionId, String canceledBy) {
+        cancelSession(sessionId, ScheduledSession.Status.CANCELED_BY_COACH, canceledBy);
     }
 
-    private void cancelSession(Long sessionId, ScheduledSession.Status status) {
+    private void cancelSession(Long sessionId, ScheduledSession.Status status, String canceledBy) {
         scheduledSessionRepository.findById(sessionId).ifPresent(s -> {
             creditService.cancelSession(s.getId());
             s.setStatus(status);
             s.setUpdatedAt(LocalDateTime.now());
+            s.setUpdatedBy(canceledBy);
             scheduledSessionRepository.save(s);
         });
     }
@@ -106,7 +108,7 @@ public class ScheduledSessionService {
     public int markPendingSessionsAsNoShowClient() {
         var now = LocalDateTime.now();
         var threshold = now.minusHours(48);
-        var count = scheduledSessionRepository.markPendingSessionsAsCompleted(threshold, now);
+        var count = scheduledSessionRepository.markPendingSessionsAsCompleted(threshold, now, "JOB");
         log.info("Marked {} sessions as COMPLETED (older than 48h)", count);
         return count;
     }

@@ -40,7 +40,7 @@ public class CoachingPackageController {
 
 
     @PostMapping("/api/latest/companies/{companyId}/coaching-packages")
-    @Secured({"HR", "ADMIN"})
+    @Secured({"ADMIN"})
     public CoachingPackageDto createPackage(
             @AuthenticationPrincipal UserDetails user,
             @PathVariable Long companyId,
@@ -75,7 +75,7 @@ public class CoachingPackageController {
 
 
     @PatchMapping("/api/latest/coaching-packages/{packageId}")
-    @Secured({"HR", "ADMIN"})
+    @Secured({"ADMIN"})
     public CoachingPackageDto updatePackage(
             @AuthenticationPrincipal UserDetails user,
             @PathVariable Long packageId,
