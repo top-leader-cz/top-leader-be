@@ -1,3 +1,4 @@
+-- User allocation table
 CREATE SEQUENCE user_allocation_id_seq;
 
 CREATE TABLE user_allocation (
@@ -23,3 +24,8 @@ CREATE INDEX idx_user_allocation_package_id ON user_allocation(package_id);
 CREATE INDEX idx_user_allocation_user_id ON user_allocation(user_id);
 CREATE INDEX idx_user_allocation_company_id ON user_allocation(company_id);
 CREATE INDEX idx_user_allocation_status ON user_allocation(status);
+
+-- Add indexes on scheduled_session for session queries
+CREATE INDEX idx_scheduled_session_username ON scheduled_session(username);
+CREATE INDEX idx_scheduled_session_status ON scheduled_session(status);
+CREATE INDEX idx_scheduled_session_username_status ON scheduled_session(username, status);

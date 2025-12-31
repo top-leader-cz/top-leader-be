@@ -1,4 +1,4 @@
-package com.topleader.topleader.report;
+package com.topleader.topleader.session.report;
 
 import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;

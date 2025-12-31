@@ -5,8 +5,8 @@ package com.topleader.topleader.coach;
 
 import com.topleader.topleader.email.EmailTemplateService;
 import com.topleader.topleader.exception.NotFoundException;
-import com.topleader.topleader.scheduled_session.ScheduledSession;
-import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.common.CommonUtils;

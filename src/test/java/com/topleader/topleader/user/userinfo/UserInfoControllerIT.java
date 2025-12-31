@@ -10,8 +10,8 @@ import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.data.ValuesStoredData;
-import com.topleader.topleader.scheduled_session.ScheduledSession;
-import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
 
 import java.time.DayOfWeek;
@@ -342,50 +342,99 @@ class UserInfoControllerIT extends IntegrationTest {
     @WithMockUser(username = "user_with_coach", authorities = "USER")
     void getUpcomingSessionsTest() throws Exception {
 
-        final var now = LocalDateTime.now().withNano(0);
+        var now = LocalDateTime.now().withNano(0);
 
-        final var dateTime1 = now.plusHours(3);
-        final var dateTime2 = now.plusDays(3);
+        var dateTime1 = now.plusHours(3);
+        var dateTime2 = now.plusDays(3);
 
-
-        final var id1 = scheduledSessionRepository.save(
+        var id1 = scheduledSessionRepository.save(
             new ScheduledSession()
                 .setPaid(false)
                 .setPrivate(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(dateTime1)
+                .setStatus(ScheduledSession.Status.UPCOMING)
         ).getId();
-        final var id2 = scheduledSessionRepository.save(
+        var id2 = scheduledSessionRepository.save(
             new ScheduledSession()
                 .setPaid(false)
                 .setPrivate(false)
                 .setUsername("user_with_coach")
                 .setCoachUsername("coach")
                 .setTime(dateTime2)
+                .setStatus(ScheduledSession.Status.UPCOMING)
         ).getId();
 
+        // Sorted by time descending (most recent first)
         mvc.perform(get("/api/latest/user-info/upcoming-sessions"))
             .andExpect(status().isOk())
-            .andExpect(content().json(String.format("""
-                [
-                  {
-                    "id": %s,
-                    "coach": "coach",
-                    "firstName": "Mitch",
-                    "lastName": "Cleverman",
-                    "time": "%s"
-                  },
-                  {
-                    "id": %s,
-                    "coach": "coach",
-                    "firstName": "Mitch",
-                    "lastName": "Cleverman",
-                    "time": "%s"
-                  }
-                ]
-                """, id1, dateTime1, id2, dateTime2)))
-        ;
+            .andExpect(jsonPath("$.length()").value(2))
+            .andExpect(jsonPath("$[0].id").value(id2))
+            .andExpect(jsonPath("$[0].coach").value("coach"))
+            .andExpect(jsonPath("$[0].firstName").value("Mitch"))
+            .andExpect(jsonPath("$[0].lastName").value("Cleverman"))
+            .andExpect(jsonPath("$[0].status").value("UPCOMING"))
+            .andExpect(jsonPath("$[1].id").value(id1))
+            .andExpect(jsonPath("$[1].status").value("UPCOMING"));
+    }
+
+    @Test
+    @WithMockUser(username = "user_with_coach", authorities = "USER")
+    void getAllSessionsTest() throws Exception {
+
+        // Clear existing sessions for this user
+        scheduledSessionRepository.findAllByUsername("user_with_coach")
+            .forEach(scheduledSessionRepository::delete);
+
+        var now = LocalDateTime.now().withNano(0);
+
+        var pastDateTime = now.minusDays(5);
+        var futureDateTime = now.plusDays(3);
+
+        // Past completed session
+        var pastId = scheduledSessionRepository.save(
+            new ScheduledSession()
+                .setPaid(true)
+                .setPrivate(false)
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(pastDateTime)
+                .setStatus(ScheduledSession.Status.COMPLETED)
+        ).getId();
+
+        // Future upcoming session
+        var futureId = scheduledSessionRepository.save(
+            new ScheduledSession()
+                .setPaid(false)
+                .setPrivate(false)
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(futureDateTime)
+                .setStatus(ScheduledSession.Status.UPCOMING)
+        ).getId();
+
+        // NO_SHOW_CLIENT session
+        var noShowId = scheduledSessionRepository.save(
+            new ScheduledSession()
+                .setPaid(true)
+                .setPrivate(false)
+                .setUsername("user_with_coach")
+                .setCoachUsername("coach")
+                .setTime(now.minusDays(3))
+                .setStatus(ScheduledSession.Status.NO_SHOW_CLIENT)
+        ).getId();
+
+        mvc.perform(get("/api/latest/user-info/sessions"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.length()").value(3))
+            // Sorted by time descending (most recent first)
+            .andExpect(jsonPath("$[0].id").value(futureId))
+            .andExpect(jsonPath("$[0].status").value("UPCOMING"))
+            .andExpect(jsonPath("$[1].id").value(noShowId))
+            .andExpect(jsonPath("$[1].status").value("NO_SHOW_CLIENT"))
+            .andExpect(jsonPath("$[2].id").value(pastId))
+            .andExpect(jsonPath("$[2].status").value("COMPLETED"));
     }
 
     @Test

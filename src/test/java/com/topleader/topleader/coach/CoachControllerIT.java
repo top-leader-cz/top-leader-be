@@ -4,15 +4,13 @@
 package com.topleader.topleader.coach;
 
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.hr.domain.UserRequest;
-import com.topleader.topleader.scheduled_session.ScheduledSession;
-import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.util.image.ImageUtil;
 import java.time.LocalDateTime;
 
 import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;

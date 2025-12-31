@@ -6,7 +6,7 @@ package com.topleader.topleader.email;
 import com.topleader.topleader.exception.ApiValidationException;
 import com.topleader.topleader.exception.NotFoundException;
 import com.topleader.topleader.ical.ICalService;
-import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.UserRepository;
 import java.util.HashMap;
 import java.util.List;

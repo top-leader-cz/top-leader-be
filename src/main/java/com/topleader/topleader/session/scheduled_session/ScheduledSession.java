@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.scheduled_session;
+package com.topleader.topleader.session.scheduled_session;
 
 import jakarta.persistence.*;
 
@@ -47,6 +47,7 @@ public class ScheduledSession {
         UPCOMING,
         CANCELED,
         PENDING,
+        NO_SHOW_CLIENT,
     }
 
 }

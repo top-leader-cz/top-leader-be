@@ -15,20 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+import static com.topleader.topleader.exception.ErrorCodeConstants.*;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserAllocationService {
 
-    private static final String CAPACITY_EXCEEDED = "CAPACITY_EXCEEDED";
-    private static final String PACKAGE_INACTIVE = "PACKAGE_INACTIVE";
-    private static final String ALLOCATED_BELOW_CONSUMED = "ALLOCATED_BELOW_CONSUMED";
-    private static final String NO_UNITS_AVAILABLE = "NO_UNITS_AVAILABLE";
 
     private final UserAllocationRepository userAllocationRepository;
     private final CoachingPackageRepository coachingPackageRepository;
-
-    private static final String ALLOCATION_ALREADY_EXISTS = "ALLOCATION_ALREADY_EXISTS";
 
     @Transactional
     public UserAllocationDto createAllocation(Long packageId, String userId, AllocationRequest request, String createdBy) {
@@ -206,9 +202,6 @@ public class UserAllocationService {
         return UserAllocationDto.from(saved);
     }
 
-    public int sumAllocatedUnitsForPackage(Long packageId) {
-        return userAllocationRepository.sumAllocatedUnitsByPackageId(packageId);
-    }
 
     private CoachingPackage getActivePackage(Long packageId) {
         var pkg = coachingPackageRepository.findById(packageId)

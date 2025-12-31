@@ -77,7 +77,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andExpect(jsonPath("$[0].errorCode").value("ALLOCATION_ALREADY_EXISTS"));
+                .andExpect(jsonPath("$[0].errorCode").value("allocation.already.exists"));
     }
 
     @Test
@@ -213,7 +213,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andExpect(jsonPath("$[0].errorCode").value("ALLOCATED_BELOW_CONSUMED"));
+                .andExpect(jsonPath("$[0].errorCode").value("allocation.below.consumed"));
     }
 
     @Test
@@ -261,7 +261,7 @@ class UserAllocationControllerIT extends IntegrationTest {
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user1:consume"))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andExpect(jsonPath("$[0].errorCode").value("NO_UNITS_AVAILABLE"));
+                .andExpect(jsonPath("$[0].errorCode").value("no.units.available"));
     }
 
     @Test
@@ -276,7 +276,7 @@ class UserAllocationControllerIT extends IntegrationTest {
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user1:consume"))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andExpect(jsonPath("$[0].errorCode").value("PACKAGE_INACTIVE"));
+                .andExpect(jsonPath("$[0].errorCode").value("package.inactive"));
     }
 
     @Test
@@ -294,7 +294,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andExpect(jsonPath("$[0].errorCode").value("ALLOCATED_BELOW_CONSUMED"));
+                .andExpect(jsonPath("$[0].errorCode").value("allocation.below.consumed"));
     }
 
     @Test
@@ -342,7 +342,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                 """))
                 .andExpect(status().isBadRequest())
                 .andDo(print())
-                .andExpect(jsonPath("$[0].errorCode").value("CAPACITY_EXCEEDED"));
+                .andExpect(jsonPath("$[0].errorCode").value("capacity.exceeded"));
 
         // But 85 should succeed
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user3")

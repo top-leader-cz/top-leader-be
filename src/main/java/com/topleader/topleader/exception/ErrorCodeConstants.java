@@ -35,6 +35,12 @@ public final class ErrorCodeConstants {
     public static final String USER_NOT_FOUND = "user.not.found";
     public static final String UNABLE_TO_DELETE = "unable.to.delete";
     public static final String USER_NO_AUTHORIZED = "user.not.authorized";
+    public static final String ALLOCATION_ALREADY_EXISTS = "allocation.already.exists";
+    public static final String CAPACITY_EXCEEDED = "capacity.exceeded";
+    public static final String PACKAGE_INACTIVE = "package.inactive";
+    public static final String ALLOCATED_BELOW_CONSUMED = "allocation.below.consumed";
+    public static final String NO_UNITS_AVAILABLE = "no.units.available";
+
 
 
 }

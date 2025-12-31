@@ -10,6 +10,8 @@ import com.topleader.topleader.session.coaching_package.dto.CoachingPackageDto;
 import com.topleader.topleader.session.coaching_package.dto.CoachingPackageMetricsDto;
 import com.topleader.topleader.session.coaching_package.dto.CreateCoachingPackageRequest;
 import com.topleader.topleader.session.coaching_package.dto.UpdateCoachingPackageRequest;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.session.user_allocation.UserAllocation;
 import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +28,7 @@ public class CoachingPackageService {
     private final CoachingPackageRepository coachingPackageRepository;
     private final CompanyRepository companyRepository;
     private final UserAllocationRepository userAllocationRepository;
+    private final ScheduledSessionRepository scheduledSessionRepository;
 
     /**
      * Creates a new coaching package for a company.
@@ -134,12 +137,18 @@ public class CoachingPackageService {
     }
 
     private int computeReservedUnits(Long packageId) {
-        // TODO: query bookings table for scheduled bookings
-        return 0;
+        var userIds = getUserIdsForPackage(packageId);
+        return userIds.isEmpty() ? 0 : scheduledSessionRepository.countUpcomingByUsernames(userIds);
     }
 
     private int computeConsumedUnits(Long packageId) {
-        // TODO: query bookings table for completed/no-show bookings
-        return 0;
+        var userIds = getUserIdsForPackage(packageId);
+        return userIds.isEmpty() ? 0 : scheduledSessionRepository.countConsumedByUsernames(userIds);
+    }
+
+    private List<String> getUserIdsForPackage(Long packageId) {
+        return userAllocationRepository.findByPackageId(packageId).stream()
+                .map(UserAllocation::getUserId)
+                .toList();
     }
 }
