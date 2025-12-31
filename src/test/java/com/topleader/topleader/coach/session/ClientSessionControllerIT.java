@@ -2,6 +2,7 @@ package com.topleader.topleader.coach.session;
 
 import com.topleader.topleader.IntegrationTest;
 
+import com.topleader.topleader.session.coach_session.CoachSessionViewRepository;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;

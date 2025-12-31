@@ -37,6 +37,9 @@ public class ScheduledSessionService {
     }
 
     public ScheduledSession scheduleSession(ScheduledSession scheduledSession) {
+        var now = LocalDateTime.now();
+        scheduledSession.setCreatedAt(now);
+        scheduledSession.setUpdatedAt(now);
         final var session = scheduledSessionRepository.save(scheduledSession);
         creditService.scheduleSession(session.getId());
         return session;
@@ -66,9 +69,19 @@ public class ScheduledSessionService {
     }
 
     public void cancelSession(Long sessionId) {
+        cancelSession(sessionId, ScheduledSession.Status.CANCELED_BY_CLIENT);
+    }
+
+    public void cancelSessionByCoach(Long sessionId) {
+        cancelSession(sessionId, ScheduledSession.Status.CANCELED_BY_COACH);
+    }
+
+    private void cancelSession(Long sessionId, ScheduledSession.Status status) {
         scheduledSessionRepository.findById(sessionId).ifPresent(s -> {
             creditService.cancelSession(s.getId());
-            scheduledSessionRepository.delete(s);
+            s.setStatus(status);
+            s.setUpdatedAt(LocalDateTime.now());
+            scheduledSessionRepository.save(s);
         });
     }
 
@@ -91,8 +104,9 @@ public class ScheduledSessionService {
 
     @Transactional
     public int markPendingSessionsAsNoShowClient() {
-        var threshold = LocalDateTime.now().minusHours(48);
-        var count = scheduledSessionRepository.markPendingSessionsAsCompleted(threshold);
+        var now = LocalDateTime.now();
+        var threshold = now.minusHours(48);
+        var count = scheduledSessionRepository.markPendingSessionsAsCompleted(threshold, now);
         log.info("Marked {} sessions as COMPLETED (older than 48h)", count);
         return count;
     }

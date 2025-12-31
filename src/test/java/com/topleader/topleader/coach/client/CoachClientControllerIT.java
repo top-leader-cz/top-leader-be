@@ -54,6 +54,18 @@ class CoachClientControllerIT extends IntegrationTest {
     @Autowired
     private TokenRepository tokenRepository;
 
+    private ScheduledSession createSession(String username, String coachUsername, LocalDateTime time) {
+        var now = LocalDateTime.now();
+        return new ScheduledSession()
+                .setPaid(false)
+                .setPrivate(false)
+                .setCoachUsername(coachUsername)
+                .setUsername(username)
+                .setTime(time)
+                .setCreatedAt(now)
+                .setUpdatedAt(now);
+    }
+
     @Disabled
     @Test
     @WithMockUser(username = "coach", authorities = "COACH")
@@ -66,42 +78,12 @@ class CoachClientControllerIT extends IntegrationTest {
 
         scheduledSessionRepository.saveAll(
             List.of(
-                new ScheduledSession()
-                    .setPaid(false)
-                    .setPrivate(false)
-                    .setCoachUsername("coach")
-                    .setUsername("client1")
-                    .setTime(now.plusHours(2L)),
-                new ScheduledSession()
-                    .setPaid(false)
-                    .setPrivate(false)
-                    .setCoachUsername("coach")
-                    .setUsername("client1")
-                    .setTime(nextSessionTimeClient1),
-                new ScheduledSession()
-                    .setPaid(false)
-                    .setPrivate(false)
-                    .setCoachUsername("coach")
-                    .setUsername("client2")
-                    .setTime(now.plusHours(2L)),
-                new ScheduledSession()
-                    .setPaid(false)
-                    .setPrivate(false)
-                    .setCoachUsername("coach")
-                    .setUsername("client2")
-                    .setTime(nextSessionTimeClient2),
-                new ScheduledSession()
-                    .setPaid(false)
-                    .setPrivate(false)
-                    .setCoachUsername("coach")
-                    .setUsername("client3")
-                    .setTime(now.plusHours(2L)),
-                new ScheduledSession()
-                    .setPaid(false)
-                    .setPrivate(false)
-                    .setCoachUsername("coach")
-                    .setUsername("client3")
-                    .setTime(now)
+                createSession("client1", "coach", now.plusHours(2L)),
+                createSession("client1", "coach", nextSessionTimeClient1),
+                createSession("client2", "coach", now.plusHours(2L)),
+                createSession("client2", "coach", nextSessionTimeClient2),
+                createSession("client3", "coach", now.plusHours(2L)),
+                createSession("client3", "coach", now)
             )
         );
 

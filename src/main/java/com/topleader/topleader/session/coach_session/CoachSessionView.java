@@ -1,4 +1,4 @@
-package com.topleader.topleader.coach.session;
+package com.topleader.topleader.session.coach_session;
 
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import jakarta.persistence.Entity;

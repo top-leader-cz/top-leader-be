@@ -39,6 +39,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -77,6 +78,22 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Autowired
     AiPromptService aiPromptService;
+
+    private ScheduledSession createSession(String username, String coachUsername, LocalDateTime time, boolean paid, boolean isPrivate) {
+        var now = LocalDateTime.now();
+        return new ScheduledSession()
+                .setPaid(paid)
+                .setPrivate(isPrivate)
+                .setUsername(username)
+                .setCoachUsername(coachUsername)
+                .setTime(time)
+                .setCreatedAt(now)
+                .setUpdatedAt(now);
+    }
+
+    private ScheduledSession createSession(String username, String coachUsername, LocalDateTime time, boolean paid, boolean isPrivate, ScheduledSession.Status status) {
+        return createSession(username, coachUsername, time, paid, isPrivate).setStatus(status);
+    }
 
     @Test
     @WithMockUser(username = "user", authorities = "USER")
@@ -260,23 +277,9 @@ class UserInfoControllerIT extends IntegrationTest {
     void deleteCoachTest() throws Exception {
 
         scheduledSessionRepository.saveAll(List.of(
-            new ScheduledSession()
-                .setPaid(false)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(LocalDateTime.now().plusHours(3)),
-            new ScheduledSession()
-                .setPaid(false)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(LocalDateTime.now().plusDays(3)),
-            new ScheduledSession()
-                .setPaid(true)
-                .setPrivate(true)
-                .setUsername("user_with_coach")
-                .setTime(LocalDateTime.now().plusDays(3))
+            createSession("user_with_coach", "coach", LocalDateTime.now().plusHours(3), false, false),
+            createSession("user_with_coach", "coach", LocalDateTime.now().plusDays(3), false, false),
+            createSession("user_with_coach", null, LocalDateTime.now().plusDays(3), true, true)
         ));
 
         mvc.perform(post("/api/latest/user-info/coach")
@@ -348,22 +351,10 @@ class UserInfoControllerIT extends IntegrationTest {
         var dateTime2 = now.plusDays(3);
 
         var id1 = scheduledSessionRepository.save(
-            new ScheduledSession()
-                .setPaid(false)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(dateTime1)
-                .setStatus(ScheduledSession.Status.UPCOMING)
+            createSession("user_with_coach", "coach", dateTime1, false, false, ScheduledSession.Status.UPCOMING)
         ).getId();
         var id2 = scheduledSessionRepository.save(
-            new ScheduledSession()
-                .setPaid(false)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(dateTime2)
-                .setStatus(ScheduledSession.Status.UPCOMING)
+            createSession("user_with_coach", "coach", dateTime2, false, false, ScheduledSession.Status.UPCOMING)
         ).getId();
 
         // Sorted by time descending (most recent first)
@@ -394,35 +385,17 @@ class UserInfoControllerIT extends IntegrationTest {
 
         // Past completed session
         var pastId = scheduledSessionRepository.save(
-            new ScheduledSession()
-                .setPaid(true)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(pastDateTime)
-                .setStatus(ScheduledSession.Status.COMPLETED)
+            createSession("user_with_coach", "coach", pastDateTime, true, false, ScheduledSession.Status.COMPLETED)
         ).getId();
 
         // Future upcoming session
         var futureId = scheduledSessionRepository.save(
-            new ScheduledSession()
-                .setPaid(false)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(futureDateTime)
-                .setStatus(ScheduledSession.Status.UPCOMING)
+            createSession("user_with_coach", "coach", futureDateTime, false, false, ScheduledSession.Status.UPCOMING)
         ).getId();
 
         // NO_SHOW_CLIENT session
         var noShowId = scheduledSessionRepository.save(
-            new ScheduledSession()
-                .setPaid(true)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(now.minusDays(3))
-                .setStatus(ScheduledSession.Status.NO_SHOW_CLIENT)
+            createSession("user_with_coach", "coach", now.minusDays(3), true, false, ScheduledSession.Status.NO_SHOW_CLIENT)
         ).getId();
 
         mvc.perform(get("/api/latest/user-info/sessions"))
@@ -443,32 +416,24 @@ class UserInfoControllerIT extends IntegrationTest {
 
         final var now = LocalDateTime.now().withNano(0);
 
-        final var dateTime1 = now.plusHours(3);
+        final var dateTime1 = now.plusDays(2);
         final var dateTime2 = now.plusDays(3);
 
 
         final var id1 = scheduledSessionRepository.save(
-            new ScheduledSession()
-                .setPaid(false)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(dateTime1)
+            createSession("user_with_coach", "coach", dateTime1, false, false)
         ).getId();
         final var id2 = scheduledSessionRepository.save(
-            new ScheduledSession()
-                .setPaid(false)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(dateTime2)
+            createSession("user_with_coach", "coach", dateTime2, false, false)
         ).getId();
 
         mvc.perform(delete("/api/latest/user-info/upcoming-sessions/" + id1))
             .andExpect(status().isOk())
             ;
 
-        assertTrue(scheduledSessionRepository.findById(id1).isEmpty());
+        var cancelledSession = scheduledSessionRepository.findById(id1);
+        assertTrue(cancelledSession.isPresent());
+        assertEquals(ScheduledSession.Status.CANCELED_BY_CLIENT, cancelledSession.get().getStatus());
         assertTrue(scheduledSessionRepository.findById(id2).isPresent());
     }
 
@@ -478,32 +443,46 @@ class UserInfoControllerIT extends IntegrationTest {
 
         final var now = LocalDateTime.now().withNano(0);
 
-        final var dateTime1 = now.plusHours(3);
+        final var dateTime1 = now.plusDays(2);
         final var dateTime2 = now.plusDays(3);
 
 
         final var id1 = scheduledSessionRepository.save(
-            new ScheduledSession()
-                .setPaid(true)
-                .setPrivate(true)
-                .setUsername("user_with_coach")
-                .setTime(dateTime1)
+            createSession("user_with_coach", null, dateTime1, true, true)
         ).getId();
         final var id2 = scheduledSessionRepository.save(
-            new ScheduledSession()
-                .setPaid(false)
-                .setPrivate(false)
-                .setUsername("user_with_coach")
-                .setCoachUsername("coach")
-                .setTime(dateTime2)
+            createSession("user_with_coach", "coach", dateTime2, false, false)
         ).getId();
 
         mvc.perform(delete("/api/latest/user-info/upcoming-sessions/" + id1))
             .andExpect(status().isOk())
             ;
 
-        assertTrue(scheduledSessionRepository.findById(id1).isEmpty());
+        var cancelledSession = scheduledSessionRepository.findById(id1);
+        assertTrue(cancelledSession.isPresent());
+        assertEquals(ScheduledSession.Status.CANCELED_BY_CLIENT, cancelledSession.get().getStatus());
         assertTrue(scheduledSessionRepository.findById(id2).isPresent());
+    }
+
+    @Test
+    @WithMockUser(username = "user_with_coach", authorities = "USER")
+    void cancelSessionWithin24HoursFails() throws Exception {
+
+        final var now = LocalDateTime.now().withNano(0);
+        final var dateTimeWithin24h = now.plusHours(12);
+
+        final var id = scheduledSessionRepository.save(
+            createSession("user_with_coach", "coach", dateTimeWithin24h, false, false)
+        ).getId();
+
+        mvc.perform(delete("/api/latest/user-info/upcoming-sessions/" + id))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$[0].errorCode").value("session.cancel.too.late"));
+
+        // Session should still exist with original status
+        var session = scheduledSessionRepository.findById(id);
+        assertTrue(session.isPresent());
+        assertNotEquals(ScheduledSession.Status.CANCELED_BY_CLIENT, session.get().getStatus());
     }
 
     @Test

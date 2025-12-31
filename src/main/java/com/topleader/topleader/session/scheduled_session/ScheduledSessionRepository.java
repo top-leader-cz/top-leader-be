@@ -55,7 +55,7 @@ public interface ScheduledSessionRepository extends JpaSpecificationExecutor<Sch
     int countConsumedByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
 
     @Modifying
-    @Query("UPDATE ScheduledSession s SET s.status = 'COMPLETED' WHERE (s.status = 'PENDING' OR s.status = 'UPCOMING') AND s.time < :threshold")
-    int markPendingSessionsAsCompleted(LocalDateTime threshold);
+    @Query("UPDATE ScheduledSession s SET s.status = 'COMPLETED', s.updatedAt = :now WHERE (s.status = 'PENDING' OR s.status = 'UPCOMING') AND s.time < :threshold")
+    int markPendingSessionsAsCompleted(LocalDateTime threshold, LocalDateTime now);
 
 }
