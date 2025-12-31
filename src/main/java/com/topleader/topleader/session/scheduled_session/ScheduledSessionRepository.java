@@ -30,16 +30,13 @@ public interface ScheduledSessionRepository extends JpaSpecificationExecutor<Sch
 
     List<ScheduledSession> findAllByUsername(String username);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'UPCOMING'")
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'UPCOMING' AND s.time < CURRENT_TIMESTAMP")
     int countUpcomingByUsernames(List<String> usernames);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'COMPLETED'")
-    int countCompletedByUsernames(List<String> usernames);
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status in  ('COMPLETED', 'NO_SHOW_CLIENT')")
+    int countConsumedByUsernames(List<String> usernames);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'NO_SHOW_CLIENT'")
-    int countNoShowClientByUsernames(List<String> usernames);
-
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'UPCOMING'")
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'UPCOMING' AND s.time < CURRENT_TIMESTAMP")
     int countUpcomingByUsername(String username);
 
     @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'COMPLETED'")
@@ -67,7 +64,7 @@ public interface ScheduledSessionRepository extends JpaSpecificationExecutor<Sch
     int countNoShowClientByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
 
     @Modifying
-    @Query("UPDATE ScheduledSession s SET s.status = 'COMPLETED', s.updatedAt = :now WHERE (s.status = 'PENDING' OR s.status = 'UPCOMING') AND s.time < :threshold")
-    int markPendingSessionsAsCompleted(LocalDateTime threshold, LocalDateTime now);
+    @Query("UPDATE ScheduledSession s SET s.status = 'COMPLETED', s.updatedAt = :now, s.updatedBy = :updatedBy WHERE s.status = 'UPCOMING' AND s.time < :threshold")
+    int markPendingSessionsAsCompleted(LocalDateTime threshold, LocalDateTime now, String updatedBy);
 
 }

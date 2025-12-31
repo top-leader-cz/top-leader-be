@@ -147,8 +147,7 @@ public class CoachingPackageService {
         if (userIds.isEmpty()) {
             return 0;
         }
-        return scheduledSessionRepository.countCompletedByUsernames(userIds)
-                + scheduledSessionRepository.countNoShowClientByUsernames(userIds);
+        return scheduledSessionRepository.countConsumedByUsernames(userIds);
     }
 
     private List<String> getUserIdsForPackage(Long packageId) {

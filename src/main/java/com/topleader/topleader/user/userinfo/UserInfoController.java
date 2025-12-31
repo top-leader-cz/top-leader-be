@@ -250,7 +250,8 @@ public class UserInfoController {
             .setPaid(true)
             .setPrivate(true)
             .setTime(shiftedTime)
-            .setUsername(user.getUsername())
+            .setUsername(user.getUsername()),
+            user.getUsername()
         );
 
         emailTemplateService.sendBookingAlertPrivateSessionEmail(session.getId());
@@ -280,7 +281,7 @@ public class UserInfoController {
         } else {
             emailTemplateService.sendCancelAlertEmail(sessionId);
         }
-        scheduledSessionService.cancelSession(sessionId);
+        scheduledSessionService.cancelSession(sessionId, user.getUsername());
     }
 
     public record SchedulePrivateSessionRequest(LocalDateTime time) {

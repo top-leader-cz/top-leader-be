@@ -157,7 +157,8 @@ public class CoachListController {
                 .setCoachUsername(coachName)
                 .setTime(shiftedTime)
                 .setPaid(coachName.equalsIgnoreCase(user.getFreeCoach()))
-                .setPrivate(false)
+                .setPrivate(false),
+            clientName
         );
 
         sessionScheduledCounter.increment();
