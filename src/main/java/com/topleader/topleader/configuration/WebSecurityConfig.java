@@ -4,6 +4,7 @@
 package com.topleader.topleader.configuration;
 
 import com.topleader.topleader.util.user.UserDetailUtils;
+import io.micrometer.core.instrument.Counter;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -72,7 +73,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, Counter loginCounter) throws Exception {
         http.addFilterAfter((request, response, filterChain) -> {
             try {
                 var username = UserDetailUtils.getLoggedUsername();
@@ -86,14 +87,17 @@ public class WebSecurityConfig {
         http
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**",
-                        "/v3/api-docs/**", "/_ah/warmup").permitAll()
+                        "/v3/api-docs/**", "/_ah/start","/_ah/warmup", "/actuator/health").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(e ->
                 e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             )
             .formLogin(f -> f
-                .successHandler((req, res, auth) -> res.setStatus(HttpStatus.NO_CONTENT.value()))
+                .successHandler((req, res, auth) -> {
+                    loginCounter.increment();
+                    res.setStatus(HttpStatus.NO_CONTENT.value());
+                })
                 .failureHandler(new SimpleUrlAuthenticationFailureHandler())
             )
             .logout(l ->

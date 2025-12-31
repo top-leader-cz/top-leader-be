@@ -122,3 +122,35 @@ management:
   health:
     mail:
       enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+  opentelemetry:
+    resource-attributes:
+      "service.name": top-leader
+      "service.namespace": topleader
+      "deployment.environment": local
+  otlp:
+    metrics:
+      export:
+        enabled: false
+        url: https://otlp-gateway-prod-eu-west-2.grafana.net/otlp/v1/metrics
+        headers:
+          Authorization: "Basic ${GRAFANA_OTLP_TOKEN}"
+        step: 30s
+  metrics:
+    tags:
+      application: top-leader
+      environment: local
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5, 0.75, 0.95, 0.99
+
+
+

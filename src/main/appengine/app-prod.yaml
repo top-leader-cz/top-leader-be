@@ -23,3 +23,6 @@ env_variables:
   # Google OAuth
   GOOGLE_CLIENT_CLIENT_ID: "572595541175-n58eajajt5iqc5rsn25rv2mt8iejojsi.apps.googleusercontent.com"
   GOOGLE_CLIENT_CLIENT_SECRET: "${GOOGLE_CLIENT_CLIENT_SECRET}"
+
+  # Grafana Cloud OTLP
+  GRAFANA_OTLP_TOKEN: "${GRAFANA_OTLP_TOKEN}"
