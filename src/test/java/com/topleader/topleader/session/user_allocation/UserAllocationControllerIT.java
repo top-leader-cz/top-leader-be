@@ -296,4 +296,63 @@ class UserAllocationControllerIT extends IntegrationTest {
                 .andDo(print())
                 .andExpect(jsonPath("$[0].errorCode").value("ALLOCATED_BELOW_CONSUMED"));
     }
+
+    @Test
+    @WithMockUser(username = "hrUser", authorities = {"HR"})
+    void createAllocation_inactiveAllocationConsumedUnitsCountTowardsCapacity() throws Exception {
+        // Package has 100 total, 30 allocated (10+20)
+        // Deactivate user1's allocation (10 allocated, 0 consumed) - this frees up 10 units
+        userAllocationRepository.findByPackageIdAndUserId(1L, "user1").ifPresent(a -> {
+            a.setStatus(UserAllocation.AllocationStatus.INACTIVE);
+            userAllocationRepository.save(a);
+        });
+
+        // Now available should be 80 (100 - 20 active - 0 inactive consumed)
+        // Try to allocate 75 - should succeed
+        mvc.perform(post("/api/latest/coaching-packages/1/allocations/user3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "allocatedUnits": 75
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allocatedUnits").value(75));
+    }
+
+    @Test
+    @WithMockUser(username = "hrUser", authorities = {"HR"})
+    void createAllocation_inactiveAllocationWithConsumedUnitsBlocksCapacity() throws Exception {
+        // Package has 100 total, 30 allocated (10+20), user2 has 5 consumed
+        // Deactivate user2's allocation - consumed units (5) still count!
+        userAllocationRepository.findByPackageIdAndUserId(1L, "user2").ifPresent(a -> {
+            a.setStatus(UserAllocation.AllocationStatus.INACTIVE);
+            userAllocationRepository.save(a);
+        });
+
+        // Now used capacity: 10 (user1 active) + 5 (user2 inactive consumed) = 15
+        // Available: 100 - 15 = 85
+        // Try to allocate 90 - should fail
+        mvc.perform(post("/api/latest/coaching-packages/1/allocations/user3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "allocatedUnits": 90
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andDo(print())
+                .andExpect(jsonPath("$[0].errorCode").value("CAPACITY_EXCEEDED"));
+
+        // But 85 should succeed
+        mvc.perform(post("/api/latest/coaching-packages/1/allocations/user3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "allocatedUnits": 85
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.allocatedUnits").value(85));
+    }
 }

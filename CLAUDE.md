@@ -104,3 +104,4 @@ Current latest: `V0.0.1.81__coaching_package.sql`
 - Chain setters with `@Accessors(chain = true)`
 - Validation with Jakarta `@NotNull`, `@Valid`, `@Min`
 - **No JavaDoc comments above methods** - keep code clean without method documentation
+- **Prefer streams over for/while loops** - use functional style with `stream()`, `map()`, `filter()`, `collect()`, etc.

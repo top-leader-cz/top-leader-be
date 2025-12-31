@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -99,47 +98,46 @@ public class UserAllocationService {
 
         var pkg = getActivePackage(packageId);
 
-        // Pre-validate all items
-        int totalDelta = 0;
-        for (var item : request.items()) {
-            var existing = userAllocationRepository.findByPackageIdAndUserId(packageId, item.userId());
-            int currentAllocated = existing.map(UserAllocation::getAllocatedUnits).orElse(0);
-            int currentConsumed = existing.map(UserAllocation::getConsumedUnits).orElse(0);
+        var totalDelta = request.items().stream()
+                .mapToInt(item -> {
+                    var existing = userAllocationRepository.findByPackageIdAndUserId(packageId, item.userId());
+                    var currentAllocated = existing.map(UserAllocation::getAllocatedUnits).orElse(0);
+                    var currentConsumed = existing.map(UserAllocation::getConsumedUnits).orElse(0);
 
-            // Validate: allocatedUnits >= consumedUnits
-            if (item.allocatedUnits() < currentConsumed) {
-                throw new ApiValidationException(ALLOCATED_BELOW_CONSUMED, "allocatedUnits",
-                        item.userId() + ":" + item.allocatedUnits(),
-                        "Allocated units for user " + item.userId() + " cannot be less than consumed units (" + currentConsumed + ")");
-            }
+                    if (item.allocatedUnits() < currentConsumed) {
+                        throw new ApiValidationException(ALLOCATED_BELOW_CONSUMED, "allocatedUnits",
+                                item.userId() + ":" + item.allocatedUnits(),
+                                "Allocated units for user " + item.userId() + " cannot be less than consumed units (" + currentConsumed + ")");
+                    }
 
-            totalDelta += item.allocatedUnits() - currentAllocated;
-        }
+                    return item.allocatedUnits() - currentAllocated;
+                })
+                .sum();
 
         validateCapacity(pkg, totalDelta);
 
-        // Process all allocations
-        List<BulkAllocationResponse.BulkAllocationItemResponse> results = new ArrayList<>();
-        for (var item : request.items()) {
-            var existing = userAllocationRepository.findByPackageIdAndUserIdForUpdate(packageId, item.userId());
+        var results = request.items().stream()
+                .map(item -> {
+                    var existing = userAllocationRepository.findByPackageIdAndUserIdForUpdate(packageId, item.userId());
 
-            var allocation = existing.orElseGet(() -> new UserAllocation()
-                    .setPackageId(packageId)
-                    .setCompanyId(pkg.getCompanyId())
-                    .setUserId(item.userId())
-                    .setCreatedBy(updatedBy));
+                    var allocation = existing.orElseGet(() -> new UserAllocation()
+                            .setPackageId(packageId)
+                            .setCompanyId(pkg.getCompanyId())
+                            .setUserId(item.userId())
+                            .setCreatedBy(updatedBy));
 
-            allocation.setAllocatedUnits(item.allocatedUnits())
-                    .setStatus(UserAllocation.AllocationStatus.ACTIVE)
-                    .setUpdatedBy(updatedBy);
+                    allocation.setAllocatedUnits(item.allocatedUnits())
+                            .setStatus(UserAllocation.AllocationStatus.ACTIVE)
+                            .setUpdatedBy(updatedBy);
 
-            var saved = userAllocationRepository.save(allocation);
-            results.add(new BulkAllocationResponse.BulkAllocationItemResponse(
-                    saved.getUserId(),
-                    saved.getAllocatedUnits(),
-                    saved.getStatus()
-            ));
-        }
+                    var saved = userAllocationRepository.save(allocation);
+                    return new BulkAllocationResponse.BulkAllocationItemResponse(
+                            saved.getUserId(),
+                            saved.getAllocatedUnits(),
+                            saved.getStatus()
+                    );
+                })
+                .toList();
 
         log.info("Bulk allocated {} items for package {}", results.size(), packageId);
         return new BulkAllocationResponse(results.size(), results);
