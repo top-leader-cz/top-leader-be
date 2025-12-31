@@ -35,19 +35,31 @@ JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean package -DskipTests
 
 ```
 src/main/java/com/topleader/topleader/
-├── admin/              # Admin views and management
-├── coach/              # Coach profiles, availability
-├── coaching_package/   # Company session packages (CORE/MASTER)
-├── company/            # Company entity
-├── configuration/      # Security, async configs
-├── credit/             # Credit management
-├── exception/          # Custom exceptions (NotFoundException, ApiValidationException)
-├── feedback/           # Feedback forms
-├── hr/                 # HR user management
-├── message/            # User messaging
-├── notification/       # Notifications
-├── user/               # Core user entity and features
-└── util/               # Utilities, converters
+├── admin/                  # Admin views and management
+├── ai/                     # AI integrations
+├── authentication/         # Authentication logic
+├── calendar/               # Calendar integrations
+├── coach/                  # Coach profiles, availability
+├── company/                # Company entity
+├── configuration/          # Security, async configs
+├── credit/                 # Credit management
+├── email/                  # Email sending
+├── exception/              # Custom exceptions (NotFoundException, ApiValidationException)
+├── feedback/               # Feedback forms
+├── feedback_notification/  # Feedback notification handling
+├── health/                 # Health checks
+├── history/                # History tracking
+├── hr/                     # HR user management
+├── ical/                   # iCal format handling
+├── message/                # User messaging
+├── myteam/                 # Team management
+├── notification/           # Notifications
+├── password/               # Password management
+├── report/                 # Reports
+├── scheduled_session/      # Scheduled sessions
+├── session/                # Session management
+├── user/                   # Core user entity and features
+└── util/                   # Utilities, converters
 ```
 
 ## Key Patterns
