@@ -1,4 +1,4 @@
-package com.topleader.topleader.coach.session;
+package com.topleader.topleader.session.coach_session;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.domain.Specification;

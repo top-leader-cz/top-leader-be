@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_CANCEL_TOO_LATE;
 import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
 import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.nonNull;
@@ -268,6 +269,11 @@ public class UserInfoController {
         final var session = scheduledSessionService.getFutureSession(sessionId)
             .filter(s -> s.getUsername().equals(user.getUsername()))
             .orElseThrow(NotFoundException::new);
+
+        if (session.getTime().isBefore(LocalDateTime.now().plusHours(24))) {
+            throw new ApiValidationException(SESSION_CANCEL_TOO_LATE, "sessionId", sessionId.toString(),
+                "Cannot cancel session less than 24 hours before start time");
+        }
 
         if (session.isPrivate()) {
             emailTemplateService.sendCancelAlertPrivateSessionEmail(sessionId);

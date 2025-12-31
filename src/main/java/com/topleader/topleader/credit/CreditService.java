@@ -143,6 +143,7 @@ public class CreditService {
         }
 
         session.setPaid(true);
+        session.setUpdatedAt(LocalDateTime.now());
 
         final var coachData = coachRepository.findById(session.getCoachUsername());
 

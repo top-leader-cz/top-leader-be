@@ -25,55 +25,38 @@ class ScheduledSessionAdminControllerIT extends IntegrationTest {
     @Autowired
     private ScheduledSessionRepository scheduledSessionRepository;
 
+    private ScheduledSession createSession(LocalDateTime time, ScheduledSession.Status status, boolean paid) {
+        var now = LocalDateTime.now();
+        return scheduledSessionRepository.save(new ScheduledSession()
+                .setUsername("user1")
+                .setCoachUsername("coach")
+                .setTime(time)
+                .setStatus(status)
+                .setPaid(paid)
+                .setPrivate(false)
+                .setCreatedAt(now)
+                .setUpdatedAt(now));
+    }
+
     @Test
     @WithMockUser(authorities = {"JOB"})
     void markSessionCompleted_marksPendingAndUpcomingOlderThan48h() throws Exception {
         var now = LocalDateTime.now();
 
         // PENDING session older than 48h - should be marked
-        var pendingOldId = scheduledSessionRepository.save(new ScheduledSession()
-                .setUsername("user1")
-                .setCoachUsername("coach")
-                .setTime(now.minusHours(50))
-                .setStatus(ScheduledSession.Status.PENDING)
-                .setPaid(true)
-                .setPrivate(false)).getId();
+        var pendingOldId = createSession(now.minusHours(50), ScheduledSession.Status.PENDING, true).getId();
 
         // UPCOMING session older than 48h - should be marked
-        var upcomingOldId = scheduledSessionRepository.save(new ScheduledSession()
-                .setUsername("user1")
-                .setCoachUsername("coach")
-                .setTime(now.minusHours(49))
-                .setStatus(ScheduledSession.Status.UPCOMING)
-                .setPaid(false)
-                .setPrivate(false)).getId();
+        var upcomingOldId = createSession(now.minusHours(49), ScheduledSession.Status.UPCOMING, false).getId();
 
         // PENDING session within 48h - should NOT be marked
-        var pendingRecentId = scheduledSessionRepository.save(new ScheduledSession()
-                .setUsername("user1")
-                .setCoachUsername("coach")
-                .setTime(now.minusHours(47))
-                .setStatus(ScheduledSession.Status.PENDING)
-                .setPaid(true)
-                .setPrivate(false)).getId();
+        var pendingRecentId = createSession(now.minusHours(47), ScheduledSession.Status.PENDING, true).getId();
 
         // Future UPCOMING session - should NOT be marked
-        var upcomingFutureId = scheduledSessionRepository.save(new ScheduledSession()
-                .setUsername("user1")
-                .setCoachUsername("coach")
-                .setTime(now.plusDays(1))
-                .setStatus(ScheduledSession.Status.UPCOMING)
-                .setPaid(false)
-                .setPrivate(false)).getId();
+        var upcomingFutureId = createSession(now.plusDays(1), ScheduledSession.Status.UPCOMING, false).getId();
 
         // COMPLETED session - should NOT be changed
-        var completedId = scheduledSessionRepository.save(new ScheduledSession()
-                .setUsername("user1")
-                .setCoachUsername("coach")
-                .setTime(now.minusHours(60))
-                .setStatus(ScheduledSession.Status.COMPLETED)
-                .setPaid(true)
-                .setPrivate(false)).getId();
+        var completedId = createSession(now.minusHours(60), ScheduledSession.Status.COMPLETED, true).getId();
 
         mvc.perform(post("/api/protected/jobs/mark-session-completed"))
                 .andExpect(status().isOk())
@@ -110,13 +93,7 @@ class ScheduledSessionAdminControllerIT extends IntegrationTest {
     @WithMockUser(authorities = {"JOB"})
     void markSessionCompleted_noSessionsToMark_returnsZero() throws Exception {
         // Only create a future session
-        scheduledSessionRepository.save(new ScheduledSession()
-                .setUsername("user1")
-                .setCoachUsername("coach")
-                .setTime(LocalDateTime.now().plusDays(1))
-                .setStatus(ScheduledSession.Status.UPCOMING)
-                .setPaid(false)
-                .setPrivate(false));
+        createSession(LocalDateTime.now().plusDays(1), ScheduledSession.Status.UPCOMING, false);
 
         mvc.perform(post("/api/protected/jobs/mark-session-completed"))
                 .andExpect(status().isOk())

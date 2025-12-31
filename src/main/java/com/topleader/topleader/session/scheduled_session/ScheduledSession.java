@@ -42,10 +42,17 @@ public class ScheduledSession {
     @Enumerated(EnumType.STRING)
     private Status status = Status.UPCOMING;
 
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+
     public enum Status {
         COMPLETED,
         UPCOMING,
         CANCELED,
+        CANCELED_BY_COACH,
+        CANCELED_BY_CLIENT,
         PENDING,
         NO_SHOW_CLIENT,
     }
