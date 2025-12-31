@@ -143,7 +143,11 @@ public class CoachingPackageService {
 
     private int computeConsumedUnits(Long packageId) {
         var userIds = getUserIdsForPackage(packageId);
-        return userIds.isEmpty() ? 0 : scheduledSessionRepository.countConsumedByUsernames(userIds);
+        if (userIds.isEmpty()) {
+            return 0;
+        }
+        return scheduledSessionRepository.countCompletedByUsernames(userIds)
+                + scheduledSessionRepository.countNoShowClientByUsernames(userIds);
     }
 
     private List<String> getUserIdsForPackage(Long packageId) {

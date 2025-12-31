@@ -66,7 +66,8 @@ class HrReportControllerIT extends IntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.summary.plannedSessions").value(1))
-                .andExpect(jsonPath("$.summary.completedSessions").value(2))
+                .andExpect(jsonPath("$.summary.completedSessions").value(1))
+                .andExpect(jsonPath("$.summary.noShowClientSessions").value(1))
                 .andExpect(jsonPath("$.summary.reservedUnits").value(1))
                 .andExpect(jsonPath("$.summary.consumedUnits").value(2));
     }

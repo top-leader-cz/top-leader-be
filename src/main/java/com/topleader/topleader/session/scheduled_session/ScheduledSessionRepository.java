@@ -33,26 +33,38 @@ public interface ScheduledSessionRepository extends JpaSpecificationExecutor<Sch
     @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'UPCOMING'")
     int countUpcomingByUsernames(List<String> usernames);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status IN ('COMPLETED', 'NO_SHOW_CLIENT')")
-    int countConsumedByUsernames(List<String> usernames);
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'COMPLETED'")
+    int countCompletedByUsernames(List<String> usernames);
+
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'NO_SHOW_CLIENT'")
+    int countNoShowClientByUsernames(List<String> usernames);
 
     @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'UPCOMING'")
     int countUpcomingByUsername(String username);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status IN ('COMPLETED', 'NO_SHOW_CLIENT')")
-    int countConsumedByUsername(String username);
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'COMPLETED'")
+    int countCompletedByUsername(String username);
+
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'NO_SHOW_CLIENT'")
+    int countNoShowClientByUsername(String username);
 
     @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'UPCOMING' AND s.time >= :from AND s.time < :to AND s.time < CURRENT_TIMESTAMP")
     int countUpcomingByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status IN ('COMPLETED', 'NO_SHOW_CLIENT') AND s.time >= :from AND s.time < :to")
-    int countConsumedByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'COMPLETED' AND s.time >= :from AND s.time < :to")
+    int countCompletedByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
+
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'NO_SHOW_CLIENT' AND s.time >= :from AND s.time < :to")
+    int countNoShowClientByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
 
     @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'UPCOMING' AND s.time >= :from AND s.time < :to AND s.time < CURRENT_TIMESTAMP")
     int countUpcomingByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status IN ('COMPLETED', 'NO_SHOW_CLIENT') AND s.time >= :from AND s.time < :to")
-    int countConsumedByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'COMPLETED' AND s.time >= :from AND s.time < :to")
+    int countCompletedByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
+
+    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'NO_SHOW_CLIENT' AND s.time >= :from AND s.time < :to")
+    int countNoShowClientByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
 
     @Modifying
     @Query("UPDATE ScheduledSession s SET s.status = 'COMPLETED', s.updatedAt = :now WHERE (s.status = 'PENDING' OR s.status = 'UPCOMING') AND s.time < :threshold")

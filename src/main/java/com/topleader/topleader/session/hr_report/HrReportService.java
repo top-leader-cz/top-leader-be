@@ -53,9 +53,10 @@ public class HrReportService {
                 .toList();
 
         var plannedSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countUpcomingByUsernamesAndTimeRange(userIds, from, to);
-        var completedSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countConsumedByUsernamesAndTimeRange(userIds, from, to);
+        var completedSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countCompletedByUsernamesAndTimeRange(userIds, from, to);
+        var noShowClientSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countNoShowClientByUsernamesAndTimeRange(userIds, from, to);
 
-        return HrReportResponse.Summary.of(totalUnits, allocatedUnits, plannedSessions, completedSessions);
+        return HrReportResponse.Summary.of(totalUnits, allocatedUnits, plannedSessions, completedSessions, noShowClientSessions);
     }
 
     private java.util.List<HrReportResponse.UserRow> computeUserRows(Long packageId, LocalDateTime from, LocalDateTime to) {
@@ -66,9 +67,10 @@ public class HrReportService {
                     var userId = allocation.getUserId();
                     var allocatedUnits = allocation.getAllocatedUnits();
                     var plannedSessions = scheduledSessionRepository.countUpcomingByUsernameAndTimeRange(userId, from, to);
-                    var completedSessions = scheduledSessionRepository.countConsumedByUsernameAndTimeRange(userId, from, to);
+                    var completedSessions = scheduledSessionRepository.countCompletedByUsernameAndTimeRange(userId, from, to);
+                    var noShowClientSessions = scheduledSessionRepository.countNoShowClientByUsernameAndTimeRange(userId, from, to);
 
-                    return HrReportResponse.UserRow.of(userId, allocatedUnits, plannedSessions, completedSessions);
+                    return HrReportResponse.UserRow.of(userId, allocatedUnits, plannedSessions, completedSessions, noShowClientSessions);
                 })
                 .toList();
     }
