@@ -58,7 +58,7 @@ class HrReportControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
     void getHrReport_withSessions_calculatesMetrics() throws Exception {
-        createSession("user1", LocalDateTime.now().plusDays(1), ScheduledSession.Status.UPCOMING);
+        createSession("user1", LocalDateTime.now().minusHours(1), ScheduledSession.Status.UPCOMING);
         createSession("user1", LocalDateTime.now().minusDays(1), ScheduledSession.Status.COMPLETED);
         createSession("user2", LocalDateTime.now().minusDays(2), ScheduledSession.Status.NO_SHOW_CLIENT);
 
@@ -74,7 +74,7 @@ class HrReportControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
     void getHrReport_perUserMetrics() throws Exception {
-        createSession("user1", LocalDateTime.now().plusDays(1), ScheduledSession.Status.UPCOMING);
+        createSession("user1", LocalDateTime.now().minusHours(1), ScheduledSession.Status.UPCOMING);
         createSession("user1", LocalDateTime.now().minusDays(1), ScheduledSession.Status.COMPLETED);
 
         mvc.perform(get("/api/latest/coaching-packages/1/hr-report"))
