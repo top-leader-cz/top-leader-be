@@ -9,7 +9,7 @@ import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.util.Set;
 
-import static com.topleader.topleader.util.common.JsonUtils.MAPPER;
+import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
 
 
 /**

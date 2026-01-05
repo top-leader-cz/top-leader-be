@@ -1,6 +1,6 @@
 package com.topleader.topleader.feedback;
 
-import com.topleader.topleader.email.EmailService;
+import com.topleader.topleader.common.email.EmailService;
 import com.topleader.topleader.feedback.api.FeedbackFormDto;
 import com.topleader.topleader.feedback.api.FeedbackFormOptions;
 import com.topleader.topleader.feedback.api.FeedbackSubmitRequest;

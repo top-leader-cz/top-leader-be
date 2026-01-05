@@ -3,7 +3,7 @@
  */
 package com.topleader.topleader.configuration;
 
-import com.topleader.topleader.util.user.UserDetailUtils;
+import com.topleader.topleader.common.util.user.UserDetailUtils;
 import io.micrometer.core.instrument.Counter;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;

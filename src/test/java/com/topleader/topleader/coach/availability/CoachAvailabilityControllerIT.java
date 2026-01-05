@@ -19,8 +19,8 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
-import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.GOOGLE;
+import static com.topleader.topleader.common.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
+import static com.topleader.topleader.common.calendar.domain.CalendarSyncInfo.SyncType.GOOGLE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;

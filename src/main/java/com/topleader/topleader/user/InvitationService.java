@@ -1,7 +1,7 @@
 package com.topleader.topleader.user;
 
-import com.topleader.topleader.email.EmailService;
-import com.topleader.topleader.email.VelocityService;
+import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.email.VelocityService;
 import com.topleader.topleader.user.token.Token;
 import com.topleader.topleader.user.token.TokenService;
 import lombok.RequiredArgsConstructor;

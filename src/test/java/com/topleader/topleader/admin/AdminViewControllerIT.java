@@ -12,7 +12,7 @@ import com.topleader.topleader.user.UserRepository;
 import java.util.Locale;
 import java.util.Set;
 
-import com.topleader.topleader.util.image.ArticleImageService;
+import com.topleader.topleader.common.util.image.ArticleImageService;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

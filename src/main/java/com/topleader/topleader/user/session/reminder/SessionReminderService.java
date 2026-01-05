@@ -1,8 +1,8 @@
 package com.topleader.topleader.user.session.reminder;
 
 
-import com.topleader.topleader.email.EmailService;
-import com.topleader.topleader.email.VelocityService;
+import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.email.VelocityService;
 import com.topleader.topleader.user.session.UserActionStep;
 import com.topleader.topleader.user.session.UserActionStepRepository;
 import java.util.Optional;

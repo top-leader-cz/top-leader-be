@@ -1,12 +1,12 @@
 package com.topleader.topleader.feedback;
 
 
-import com.topleader.topleader.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.feedback.api.*;
 
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.Question;
-import com.topleader.topleader.util.user.UserDetailUtils;
+import com.topleader.topleader.common.util.user.UserDetailUtils;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.USER_NO_AUTHORIZED;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.USER_NO_AUTHORIZED;
 
 
 @Slf4j

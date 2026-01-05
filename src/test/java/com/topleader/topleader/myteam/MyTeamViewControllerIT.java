@@ -1,7 +1,7 @@
 package com.topleader.topleader.myteam;
 
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.util.image.ArticleImageService;
+import com.topleader.topleader.common.util.image.ArticleImageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;

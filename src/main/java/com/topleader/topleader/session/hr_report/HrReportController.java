@@ -3,7 +3,7 @@
  */
 package com.topleader.topleader.session.hr_report;
 
-import com.topleader.topleader.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.session.coaching_package.CoachingPackageRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.USER_NO_AUTHORIZED;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.USER_NO_AUTHORIZED;
 
 @Slf4j
 @RestController

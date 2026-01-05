@@ -5,9 +5,9 @@ package com.topleader.topleader.coach.availability;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
-import com.topleader.topleader.calendar.domain.SyncEvent;
-import com.topleader.topleader.calendar.calendly.CalendlyService;
-import com.topleader.topleader.calendar.google.GoogleCalendarService;
+import com.topleader.topleader.common.calendar.domain.SyncEvent;
+import com.topleader.topleader.common.calendar.calendly.CalendlyService;
+import com.topleader.topleader.common.calendar.google.GoogleCalendarService;
 import com.topleader.topleader.coach.availability.domain.NonReoccurringEventDto;
 import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
 import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
@@ -29,8 +29,8 @@ import java.util.stream.Stream;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
-import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.common.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
+import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
 
 
 /**

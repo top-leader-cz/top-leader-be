@@ -4,7 +4,7 @@
 package com.topleader.topleader.history;
 
 import com.topleader.topleader.history.data.StoredData;
-import com.topleader.topleader.util.common.JsonUtils;
+import com.topleader.topleader.common.util.common.JsonUtils;
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;
 import java.util.Optional;

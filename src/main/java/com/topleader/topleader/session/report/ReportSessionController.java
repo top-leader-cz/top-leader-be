@@ -1,7 +1,7 @@
 package com.topleader.topleader.session.report;
 
 
-import com.topleader.topleader.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
 
 @RestController
 @RequestMapping("/api/latest/report-sessions")

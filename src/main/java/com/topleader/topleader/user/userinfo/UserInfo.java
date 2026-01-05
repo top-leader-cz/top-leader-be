@@ -3,7 +3,7 @@
  */
 package com.topleader.topleader.user.userinfo;
 
-import com.topleader.topleader.util.converter.SetConverter;
+import com.topleader.topleader.common.util.converter.SetConverter;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;

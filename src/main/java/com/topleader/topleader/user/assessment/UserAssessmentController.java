@@ -3,7 +3,7 @@
  */
 package com.topleader.topleader.user.assessment;
 
-import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.AllArgsConstructor;

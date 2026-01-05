@@ -3,15 +3,15 @@
  */
 package com.topleader.topleader.coach.availability;
 
-import com.topleader.topleader.calendar.calendly.CalendlyService;
-import com.topleader.topleader.calendar.calendly.domain.EventType;
-import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
+import com.topleader.topleader.common.calendar.calendly.CalendlyService;
+import com.topleader.topleader.common.calendar.calendly.domain.EventType;
+import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.coach.availability.domain.NonReoccurringEventDto;
 import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
 import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
 import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
 import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
-import com.topleader.topleader.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -24,16 +24,14 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import static com.topleader.topleader.calendar.domain.CalendarSyncInfo.SyncType.CUSTOM;
-import static com.topleader.topleader.exception.ErrorCodeConstants.FIELD_OUTSIDE_OF_FRAME;
-import static com.topleader.topleader.exception.ErrorCodeConstants.MORE_THEN_24_EVENT;
-import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.FIELD_OUTSIDE_OF_FRAME;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.MORE_THEN_24_EVENT;
+import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
 
 
 /**

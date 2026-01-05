@@ -36,14 +36,23 @@ JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean package -DskipTests
 ```
 src/main/java/com/topleader/topleader/
 ├── admin/                  # Admin views and management
-├── ai/                     # AI integrations
-├── calendar/               # Calendar integrations
 ├── coach/                  # Coach profiles, availability
+├── common/                 # Shared utilities and cross-cutting concerns
+│   ├── ai/                 # AI integrations (AiClient, AiPromptService)
+│   ├── calendar/           # Calendar integrations (Google, Calendly)
+│   ├── email/              # Email sending (EmailService, templates)
+│   ├── exception/          # Custom exceptions and error handling
+│   │   ├── NotFoundException.java
+│   │   ├── ApiValidationException.java
+│   │   ├── ErrorCodeConstants.java
+│   │   ├── ErrorController.java
+│   │   └── JsonConversionException.java
+│   ├── notification/       # Notification system
+│   ├── password/           # Password management
+│   └── util/               # Utilities, converters, common helpers
 ├── company/                # Company entity
 ├── configuration/          # Security, async configs
 ├── credit/                 # Credit management
-├── email/                  # Email sending
-├── exception/              # Custom exceptions (NotFoundException, ApiValidationException)
 ├── feedback/               # Feedback forms
 ├── feedback_notification/  # Feedback notification handling
 ├── history/                # History tracking
@@ -51,13 +60,10 @@ src/main/java/com/topleader/topleader/
 ├── ical/                   # iCal format handling
 ├── message/                # User messaging
 ├── myteam/                 # Team management
-├── notification/            # Notifications
-├── password/               # Password management
 ├── report/                 # Reports
 ├── scheduled_session/      # Scheduled sessions
 ├── session/                # Session management
-├── user/                   # Core user entity and features
-└── util/                   # Utilities, converters
+└── user/                   # Core user entity and features
 ```
 
 ## Key Patterns
@@ -80,8 +86,12 @@ src/main/java/com/topleader/topleader/
 - `RESPONDENT`, `USER`, `MANAGER`, `COACH`, `HR`, `ADMIN`
 
 ### Exception Handling
+All exception classes are in `common/exception/`:
 - `NotFoundException` - no-arg constructor, returns 404
-- `ApiValidationException` - for validation errors with error codes
+- `ApiValidationException` - for validation errors with error codes and field-level details
+- `ErrorCodeConstants` - centralized error code constants
+- `ErrorController` - global exception handler (@ControllerAdvice)
+- `JsonConversionException` - JSON parsing/serialization errors
 
 ## Database Migrations
 

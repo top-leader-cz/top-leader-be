@@ -1,11 +1,11 @@
 package com.topleader.topleader.user.userinsight;
 
 
-import com.topleader.topleader.ai.AiClient;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
-import com.topleader.topleader.util.common.user.UserUtils;
+import com.topleader.topleader.common.util.common.user.UserUtils;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

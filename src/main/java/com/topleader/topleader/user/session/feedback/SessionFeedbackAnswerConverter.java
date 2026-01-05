@@ -6,7 +6,7 @@ import lombok.SneakyThrows;
 
 import java.util.Map;
 
-import static com.topleader.topleader.util.common.JsonUtils.MAPPER;
+import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
 
 public class SessionFeedbackAnswerConverter implements AttributeConverter<Map<String, Integer>, String> {
 
