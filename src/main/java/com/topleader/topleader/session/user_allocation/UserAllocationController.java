@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 
-import static com.topleader.topleader.util.user.UserDetailUtils.isAdmin;
+import static com.topleader.topleader.common.util.user.UserDetailUtils.isAdmin;
 
 @Slf4j
 @RestController

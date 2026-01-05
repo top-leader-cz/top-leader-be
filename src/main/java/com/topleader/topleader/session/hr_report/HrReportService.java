@@ -3,7 +3,7 @@
  */
 package com.topleader.topleader.session.hr_report;
 
-import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.session.coaching_package.CoachingPackage;
 import com.topleader.topleader.session.coaching_package.CoachingPackageRepository;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;

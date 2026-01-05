@@ -3,14 +3,14 @@
  */
 package com.topleader.topleader.user.userinfo;
 
-import com.topleader.topleader.company.Company;
-import com.topleader.topleader.company.CompanyRepository;
-import com.topleader.topleader.email.EmailTemplateService;
-import com.topleader.topleader.exception.ApiValidationException;
-import com.topleader.topleader.exception.NotFoundException;
-import com.topleader.topleader.notification.Notification;
-import com.topleader.topleader.notification.NotificationService;
-import com.topleader.topleader.notification.context.CoachLinkedNotificationContext;
+import com.topleader.topleader.common.email.EmailTemplateService;
+import com.topleader.topleader.common.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.NotFoundException;
+import com.topleader.topleader.hr.company.Company;
+import com.topleader.topleader.hr.company.CompanyRepository;
+import com.topleader.topleader.common.notification.Notification;
+import com.topleader.topleader.common.notification.NotificationService;
+import com.topleader.topleader.common.notification.context.CoachLinkedNotificationContext;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
@@ -38,9 +38,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_CANCEL_TOO_LATE;
-import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
-import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.SESSION_CANCEL_TOO_LATE;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.SESSION_IN_PAST;
+import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.nonNull;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toMap;

@@ -7,7 +7,7 @@ import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.util.image.ImageUtil;
+import com.topleader.topleader.common.util.image.ImageUtil;
 import java.time.LocalDateTime;
 
 import org.assertj.core.api.Assertions;

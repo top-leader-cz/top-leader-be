@@ -2,8 +2,8 @@ package com.topleader.topleader.user.userinfo;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.ai.AiPrompt;
-import com.topleader.topleader.ai.AiPromptService;
+import com.topleader.topleader.common.ai.AiPrompt;
+import com.topleader.topleader.common.ai.AiPromptService;
 import com.topleader.topleader.credit.history.CreditHistory;
 import com.topleader.topleader.credit.history.CreditHistoryRepository;
 import com.topleader.topleader.history.DataHistory;

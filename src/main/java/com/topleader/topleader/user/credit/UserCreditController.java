@@ -1,10 +1,10 @@
 package com.topleader.topleader.user.credit;
 
-import com.topleader.topleader.email.EmailService;
-import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.hr.domain.CreditRequestDto;
 import com.topleader.topleader.user.UserDetailService;
-import com.topleader.topleader.util.transaction.TransactionService;
+import com.topleader.topleader.common.util.transaction.TransactionService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

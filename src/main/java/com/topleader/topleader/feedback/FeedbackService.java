@@ -1,23 +1,23 @@
 package com.topleader.topleader.feedback;
 
-import com.topleader.topleader.ai.AiClient;
-import com.topleader.topleader.email.EmailService;
-import com.topleader.topleader.email.VelocityService;
-import com.topleader.topleader.exception.ApiValidationException;
+import com.topleader.topleader.common.ai.AiClient;
+import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.email.VelocityService;
+import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.feedback.api.*;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.FeedbackFormAnswer;
 import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
+import com.topleader.topleader.feedback.feedback_notification.FeedbackNotificationService;
 import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
-import com.topleader.topleader.feedback_notification.FeedbackNotificationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.util.common.TranslationUtils;
-import com.topleader.topleader.util.common.user.UserUtils;
+import com.topleader.topleader.common.util.common.TranslationUtils;
+import com.topleader.topleader.common.util.common.user.UserUtils;
 import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
@@ -32,9 +32,9 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.FROM_ALREADY_SUBMITTED;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.FROM_ALREADY_SUBMITTED;
 import static com.topleader.topleader.user.User.Status.*;
-import static com.topleader.topleader.util.common.CommonUtils.TOP_LEADER_FORMATTER;
+import static com.topleader.topleader.common.util.common.CommonUtils.TOP_LEADER_FORMATTER;
 
 @Slf4j
 @Service

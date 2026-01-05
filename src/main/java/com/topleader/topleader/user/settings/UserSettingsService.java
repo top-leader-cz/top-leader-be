@@ -1,8 +1,8 @@
 package com.topleader.topleader.user.settings;
 
 
-import com.topleader.topleader.company.Company;
-import com.topleader.topleader.company.CompanyRepository;
+import com.topleader.topleader.hr.company.Company;
+import com.topleader.topleader.hr.company.CompanyRepository;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.settings.domain.UserSettings;
 import lombok.RequiredArgsConstructor;
