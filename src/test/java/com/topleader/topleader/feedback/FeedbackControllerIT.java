@@ -23,7 +23,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Set;
 
-import static com.topleader.topleader.feedback.feedback_notification.FeedbackNotificationController.FeedbackFormNotificationDto.Status.NEW;
+import static com.topleader.topleader.feedback.feedback_notification.FeedbackNotification.Status.NEW;
 import static com.topleader.topleader.user.User.Authority.RESPONDENT;
 import static com.topleader.topleader.user.User.Status.REQUESTED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
