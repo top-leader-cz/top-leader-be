@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.password;
+package com.topleader.topleader.common.password;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.user.UserRepository;
