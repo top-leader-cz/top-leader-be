@@ -1,6 +1,6 @@
 package com.topleader.topleader.user.badge;
 
-import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
+import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;

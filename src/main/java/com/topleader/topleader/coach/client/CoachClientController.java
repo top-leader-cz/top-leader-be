@@ -3,11 +3,11 @@
  */
 package com.topleader.topleader.coach.client;
 
-import com.topleader.topleader.email.EmailService;
-import com.topleader.topleader.exception.ApiValidationException;
-import com.topleader.topleader.notification.Notification;
-import com.topleader.topleader.notification.NotificationService;
-import com.topleader.topleader.notification.context.CoachUnlinkedNotificationContext;
+import com.topleader.topleader.common.exception.ApiValidationException;
+import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.notification.Notification;
+import com.topleader.topleader.common.notification.NotificationService;
+import com.topleader.topleader.common.notification.context.CoachUnlinkedNotificationContext;
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
@@ -34,8 +34,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.EMAIL_USED;
-import static com.topleader.topleader.user.User.Status.PENDING;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.EMAIL_USED;
 
 
 /**

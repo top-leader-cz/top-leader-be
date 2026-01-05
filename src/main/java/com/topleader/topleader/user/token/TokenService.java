@@ -1,6 +1,6 @@
 package com.topleader.topleader.user.token;
 
-import com.topleader.topleader.util.common.CommonUtils;
+import com.topleader.topleader.common.util.common.CommonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;

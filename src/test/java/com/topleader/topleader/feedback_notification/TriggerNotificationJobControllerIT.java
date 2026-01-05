@@ -4,6 +4,9 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+
+import com.topleader.topleader.feedback.feedback_notification.FeedbackNotification;
+import com.topleader.topleader.feedback.feedback_notification.FeedbackNotificationRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.data.TemporalUnitWithinOffset;
 import org.junit.jupiter.api.Test;

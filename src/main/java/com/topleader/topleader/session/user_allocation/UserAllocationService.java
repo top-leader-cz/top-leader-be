@@ -3,8 +3,8 @@
  */
 package com.topleader.topleader.session.user_allocation;
 
-import com.topleader.topleader.exception.ApiValidationException;
-import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.common.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.session.coaching_package.CoachingPackage;
 import com.topleader.topleader.session.coaching_package.CoachingPackageRepository;
 import com.topleader.topleader.session.user_allocation.dto.*;
@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.*;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
 
 @Slf4j
 @Service

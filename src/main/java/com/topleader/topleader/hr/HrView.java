@@ -1,6 +1,6 @@
 package com.topleader.topleader.hr;
 
-import com.topleader.topleader.util.converter.SetConverter;
+import com.topleader.topleader.common.util.converter.SetConverter;
 import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;

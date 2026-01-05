@@ -5,9 +5,9 @@ package com.topleader.topleader.coach.client;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.notification.Notification;
-import com.topleader.topleader.notification.NotificationRepository;
-import com.topleader.topleader.notification.context.CoachUnlinkedNotificationContext;
+import com.topleader.topleader.common.notification.Notification;
+import com.topleader.topleader.common.notification.NotificationRepository;
+import com.topleader.topleader.common.notification.context.CoachUnlinkedNotificationContext;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.User;

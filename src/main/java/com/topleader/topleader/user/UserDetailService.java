@@ -1,9 +1,9 @@
 package com.topleader.topleader.user;
 
-import com.topleader.topleader.exception.ApiValidationException;
-import java.util.List;
+
 import java.util.Locale;
 
+import com.topleader.topleader.common.exception.ApiValidationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.User;
@@ -14,7 +14,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.UNABLE_TO_DELETE;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.UNABLE_TO_DELETE;
+
 
 @Slf4j
 @Service

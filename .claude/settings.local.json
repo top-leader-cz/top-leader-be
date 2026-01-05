@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls:*)",
+      "Bash(wc:*)",
+      "Bash(find:*)",
+      "Bash(done)",
+      "Bash(mkdir:*)",
+      "Bash(mv:*)",
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 mvn test:*)",
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean compile:*)",
+      "Bash(wait)"
+    ]
+  }
+}

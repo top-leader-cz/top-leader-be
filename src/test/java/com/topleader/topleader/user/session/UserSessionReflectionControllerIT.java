@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 
 import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
-import com.topleader.topleader.util.common.JsonUtils;
+import com.topleader.topleader.common.util.common.JsonUtils;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;

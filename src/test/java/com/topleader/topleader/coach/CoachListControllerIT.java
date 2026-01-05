@@ -13,7 +13,7 @@ import com.topleader.topleader.credit.history.CreditHistory;
 import com.topleader.topleader.credit.history.CreditHistoryRepository;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.util.image.ImageUtil;
+import com.topleader.topleader.common.util.image.ImageUtil;
 
 import java.time.*;
 import java.time.format.DateTimeFormatter;

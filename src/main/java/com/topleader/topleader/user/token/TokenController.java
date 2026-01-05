@@ -1,7 +1,7 @@
 package com.topleader.topleader.user.token;
 
-import com.topleader.topleader.email.EmailService;
-import com.topleader.topleader.email.VelocityService;
+import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.email.VelocityService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;

@@ -4,7 +4,7 @@ package com.topleader.topleader.feedback.entity;
 import com.topleader.topleader.feedback.api.Summary;
 import com.topleader.topleader.feedback.api.converter.SummaryConverter;
 import com.topleader.topleader.user.User;
-import com.topleader.topleader.util.converter.SetConverter;
+import com.topleader.topleader.common.util.converter.SetConverter;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;

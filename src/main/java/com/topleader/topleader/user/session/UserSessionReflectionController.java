@@ -3,7 +3,7 @@
  */
 package com.topleader.topleader.user.session;
 
-import com.topleader.topleader.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeService;
 import jakarta.validation.Valid;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_EMPTY;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.NOT_EMPTY;
 import static org.springframework.util.StringUtils.hasText;
 
 

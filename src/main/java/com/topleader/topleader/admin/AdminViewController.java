@@ -6,7 +6,7 @@ package com.topleader.topleader.admin;
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachRepository;
 import com.topleader.topleader.credit.CreditService;
-import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
@@ -24,7 +24,6 @@ import java.util.Set;
 
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -34,8 +33,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import static com.topleader.topleader.util.user.UserDetailUtils.sendInvite;
-import static java.util.Objects.isNull;
+import static com.topleader.topleader.common.util.user.UserDetailUtils.sendInvite;
 import static java.util.function.Predicate.not;
 
 

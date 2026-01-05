@@ -3,14 +3,14 @@
  */
 package com.topleader.topleader.coach;
 
-import com.topleader.topleader.email.EmailTemplateService;
-import com.topleader.topleader.exception.NotFoundException;
+import com.topleader.topleader.common.email.EmailTemplateService;
+import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.util.common.CommonUtils;
-import com.topleader.topleader.util.image.ImageUtil;
+import com.topleader.topleader.common.util.common.CommonUtils;
+import com.topleader.topleader.common.util.image.ImageUtil;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;

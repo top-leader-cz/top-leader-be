@@ -5,8 +5,8 @@ package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
-import com.topleader.topleader.ai.AiPrompt;
-import com.topleader.topleader.ai.AiPromptService;
+import com.topleader.topleader.common.ai.AiPrompt;
+import com.topleader.topleader.common.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;

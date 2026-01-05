@@ -1,6 +1,6 @@
 package com.topleader.topleader.coach.availability.settings;
 
-import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
+import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
