@@ -9,7 +9,16 @@
       "Bash(mv:*)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 mvn test:*)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean compile:*)",
-      "Bash(wait)"
+      "Bash(wait)",
+      "Bash(gcloud auth list:*)",
+      "Bash(gcloud config:*)",
+      "Bash(gcloud auth application-default login:*)",
+      "Bash(./import.sh:*)",
+      "Bash(terraform plan:*)",
+      "Bash(gsutil ls:*)",
+      "Bash(gsutil mb:*)",
+      "Bash(gsutil versioning:*)",
+      "Bash(terraform init:*)"
     ]
   }
 }
