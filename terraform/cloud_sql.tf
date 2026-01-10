@@ -37,19 +37,14 @@ resource "google_sql_database_instance" "main" {
 
     ip_configuration {
       ipv4_enabled = true
-      ssl_mode     = "ALLOW_UNENCRYPTED_AND_ENCRYPTED"
+      ssl_mode     = "ENCRYPTED_ONLY"
 
-      authorized_networks {
-        name  = "Jakub"
-        value = "141.170.140.0/24"
-      }
-      authorized_networks {
-        name  = "milan"
-        value = "109.81.2.0/24"
-      }
-      authorized_networks {
-        name  = "matej"
-        value = "94.142.239.0/24"
+      dynamic "authorized_networks" {
+        for_each = var.sql_authorized_networks
+        content {
+          name  = authorized_networks.value.name
+          value = authorized_networks.value.value
+        }
       }
     }
 
@@ -58,6 +53,10 @@ resource "google_sql_database_instance" "main" {
       query_plans_per_minute  = 5
       query_string_length     = 1024
     }
+  }
+
+  lifecycle {
+    ignore_changes = [settings[0].maintenance_window]
   }
 }
 

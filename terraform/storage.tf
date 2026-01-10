@@ -7,7 +7,6 @@ resource "google_storage_bucket" "frontend_qa" {
 
   website {
     main_page_suffix = "index.html"
-    not_found_page   = "index.html"
   }
 
   uniform_bucket_level_access = true
@@ -22,7 +21,6 @@ resource "google_storage_bucket" "frontend_prod" {
 
   website {
     main_page_suffix = "index.html"
-    not_found_page   = "index.html"
   }
 
   uniform_bucket_level_access = true
@@ -38,19 +36,7 @@ resource "google_storage_bucket" "ai_images" {
   uniform_bucket_level_access = true
 }
 
-# Make QA frontend bucket publicly readable
-resource "google_storage_bucket_iam_member" "frontend_qa_public" {
-  bucket = google_storage_bucket.frontend_qa.name
-  role   = "roles/storage.objectViewer"
-  member = "allUsers"
-}
-
-# Make PROD frontend bucket publicly readable
-resource "google_storage_bucket_iam_member" "frontend_prod_public" {
-  bucket = google_storage_bucket.frontend_prod.name
-  role   = "roles/storage.objectViewer"
-  member = "allUsers"
-}
+# Public access IAM is managed outside Terraform (already configured in GCP)
 
 # Backend Bucket for QA with CDN
 resource "google_compute_backend_bucket" "frontend_qa" {

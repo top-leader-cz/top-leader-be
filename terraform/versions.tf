@@ -12,11 +12,10 @@ terraform {
     }
   }
 
-  # Uncomment to use remote state in GCS
-  # backend "gcs" {
-  #   bucket = "topleader-terraform-state"
-  #   prefix = "terraform/state"
-  # }
+  backend "gcs" {
+    bucket = "topleader-terraform-state"
+    prefix = "terraform/state"
+  }
 }
 
 provider "google" {

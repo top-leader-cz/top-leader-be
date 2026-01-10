@@ -21,3 +21,12 @@ variable "environment" {
   type        = string
   default     = "prod"
 }
+
+variable "sql_authorized_networks" {
+  description = "List of authorized networks for Cloud SQL"
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  default = []
+}

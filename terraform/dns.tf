@@ -2,9 +2,13 @@
 resource "google_dns_managed_zone" "toplead" {
   name        = "toplead"
   dns_name    = "toplead.app."
-  description = "DNS zone for domain: toplead.app"
+  description = " "  # Cannot be empty in Terraform
   project     = var.project_id
   visibility  = "public"
+
+  lifecycle {
+    ignore_changes = [description]
+  }
 }
 
 # DNS Zone for topleaderplatform.io

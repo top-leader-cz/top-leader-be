@@ -15,7 +15,10 @@
       "Bash(gcloud auth application-default login:*)",
       "Bash(./import.sh:*)",
       "Bash(terraform plan:*)",
-      "Bash(gsutil ls:*)"
+      "Bash(gsutil ls:*)",
+      "Bash(gsutil mb:*)",
+      "Bash(gsutil versioning:*)",
+      "Bash(terraform init:*)"
     ]
   }
 }
