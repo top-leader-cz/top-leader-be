@@ -19,10 +19,14 @@ import org.springframework.data.jpa.repository.Query;
 public interface ScheduledSessionRepository extends JpaSpecificationExecutor<ScheduledSession> , JpaRepository<ScheduledSession, Long>  {
     boolean existsByCoachUsernameAndTime(String coachUsername, LocalDateTime time);
 
-    List<ScheduledSession> findAllByCoachUsernameAndTimeIsAfter(String coach, LocalDateTime time);
+
+    @Query("SELECT s FROM ScheduledSession s WHERE s.coachUsername = :coach AND s.time > :time AND s.status = 'UPCOMING'")
+    List<ScheduledSession> findAllByCoachUsernameAndTimeIsAfterAndStatusUpcoming(String coach, LocalDateTime time);
 
     List<ScheduledSession> findAllByUsernameAndTimeIsAfterAndIsPrivateIsFalse(String username, LocalDateTime now);
-    List<ScheduledSession> findAllByUsernameAndTimeIsAfter(String username, LocalDateTime now);
+
+    @Query("SELECT s FROM ScheduledSession s WHERE s.username = :username AND s.time > :time AND s.status = 'UPCOMING'")
+    List<ScheduledSession> findAllByUsernameAndTimeIsAfterAndStatusUpcoming(String username, LocalDateTime time);
 
     List<ScheduledSession> findAllByTimeBeforeAndPaidIsFalse(LocalDateTime time);
 
