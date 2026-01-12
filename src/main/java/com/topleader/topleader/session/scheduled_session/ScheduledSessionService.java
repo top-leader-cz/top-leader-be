@@ -47,7 +47,7 @@ public class ScheduledSessionService {
     }
 
     public List<ScheduledSession> listCoachesFutureSessions(String username) {
-        return scheduledSessionRepository.findAllByCoachUsernameAndTimeIsAfter(username, LocalDateTime.now());
+        return scheduledSessionRepository.findAllByCoachUsernameAndTimeIsAfterAndStatusUpcoming(username, LocalDateTime.now());
     }
 
     public List<ScheduledSession> listUsersFutureSessions(String username) {
