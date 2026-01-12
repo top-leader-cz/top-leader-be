@@ -110,18 +110,18 @@ public class WebSecurityConfig {
           return http.build();
     }
 
-    @Bean
-    public SecurityFilterChain usernameInLogChain(HttpSecurity http) throws Exception {
-        return http.addFilterAfter((request, response, filterChain) -> {
-                    try {
-                        var username = UserDetailUtils.getLoggedUsername();
-                        MDC.put(USER_MDC_KEY, username);
-                        filterChain.doFilter(request, response);
-                    } finally {
-                        MDC.remove(USER_MDC_KEY);
-                    }
-                }, SecurityContextHolderFilter.class)
-            .build();
-    }
+//    @Bean
+//    public SecurityFilterChain usernameInLogChain(HttpSecurity http) throws Exception {
+//        return http.addFilterAfter((request, response, filterChain) -> {
+//                    try {
+//                        var username = UserDetailUtils.getLoggedUsername();
+//                        MDC.put(USER_MDC_KEY, username);
+//                        filterChain.doFilter(request, response);
+//                    } finally {
+//                        MDC.remove(USER_MDC_KEY);
+//                    }
+//                }, SecurityContextHolderFilter.class)
+//            .build();
+//    }
 
 }
