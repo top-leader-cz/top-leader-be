@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -55,6 +56,30 @@ public class ErrorController {
                     .map(ErrorCodeFieldDto::from)
                     .toList(),
                 ex.getMessage()
+            )
+        );
+    }
+
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(value = AccessDeniedException.class)
+    public List<ErrorDto> handleAccessDeniedException(AccessDeniedException ex) {
+        return List.of(
+            new ErrorDto(
+                "ACCESS_DENIED",
+                List.of(),
+                "You do not have permission to access this resource"
+            )
+        );
+    }
+
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    @ExceptionHandler(value = Exception.class)
+    public List<ErrorDto> handleGenericException(Exception ex) {
+        return List.of(
+            new ErrorDto(
+                "INTERNAL_ERROR",
+                List.of(),
+                ex.getMessage() != null ? ex.getMessage() : "An unexpected error occurred"
             )
         );
     }

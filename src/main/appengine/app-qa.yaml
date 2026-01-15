@@ -1,8 +1,11 @@
 runtime: java25
 entrypoint: java -XX:+UseCompactObjectHeaders  -XX:+UseStringDeduplication -XX:+DisableExplicitGC -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -jar top-leader.jar
 service: qa
+instance_class: B4
 basic_scaling:
-  max_instances: 1
+  max_instances: 2
+network:
+  session_affinity: true
 env_variables:
   SPRING_PROFILES_ACTIVE: "qa"
   SPRING_DATASOURCE_URL: "jdbc:postgresql:///top_leader"
@@ -23,3 +26,6 @@ env_variables:
 
   # Grafana Cloud OTLP
   GRAFANA_OTLP_TOKEN: "${GRAFANA_OTLP_TOKEN}"
+
+  # Job Trigger Auth
+  JOB_TRIGGER_PASSWORD: "${JOB_TRIGGER_PASSWORD}"

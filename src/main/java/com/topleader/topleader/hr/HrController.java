@@ -84,6 +84,10 @@ public class HrController {
     @Transactional
     public List<ManagerDto> listManagers(@AuthenticationPrincipal UserDetails user) {
         var foundUser = userDetailService.find(user.getUsername());
+        if (foundUser.getCompanyId() == null) {
+            log.warn("User {} has no companyId, returning empty list", user.getUsername());
+            return List.of();
+        }
         return managerService.listManagerByCompany(foundUser.getCompanyId()).stream()
                 .map(m -> {
                     var found = userDetailService.find(m.getUsername());

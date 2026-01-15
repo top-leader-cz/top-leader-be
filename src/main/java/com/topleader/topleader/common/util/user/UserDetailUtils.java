@@ -35,11 +35,11 @@ public final class UserDetailUtils {
         return User.Status.PENDING == oldStatus && (User.Status.AUTHORIZED == newStatus || User.Status.PAID == newStatus);
     }
 
-    public String getLoggedUsername() {
+    public static String getLoggedUsername() {
         return Optional.ofNullable(SecurityContextHolder.getContext().getAuthentication())
                 .map(Authentication::getPrincipal)
                 .map(principal -> (UserDetails) principal)
                 .map(UserDetails::getUsername)
-                .orElse(null);
+                .orElse("anonymous");
     }
 }

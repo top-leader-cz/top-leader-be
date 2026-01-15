@@ -191,14 +191,15 @@ public class CoachListController {
                 .contentType(MediaType.valueOf(i.getType()))
                 .body(ImageUtil.decompressImage(i.getImageData()))
             )
-            .orElseThrow(NotFoundException::new);
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{username}")
-    public CoachListDto findCoach(@PathVariable String username) {
+    public ResponseEntity<CoachListDto> findCoach(@PathVariable String username) {
         return coachListViewRepository.findById(username)
             .map(CoachListDto::from)
-            .orElseThrow(NotFoundException::new);
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping
