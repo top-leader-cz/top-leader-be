@@ -88,6 +88,7 @@ public class UserInsightController {
     @PostMapping("/dashboard")
     public void dashboard(@AuthenticationPrincipal UserDetails authUser, @RequestBody DashboardRequest dashboardRequest) {
         var username = authUser.getUsername();
+        log.info("Initiating dashboard content generation: [{}] ", username);
         var query = List.of(dashboardRequest.query());
         var userInsight = userInsightService.getInsight(username);
         userInsight.setActionGoalsPending(true);
@@ -138,6 +139,7 @@ public class UserInsightController {
                         .onSuccess(i -> log.info("Videos and articles generated: [{}] ", username))
         );
 
+        log.info("dashboard content process initiated: [{}] ", username);
 
     }
 

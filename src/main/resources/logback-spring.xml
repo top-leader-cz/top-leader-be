@@ -28,8 +28,16 @@
             </encoder>
         </appender>
 
-        <root level="INFO">
+        <!-- Async wrapper for better performance -->
+        <appender name="ASYNC_JSON" class="ch.qos.logback.classic.AsyncAppender">
+            <queueSize>512</queueSize>
+            <discardingThreshold>0</discardingThreshold>
+            <neverBlock>false</neverBlock>
             <appender-ref ref="CONSOLE_JSON"/>
+        </appender>
+
+        <root level="INFO">
+            <appender-ref ref="ASYNC_JSON"/>
         </root>
     </springProfile>
 

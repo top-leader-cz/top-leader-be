@@ -31,6 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+.claude/settings.local.json
 
 ### Terraform ###
 **/.terraform
@@ -40,3 +41,5 @@ build/
 
 ### Claude Code ###
 .claude
+.gradle/
+build/

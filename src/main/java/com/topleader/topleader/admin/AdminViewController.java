@@ -10,14 +10,12 @@ import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
@@ -27,14 +25,12 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import static com.topleader.topleader.common.util.user.UserDetailUtils.sendInvite;
-import static java.util.function.Predicate.not;
 
 
 /**
@@ -62,12 +58,7 @@ public class AdminViewController {
         FilterDto filterDto,
         Pageable pageable
     ) {
-
-        return Optional.ofNullable(filterDto)
-            .map(FilterDto::toSpecifications)
-            .filter(not(List::isEmpty))
-            .map(filter -> repository.findAll(Specification.allOf(filter), pageable))
-            .orElseGet(() -> repository.findAll(pageable));
+        return repository.findAllWithFilters(filterDto, pageable);
     }
 
     @Transactional
@@ -250,38 +241,10 @@ public class AdminViewController {
         String hrs,
         String requestedBy,
         Boolean isTrial,
-
         String freeCoach,
         String maxCoachRate,
         Boolean showCanceled
     ) {
-
-        public List<Specification<AdminView>> toSpecifications() {
-            List<Specification<AdminView>> specs = new ArrayList<>();
-
-            AdminViewSpecifications.usernameEquals(username).ifPresent(specs::add);
-            AdminViewSpecifications.firstNameContains(firstName).ifPresent(specs::add);
-            AdminViewSpecifications.lastNameEquals(lastName).ifPresent(specs::add);
-            AdminViewSpecifications.timeZoneEquals(timeZone).ifPresent(specs::add);
-            AdminViewSpecifications.statusEquals(status).ifPresent(specs::add);
-            AdminViewSpecifications.companyIdEquals(companyId).ifPresent(specs::add);
-            AdminViewSpecifications.companyNameContains(companyName).ifPresent(specs::add);
-            AdminViewSpecifications.coachContains(coach).ifPresent(specs::add);
-            AdminViewSpecifications.coachFirstNameContains(coachFirstName).ifPresent(specs::add);
-            AdminViewSpecifications.coachLastNameContains(coachLastName).ifPresent(specs::add);
-            AdminViewSpecifications.creditEquals(credit).ifPresent(specs::add);
-            AdminViewSpecifications.requestedCreditEquals(requestedCredit).ifPresent(specs::add);
-            AdminViewSpecifications.sumRequestedCreditEquals(sumRequestedCredit).ifPresent(specs::add);
-            AdminViewSpecifications.paidCreditEquals(paidCredit).ifPresent(specs::add);
-            AdminViewSpecifications.hrsContains(hrs).ifPresent(specs::add);
-            AdminViewSpecifications.requestedByContains(requestedBy).ifPresent(specs::add);
-            AdminViewSpecifications.isTrialEquals(isTrial).ifPresent(specs::add);
-            AdminViewSpecifications.freeCoach(freeCoach).ifPresent(specs::add);
-            AdminViewSpecifications.maxCoachRateContains(maxCoachRate).ifPresent(specs::add);
-            AdminViewSpecifications.showCanceled(showCanceled).ifPresent(specs::add);
-
-            return specs;
-        }
     }
 
 }

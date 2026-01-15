@@ -13,6 +13,9 @@ import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
+import org.springframework.boot.http.client.HttpClientSettings;
+import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -75,6 +78,19 @@ public class CustomBeansConfig {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         return mapper;
+    }
+
+    @Bean
+    public ClientHttpRequestFactoryBuilder<?> clientHttpRequestFactoryBuilder() {
+        return ClientHttpRequestFactoryBuilder.jdk();
+    }
+
+    @Bean
+    public RestClientCustomizer restClientCustomizer(ClientHttpRequestFactoryBuilder<?> builder) {
+        var settings = HttpClientSettings.defaults()
+                .withConnectTimeout(Duration.ofSeconds(30))
+                .withReadTimeout(Duration.ofSeconds(120));
+        return restClientBuilder -> restClientBuilder.requestFactory(builder.build(settings));
     }
 
 }

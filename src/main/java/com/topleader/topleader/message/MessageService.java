@@ -10,7 +10,7 @@ import com.topleader.topleader.common.notification.NotificationService;
 import com.topleader.topleader.common.notification.context.MessageNotificationContext;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
@@ -87,7 +87,7 @@ public class MessageService {
             .collect(toMap(User::getUsername, UserInfoDto::from));
 
         final var unreadCountMap = messageRepository.getUnreadMessagesCount(username).stream()
-            .collect(toMap(UnreadMessagesCount::getUserFrom, UnreadMessagesCount::getUnread));
+            .collect(toMap(UnreadMessagesCount::userfrom, UnreadMessagesCount::unread));
 
         return allChats.entrySet().stream()
             .map(e -> new ChatInfoDto(
@@ -129,11 +129,7 @@ public class MessageService {
                 .setDisplayed(false)
         );
 
-        lastMessageRepository.save(
-            new LastMessage()
-                .setChatId(chat.getChatId())
-                .setMessageId(message.getId())
-        );
+        lastMessageRepository.upsert(chat.getChatId(), message.getId());
 
         final var user = userRepository.findById(username).orElseThrow();
 

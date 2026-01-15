@@ -10,7 +10,6 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -89,15 +88,13 @@ class MessageControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
         ;
 
-        final var messages = messageRepository.findAll(Example.of(
-            new Message()
-                .setUserFrom("user1")
-                .setUserTo("user4")
-        ));
+        final var messages = messageRepository.findAll().stream()
+            .filter(m -> m.getUserFrom().equals("user1") && m.getUserTo().equals("user4"))
+            .toList();
 
         assertThat(messages, hasSize(1));
 
-        assertThat(messages.get(0).getMessageData(), is("hello there :-)"));
+        assertThat(messages.getFirst().getMessageData(), is("hello there :-)"));
 
         final var chat = userChatRepository.findUserChat("user1", "user4");
 
@@ -116,8 +113,8 @@ class MessageControllerIT extends IntegrationTest {
     void testGetUserChatInfo() throws Exception {
 
         mvc.perform(get("/api/latest/messages"))
-            .andExpect(status().isOk())
             .andDo(print())
+            .andExpect(status().isOk())
             .andExpect(content().json("""
                     [
                       {

@@ -1,5 +1,12 @@
 server:
   port: ${PORT:8080}
+  servlet:
+    session:
+      cookie:
+        path: /
+        same-site: lax
+        secure: true
+        http-only: true
 
 spring:
   cloud:
@@ -8,9 +15,6 @@ spring:
         database-name: top_leader_prod
       logging:
         enabled: true
-  docker:
-    compose:
-      enabled: false
   ai:
     openai:
       chat:
