@@ -41,6 +41,7 @@ jobs:
       GOOGLE_CLIENT_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_CLIENT_SECRET }}
       SPRING_AI_OPENAI_APIKEY: ${{ secrets.SPRING_AI_OPENAI_APIKEY }}
       GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
+      JOB_TRIGGER_PASSWORD: ${{ secrets.JOB_TRIGGER_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -116,6 +117,7 @@ jobs:
       GOOGLE_CLIENT_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_CLIENT_SECRET }}
       SPRING_AI_OPENAI_APIKEY: ${{ secrets.SPRING_AI_OPENAI_APIKEY }}
       GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
+      JOB_TRIGGER_PASSWORD: ${{ secrets.JOB_TRIGGER_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
