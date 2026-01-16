@@ -28,7 +28,19 @@
       "Bash(curl:*)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean package:*)",
       "Bash(jar -tf:*)",
-      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 mvn compile:*)"
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 mvn compile:*)",
+      "Bash(~/.sdkman/candidates/gradle/current/bin/gradle compileJava:*)",
+      "Bash(export JAVA_HOME=~/.sdkman/candidates/java/25:*)",
+      "Bash(export JAVA_HOME=/Users/jakubkrhovjak/.sdkman/candidates/java/25:*)",
+      "Bash(/Users/jakubkrhovjak/.sdkman/candidates/gradle/current/bin/gradle compileJava:*)",
+      "Bash(/Users/jakubkrhovjak/.sdkman/candidates/gradle/current/bin/gradle test:*)",
+      "Bash(/Users/jakubkrhovjak/.sdkman/candidates/gradle/current/bin/gradle:*)",
+      "Bash(export GRADLE_HOME=~/.sdkman/candidates/gradle/current:*)",
+      "Bash($GRADLE_HOME/bin/gradle compileJava compileTestJava)",
+      "Bash($GRADLE_HOME/bin/gradle test)",
+      "Bash(~/.sdkman/candidates/gradle/current/bin/gradle test)",
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle test:*)",
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle compileJava:*)"
     ]
   }
 }

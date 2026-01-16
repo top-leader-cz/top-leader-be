@@ -18,7 +18,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.common.TranslationUtils;
 import com.topleader.topleader.common.util.common.user.UserUtils;
-import io.vavr.control.Try;
+import com.topleader.topleader.common.util.common.CommonUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -169,9 +169,10 @@ public class FeedbackService {
         log.info("Generating summary for form: [{}] with questions: [{}]", formId, questions);
 
         if (formDto.allowSummary(summaryLimit)) {
-            var summary = Try.of(() -> jsonMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class))
-                    .onFailure(e -> log.error("Failed to generate summary for form: [" + formId + "] ", e))
-                            .getOrElse(new Summary());
+            var summary = CommonUtils.tryGetOrElse(
+                    () -> jsonMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class),
+                    new Summary(),
+                    "Failed to generate summary for form: [" + formId + "]");
             form.setSummary(summary);
             feedbackFormRepository.save(form);
         }

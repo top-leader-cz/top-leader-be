@@ -3,8 +3,6 @@
  */
 package com.topleader.topleader.common.calendar.google;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.api.client.auth.oauth2.TokenResponse;
 import com.topleader.topleader.common.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.common.calendar.CalendarToErrorHandler;
@@ -18,16 +16,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import io.vavr.control.Try;
 import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import static com.topleader.topleader.common.util.common.DateUtils.convertToDateTime;
 
@@ -49,15 +41,7 @@ public class GoogleCalendarService {
 
     private final TransactionService transactionService;
 
-    private final RestClient restClient;
-
     private final CalendarToErrorHandler errorHandler;
-
-    @Value("${google.client.client-id}")
-    private String clientId;
-
-    @Value("${google.client.client-secret}")
-    private String clientSecret;
 
     @Transactional
     public void storeTokenInfo(String username, TokenResponse tokenResponse) {
@@ -114,44 +98,5 @@ public class GoogleCalendarService {
         }
 
         return List.of();
-    }
-
-    public boolean verifyToken(String refreshToken) {
-        return Try.of(() ->
-                        restClient.post().uri("https://oauth2.googleapis.com/token")
-                                .body(new VerifyRequest().setClientId(clientId).setClientSecret(clientSecret).setRefreshToken(refreshToken))
-                                .retrieve()
-                                .body(VerifyResponse.class)
-                                .getAccessToken() != null
-                ).onFailure(e -> log.warn("Error verifying token", e))
-                .getOrElse(false);
-    }
-
-    @Data
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class VerifyResponse {
-        @JsonProperty("access_token")
-        private String accessToken;
-
-    }
-
-    @Data
-    @Accessors(chain = true)
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class VerifyRequest {
-
-        @JsonProperty("client_id")
-        private String clientId;
-
-        @JsonProperty("client_secret")
-        private String clientSecret;
-
-        @JsonProperty("refresh_token")
-        private String refreshToken;
-
-        @JsonProperty("grant_type")
-        private String grantType = "refresh_token";
-
-
     }
 }
