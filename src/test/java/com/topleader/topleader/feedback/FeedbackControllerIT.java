@@ -3,10 +3,10 @@ package com.topleader.topleader.feedback;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
+import com.topleader.topleader.feedback.feedback_notification.FeedbackNotificationRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormQuestionRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
-import com.topleader.topleader.feedback_notification.FeedbackNotificationRepository;
 import com.topleader.topleader.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -23,7 +23,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.util.Set;
 
-import static com.topleader.topleader.feedback_notification.FeedbackNotification.Status.NEW;
+import static com.topleader.topleader.feedback.feedback_notification.FeedbackNotification.Status.NEW;
 import static com.topleader.topleader.user.User.Authority.RESPONDENT;
 import static com.topleader.topleader.user.User.Status.REQUESTED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;

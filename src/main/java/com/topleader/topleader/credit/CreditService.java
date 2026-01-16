@@ -9,10 +9,10 @@ import com.topleader.topleader.coach.rate.CoachRate;
 import com.topleader.topleader.coach.rate.CoachRateRepository;
 import com.topleader.topleader.credit.history.CreditHistory;
 import com.topleader.topleader.credit.history.CreditHistoryRepository;
-import com.topleader.topleader.exception.NotFoundException;
-import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.common.exception.NotFoundException;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.util.common.JsonUtils;
+import com.topleader.topleader.common.util.common.JsonUtils;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -143,6 +143,7 @@ public class CreditService {
         }
 
         session.setPaid(true);
+        session.setUpdatedAt(LocalDateTime.now());
 
         final var coachData = coachRepository.findById(session.getCoachUsername());
 

@@ -1,9 +1,8 @@
 package com.topleader.topleader.user.settings;
 
 
-import com.topleader.topleader.company.CompanyController;
-import com.topleader.topleader.company.CompanyService;
-import com.topleader.topleader.exception.ApiValidationException;
+
+import com.topleader.topleader.hr.company.CompanyService;
 import com.topleader.topleader.hr.domain.ManagerDto;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
@@ -28,8 +27,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
-import static com.topleader.topleader.util.user.UserDetailUtils.isHr;
+import static com.topleader.topleader.common.util.user.UserDetailUtils.isHr;
 
 
 @Slf4j
@@ -51,6 +49,10 @@ public class UserSettingsController {
     @Transactional
     public List<ManagerDto> listManagers(@AuthenticationPrincipal UserDetails user) {
         var foundUser = userDetailService.find(user.getUsername());
+        if (foundUser.getCompanyId() == null) {
+            log.warn("User {} has no companyId, returning empty list", user.getUsername());
+            return List.of();
+        }
         return managerService.listManagerByCompany(foundUser.getCompanyId()).stream()
                 .map(m -> {
                     var found = userDetailService.find(m.getUsername());

@@ -1,13 +1,13 @@
 package com.topleader.topleader.user.userinsight;
 
-import com.topleader.topleader.ai.AiClient;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.session.UserSessionService;
 import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
-import com.topleader.topleader.util.image.ArticleImageService;
+import com.topleader.topleader.common.util.image.ArticleImageService;
 import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotEmpty;
@@ -88,6 +88,7 @@ public class UserInsightController {
     @PostMapping("/dashboard")
     public void dashboard(@AuthenticationPrincipal UserDetails authUser, @RequestBody DashboardRequest dashboardRequest) {
         var username = authUser.getUsername();
+        log.info("Initiating dashboard content generation: [{}] ", username);
         var query = List.of(dashboardRequest.query());
         var userInsight = userInsightService.getInsight(username);
         userInsight.setActionGoalsPending(true);
@@ -138,6 +139,7 @@ public class UserInsightController {
                         .onSuccess(i -> log.info("Videos and articles generated: [{}] ", username))
         );
 
+        log.info("dashboard content process initiated: [{}] ", username);
 
     }
 

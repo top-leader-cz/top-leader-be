@@ -1,10 +1,13 @@
 server:
   port: 8080
+  servlet:
+    session:
+      cookie:
+        same-site: lax
+        secure: false
+        http-only: true
 
 spring:
-  docker:
-    compose:
-      enabled: true
   cloud:
     gcp:
       sql:
@@ -19,7 +22,7 @@ spring:
   ai:
     openai:
       api-key: dummy-api-keys
-      chat :
+      chat:
         options:
           model: gpt-3.5-turbo
   datasource:
@@ -77,10 +80,6 @@ spring:
     deserialization:
       fail-on-null-for-primitives: false
 
-  session:
-    jdbc:
-      initialize-schema: never
-
 top-leader:
   app-url: http://localhost:8080
   supported-invitations: en, cs, fr, de
@@ -94,6 +93,8 @@ top-leader:
     redirect-uri: http://localhost:8080/login/calendly
     base-api-url: https://api.calendly.com
     base-auth-url: https://auth.calendly.com
+  job-trigger:
+    password: ${JOB_TRIGGER_PASSWORD:default-dev-password}
 
 google:
   application-name: "qa.topleaderplatform.io"

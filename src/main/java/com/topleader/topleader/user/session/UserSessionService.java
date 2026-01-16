@@ -6,12 +6,13 @@ package com.topleader.topleader.user.session;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.topleader.topleader.ai.AiClient;
-import com.topleader.topleader.company.Company;
-import com.topleader.topleader.company.CompanyRepository;
+import com.topleader.topleader.common.ai.AiClient;
+
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
+import com.topleader.topleader.hr.company.Company;
+import com.topleader.topleader.hr.company.CompanyRepository;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeService;
@@ -23,8 +24,8 @@ import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.UserInsightService;
 import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
-import com.topleader.topleader.util.common.user.UserUtils;
-import com.topleader.topleader.util.image.ArticleImageService;
+import com.topleader.topleader.common.util.common.user.UserUtils;
+import com.topleader.topleader.common.util.image.ArticleImageService;
 import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;

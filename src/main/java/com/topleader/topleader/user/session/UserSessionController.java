@@ -1,16 +1,15 @@
 package com.topleader.topleader.user.session;
 
-import com.topleader.topleader.ai.AiClient;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
-import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.session.feedback.SessionFeedback;
 import com.topleader.topleader.user.session.feedback.SessionFeedbackRepository;
 import com.topleader.topleader.user.userinfo.UserInfoService;
-import com.topleader.topleader.util.common.user.UserUtils;
+import com.topleader.topleader.common.util.common.user.UserUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

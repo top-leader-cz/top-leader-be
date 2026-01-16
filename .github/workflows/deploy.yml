@@ -41,6 +41,7 @@ jobs:
       GOOGLE_CLIENT_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_CLIENT_SECRET }}
       SPRING_AI_OPENAI_APIKEY: ${{ secrets.SPRING_AI_OPENAI_APIKEY }}
       GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
+      JOB_TRIGGER_PASSWORD: ${{ secrets.JOB_TRIGGER_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -85,6 +86,27 @@ jobs:
       - name: Deploy to App Engine QA
         run: gcloud app deploy src/main/appengine/app-qa.yaml --project=topleader-394306 --version=$(git rev-parse --short "$GITHUB_SHA") --promote --verbosity=debug
 
+      - name: Cleanup old QA versions (keep last 2)
+        run: |
+          echo "Fetching QA versions..."
+          VERSIONS=$(gcloud app versions list \
+            --service=qa \
+            --project=topleader-394306 \
+            --sort-by=~version.createTime \
+            --format="value(version.id)" | tail -n +3)
+
+          if [ -z "$VERSIONS" ]; then
+            echo "No old versions to delete"
+          else
+            echo "Deleting old versions: $VERSIONS"
+            for VERSION in $VERSIONS; do
+              gcloud app versions delete $VERSION \
+                --service=qa \
+                --project=topleader-394306 \
+                --quiet || echo "Failed to delete $VERSION"
+            done
+          fi
+
   deploy-prod:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -95,6 +117,7 @@ jobs:
       GOOGLE_CLIENT_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_CLIENT_SECRET }}
       SPRING_AI_OPENAI_APIKEY: ${{ secrets.SPRING_AI_OPENAI_APIKEY }}
       GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
+      JOB_TRIGGER_PASSWORD: ${{ secrets.JOB_TRIGGER_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -138,3 +161,24 @@ jobs:
 
       - name: Deploy to App Engine PROD
         run: gcloud app deploy src/main/appengine/app-prod.yaml --project=topleader-394306 --version=$(git rev-parse --short "$GITHUB_SHA") --promote --quiet
+
+      - name: Cleanup old PROD versions (keep last 2)
+        run: |
+          echo "Fetching PROD versions..."
+          VERSIONS=$(gcloud app versions list \
+            --service=prod \
+            --project=topleader-394306 \
+            --sort-by=~version.createTime \
+            --format="value(version.id)" | tail -n +3)
+
+          if [ -z "$VERSIONS" ]; then
+            echo "No old versions to delete"
+          else
+            echo "Deleting old versions: $VERSIONS"
+            for VERSION in $VERSIONS; do
+              gcloud app versions delete $VERSION \
+                --service=prod \
+                --project=topleader-394306 \
+                --quiet || echo "Failed to delete $VERSION"
+            done
+          fi

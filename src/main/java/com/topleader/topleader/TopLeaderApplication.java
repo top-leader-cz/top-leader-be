@@ -3,7 +3,7 @@ package com.topleader.topleader;
 import java.time.ZoneOffset;
 import java.util.TimeZone;
 
-import com.topleader.topleader.calendar.calendly.CalendlyProperties;
+import com.topleader.topleader.common.calendar.calendly.CalendlyProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

@@ -3,11 +3,11 @@
  */
 package com.topleader.topleader.message;
 
-import com.topleader.topleader.email.EmailService;
-import com.topleader.topleader.email.VelocityService;
-import com.topleader.topleader.notification.Notification;
-import com.topleader.topleader.notification.NotificationService;
-import com.topleader.topleader.notification.context.MessageNotificationContext;
+import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.email.VelocityService;
+import com.topleader.topleader.common.notification.Notification;
+import com.topleader.topleader.common.notification.NotificationService;
+import com.topleader.topleader.common.notification.context.MessageNotificationContext;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
@@ -26,7 +26,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toMap;
 

@@ -1,6 +1,6 @@
 package com.topleader.topleader.coach.availability.settings;
 
-import com.topleader.topleader.calendar.domain.CalendarSyncInfo;
+import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

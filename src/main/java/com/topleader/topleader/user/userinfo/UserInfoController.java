@@ -3,16 +3,16 @@
  */
 package com.topleader.topleader.user.userinfo;
 
-import com.topleader.topleader.company.Company;
-import com.topleader.topleader.company.CompanyRepository;
-import com.topleader.topleader.email.EmailTemplateService;
-import com.topleader.topleader.exception.ApiValidationException;
-import com.topleader.topleader.exception.NotFoundException;
-import com.topleader.topleader.notification.Notification;
-import com.topleader.topleader.notification.NotificationService;
-import com.topleader.topleader.notification.context.CoachLinkedNotificationContext;
-import com.topleader.topleader.scheduled_session.ScheduledSession;
-import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.common.email.EmailTemplateService;
+import com.topleader.topleader.common.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.NotFoundException;
+import com.topleader.topleader.hr.company.Company;
+import com.topleader.topleader.hr.company.CompanyRepository;
+import com.topleader.topleader.common.notification.Notification;
+import com.topleader.topleader.common.notification.NotificationService;
+import com.topleader.topleader.common.notification.context.CoachLinkedNotificationContext;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinsight.UserInsightService;
@@ -38,8 +38,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
-import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.SESSION_CANCEL_TOO_LATE;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.SESSION_IN_PAST;
+import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.nonNull;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toMap;
@@ -203,26 +204,30 @@ public class UserInfoController {
     }
 
     @GetMapping("/upcoming-sessions")
-    public List<UpcomingSessionDto> getUpcomingSessions(@AuthenticationPrincipal UserDetails user) {
+    public List<SessionDto> getUpcomingSessions(@AuthenticationPrincipal UserDetails user) {
+        return getSessionDtos(scheduledSessionService.listUsersFutureSessions(user.getUsername()));
+    }
 
-        final var sessions = scheduledSessionService.listUsersFutureSessions(user.getUsername());
+    @GetMapping("/sessions")
+    public List<SessionDto> getAllSessions(@AuthenticationPrincipal UserDetails user) {
+        return getSessionDtos(scheduledSessionService.listUsersSessions(user.getUsername()));
+    }
 
+    private List<SessionDto> getSessionDtos(List<ScheduledSession> sessions) {
         if (sessions.isEmpty()) {
             return List.of();
         }
 
-        final var coaches = userRepository.findAllById(sessions.stream()
+        var coaches = userRepository.findAllById(sessions.stream()
                 .map(ScheduledSession::getCoachUsername)
                 .collect(Collectors.toSet())
             ).stream()
             .collect(toMap(User::getUsername, Function.identity()));
 
-
         return sessions.stream()
-            .map(s -> UpcomingSessionDto.from(s, Optional.ofNullable(coaches.get(s.getCoachUsername()))))
-            .sorted(Comparator.comparing(UpcomingSessionDto::time))
+            .map(s -> SessionDto.from(s, Optional.ofNullable(coaches.get(s.getCoachUsername()))))
+            .sorted(Comparator.comparing(SessionDto::time).reversed())
             .toList();
-
     }
 
     @Transactional
@@ -245,7 +250,8 @@ public class UserInfoController {
             .setPaid(true)
             .setPrivate(true)
             .setTime(shiftedTime)
-            .setUsername(user.getUsername())
+            .setUsername(user.getUsername()),
+            user.getUsername()
         );
 
         emailTemplateService.sendBookingAlertPrivateSessionEmail(session.getId());
@@ -265,12 +271,17 @@ public class UserInfoController {
             .filter(s -> s.getUsername().equals(user.getUsername()))
             .orElseThrow(NotFoundException::new);
 
+        if (session.getTime().isBefore(LocalDateTime.now().plusHours(24))) {
+            throw new ApiValidationException(SESSION_CANCEL_TOO_LATE, "sessionId", sessionId.toString(),
+                "Cannot cancel session less than 24 hours before start time");
+        }
+
         if (session.isPrivate()) {
             emailTemplateService.sendCancelAlertPrivateSessionEmail(sessionId);
         } else {
             emailTemplateService.sendCancelAlertEmail(sessionId);
         }
-        scheduledSessionService.cancelSession(sessionId);
+        scheduledSessionService.cancelSession(sessionId, user.getUsername());
     }
 
     public record SchedulePrivateSessionRequest(LocalDateTime time) {
@@ -290,10 +301,8 @@ public class UserInfoController {
         String firstName,
         String lastName,
         LocalDateTime time,
-
         boolean isPrivate
     ) {
-
         public static UpcomingSessionDto from(ScheduledSession s, Optional<User> u) {
             return new UpcomingSessionDto(
                 s.getId(),
@@ -302,6 +311,28 @@ public class UserInfoController {
                 u.map(User::getLastName).orElse(null),
                 s.getTime(),
                 s.isPrivate()
+            );
+        }
+    }
+
+    public record SessionDto(
+        Long id,
+        String coach,
+        String firstName,
+        String lastName,
+        LocalDateTime time,
+        boolean isPrivate,
+        ScheduledSession.Status status
+    ) {
+        public static SessionDto from(ScheduledSession s, Optional<User> u) {
+            return new SessionDto(
+                s.getId(),
+                u.map(User::getUsername).orElse(null),
+                u.map(User::getFirstName).orElse(null),
+                u.map(User::getLastName).orElse(null),
+                s.getTime(),
+                s.isPrivate(),
+                s.getStatus()
             );
         }
     }

@@ -31,3 +31,13 @@ build/
 
 ### VS Code ###
 .vscode/
+.claude/settings.local.json
+
+### Terraform ###
+**/.terraform
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+
+### Claude Code ###
+.claude

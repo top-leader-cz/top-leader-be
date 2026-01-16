@@ -6,18 +6,19 @@ package com.topleader.topleader.coach.list;
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
+import com.topleader.topleader.hr.company.Company;
+import com.topleader.topleader.hr.company.CompanyRepository;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import io.micrometer.core.instrument.Counter;
-import com.topleader.topleader.email.EmailTemplateService;
-import com.topleader.topleader.company.Company;
-import com.topleader.topleader.company.CompanyRepository;
-import com.topleader.topleader.exception.ApiValidationException;
-import com.topleader.topleader.exception.NotFoundException;
-import com.topleader.topleader.scheduled_session.ScheduledSession;
-import com.topleader.topleader.scheduled_session.ScheduledSessionService;
+import com.topleader.topleader.common.email.EmailTemplateService;
+
+import com.topleader.topleader.common.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.util.image.ImageUtil;
-import com.topleader.topleader.util.page.PageDto;
+import com.topleader.topleader.common.util.image.ImageUtil;
+import com.topleader.topleader.common.util.page.PageDto;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -57,11 +58,8 @@ import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFields
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
 import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
-import static com.topleader.topleader.exception.ErrorCodeConstants.DIFFERENT_COACH_NOT_PERMITTED;
-import static com.topleader.topleader.exception.ErrorCodeConstants.NOT_ENOUGH_CREDITS;
-import static com.topleader.topleader.exception.ErrorCodeConstants.SESSION_IN_PAST;
-import static com.topleader.topleader.exception.ErrorCodeConstants.TIME_NOT_AVAILABLE;
-import static com.topleader.topleader.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
+import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
 import static org.springframework.data.jpa.domain.Specification.allOf;
@@ -157,7 +155,8 @@ public class CoachListController {
                 .setCoachUsername(coachName)
                 .setTime(shiftedTime)
                 .setPaid(coachName.equalsIgnoreCase(user.getFreeCoach()))
-                .setPrivate(false)
+                .setPrivate(false),
+            clientName
         );
 
         sessionScheduledCounter.increment();
@@ -192,14 +191,15 @@ public class CoachListController {
                 .contentType(MediaType.valueOf(i.getType()))
                 .body(ImageUtil.decompressImage(i.getImageData()))
             )
-            .orElseThrow(NotFoundException::new);
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/{username}")
-    public CoachListDto findCoach(@PathVariable String username) {
+    public ResponseEntity<CoachListDto> findCoach(@PathVariable String username) {
         return coachListViewRepository.findById(username)
             .map(CoachListDto::from)
-            .orElseThrow(NotFoundException::new);
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping

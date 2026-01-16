@@ -1,19 +1,19 @@
 package com.topleader.topleader.coach.session;
 
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.scheduled_session.ScheduledSession;
-import com.topleader.topleader.scheduled_session.ScheduledSessionRepository;
+
+import com.topleader.topleader.session.coach_session.CoachSessionViewRepository;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
-import static com.topleader.topleader.scheduled_session.ScheduledSession.Status.CANCELED;
-import static com.topleader.topleader.scheduled_session.ScheduledSession.Status.COMPLETED;
+
+import static com.topleader.topleader.session.scheduled_session.ScheduledSession.Status.CANCELED;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
