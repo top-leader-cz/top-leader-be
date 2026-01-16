@@ -7,7 +7,6 @@ package com.topleader.topleader.admin;
 import com.topleader.topleader.user.User;
 import java.util.Optional;
 
-import io.vavr.collection.List;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.util.StringUtils;
 

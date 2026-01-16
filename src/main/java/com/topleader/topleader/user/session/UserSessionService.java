@@ -26,7 +26,7 @@ import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.common.util.common.user.UserUtils;
 import com.topleader.topleader.common.util.image.ArticleImageService;
-import io.vavr.control.Try;
+import com.topleader.topleader.common.util.common.CommonUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 
@@ -103,8 +103,8 @@ public class UserSessionService {
 
 
         Executors.newVirtualThreadPerTaskExecutor().submit(() ->
-                Try.run(() -> generateActionGoals(username, userActionSteps))
-                        .onFailure(e -> log.error("Failed to generate action goals for user: [{}] ", username, e)));
+                CommonUtils.tryRun(() -> generateActionGoals(username, userActionSteps),
+                        "Failed to generate action goals for user: [" + username + "]"));
 
         final var actualActionSteps = saveActionSteps(userActionSteps);
 
@@ -189,38 +189,40 @@ public class UserSessionService {
     }
 
     public String handleUserPreview(String username, List<String> actionGoals) {
-          var previews = Try.of(() -> {
+          List<UserPreview> previews = CommonUtils.tryGetOrElse(() -> {
                     var res = aiClient.generateUserPreviews(username, actionGoals);
-                    return jsonMapper.readValue(res, new TypeReference<List<UserPreview>>() {
-                    });
-                })
-                .onFailure(e -> log.error("Failed to generate user preview for user: [{}] ", username, e))
-                .getOrElse(List.of());
+                    return jsonMapper.readValue(res, new TypeReference<List<UserPreview>>() {});
+                },
+                List.of(),
+                "Failed to generate user preview for user: [" + username + "]");
 
         var filtered = previews.stream()
                 .map(p -> {
-                    return Try.of(() -> {
-                                var videoId = p.getUrl().split("v=")[1];
-                                var thumbnail = String.format(thumbmail, videoId);
-                                p.setThumbnail(thumbnail);
-                                return p;
-                            }).onFailure(e -> log.warn("Failed to parse video url for user: [{}] url: [{}] ", username, p.getUrl(), e))
-                            .getOrElse(p); //
+                    try {
+                        var videoId = p.getUrl().split("v=")[1];
+                        var thumbnail = String.format(thumbmail, videoId);
+                        p.setThumbnail(thumbnail);
+                        return p;
+                    } catch (Exception e) {
+                        log.warn("Failed to parse video url for user: [{}] url: [{}] ", username, p.getUrl(), e);
+                        return p;
+                    }
                 })
                 .filter(p -> urlValid(p.getThumbnail())
                 ).toList();
 
-        return Try.of(() -> jsonMapper.writeValueAsString(filtered))
-                .onFailure(e -> log.error("Failed to convert user preview for user: [{}] ", username, e))
-                .getOrElse(() -> null);
+        return CommonUtils.tryGetOrNull(
+                () -> jsonMapper.writeValueAsString(filtered),
+                "Failed to convert user preview for user: [" + username + "]");
     }
 
     public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
         var user = userDetailService.find(username);
-         return Try.of(() -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()))                    )
-                .onFailure(e -> log.error("Failed to generate user articles for user: [{}] ", username, e))
-                .getOrElse(List.of())
-                .stream()
+        List<UserArticle> articles = CommonUtils.tryGetOrElse(
+                () -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale())),
+                List.of(),
+                "Failed to generate user articles for user: [" + username + "]");
+        return articles.stream()
                 .map(article -> {
                     if (!urlValid(article.getUrl())) {
                         article.setUrl(null);
@@ -232,9 +234,10 @@ public class UserSessionService {
     }
 
     private boolean urlValid(String url) {
-        return Try.of(() -> restTemplate.getForEntity(url, String.class))
-                .onFailure(e -> log.warn("Failed to get url: [{}] ", url, e))
-                .getOrElse(() -> ResponseEntity.status(404).body("Not Found"))
+        return CommonUtils.tryGetOrElse(
+                () -> restTemplate.getForEntity(url, String.class),
+                ResponseEntity.status(404).body("Not Found"),
+                "Failed to get url: [" + url + "]")
                 .getStatusCode()
                 .value() != INVALID_LINK;
     }
@@ -353,9 +356,9 @@ public class UserSessionService {
             log.warn("Cannot generate recommended growths for user. Requirement dis not met");
             return null;
         }
-        return Try.of(() -> aiClient.generateRecommendedGrowths(user, businessStrategy, position, aspiredCompetency))
-                .onFailure(e -> log.error("Failed to generate recommended growths", e))
-                .getOrElse(() -> null);
+        return CommonUtils.tryGetOrNull(
+                () -> aiClient.generateRecommendedGrowths(user, businessStrategy, position, aspiredCompetency),
+                "Failed to generate recommended growths");
     }
 
     boolean canGenerateRecommendedGrowths(String businessStrategy, String position, String competency) {
