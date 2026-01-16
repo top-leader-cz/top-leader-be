@@ -17,3 +17,10 @@ logs-qa-ai:
 # Fetch prod logs
 logs-prod:
 	gcloud logging read 'resource.type="gae_app" AND resource.labels.module_id="default" AND severity>=ERROR' --limit=50 --format="table(timestamp,severity,textPayload)"
+
+deploy-qa:
+	git tag -d qa-deploy 2>/dev/null || true
+	git push origin :refs/tags/qa-deploy 2>/dev/null || true
+	git tag qa-deploy
+	git push origin qa-deploy
+
