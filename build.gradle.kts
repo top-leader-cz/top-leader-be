@@ -18,6 +18,11 @@ configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
     }
+    all {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+        exclude(group = "ch.qos.logback", module = "logback-classic")
+        exclude(group = "ch.qos.logback", module = "logback-core")
+    }
 }
 
 dependencyManagement {
@@ -30,9 +35,6 @@ dependencyManagement {
 
 dependencies {
     // Google Cloud
-    implementation("com.google.cloud:spring-cloud-gcp-starter-logging") {
-        exclude(group = "commons-logging", module = "commons-logging")
-    }
     implementation("com.google.cloud:spring-cloud-gcp-starter-storage") {
         exclude(group = "commons-logging", module = "commons-logging")
         exclude(group = "com.google.cloud", module = "google-cloud-monitoring")
@@ -73,6 +75,10 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
 
+    // Logging
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.3")
+
     // Utilities
     implementation("io.github.resilience4j:resilience4j-retry:2.3.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3")
@@ -80,7 +86,6 @@ dependencies {
         exclude(group = "commons-logging", module = "commons-logging")
     }
     implementation("org.apache.velocity:velocity-engine-core:2.3")
-    implementation("io.vavr:vavr:0.10.5")
     implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
 
     // Test
@@ -89,7 +94,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("com.icegreen:greenmail:2.0.1")
+    testImplementation("com.icegreen:greenmail:2.1.8")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
     testImplementation("org.wiremock:wiremock-standalone:3.10.0")
 }

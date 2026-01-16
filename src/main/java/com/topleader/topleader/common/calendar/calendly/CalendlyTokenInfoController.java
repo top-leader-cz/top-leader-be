@@ -1,12 +1,11 @@
 package com.topleader.topleader.common.calendar.calendly;
 
 
-import com.topleader.topleader.common.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.common.calendar.CalendarSyncInfoService;
 import com.topleader.topleader.common.calendar.CalendarToErrorHandler;
 import com.topleader.topleader.common.calendar.calendly.domain.CalendarTokenInfo;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
-import io.vavr.control.Try;
+import com.topleader.topleader.common.util.common.CommonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -31,16 +30,13 @@ public class CalendlyTokenInfoController {
     @GetMapping("calendly-info")
     public CalendarTokenInfo getGoogleTokenInfo(@AuthenticationPrincipal UserDetails user) {
         return calendarService.getInfo(user.getUsername(), CalendarSyncInfo.SyncType.CALENDLY)
-                .map(info ->
-                     Try.of(() -> calendlyService.refreshTokens(info))
-                            .map(tokens ->
-                                    calendarService.save(info.setRefreshToken(tokens.getRefreshToken())
-                                            .setAccessToken(tokens.getAccessToken())
-                                            .setLastSync(LocalDateTime.now()))
-                            )
-                            .onFailure(e -> errorHandler.handleError(info, e))
-                            .getOrElse(info)
-                )
+                .map(info -> CommonUtils.tryMapOrElse(
+                        () -> calendlyService.refreshTokens(info),
+                        tokens -> calendarService.save(info.setRefreshToken(tokens.getRefreshToken())
+                                .setAccessToken(tokens.getAccessToken())
+                                .setLastSync(LocalDateTime.now())),
+                        info,
+                        e -> errorHandler.handleError(info, e)))
                 .map(tokenInfo -> new CalendarTokenInfo(
                         true,
                         tokenInfo.getStatus(),

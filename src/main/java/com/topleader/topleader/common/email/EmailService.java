@@ -1,15 +1,13 @@
 package com.topleader.topleader.common.email;
 
 
-import io.vavr.control.Try;
+import com.topleader.topleader.common.util.common.CommonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.component.VEvent;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.MediaType;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -25,8 +23,10 @@ public class EmailService {
     private String defaultFrom;
 
     public void sendEmail(String to, String subject, String body) {
-        Try.run(() -> sendEmail(defaultFrom, to, subject, body))
-                .onFailure(e -> log.error("Failed to send email to: [{}] subject: [{}]", to, subject, e));
+        CommonUtils.tryRun(
+            () -> sendEmail(defaultFrom, to, subject, body),
+            "Failed to send email to: [" + to + "] subject: [" + subject + "]"
+        );
     }
 
     @SneakyThrows

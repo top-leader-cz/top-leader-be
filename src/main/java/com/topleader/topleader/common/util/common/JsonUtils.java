@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.vavr.control.Try;
 import org.springframework.core.ParameterizedTypeReference;
 
 
@@ -18,23 +17,32 @@ public final class JsonUtils {
             .registerModule(new JavaTimeModule());
 
     public static String toJsonString(Object data) {
-        return Try.of(() -> MAPPER.writeValueAsString(data))
-                .getOrElseThrow(e -> new  JsonConversionException("Error while parsing json!", e));
+        try {
+            return MAPPER.writeValueAsString(data);
+        } catch (JsonProcessingException e) {
+            throw new JsonConversionException("Error while parsing json!", e);
+        }
     }
 
     public static <T> T fromJson(String json, ParameterizedTypeReference<T> typeReference) {
-        return Try.of(() -> MAPPER.readValue(json, new TypeReference<T>() {
-                    @Override
-                    public java.lang.reflect.Type getType() {
-                        return typeReference.getType();
-                    }
-                }))
-                .getOrElseThrow(e -> new JsonConversionException("Error while parsing json!", e));
+        try {
+            return MAPPER.readValue(json, new TypeReference<T>() {
+                @Override
+                public java.lang.reflect.Type getType() {
+                    return typeReference.getType();
+                }
+            });
+        } catch (JsonProcessingException e) {
+            throw new JsonConversionException("Error while parsing json!", e);
+        }
     }
 
     public static JsonNode toJsonNode(String json) {
-        return Try.of(() -> MAPPER.readTree(json))
-                .getOrElseThrow(e -> new  JsonConversionException("Error while parsing json!", e));
+        try {
+            return MAPPER.readTree(json);
+        } catch (JsonProcessingException e) {
+            throw new JsonConversionException("Error while parsing json!", e);
+        }
     }
 
 
