@@ -61,7 +61,7 @@ public class EmailTemplateService {
 
     private final EmailService emailService;
 
-    private final VelocityService velocityService;
+    private final TemplateService velocityService;
 
     private final ICalService iCalService;
 
@@ -195,7 +195,7 @@ public class EmailTemplateService {
                         "lastName", coach.getLastName(),
                         "link", appUrl)
                 ),
-                "templates/reservation/coach-cancel.vm"),
+                "templates/reservation/coach-cancel.html"),
             iCalService.cancelCalendarEvent(
                 session.getTime(),
                 session.getTime().plusHours(1),
@@ -220,7 +220,7 @@ public class EmailTemplateService {
                         "time", session.getTime().toString(),
                         "link", appUrl)
                 ),
-                "templates/reservation/user-cancel.vm"
+                "templates/reservation/user-cancel.html"
             ),
             iCalService.cancelCalendarEvent(
                 session.getTime(),
@@ -259,7 +259,7 @@ public class EmailTemplateService {
                         "time", session.getTime().toString(),
                         "link", appUrl)
                 ),
-                "templates/reservation/user-cancel.vm"
+                "templates/reservation/user-cancel.html"
             ),
             iCalService.cancelCalendarPrivateEvent(
                 session.getTime(),
@@ -293,15 +293,15 @@ public class EmailTemplateService {
     }
 
     private String parseCoachTemplateName(String locale) {
-        return "templates/reservation/reservation-" + parseLocale(locale) + ".vm";
+        return "templates/reservation/reservation-" + parseLocale(locale) + ".html";
     }
 
     private String parseUserTemplateName(String locale) {
-        return "templates/reservation/user-reservation-" + parseLocale(locale) + ".vm";
+        return "templates/reservation/user-reservation-" + parseLocale(locale) + ".html";
     }
 
     private String parsePickedCoachTemplateName(String locale) {
-        return "templates/reservation/picked-coach-" + parseLocale(locale) + ".vm";
+        return "templates/reservation/picked-coach-" + parseLocale(locale) + ".html";
     }
 
     private String parseLocale(String locale) {

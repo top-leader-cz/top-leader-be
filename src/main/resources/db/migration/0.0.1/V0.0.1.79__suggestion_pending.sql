@@ -1,1 +1,0 @@
-alter table user_insight add column suggestion_pending boolean not null default false;

@@ -69,11 +69,17 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Build Application
-        run: gradle bootJar -x test --parallel --build-cache
+      - name: Build and test
+        run: gradle build --parallel --build-cache
+
+      - name: Generate OpenAPI spec
+        run: gradle generateOpenApi
+
+      - name: Build JAR
+        run: gradle bootJar --parallel --build-cache
 
       - name: Copy JAR to appengine directory
-        run: cp build/libs/*.jar src/main/appengine/top-leader.jar
+        run: cp build/libs/top-leader.jar src/main/appengine/
 
       - name: Deploy to App Engine QA
         run: gcloud app deploy src/main/appengine/app-qa.yaml --project=topleader-394306 --version=$(git rev-parse --short "$GITHUB_SHA") --promote --verbosity=debug
@@ -135,11 +141,14 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
+      - name: Generate OpenAPI spec
+        run: gradle generateOpenApi
+
       - name: Build Application
         run: gradle bootJar -x test --parallel --build-cache
 
       - name: Copy JAR to appengine directory
-        run: cp build/libs/*.jar src/main/appengine/top-leader.jar
+        run: cp build/libs/top-leader.jar src/main/appengine/
 
       - name: Deploy to App Engine PROD
         run: gcloud app deploy src/main/appengine/app-prod.yaml --project=topleader-394306 --version=$(git rev-parse --short "$GITHUB_SHA") --promote --quiet

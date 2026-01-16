@@ -41,12 +41,12 @@ dependencies {
         exclude(group = "com.google.api.grpc", module = "proto-google-cloud-monitoring-v3")
         exclude(group = "com.google.cloud.opentelemetry", module = "exporter-metrics")
     }
-    implementation("com.google.apis:google-api-services-calendar:v3-rev20240111-2.0.0")
+    implementation("com.google.apis:google-api-services-calendar:v3-rev20250404-2.0.0")
     implementation("com.google.apis:google-api-services-oauth2:v2-rev20200213-2.0.0")
     implementation("com.google.api-client:google-api-client:2.6.0") {
         exclude(group = "commons-logging", module = "commons-logging")
     }
-    implementation("com.google.http-client:google-http-client-jackson2:1.44.2")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
     implementation("com.google.cloud.sql:postgres-socket-factory:1.19.0")
 
     // Spring Boot
@@ -80,13 +80,9 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.3")
 
     // Utilities
-    implementation("io.github.resilience4j:resilience4j-retry:2.3.0")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3")
-    implementation("org.apache.velocity.tools:velocity-tools-generic:3.1") {
-        exclude(group = "commons-logging", module = "commons-logging")
-    }
-    implementation("org.apache.velocity:velocity-engine-core:2.3")
-    implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
+    implementation("dev.failsafe:failsafe:3.3.2")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+    implementation("org.mnode.ical4j:ical4j:4.2.3")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -103,6 +99,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
     jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
     maxHeapSize = "1024m"
+    exclude("**/OpenApiGeneratorTest.class")
 }
 
 tasks.bootJar {
@@ -114,5 +111,13 @@ val integrationTest by tasks.registering(Test::class) {
     description = "Runs integration tests."
     group = "verification"
     include("**/*IT.class")
+    shouldRunAfter(tasks.test)
+}
+
+// OpenAPI spec generation
+val generateOpenApi by tasks.registering(Test::class) {
+    description = "Generates OpenAPI spec."
+    group = "documentation"
+    include("**/OpenApiGeneratorTest.class")
     shouldRunAfter(tasks.test)
 }

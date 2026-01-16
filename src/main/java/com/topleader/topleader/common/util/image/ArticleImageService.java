@@ -3,7 +3,8 @@ package com.topleader.topleader.common.util.image;
 import com.google.cloud.storage.BlobId;
 import com.google.cloud.storage.BlobInfo;
 import com.google.cloud.storage.Storage;
-import io.github.resilience4j.retry.Retry;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +30,7 @@ public class ArticleImageService {
 
     private final Storage storage;
 
-    private final Retry retry;
+    private final RetryPolicy<Object> retryPolicy;
 
     @Value("${spring.ai.openai.api-key}")
     private String openaiApiKey;
@@ -42,7 +43,7 @@ public class ArticleImageService {
 
     public String generateImage(String imagePrompt) {
         try {
-           return retry.executeSupplier(() -> {
+           return Failsafe.with(retryPolicy).get(() -> {
                 var response = generate(imagePrompt);
                 var imageUrl = extractImageUrl(response);
                 var revisedPrompt = extractRevisedPrompt(response);

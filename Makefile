@@ -1,5 +1,5 @@
 # Google Cloud commands
-.PHONY: login logs-qa logs-prod
+.PHONY: login logs-qa logs-prod openapi build deploy-qa
 
 # Login to Google Cloud and set project
 login:
@@ -18,9 +18,17 @@ logs-qa-ai:
 logs-prod:
 	gcloud logging read 'resource.type="gae_app" AND resource.labels.module_id="default" AND severity>=ERROR' --limit=50 --format="table(timestamp,severity,textPayload)"
 
+# Generate OpenAPI spec
+openapi:
+	$(HOME)/.sdkman/candidates/gradle/current/bin/gradle generateOpenApi
+
+# Build application locally
+build:
+	$(HOME)/.sdkman/candidates/gradle/current/bin/gradle build --parallel --build-cache
+
+# Deploy to QA (local build + GitHub Actions verification)
 deploy-qa:
 	git tag -d qa-deploy 2>/dev/null || true
 	git push origin :refs/tags/qa-deploy 2>/dev/null || true
 	git tag qa-deploy
 	git push origin qa-deploy
-
