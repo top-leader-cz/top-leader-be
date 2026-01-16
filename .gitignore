@@ -41,5 +41,3 @@ build/
 
 ### Claude Code ###
 .claude
-.gradle/
-build/

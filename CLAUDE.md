@@ -13,29 +13,22 @@ TopLeader is a Spring Boot backend application for a coaching/mentoring platform
 - **Spring Data JPA** (Hibernate 7.x)
 - **Spring Security** (form login + session-based auth)
 - **Lombok** for boilerplate reduction
-- **Gradle 9.2.1** build system (Kotlin DSL)
+- **Maven** build system
 
 ## Build & Run Commands
 
 ```bash
-# Set environment (SDKMAN)
-export JAVA_HOME=~/.sdkman/candidates/java/25
-export GRADLE_HOME=~/.sdkman/candidates/gradle/current
-
-# Compile
-$GRADLE_HOME/bin/gradle compileJava
+# Compile (requires Java 25)
+JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean compile
 
 # Run tests
-$GRADLE_HOME/bin/gradle test
+JAVA_HOME=~/.sdkman/candidates/java/25 mvn test
 
 # Run specific test class
-$GRADLE_HOME/bin/gradle test --tests "ClassName"
+JAVA_HOME=~/.sdkman/candidates/java/25 mvn test -Dtest=ClassName
 
 # Build without tests
-$GRADLE_HOME/bin/gradle build -x test
-
-# Build JAR
-$GRADLE_HOME/bin/gradle bootJar
+JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean package -DskipTests
 ```
 
 ## Project Structure
