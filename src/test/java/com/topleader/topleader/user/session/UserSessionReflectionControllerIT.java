@@ -29,7 +29,6 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -222,15 +221,20 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                             .extracting("content.date")
                             .contains("2023-10-01", "2023-10-02");
 
-                    Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETED_SHORT_GOAL)))).isNotEmpty();
-                    Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();
+                    Assertions.assertThat(findBadge(Badge.AchievementType.COMPLETED_SHORT_GOAL)).isNotEmpty();
+                    Assertions.assertThat(findBadge(Badge.AchievementType.COMPLETE_SESSION)).isNotEmpty();
                 });
 
     }
 
-    private Badge badge(Badge.AchievementType type) {
+    private java.util.Optional<Badge> findBadge(Badge.AchievementType type) {
         var now = LocalDateTime.now();
-        return new Badge().setBadgeId(new Badge.BadgeId("user2", type, now.getMonth(), now.getYear()));
+        return badgeRepository.findByUsernameAndAchievementTypeAndMonthAndYear(
+                "user2",
+                type.name(),
+                now.getMonth().name(),
+                now.getYear()
+        );
     }
 
 }
