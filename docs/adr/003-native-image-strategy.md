@@ -55,9 +55,9 @@ We are **preparing for GraalVM Native Image** compilation through incremental ch
 - [x] **springdoc-openapi runtime** - dynamic OpenAPI generation, replaced with pre-generated `openapi.yaml`
 - [x] **google-http-client-jackson2** - legacy Google HTTP client, using modern alternatives
 - [x] **spring-cloud-gcp-starter-logging** - removed GCP-specific logging, using standard Log4j2
+- [x] **iCal4j** - heavy reflection iCalendar library, replaced with template-based `ICalService` using `TemplateService` and `.ics` templates
 
 ### In Progress
-- [ ] Remove **iCal4j** - heavy reflection, replace with simple implementation
 - [ ] Evaluate **Hibernate** alternatives - consider jOOQ or plain JDBC
 - [ ] Add GraalVM reachability metadata where needed
 - [ ] Test native compilation in CI pipeline

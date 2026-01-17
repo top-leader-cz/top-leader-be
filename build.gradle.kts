@@ -47,7 +47,7 @@ dependencies {
         exclude(group = "commons-logging", module = "commons-logging")
     }
     implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
-    implementation("com.google.cloud.sql:postgres-socket-factory:1.19.0")
+    implementation("com.google.cloud.sql:postgres-socket-factory:1.28.0")
 
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web") {
@@ -82,7 +82,6 @@ dependencies {
     // Utilities
     implementation("dev.failsafe:failsafe:3.3.2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
-    implementation("org.mnode.ical4j:ical4j:4.2.3")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")

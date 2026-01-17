@@ -1,11 +1,11 @@
 package com.topleader.topleader.common.email;
 
 
+import com.topleader.topleader.common.calendar.ical.ICalEvent;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import net.fortuna.ical4j.model.Calendar;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -43,7 +43,7 @@ public class EmailService {
     }
 
     @SneakyThrows
-    public void sendEmail(String to, String subject, String body, Calendar event) {
+    public void sendEmail(String to, String subject, String body, ICalEvent event) {
         log.info("Sending email to: [{}] subject: [{}]", to, subject);
         var message = mailSender.createMimeMessage();
         var helper = new MimeMessageHelper(message, true, "utf-8");

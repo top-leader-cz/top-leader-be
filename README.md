@@ -150,7 +150,7 @@ We deploy on **Google Cloud Platform** with the following architecture:
 > See [ADR-003: Native Image Strategy](docs/adr/003-native-image-strategy.md) for full decision record.
 
 **GraalVM Native Images:**
-- Remove **iCal4j** library (replace with simpler implementation)
+- ~~Remove **iCal4j** library~~ ✅ Replaced with template-based implementation (see `templates/ical/`)
 - Remove **Hibernate** (migrate to lighter alternatives like JDBC or jOOQ)
 
 Native images provide instant startup and reduced memory footprint, which is ideal for cloud deployment and cost optimization.
