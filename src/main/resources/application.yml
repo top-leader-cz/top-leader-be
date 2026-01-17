@@ -102,7 +102,7 @@ google:
     access-token-uri: https://www.googleapis.com/oauth2/v3/token
     user-authorization-uri: https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent
     client-authentication-scheme: query
-    redirectUri: http://localhost:8080/login/google
+    redirectUri: http://localhost:8080/oauth/google/callback
   resource:
     user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo
     prefer-token-info: true

@@ -46,7 +46,7 @@ public class GoogleCalendarController {
         return new RedirectView(authorize(u.getUsername()));
     }
 
-    @GetMapping(value = "/login/google", params = {"code", "state"})
+    @GetMapping("/oauth/google/callback")
     public RedirectView oauth2Callback(
         @RequestParam(value = "code") String code,
         @RequestParam(value = "state") String state

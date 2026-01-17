@@ -42,20 +42,6 @@ public class WebSecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain googleSync(HttpSecurity http) throws Exception {
-        http
-            .securityMatcher("/login/google", "/login/calendly")
-            .authorizeHttpRequests(requests ->
-                requests.anyRequest().permitAll()
-            )
-            .csrf(AbstractHttpConfigurer::disable)
-            .cors(AbstractHttpConfigurer::disable)
-        ;
-        return http.build();
-    }
-
-    @Bean
-    @Order(2)
     public SecurityFilterChain protectedChain(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
         http
             .securityMatcher("/api/protected/**")
@@ -80,7 +66,7 @@ public class WebSecurityConfig {
     }
 
     @Bean
-    @Order(3)
+    @Order(2)
     public SecurityFilterChain filterChain(HttpSecurity http, Counter loginCounter) throws Exception {
         http.addFilterAfter((request, response, filterChain) -> {
             try {
@@ -95,7 +81,8 @@ public class WebSecurityConfig {
         http
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**",
-                        "/v3/api-docs/**", "/_ah/start","/_ah/warmup", "/actuator/health").permitAll()
+                        "/v3/api-docs/**", "/_ah/start","/_ah/warmup", "/actuator/health",
+                        "/oauth/*/callback", "/login/calendly").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(e -> e
