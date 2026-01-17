@@ -131,9 +131,9 @@ class UserSessionControllerIT extends IntegrationTest {
         final var historyData = dataHistoryRepository.findAllByUsernameAndType("user", DataHistory.Type.USER_SESSION);
 
         assertThat(historyData, hasSize(1));
-        assertThat(historyData.get(0).getData(), instanceOf(UserSessionStoredData.class));
+        assertThat(historyData.get(0).getDataObject(), instanceOf(UserSessionStoredData.class));
 
-        final var sessionData = (UserSessionStoredData) historyData.get(0).getData();
+        final var sessionData = (UserSessionStoredData) historyData.get(0).getDataObject();
 
         assertThat(sessionData.getReflection(), nullValue());
         assertThat(sessionData.getMotivation(), is("you can do it!"));
@@ -173,9 +173,9 @@ class UserSessionControllerIT extends IntegrationTest {
         final var historyData = dataHistoryRepository.findAllByUsernameAndType("user2", DataHistory.Type.USER_SESSION);
 
         assertThat(historyData, hasSize(1));
-        assertThat(historyData.get(0).getData(), instanceOf(UserSessionStoredData.class));
+        assertThat(historyData.get(0).getDataObject(), instanceOf(UserSessionStoredData.class));
 
-        final var sessionData = (UserSessionStoredData) historyData.get(0).getData();
+        final var sessionData = (UserSessionStoredData) historyData.get(0).getDataObject();
 
         assertThat(sessionData.getReflection(), nullValue());
         assertThat(sessionData.getMotivation(), is("you can do it!"));

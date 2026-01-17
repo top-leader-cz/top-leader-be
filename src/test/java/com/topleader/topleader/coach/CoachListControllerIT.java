@@ -19,6 +19,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.util.stream.StreamSupport;
 
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
@@ -137,10 +138,11 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         final var sessions = scheduledSessionRepository.findAll();
+        var sessionsList = StreamSupport.stream(sessions.spliterator(), false).toList();
 
-        assertThat(sessions, hasSize(1));
+        assertThat(sessionsList, hasSize(1));
 
-        final var session = sessions.get(0);
+        final var session = sessionsList.get(0);
 
         assertThat(session.getCoachUsername(), is("coach1"));
         assertThat(session.getUsername(), is("user"));
@@ -152,10 +154,11 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(user.getCredit(), is(400));
 
         final var creditHistory = creditHistoryRepository.findAll();
+        var creditHistoryList = StreamSupport.stream(creditHistory.spliterator(), false).toList();
 
-        assertThat(creditHistory, hasSize(1));
+        assertThat(creditHistoryList, hasSize(1));
 
-        final var creditHistoryEvent = creditHistory.get(0);
+        final var creditHistoryEvent = creditHistoryList.get(0);
 
         assertThat(creditHistoryEvent.getCredit(), is(110));
         assertThat(creditHistoryEvent.getUsername(), is("user"));
@@ -198,10 +201,11 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         final var sessions = scheduledSessionRepository.findAll();
+        var sessionsList = StreamSupport.stream(sessions.spliterator(), false).toList();
 
-        assertThat(sessions, hasSize(1));
+        assertThat(sessionsList, hasSize(1));
 
-        final var session = sessions.get(0);
+        final var session = sessionsList.get(0);
 
         assertThat(session.getCoachUsername(), is("coach1"));
         assertThat(session.getUsername(), is("user"));
@@ -213,10 +217,11 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(user.getCredit(), is(400));
 
         final var creditHistory = creditHistoryRepository.findAll();
+        var creditHistoryList = StreamSupport.stream(creditHistory.spliterator(), false).toList();
 
-        assertThat(creditHistory, hasSize(1));
+        assertThat(creditHistoryList, hasSize(1));
 
-        final var creditHistoryEvent = creditHistory.get(0);
+        final var creditHistoryEvent = creditHistoryList.get(0);
 
         assertThat(creditHistoryEvent.getCredit(), is(110));
         assertThat(creditHistoryEvent.getUsername(), is("user"));
@@ -275,8 +280,9 @@ class CoachListControllerIT extends IntegrationTest {
         ;
 
         final var sessions = scheduledSessionRepository.findAll();
+        var sessionsList = StreamSupport.stream(sessions.spliterator(), false).toList();
 
-        assertThat(sessions, hasSize(0));
+        assertThat(sessionsList, hasSize(0));
 
         final var user = userRepository.findById("no-credit-user").orElseThrow();
 
@@ -284,8 +290,9 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(user.getCredit(), is(400));
 
         final var creditHistory = creditHistoryRepository.findAll();
+        var creditHistoryList = StreamSupport.stream(creditHistory.spliterator(), false).toList();
 
-        assertThat(creditHistory, hasSize(0));
+        assertThat(creditHistoryList, hasSize(0));
     }
 
     @Test
@@ -317,10 +324,11 @@ class CoachListControllerIT extends IntegrationTest {
         ;
 
         final var sessions = scheduledSessionRepository.findAll();
+        var sessionsList = StreamSupport.stream(sessions.spliterator(), false).toList();
 
-        assertThat(sessions, hasSize(1));
+        assertThat(sessionsList, hasSize(1));
 
-        final var session = sessions.get(0);
+        final var session = sessionsList.get(0);
 
         assertThat(session.getCoachUsername(), is("coach3"));
         assertThat(session.getUsername(), is("no-credit-user-free-coach"));
@@ -332,8 +340,9 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(user.getCredit(), is(400));
 
         final var creditHistory = creditHistoryRepository.findAll();
+        var creditHistoryList = StreamSupport.stream(creditHistory.spliterator(), false).toList();
 
-        assertThat(creditHistory, hasSize(0));
+        assertThat(creditHistoryList, hasSize(0));
     }
 
     @Disabled("Flaky test - to be fixed")

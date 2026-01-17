@@ -180,9 +180,9 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                     final var historyData = dataHistoryRepository.findAllByUsernameAndType("user2", DataHistory.Type.USER_SESSION);
 
                     Assertions.assertThat(historyData).hasSize(1);
-                    Assertions.assertThat(historyData.get(0).getData()).isInstanceOf(UserSessionStoredData.class);
+                    Assertions.assertThat(historyData.get(0).getDataObject()).isInstanceOf(UserSessionStoredData.class);
 
-                    final var sessionData = (UserSessionStoredData) historyData.get(0).getData();
+                    final var sessionData = (UserSessionStoredData) historyData.get(0).getDataObject();
 
                     Assertions.assertThat(sessionData.getMotivation()).isNull();
                     Assertions.assertThat(sessionData.getReflection()).isEqualTo("you can do it!");

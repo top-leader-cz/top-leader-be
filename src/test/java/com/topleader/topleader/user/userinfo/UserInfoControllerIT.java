@@ -518,7 +518,7 @@ class UserInfoControllerIT extends IntegrationTest {
                 , scheduleTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")))))
         ;
 
-        final var sessions = scheduledSessionRepository.findAll();
+        final var sessions = StreamSupport.stream(scheduledSessionRepository.findAll().spliterator(), false).toList();
 
         assertThat(sessions, hasSize(2));
 
@@ -533,7 +533,7 @@ class UserInfoControllerIT extends IntegrationTest {
         assertThat(user.getScheduledCredit(), is(400));
         assertThat(user.getCredit(), is(400));
 
-        final var creditHistory = creditHistoryRepository.findAll();
+        final var creditHistory = StreamSupport.stream(creditHistoryRepository.findAll().spliterator(), false).toList();
 
         assertThat(creditHistory, hasSize(0));
     }

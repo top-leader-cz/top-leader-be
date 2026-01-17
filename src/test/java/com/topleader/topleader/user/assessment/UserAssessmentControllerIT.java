@@ -10,6 +10,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
+import java.util.stream.StreamSupport;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -54,7 +56,7 @@ class UserAssessmentControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
         ;
 
-        assertThat(userAssessmentRepository.findAll(), hasSize(0));
+        assertThat(StreamSupport.stream(userAssessmentRepository.findAll().spliterator(), false).toList(), hasSize(0));
     }
 
     @Test
@@ -73,7 +75,7 @@ class UserAssessmentControllerIT extends IntegrationTest {
             .andExpect(jsonPath("answer").value(2))
         ;
 
-        assertThat(userAssessmentRepository.findById(new UserAssessmentId().setQuestionId(4L).setUsername("user")).orElseThrow().getAnswer(), is(2));
+        assertThat(userAssessmentRepository.findByUsernameAndQuestionId("user", 4L).orElseThrow().getAnswer(), is(2));
 
     }
 
