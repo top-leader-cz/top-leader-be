@@ -10,6 +10,7 @@ import com.topleader.topleader.common.jooq.JooqPageBuilder;
 import com.topleader.topleader.user.User;
 import lombok.RequiredArgsConstructor;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
@@ -38,8 +39,8 @@ public class AdminViewRepository {
         return JooqFilterBuilder.build(filter, ADMIN_VIEW)
                 .likeIgnoreCase("firstName", "companyName", "coach", "coachFirstName", "coachLastName", "hrs", "requestedBy")
                 .exclude("isTrial", "maxCoachRate")
-                .custom("showCanceled", value -> {
-                    var show = (Boolean) value;
+                .custom("showCanceled", v -> {
+                    var show = (Boolean) v;
                     var statuses = show
                             ? List.of(AUTHORIZED.name(), PENDING.name(), PAID.name(), REQUESTED.name(), VIEWED.name(), SUBMITTED.name(), CANCELED.name())
                             : List.of(AUTHORIZED.name(), PENDING.name(), PAID.name(), REQUESTED.name(), VIEWED.name(), SUBMITTED.name());
@@ -95,8 +96,8 @@ public class AdminViewRepository {
         return User.Status.valueOf(status);
     }
 
-    private static <T> T parseJsonb(org.jooq.JSONB jsonb, TypeReference<T> typeRef) {
-        if (jsonb == null || jsonb.data() == null || jsonb.data().isBlank()) {
+    private static <T> T parseJsonb(JSONB jsonb, TypeReference<T> typeRef) {
+        if (jsonb == null || jsonb.data().isBlank()) {
             return null;
         }
         try {
