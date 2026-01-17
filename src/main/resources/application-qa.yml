@@ -36,7 +36,7 @@ top-leader:
 google:
   application-name: "qa.topleaderplatform.io"
   client:
-    redirectUri: https://qa.topleaderplatform.io/oauth/google/callback
+    redirectUri: https://qa.topleaderplatform.io/login/google
 
 management:
   opentelemetry:
