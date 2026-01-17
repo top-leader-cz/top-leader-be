@@ -27,8 +27,8 @@ import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.common.util.common.user.UserUtils;
 import com.topleader.topleader.common.util.image.ArticleImageService;
 import com.topleader.topleader.common.util.common.CommonUtils;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import com.topleader.topleader.common.exception.NotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -36,6 +36,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -272,7 +273,7 @@ public class UserSessionService {
     public List<UserActionStep> saveActionSteps(List<UserActionStep> steps) {
         return Optional.ofNullable(steps)
                 .filter(not(List::isEmpty))
-                .map(userActionStepRepository::saveAll)
+                .map(s -> StreamSupport.stream(userActionStepRepository.saveAll(s).spliterator(), false).toList())
                 .orElse(List.of());
     }
 
@@ -296,7 +297,7 @@ public class UserSessionService {
     private List<UserActionStep> createNewUserActionSteps(String username, List<UserSessionController.NewActionStepDto> newActionStepDtos) {
         return Optional.ofNullable(newActionStepDtos)
                 .filter(not(List::isEmpty))
-                .map(steps -> userActionStepRepository.saveAll(
+                .map(steps -> StreamSupport.stream(userActionStepRepository.saveAll(
                         steps.stream()
                                 .map(s -> new UserActionStep()
                                         .setUsername(username)
@@ -305,7 +306,7 @@ public class UserSessionService {
                                         .setDate(s.date())
                                 )
                                 .toList()
-                ))
+                ).spliterator(), false).toList())
                 .orElse(List.of());
     }
 
@@ -346,7 +347,7 @@ public class UserSessionService {
     public List<RecommendedGrowth> generateRecommendedGrowths(String username) {
         log.warn("generating recommend growth");
         var user = userDetailService.getUser(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
+                .orElseThrow(() -> new NotFoundException());
         var company = companyRepository.findById(user.getCompanyId()).orElse(Company.empty());
 
         var businessStrategy = company.getBusinessStrategy();

@@ -1,0 +1,34 @@
+{
+  "content": [
+    {
+      "username": "user4",
+      "firstName": "John",
+      "lastName": "UpdatedDoe",
+      "authorities": [
+        "USER",
+        "ADMIN"
+      ],
+      "timeZone": "PST",
+      "status": "AUTHORIZED",
+      "companyId": 2,
+      "companyName": "Company 2",
+      "coach": "updatedCoach",
+      "coachFirstName": null,
+      "coachLastName": null,
+      "credit": 150,
+      "requestedCredit": 125,
+      "sumRequestedCredit": 4000,
+      "paidCredit": 1,
+      "scheduledCredit": 0,
+      "hrs": "hr1, hr2",
+      "requestedBy": "god",
+      "freeCoach": "updatedCoach",
+      "locale": "en",
+      "allowedCoachRates": null,
+      "rate": null,
+      "certificate": ["ACC"],
+      "internalRate": null,
+      "primaryRoles": null
+    }
+  ]
+}

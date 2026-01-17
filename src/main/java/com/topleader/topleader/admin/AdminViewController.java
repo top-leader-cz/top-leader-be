@@ -93,7 +93,7 @@ public class AdminViewController {
                 }
             );
 
-        coachRepository.findById(username)
+        coachRepository.findByUsername(username)
             .map(userRequest::updateCoach)
             .ifPresentOrElse(
                 coachRepository::save,
@@ -168,7 +168,7 @@ public class AdminViewController {
         public Coach updateCoach(Coach coach) {
             Optional.ofNullable(rate).ifPresent(coach::setRate);
             Optional.ofNullable(internalRate).ifPresent(coach::setInternalRate);
-            Optional.ofNullable(certificate).ifPresent(coach::setCertificate);
+            Optional.ofNullable(certificate).ifPresent(coach::setCertificateSet);
             return coach;
         }
 
@@ -178,7 +178,7 @@ public class AdminViewController {
                     .setUsername(username)
                     .setRate(rate)
                     .setInternalRate(internalRate)
-                    .setCertificate(certificate)
+                    .setCertificateSet(certificate)
             );
         }
     }
@@ -217,7 +217,7 @@ public class AdminViewController {
                 new Coach()
                     .setUsername(username.toLowerCase(Locale.ROOT))
                     .setRate(rate)
-                    .setCertificate(certificate)
+                    .setCertificateSet(certificate)
                     .setInternalRate(internalRate)
             );
         }

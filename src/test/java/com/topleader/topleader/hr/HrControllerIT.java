@@ -7,7 +7,7 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.user.manager.ManagerRepository;
+import com.topleader.topleader.user.manager.UserManagerRepository;
 import com.topleader.topleader.user.token.TokenRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -16,8 +16,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.Optional;
 
@@ -45,10 +43,8 @@ class HrControllerIT extends IntegrationTest {
     TokenRepository tokenRepository;
 
     @Autowired
-    ManagerRepository managerRepository;
+    UserManagerRepository userManagerRepository;
 
-    @Autowired
-    private PlatformTransactionManager transactionManager;
 
 
     @Test
@@ -188,9 +184,8 @@ class HrControllerIT extends IntegrationTest {
         Assertions.assertThat(body).contains("Jakub Svezi,").contains("http://app-test-url/#/api/public/set-password/").contains("Odemkn=C4=9Bte");
 
 
-        Optional<User> user = userRepository.findById("jakub.svezi@dummy.com");
+        Optional<User> user = userRepository.findByUsername("jakub.svezi@dummy.com");
         Assertions.assertThat(user).isNotEmpty();
-        Assertions.assertThat(managerRepository.findAll()).extracting("username").containsExactly("jakub.svezi@dummy.com");
     }
 
     @Test
@@ -244,12 +239,9 @@ class HrControllerIT extends IntegrationTest {
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Odemkněte svůj potenciál s TopLeader!");
         Assertions.assertThat(body).contains("Jakub1 Svezi2,").contains("http://app-test-url/#/api/public/set-password/");
 
-        Assertions.assertThat(userRepository.findById("hrUser")).isNotEmpty();
+        Assertions.assertThat(userRepository.findByUsername("hrUser")).isNotEmpty();
 
-        var transactionTemplate = new TransactionTemplate(transactionManager);
-        transactionTemplate.executeWithoutResult(status -> {
-            Assertions.assertThat(userRepository.findById("hrUser").get().getManagers()).extracting("username").containsExactly("manager.one@dummy.com");
-        });
+        Assertions.assertThat(userManagerRepository.findByUserUsername("hrUser")).extracting("managerUsername").containsExactly("manager.one@dummy.com");
 
     }
 

@@ -6,7 +6,8 @@ package com.topleader.topleader.feedback.feedback_notification;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
-import jakarta.transaction.Transactional;
+import com.topleader.topleader.feedback.repository.RecipientRepository;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +36,8 @@ public class FeedbackNotificationController {
     private final FeedbackNotificationService feedbackNotificationService;
 
     private final FeedbackFormRepository feedbackFormRepository;
+
+    private final RecipientRepository recipientRepository;
 
     @Transactional
     @GetMapping("/{id}")
@@ -66,9 +69,9 @@ public class FeedbackNotificationController {
     }
 
     private boolean isUnanswered(Long formId) {
-        return feedbackFormRepository.findById(formId)
-            .map(f -> f.getRecipients().stream().anyMatch(not(Recipient::isSubmitted)))
-            .orElseThrow(NotFoundException::new);
+        feedbackFormRepository.findById(formId).orElseThrow(NotFoundException::new);
+        return recipientRepository.findByFormId(formId).stream()
+                .anyMatch(not(Recipient::isSubmitted));
     }
 
     public record FeedbackFormNotificationDto(

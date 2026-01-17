@@ -25,8 +25,8 @@ class CalendlyTokenInfoControllerIT extends IntegrationTest {
         mvc.perform(delete("/api/latest/calendly-disconnect"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(syncInfoRepository.findById(new CalendarSyncInfo.CalendarInfoId("coach1", CALENDLY))
-                .isEmpty());
+        Assertions.assertThat(syncInfoRepository.findByUsernameAndSyncType("coach1", CALENDLY))
+                .isEmpty();
     }
 
 }

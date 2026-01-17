@@ -19,6 +19,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
+import java.util.stream.StreamSupport;
 
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
@@ -137,25 +138,27 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         final var sessions = scheduledSessionRepository.findAll();
+        var sessionsList = StreamSupport.stream(sessions.spliterator(), false).toList();
 
-        assertThat(sessions, hasSize(1));
+        assertThat(sessionsList, hasSize(1));
 
-        final var session = sessions.get(0);
+        final var session = sessionsList.get(0);
 
         assertThat(session.getCoachUsername(), is("coach1"));
         assertThat(session.getUsername(), is("user"));
         assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findById("user").orElseThrow();
+        final var user = userRepository.findByUsername("user").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(110));
         assertThat(user.getCredit(), is(400));
 
         final var creditHistory = creditHistoryRepository.findAll();
+        var creditHistoryList = StreamSupport.stream(creditHistory.spliterator(), false).toList();
 
-        assertThat(creditHistory, hasSize(1));
+        assertThat(creditHistoryList, hasSize(1));
 
-        final var creditHistoryEvent = creditHistory.get(0);
+        final var creditHistoryEvent = creditHistoryList.get(0);
 
         assertThat(creditHistoryEvent.getCredit(), is(110));
         assertThat(creditHistoryEvent.getUsername(), is("user"));
@@ -198,25 +201,27 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         final var sessions = scheduledSessionRepository.findAll();
+        var sessionsList = StreamSupport.stream(sessions.spliterator(), false).toList();
 
-        assertThat(sessions, hasSize(1));
+        assertThat(sessionsList, hasSize(1));
 
-        final var session = sessions.get(0);
+        final var session = sessionsList.get(0);
 
         assertThat(session.getCoachUsername(), is("coach1"));
         assertThat(session.getUsername(), is("user"));
         assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findById("user").orElseThrow();
+        final var user = userRepository.findByUsername("user").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(110));
         assertThat(user.getCredit(), is(400));
 
         final var creditHistory = creditHistoryRepository.findAll();
+        var creditHistoryList = StreamSupport.stream(creditHistory.spliterator(), false).toList();
 
-        assertThat(creditHistory, hasSize(1));
+        assertThat(creditHistoryList, hasSize(1));
 
-        final var creditHistoryEvent = creditHistory.get(0);
+        final var creditHistoryEvent = creditHistoryList.get(0);
 
         assertThat(creditHistoryEvent.getCredit(), is(110));
         assertThat(creditHistoryEvent.getUsername(), is("user"));
@@ -275,17 +280,19 @@ class CoachListControllerIT extends IntegrationTest {
         ;
 
         final var sessions = scheduledSessionRepository.findAll();
+        var sessionsList = StreamSupport.stream(sessions.spliterator(), false).toList();
 
-        assertThat(sessions, hasSize(0));
+        assertThat(sessionsList, hasSize(0));
 
-        final var user = userRepository.findById("no-credit-user").orElseThrow();
+        final var user = userRepository.findByUsername("no-credit-user").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(400));
         assertThat(user.getCredit(), is(400));
 
         final var creditHistory = creditHistoryRepository.findAll();
+        var creditHistoryList = StreamSupport.stream(creditHistory.spliterator(), false).toList();
 
-        assertThat(creditHistory, hasSize(0));
+        assertThat(creditHistoryList, hasSize(0));
     }
 
     @Test
@@ -317,23 +324,25 @@ class CoachListControllerIT extends IntegrationTest {
         ;
 
         final var sessions = scheduledSessionRepository.findAll();
+        var sessionsList = StreamSupport.stream(sessions.spliterator(), false).toList();
 
-        assertThat(sessions, hasSize(1));
+        assertThat(sessionsList, hasSize(1));
 
-        final var session = sessions.get(0);
+        final var session = sessionsList.get(0);
 
         assertThat(session.getCoachUsername(), is("coach3"));
         assertThat(session.getUsername(), is("no-credit-user-free-coach"));
         assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findById("no-credit-user-free-coach").orElseThrow();
+        final var user = userRepository.findByUsername("no-credit-user-free-coach").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(400));
         assertThat(user.getCredit(), is(400));
 
         final var creditHistory = creditHistoryRepository.findAll();
+        var creditHistoryList = StreamSupport.stream(creditHistory.spliterator(), false).toList();
 
-        assertThat(creditHistory, hasSize(0));
+        assertThat(creditHistoryList, hasSize(0));
     }
 
     @Disabled("Flaky test - to be fixed")
@@ -408,6 +417,7 @@ class CoachListControllerIT extends IntegrationTest {
                                 }
                                 """)
                 )
+                .andDo(print())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].username", is("coach3")))
                 .andExpect(jsonPath("$.content[0].primaryRoles", hasItems(Coach.PrimaryRole.COACH.name())))
@@ -445,6 +455,7 @@ class CoachListControllerIT extends IntegrationTest {
                                 }
                                 """)
                 )
+                .andDo(print())
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].username", is("coach1")))
         ;

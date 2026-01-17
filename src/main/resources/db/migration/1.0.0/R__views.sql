@@ -68,7 +68,8 @@ where u.status != 'CANCELED';
 
 drop view if exists manager_view;
 create view manager_view as
-select u.username,
+select u.id,
+       u.username,
        u.first_name,
        u.last_name,
        u.company_id
@@ -122,7 +123,9 @@ select c.username,
        c.linkedin_profile,
        c.free_slots,
        c.priority,
-       c.primary_roles
+       c.primary_roles,
+       c.languages,
+       c.fields
 from coach c
          left join users u on c.username = u.username
 where u.status != 'CANCELED';

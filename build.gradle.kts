@@ -62,7 +62,6 @@ dependencies {
     }
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
@@ -74,7 +73,7 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-starter-model-openai")
 
     // Database
-    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
 
     // jOOQ
@@ -136,19 +135,46 @@ tasks.compileJava {
     dependsOn(tasks.named("jooqCodegen"))
 }
 
+// Task to create combined SQL for jOOQ code generation
+val createJooqInitSql by tasks.registering {
+    val outputFile = layout.buildDirectory.file("jooq-init.sql")
+    val migrationDir = file("src/main/resources/db/migration/1.0.0")
+
+    inputs.dir(migrationDir)
+    outputs.file(outputFile)
+
+    doLast {
+        val combined = StringBuilder()
+        listOf("V1.0.0.1__init.sql", "V1.0.0.2__jpa_remove.sql", "R__views.sql").forEach { fileName ->
+            val sqlFile = migrationDir.resolve(fileName)
+            if (sqlFile.exists()) {
+                combined.append("-- $fileName\n")
+                combined.append(sqlFile.readText())
+                combined.append("\n\n")
+            }
+        }
+        outputFile.get().asFile.parentFile.mkdirs()
+        outputFile.get().asFile.writeText(combined.toString())
+    }
+}
+
+tasks.named("jooqCodegen") {
+    dependsOn(createJooqInitSql)
+}
+
 jooq {
     configuration {
-        // Testcontainers PostgreSQL - runs Flyway automatically
+        // Testcontainers PostgreSQL - init script runs all migrations
         jdbc {
             driver = "org.testcontainers.jdbc.ContainerDatabaseDriver"
-            url = "jdbc:tc:postgresql:16:///test?TC_INITSCRIPT=file:src/main/resources/db/migration/1.0.0/V1.0.0.1__init.sql"
+            url = "jdbc:tc:postgresql:16:///test?TC_INITSCRIPT=file:build/jooq-init.sql"
         }
         generator {
             name = "org.jooq.codegen.JavaGenerator"
             database {
                 name = "org.jooq.meta.postgres.PostgresDatabase"
                 inputSchema = "public"
-                includes = "admin_view"
+                includes = "admin_view|coach_list_view"
             }
             generate {
                 isRecords = true

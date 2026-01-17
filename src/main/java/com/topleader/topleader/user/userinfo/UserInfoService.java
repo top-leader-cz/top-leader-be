@@ -25,7 +25,7 @@ public class UserInfoService {
     private final DataHistoryRepository dataHistoryRepository;
 
     public UserInfo find(String username) {
-        return userInfoRepository.findById(username).orElse(createEmpty(username));
+        return userInfoRepository.findByUsername(username).orElse(createEmpty(username));
     }
 
     public UserInfo setAreaOfDevelopmentAndLongTermGoal(String username, List<String> areaOfDevelopment, String longTermGoal ) {

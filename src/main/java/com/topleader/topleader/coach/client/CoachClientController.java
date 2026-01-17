@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.coach.client;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
@@ -11,7 +8,7 @@ import com.topleader.topleader.common.notification.context.CoachUnlinkedNotifica
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -71,7 +68,7 @@ public class CoachClientController {
     @Secured("COACH")
     @DeleteMapping("/{username}")
     public void removeClient(@AuthenticationPrincipal UserDetails user, @PathVariable String username) {
-        userRepository.findById(username)
+        userRepository.findByUsername(username)
             .filter(u -> user.getUsername().equals(u.getCoach()))
             .map(u -> u.setCoach(null))
             .ifPresent(u -> {
@@ -93,9 +90,9 @@ public class CoachClientController {
         @AuthenticationPrincipal UserDetails user, @RequestBody @Valid UserInvitationRequestDto request
     ) {
 
-        final var coach = userRepository.findById(user.getUsername()).orElseThrow();
+        final var coach = userRepository.findByUsername(user.getUsername()).orElseThrow();
 
-        userRepository.findById(request.email())
+        userRepository.findByUsername(request.email())
                 .or(() -> userRepository.findByEmail(request.email()))
                 .ifPresent(u -> {
                     throw new ApiValidationException(EMAIL_USED, "email", request.email(), "Already used");

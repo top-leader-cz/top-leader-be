@@ -30,9 +30,9 @@ public class CalendarToErrorHandler {
 
     public void logError(CalendarSyncInfo info, Throwable e) {
         if(WARN == info.getStatus()) {
-            log.warn("{} token refresh job completed with warnings", info.getId().getSyncType());
+            log.warn("{} token refresh job completed with warnings", info.getSyncType());
         } else if(ERROR == info.getStatus()) {
-            log.error("{} token refresh job completed with errors", info.getId().getSyncType(), e);
+            log.error("{} token refresh job completed with errors", info.getSyncType(), e);
         }
     }
 }

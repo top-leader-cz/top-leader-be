@@ -1,6 +1,6 @@
 package com.topleader.topleader.common.ai;
 
-import jakarta.persistence.EntityNotFoundException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
@@ -18,7 +18,7 @@ public class AiPromptService {
 
     public String getPrompt(AiPrompt.PromptType promptType) {
         return aiPromptRepository.findById(promptType)
-                .orElseThrow(() -> new EntityNotFoundException("Prompt not found"))
+                .orElseThrow(() -> new NotFoundException())
                 .getValue();
     }
 

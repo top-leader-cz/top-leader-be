@@ -26,7 +26,7 @@ public record UserDto(
                 user.getStatus(),
                 user.getAuthorities(),
                 user.getPosition(),
-                user.getManagers().stream().findFirst().map(User::getUsername).orElse(null),
+                null,
                 user.getAuthorities().contains(User.Authority.MANAGER),
                 user.getAspiredCompetency()
         );

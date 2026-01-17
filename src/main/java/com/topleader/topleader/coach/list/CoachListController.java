@@ -14,36 +14,30 @@ import io.micrometer.core.instrument.Counter;
 import com.topleader.topleader.common.email.EmailTemplateService;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
-import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.image.ImageUtil;
 import com.topleader.topleader.common.util.page.PageDto;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,17 +46,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasExperienceFrom;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasExperienceTo;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFieldsInList;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
 import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
-import static org.springframework.data.jpa.domain.Specification.allOf;
 import static org.springframework.util.StringUtils.hasText;
 
 
@@ -77,7 +64,7 @@ public class CoachListController {
 
     private final CoachImageRepository coachImageRepository;
 
-    private final CoachListViewRepository coachListViewRepository;
+    private final CoachListViewJooqRepository coachListViewRepository;
 
     private final CoachAvailabilityService coachAvailabilityService;
 
@@ -99,7 +86,7 @@ public class CoachListController {
         @PathVariable String username,
         @RequestBody ScheduleSessionRequest request
     ) {
-        final var userInDb = userRepository.findById(user.getUsername()).orElseThrow();
+        final var userInDb = userRepository.findByUsername(user.getUsername()).orElseThrow();
 
         if (hasText(userInDb.getCoach()) && !userInDb.getCoach().equals(username)) {
             throw new ApiValidationException(DIFFERENT_COACH_NOT_PERMITTED, "username", username, "Cannot schedule a session with a different coach then already picked");
@@ -119,7 +106,7 @@ public class CoachListController {
         @RequestBody ScheduleSessionRequest request
     ) {
 
-        final var coachName = userRepository.findById(user.getUsername()).orElseThrow().getCoach();
+        final var coachName = userRepository.findByUsername(user.getUsername()).orElseThrow().getCoach();
 
         scheduleSession(user.getUsername(), coachName, request.time(), true);
     }
@@ -147,7 +134,7 @@ public class CoachListController {
             throw new ApiValidationException(NOT_ENOUGH_CREDITS, "user", clientName, "User does not have enough credit");
         }
 
-        final var user = userRepository.findById(clientName).orElseThrow();
+        final var user = userRepository.findByUsername(clientName).orElseThrow();
 
         final var session = scheduledSessionService.scheduleSession(
             new ScheduledSession()
@@ -171,7 +158,7 @@ public class CoachListController {
         @AuthenticationPrincipal UserDetails loggedUser
         ) {
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(loggedUser.getUsername()));
+        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(loggedUser.getUsername()));
 
         final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
                 .map(ScheduledSession::getTime)
@@ -186,7 +173,7 @@ public class CoachListController {
     @GetMapping("/{username}/photo")
     public ResponseEntity<byte[]> getCoachPhoto(@PathVariable String username) {
 
-        return coachImageRepository.findById(username)
+        return coachImageRepository.findByUsername(username)
             .map(i -> ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.valueOf(i.getType()))
                 .body(ImageUtil.decompressImage(i.getImageData()))
@@ -208,49 +195,37 @@ public class CoachListController {
         @RequestBody @Valid FilterRequest request
     ) {
 
-        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow();
+        final var dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow();
 
-        return findCoaches(
-            Stream.concat(maxRateFilter(dbUser).stream(), request.toSpecification().stream()).toList(),
-            request.page().toPageable()
-        )
-            .map(CoachListDto::from);
+        Set<String> allowedRates = getAllowedRates(dbUser, request.prices());
+
+        var pageable = request.page().toPageable();
+
+        return coachListViewRepository.findAllWithFilters(request, allowedRates, pageable)
+                .map(CoachListDto::from);
     }
 
-    private Page<CoachListView> findCoaches(List<Specification<CoachListView>> filter, Pageable page) {
-       var p = PageRequest.of(page.getPageNumber(), page.getPageSize(),
-               page.getSortOr(Sort.sort(CoachListView.class).by(CoachListView::getPriority).descending()));
+    private Set<String> getAllowedRates(User user, List<String> requestedPrices) {
+        Set<String> userRates = Optional.ofNullable(user.getAllowedCoachRates())
+                .filter(not(Set::isEmpty))
+                .or(() -> Optional.ofNullable(user.getCompanyId())
+                        .flatMap(companyRepository::findById)
+                        .map(Company::getAllowedCoachRateNames)
+                )
+                .orElse(null);
 
-
-        return coachListViewRepository.findAll(
-            Optional.ofNullable(filter)
-                .filter(not(List::isEmpty))
-                .map(f -> allOf(f).and(isProfilePublic()))
-                .orElse(isProfilePublic()),
-            p
-        );
-
-    }
-
-    private Optional<Specification<CoachListView>> maxRateFilter(User user) {
-        return Optional.ofNullable(user.getAllowedCoachRates())
-            .filter(not(Set::isEmpty))
-            .or(() -> Optional.ofNullable(user.getCompanyId())
-                .flatMap(companyRepository::findById)
-                .map(Company::getAllowedCoachRates)
-            )
-            .filter(not(Set::isEmpty))
-            .map(CoachListController::rateIn);
-    }
-
-    public static Specification<CoachListView> isProfilePublic() {
-        return (root, query, criteriaBuilder) ->
-            criteriaBuilder.isTrue(root.get("publicProfile"));
-    }
-
-    private static Specification<CoachListView> rateIn(Set<String> allowed) {
-        return (root, query, criteriaBuilder) ->
-            root.get("rate").in(allowed);
+        if (userRates == null && requestedPrices == null) {
+            return null;
+        }
+        if (userRates == null) {
+            return new HashSet<>(requestedPrices);
+        }
+        if (requestedPrices == null) {
+            return userRates;
+        }
+        Set<String> result = new HashSet<>(requestedPrices);
+        result.retainAll(userRates);
+        return result;
     }
 
     public record ScheduleSessionRequest(ZonedDateTime time) {
@@ -295,11 +270,11 @@ public class CoachListController {
                     c.getFields(),
                     toExperience(c.getExperienceSince()),
                     c.getRate(),
-                    c.getCertificate(),
+                    c.getCertificateSet(),
                     c.getTimeZone(),
                     c.getWebLink(),
                     c.getLinkedinProfile(),
-                    c.getPrimaryRoles()
+                    c.getPrimaryRolesSet()
             );
         }
 
@@ -321,38 +296,5 @@ public class CoachListController {
         List<String> prices,
         String name
     ) {
-
-        public List<Specification<CoachListView>> toSpecification() {
-
-            final var result = new ArrayList<Specification<CoachListView>>();
-
-            Optional.ofNullable(languages())
-                .ifPresent(languages -> result.add(hasLanguagesInList(languages)));
-
-            Optional.ofNullable(fields())
-                .ifPresent(fields -> result.add(hasFieldsInList(fields)));
-
-            Optional.ofNullable(experienceFrom())
-                .ifPresent(from -> result.add(hasExperienceFrom(toDate(experienceFrom()))));
-
-            Optional.ofNullable(experienceTo())
-                .ifPresent(to -> result.add(hasExperienceTo(toDate(experienceTo()))));
-
-            Optional.ofNullable(prices())
-                .ifPresent(prices -> result.add(hasRateInSet(prices)));
-
-            Optional.ofNullable(name())
-                .ifPresent(name -> result.add(nameStartsWith(name)));
-
-            return result;
-        }
-
-        private static LocalDate toDate(Integer i) {
-            return LocalDate.now()
-                .withMonth(1)
-                .withDayOfMonth(1)
-                .minusYears(i);
-        }
-
     }
 }

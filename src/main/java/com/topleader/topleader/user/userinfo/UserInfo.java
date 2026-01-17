@@ -3,8 +3,7 @@
  */
 package com.topleader.topleader.user.userinfo;
 
-import com.topleader.topleader.common.util.converter.SetConverter;
-import jakarta.persistence.*;
+import com.topleader.topleader.common.util.common.JsonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -21,37 +22,61 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
+@Table("user_info")
 @Accessors(chain = true)
 @NoArgsConstructor
 public class UserInfo {
 
     @Id
+    private Long id;
+
     private String username;
 
-    @Convert(converter = SetConverter.class)
-    private List<String> strengths = new ArrayList<>();
+    private String strengths;
 
-    @Convert(converter = SetConverter.class)
-    private List<String> values = new ArrayList<>();
+    private String values;
 
-    @Convert(converter = SetConverter.class)
-    private List<String> areaOfDevelopment = new ArrayList<>();
+    private String areaOfDevelopment;
 
     private String notes;
 
-    @Column(length = 1000)
     private String longTermGoal;
 
-    @Column(length = 2000)
     private String motivation;
 
-    @Column(length = 2000)
     private String lastReflection;
 
+    public List<String> getStrengths() {
+        return strengths != null ? JsonUtils.fromJsonStringToList(strengths) : new ArrayList<>();
+    }
+
+    public UserInfo setStrengths(List<String> strengths) {
+        this.strengths = strengths != null ? JsonUtils.toJsonString(strengths) : null;
+        return this;
+    }
+
+    public List<String> getValues() {
+        return values != null ? JsonUtils.fromJsonStringToList(values) : new ArrayList<>();
+    }
+
+    public UserInfo setValues(List<String> values) {
+        this.values = values != null ? JsonUtils.toJsonString(values) : null;
+        return this;
+    }
+
+    public List<String> getAreaOfDevelopment() {
+        return areaOfDevelopment != null ? JsonUtils.fromJsonStringToList(areaOfDevelopment) : new ArrayList<>();
+    }
+
+    public UserInfo setAreaOfDevelopment(List<String> areaOfDevelopment) {
+        this.areaOfDevelopment = areaOfDevelopment != null ? JsonUtils.toJsonString(areaOfDevelopment) : null;
+        return this;
+    }
+
     public List<String> getTopStrengths() {
-        var strengthSize = strengths.size();
-        return  strengths.subList(0, strengthSize > 5 ? 5 : strengthSize);
+        var strengthsList = getStrengths();
+        var strengthSize = strengthsList.size();
+        return strengthsList.subList(0, Math.min(strengthSize, 5));
     }
 
 }

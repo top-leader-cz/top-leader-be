@@ -93,9 +93,10 @@ class CoachControllerIT extends IntegrationTest {
 
         mvc.perform(multipart("/api/latest/coach-info/photo")
                 .file(file))
+            .andDo(print())
             .andExpect(status().isOk());
 
-        final var image = coachImageRepository.findById("coach");
+        final var image = coachImageRepository.findByUsername("coach");
 
         assertThat(image.isPresent(), is(true));
         assertThat(image.get().getType(), is("image/jpeg"));
@@ -228,6 +229,7 @@ class CoachControllerIT extends IntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(readFileAsString("json/coach/set-coach-info-request.json"))
             )
+            .andDo(print())
             .andExpect(status().isOk())
             .andExpect(jsonPath("publicProfile", is(true)))
             .andExpect(jsonPath("firstName", is("firstName")))
@@ -263,7 +265,7 @@ class CoachControllerIT extends IntegrationTest {
 
         ;
         Assertions.assertThat(userRepository.findByEmail("cool-test@email.cz")).isPresent();
-        final var coach = coachRepository.findById("coach_no_info").orElseThrow();
+        final var coach = coachRepository.findByUsername("coach_no_info").orElseThrow();
         assertThat(coach.getRateOrder(), nullValue());
     }
 

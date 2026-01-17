@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
@@ -40,6 +41,7 @@ public class UserAllocationService {
 
         validateCapacity(pkg, request.allocatedUnits());
 
+        var now = LocalDateTime.now();
         var allocation = new UserAllocation()
                 .setPackageId(packageId)
                 .setCompanyId(pkg.getCompanyId())
@@ -48,7 +50,9 @@ public class UserAllocationService {
                 .setStatus(request.status() != null ? request.status() : UserAllocation.AllocationStatus.ACTIVE)
                 .setContextRef(request.contextRef())
                 .setCreatedBy(createdBy)
-                .setUpdatedBy(createdBy);
+                .setUpdatedBy(createdBy)
+                .setCreatedAt(now)
+                .setUpdatedAt(now);
 
         var saved = userAllocationRepository.save(allocation);
         log.info("Created allocation {} for package {} user {}", saved.getId(), packageId, userId);
@@ -80,7 +84,8 @@ public class UserAllocationService {
         allocation.setAllocatedUnits(request.allocatedUnits())
                 .setStatus(request.status() != null ? request.status() : allocation.getStatus())
                 .setContextRef(request.contextRef())
-                .setUpdatedBy(updatedBy);
+                .setUpdatedBy(updatedBy)
+                .setUpdatedAt(LocalDateTime.now());
 
         var saved = userAllocationRepository.save(allocation);
         log.info("Updated allocation {} for package {} user {}", saved.getId(), packageId, userId);
@@ -112,6 +117,7 @@ public class UserAllocationService {
 
         validateCapacity(pkg, totalDelta);
 
+        var now = LocalDateTime.now();
         var results = request.items().stream()
                 .map(item -> {
                     var existing = userAllocationRepository.findByPackageIdAndUserIdForUpdate(packageId, item.userId());
@@ -120,11 +126,13 @@ public class UserAllocationService {
                             .setPackageId(packageId)
                             .setCompanyId(pkg.getCompanyId())
                             .setUserId(item.userId())
-                            .setCreatedBy(updatedBy));
+                            .setCreatedBy(updatedBy)
+                            .setCreatedAt(now));
 
                     allocation.setAllocatedUnits(item.allocatedUnits())
                             .setStatus(UserAllocation.AllocationStatus.ACTIVE)
-                            .setUpdatedBy(updatedBy);
+                            .setUpdatedBy(updatedBy)
+                            .setUpdatedAt(now);
 
                     var saved = userAllocationRepository.save(allocation);
                     return new BulkAllocationResponse.BulkAllocationItemResponse(
@@ -196,7 +204,8 @@ public class UserAllocationService {
                 .orElseThrow(NotFoundException::new);
 
         allocation.setStatus(request.status())
-                .setUpdatedBy(updatedBy);
+                .setUpdatedBy(updatedBy)
+                .setUpdatedAt(LocalDateTime.now());
 
         // When setting to INACTIVE, set allocated to consumed (release unused units)
         if (request.status() == UserAllocation.AllocationStatus.INACTIVE) {

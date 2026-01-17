@@ -1,7 +1,8 @@
 package com.topleader.topleader.user.session.feedback;
 
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface SessionFeedbackRepository extends JpaRepository<SessionFeedback, Long> {
+public interface SessionFeedbackRepository extends CrudRepository<SessionFeedback, Long>, PagingAndSortingRepository<SessionFeedback, Long> {
 }

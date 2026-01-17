@@ -10,7 +10,7 @@ TopLeader is a Spring Boot backend application for a coaching/mentoring platform
 
 - **Java 25** with Spring Boot 4.0.1
 - **PostgreSQL** with Flyway migrations
-- **Spring Data JPA** (Hibernate 7.x)
+- **Spring Data JDBC** (migrating from JPA/Hibernate)
 - **Spring Security** (form login + session-based auth)
 - **Lombok** for boilerplate reduction
 - **Gradle 9.2.1** build system (Kotlin DSL)
@@ -76,13 +76,14 @@ src/main/java/com/topleader/topleader/
 ## Key Patterns
 
 ### Entity Pattern
-- Use `@Entity` with Lombok (`@Data`, , `@Accessors(chain = true)`)
-- ID generation: `GenerationType.SEQUENCE` for Long, `GenerationType.UUID` for UUID
+- Use `@Data` with Lombok and `@Accessors(chain = true)`
+- For Spring Data JDBC: use `@Table("table_name")` and `@Id`
+- ID generation: auto-increment Long primary keys
 - Audit fields: `createdAt`, `createdBy`, `updatedAt`, `updatedBy` with `@PrePersist`/`@PreUpdate`
 
 ### Repository Pattern
-- Extend `JpaRepository<T, ID>`
-- Add `JpaSpecificationExecutor<T>` for complex queries
+- Extend `CrudRepository<T, ID>` - do NOT extend `PagingAndSortingRepository<T, ID>` unless pagination is actually needed
+- Use `@Query` for custom SQL queries
 
 ### Controller Pattern
 - Use `@RestController` with `/api/latest/...` paths
@@ -102,11 +103,11 @@ All exception classes are in `common/exception/`:
 
 ## Database Migrations
 
-Flyway migrations in `src/main/resources/db/migration/0.0.1/`
+Flyway migrations in `src/main/resources/db/migration/1.0.0/`
 
-Naming: `V0.0.1.{number}__{description}.sql`
+Naming: `V1.0.0.{number}__{description}.sql`
 
-Current latest: `V0.0.1.81__coaching_package.sql`
+Current latest: `V1.0.0.2__jpa_remove.sql`
 
 ## Testing
 
@@ -148,3 +149,6 @@ make deploy-prod
 - Validation with Jakarta `@NotNull`, `@Valid`, `@Min`
 - **No JavaDoc comments above methods** - keep code clean without method documentation
 - **Prefer streams over for/while loops** - use functional style with `stream()`, `map()`, `filter()`, `collect()`, etc.
+- **Use Apache Commons StringUtils** - Always use `StringUtils.isBlank()`, `StringUtils.isNotBlank()` instead of `== null || isEmpty()` or `isBlank()`
+- **Use static imports for nested enums and constants** - prefer `Status.PENDING` with `import static com.topleader.topleader.user.User.Status.PENDING;` instead of fully qualified names like `com.topleader.topleader.user.User.Status.PENDING`
+- **Always use enum.name() in queries** - Never use string literals for enum values in repository method calls. Use `SyncType.CALENDLY.name()` instead of `"CALENDLY"`, `Status.ACTIVE.name()` instead of `"ACTIVE"`, etc. This applies to all enum types across the codebase.

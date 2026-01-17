@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import static org.springframework.util.StringUtils.parseLocale;
 
@@ -45,7 +46,7 @@ public class SessionReminderService {
     private final UserActionStepRepository userActionStepRepository;
 
     public List<SessionReminderView> getUserWithNoScheduledSessions() {
-        return sessionReminderRepository.findAll();
+        return StreamSupport.stream(sessionReminderRepository.findAll().spliterator(), false).toList();
     }
 
     public void sendReminder(SessionReminderView user) {

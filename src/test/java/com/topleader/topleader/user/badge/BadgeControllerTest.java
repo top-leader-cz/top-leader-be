@@ -5,12 +5,10 @@ import com.topleader.topleader.IntegrationTest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDate;
-import java.util.List;
 
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -42,7 +40,11 @@ public class BadgeControllerTest extends IntegrationTest {
 
     private Badge badge(Badge.AchievementType type) {
         var now = LocalDate.now();
-        return new Badge().setBadgeId(new Badge.BadgeId("jakub.svezi@dummy.com", type, now.getMonth(), now.getYear()));
+        return new Badge()
+                .setUsername("jakub.svezi@dummy.com")
+                .setAchievementType(type)
+                .setMonth(now.getMonth())
+                .setYear(now.getYear());
     }
 
     @Test
@@ -51,7 +53,13 @@ public class BadgeControllerTest extends IntegrationTest {
         mvc.perform(post("/api/latest/user-badges/watched-video"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.WATCHED_VIDEO)))).isNotEmpty();
+        var expected = badge(Badge.AchievementType.WATCHED_VIDEO);
+        Assertions.assertThat(badgeRepository.findByUsernameAndAchievementTypeAndMonthAndYear(
+                expected.getUsername(),
+                expected.getAchievementType().name(),
+                expected.getMonth().name(),
+                expected.getYear()
+        )).isNotEmpty();
     }
 
  }

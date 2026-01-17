@@ -15,6 +15,7 @@ import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.token.TokenRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.StreamSupport;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -118,9 +119,9 @@ class CoachClientControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
             ;
 
-        assertThat(userRepository.findById("client1").orElseThrow().getCoach(), nullValue());
+        assertThat(userRepository.findByUsername("client1").orElseThrow().getCoach(), nullValue());
 
-        final var notifications = notificationRepository.findAll();
+        final var notifications = StreamSupport.stream(notificationRepository.findAll().spliterator(), false).toList();
 
         assertThat(notifications, hasSize(1));
 
@@ -162,7 +163,7 @@ class CoachClientControllerIT extends IntegrationTest {
                 """))
         ;
 
-        final var user = userRepository.findById("user4@gmail.com").orElseThrow();
+        final var user = userRepository.findByUsername("user4@gmail.com").orElseThrow();
 
         assertThat(user.getCoach(), is("coach"));
         assertThat(user.getFreeCoach(), is("coach"));
@@ -199,7 +200,7 @@ class CoachClientControllerIT extends IntegrationTest {
                 """))
         ;
 
-        final var user = userRepository.findById("user4@gmail.com").orElseThrow();
+        final var user = userRepository.findByUsername("user4@gmail.com").orElseThrow();
 
         assertThat(user.getCoach(), is("coach"));
         assertThat(user.getFreeCoach(), is("coach"));

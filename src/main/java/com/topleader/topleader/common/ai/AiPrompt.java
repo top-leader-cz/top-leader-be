@@ -1,17 +1,14 @@
 package com.topleader.topleader.common.ai;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data
-@Entity
+@Table("ai_prompt")
 public class AiPrompt {
 
     @Id
-    @Enumerated(EnumType.STRING)
     private PromptType id;
 
     private String value;

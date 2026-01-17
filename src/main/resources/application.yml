@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8089
   servlet:
     session:
       cookie:
@@ -30,31 +30,12 @@ spring:
     hikari:
       minimum-idle: 1
       maximum-pool-size: 5
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    open-in-view: false
-    properties:
-      hibernate:
-        enhancer:
-          enableLazyInitialization: true
-          enableDirtyTracking: true
-          enableAssociationManagement: true
-        jdbc:
-          batch_size: 20
-          fetch_size: 50
-        order_inserts: true
-        order_updates: true
-        query:
-          in_clause_parameter_padding: true
-          plan_cache_max_size: 2048
-
   flyway:
     enabled: true
     placeholder-replacement: false
     baseline-on-migrate: true
     validate-on-migrate: true
+    ignore-migration-patterns: "*:missing"
   mail:
 
     host: smtp-relay.gmail.com

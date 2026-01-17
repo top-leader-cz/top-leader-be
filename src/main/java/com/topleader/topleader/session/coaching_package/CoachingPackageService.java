@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -31,14 +32,6 @@ public class CoachingPackageService {
     private final UserAllocationRepository userAllocationRepository;
     private final ScheduledSessionRepository scheduledSessionRepository;
 
-    /**
-     * Creates a new coaching package for a company.
-     *
-     * @param companyId the company ID
-     * @param request the create request
-     * @param createdBy the username of the creator
-     * @return the created package with metrics
-     */
     @Transactional
     public CoachingPackageDto createPackage(Long companyId, CreateCoachingPackageRequest request, String createdBy) {
         log.info("Creating coaching package for company {} by user {}", companyId, createdBy);
@@ -47,6 +40,7 @@ public class CoachingPackageService {
         companyRepository.findById(companyId)
                 .orElseThrow(NotFoundException::new);
 
+        var now = LocalDateTime.now();
         var entity = new CoachingPackage()
                 .setCompanyId(companyId)
                 .setPoolType(request.poolType())
@@ -55,7 +49,9 @@ public class CoachingPackageService {
                 .setValidTo(request.validTo())
                 .setContextRef(request.contextRef())
                 .setCreatedBy(createdBy)
-                .setUpdatedBy(createdBy);
+                .setUpdatedBy(createdBy)
+                .setCreatedAt(now)
+                .setUpdatedAt(now);
 
         var saved = coachingPackageRepository.save(entity);
         log.info("Created coaching package {} for company {}", saved.getId(), companyId);
@@ -63,12 +59,6 @@ public class CoachingPackageService {
         return toDto(saved);
     }
 
-    /**
-     * Lists all coaching packages for a company with metrics.
-     *
-     * @param companyId the company ID
-     * @return list of packages with metrics
-     */
     @Transactional(readOnly = true)
     public List<CoachingPackageDto> listPackagesByCompany(Long companyId) {
         log.debug("Listing coaching packages for company {}", companyId);
@@ -78,12 +68,6 @@ public class CoachingPackageService {
                 .toList();
     }
 
-    /**
-     * Gets a single coaching package by ID with metrics.
-     *
-     * @param packageId the package ID
-     * @return the package with metrics
-     */
     @Transactional(readOnly = true)
     public CoachingPackageDto getPackage(Long packageId) {
         log.debug("Getting coaching package {}", packageId);
@@ -111,6 +95,7 @@ public class CoachingPackageService {
 
         entity.setStatus(request.status())
                         .setUpdatedBy(updatedBy)
+                        .setUpdatedAt(LocalDateTime.now())
                         .setTotalUnits(request.totalUnits() > entity.getTotalUnits() ? request.totalUnits(): entity.getTotalUnits());
 
         var saved = coachingPackageRepository.save(entity);

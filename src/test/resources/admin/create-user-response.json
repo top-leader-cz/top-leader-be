@@ -1,0 +1,34 @@
+{
+  "content": [
+    {
+      "username": "newuser@gmail.com",
+      "firstName": "John",
+      "lastName": "Doe",
+      "authorities": [
+        "USER",
+        "ADMIN"
+      ],
+      "timeZone": "UTC",
+      "status": "AUTHORIZED",
+      "companyId": 1,
+      "companyName": "Company 1",
+      "coach": null,
+      "coachFirstName": null,
+      "coachLastName": null,
+      "credit": 0,
+      "requestedCredit": 0,
+      "sumRequestedCredit": 0,
+      "paidCredit": 0,
+      "scheduledCredit": 0,
+      "hrs": "user3",
+      "requestedBy": "admin",
+      "freeCoach": null,
+      "locale": "en",
+      "allowedCoachRates": null,
+      "rate": "$",
+      "certificate": ["ACC"],
+      "internalRate": 165,
+      "primaryRoles": null
+    }
+  ]
+}

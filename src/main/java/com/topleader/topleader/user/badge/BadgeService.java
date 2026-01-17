@@ -14,11 +14,15 @@ public class BadgeService {
 
     public void recordAchievement(String username, Badge.AchievementType type) {
         var now = LocalDate.now();
-        badgeRepository.save(new Badge().setBadgeId(new Badge.BadgeId(username, type, now.getMonth(), now.getYear())));
+        badgeRepository.save(new Badge()
+                .setUsername(username)
+                .setAchievementType(type)
+                .setMonth(now.getMonth())
+                .setYear(now.getYear()));
     }
 
 
     public List<Badge> getBadges(String username) {
-       return badgeRepository.getUserBadges(username,  LocalDate.now().getYear());
+       return badgeRepository.getUserBadges(username, LocalDate.now().getYear());
     }
 }

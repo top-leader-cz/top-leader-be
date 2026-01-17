@@ -68,12 +68,15 @@ class AdminViewControllerIT extends IntegrationTest {
         mvc.perform(post("/api/latest/admin/users/user1/confirm-requested-credits"))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("user1").orElseThrow();
-        assertThat(fetchedUser).isNotNull();
-        assertThat(fetchedUser.getCredit()).isEqualTo(150);
-        assertThat(fetchedUser.getPaidCredit()).isEqualTo(100);
-        assertThat(fetchedUser.getSumRequestedCredit()).isEqualTo(1050);
-        assertThat(fetchedUser.getRequestedCredit()).isZero();
+        var result = mvc.perform(get("/api/latest/admin/users")
+                .param("username", "user1"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("admin/confirm-topup-response.json");
+        TestUtils.assertJsonEquals(result, expected);
 
     }
 
@@ -90,19 +93,15 @@ class AdminViewControllerIT extends IntegrationTest {
                 .content(jsonMapper.writeValueAsString(createUserRequestDto)))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("newuser@gmail.com").orElseThrow();
-        assertThat(fetchedUser).isNotNull();
-        assertThat(fetchedUser.getUsername()).isEqualTo(createUserRequestDto.username().toLowerCase(Locale.ROOT));
-        assertThat(fetchedUser.getFirstName()).isEqualTo(createUserRequestDto.firstName());
-        assertThat(fetchedUser.getLastName()).isEqualTo(createUserRequestDto.lastName());
-        assertThat(fetchedUser.getTimeZone()).isEqualTo(createUserRequestDto.timeZone());
-        assertThat(fetchedUser.getCompanyId()).isEqualTo(createUserRequestDto.companyId());
-        assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(createUserRequestDto.authorities());
+        var result = mvc.perform(get("/api/latest/admin/users")
+                .param("username", "newuser@gmail.com"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
-        var coach = coachRepository.findById("newuser@gmail.com").orElseThrow();
-        assertThat(coach.getRate()).isEqualTo("$");
-        assertThat(coach.getInternalRate()).isEqualTo(165);
-        assertThat(coach.getCertificate()).isEqualTo(Set.of("ACC"));
+        var expected = TestUtils.readFileAsString("admin/create-user-response.json");
+        TestUtils.assertJsonEquals(result, expected);
 
     }
 
@@ -119,18 +118,15 @@ class AdminViewControllerIT extends IntegrationTest {
                 .content(jsonMapper.writeValueAsString(updatedUser)))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("user4").orElseThrow();
-        assertThat(fetchedUser).isNotNull();
-        assertThat(fetchedUser.getFirstName()).isEqualTo(updatedUser.firstName());
-        assertThat(fetchedUser.getLastName()).isEqualTo(updatedUser.lastName());
-        assertThat(fetchedUser.getTimeZone()).isEqualTo(updatedUser.timeZone());
-        assertThat(fetchedUser.getCompanyId()).isEqualTo(updatedUser.companyId());
-        assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(updatedUser.authorities());
-        assertThat(fetchedUser.getCoach()).isEqualTo(updatedUser.coach());
-        assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
-        assertThat(fetchedUser.getFreeCoach()).isEqualTo(updatedUser.freeCoach());
-        assertThat(fetchedUser.getAllowedCoachRates()).isEqualTo(updatedUser.allowedCoachRates());
+        var result = mvc.perform(get("/api/latest/admin/users")
+                .param("username", "user4"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
 
+        var expected = TestUtils.readFileAsString("admin/update-user-response.json");
+        TestUtils.assertJsonEquals(result, expected);
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         var body = GreenMailUtil.getBody(receivedMessage);
@@ -143,7 +139,7 @@ class AdminViewControllerIT extends IntegrationTest {
                 .contains("http://app-test-ur=\r\nl/#/api/public/set-password/")
                 .contains("Unlock Your ");
 
-        Assertions.assertThat(userRepository.findById("user4")).isNotEmpty();
+        Assertions.assertThat(userRepository.findByUsername("user4")).isNotEmpty();
     }
 
     @Test
@@ -166,7 +162,7 @@ class AdminViewControllerIT extends IntegrationTest {
                 .contains("http://app-test-ur=\r\nl/#/api/public/set-password/")
                 .contains("Unlock Your ");
 
-        Assertions.assertThat(userRepository.findById("user4")).isNotEmpty();
+        Assertions.assertThat(userRepository.findByUsername("user4")).isNotEmpty();
     }
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
@@ -181,16 +177,15 @@ class AdminViewControllerIT extends IntegrationTest {
                 .content(jsonMapper.writeValueAsString(updatedUser)))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("user1").orElseThrow();
-        assertThat(fetchedUser).isNotNull();
-        assertThat(fetchedUser.getFirstName()).isEqualTo(updatedUser.firstName());
-        assertThat(fetchedUser.getLastName()).isEqualTo(updatedUser.lastName());
-        assertThat(fetchedUser.getTimeZone()).isEqualTo(updatedUser.timeZone());
-        assertThat(fetchedUser.getCompanyId()).isNull();
-        assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(updatedUser.authorities());
-        assertThat(fetchedUser.getCoach()).isNull();
-        assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
-        assertThat(fetchedUser.getAllowedCoachRates()).isEmpty();
+        var result = mvc.perform(get("/api/latest/admin/users")
+                .param("username", "user1"))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("admin/update-user-null-coach-company-response.json");
+        TestUtils.assertJsonEquals(result, expected);
 
     }
 
@@ -420,6 +415,6 @@ class AdminViewControllerIT extends IntegrationTest {
         mvc.perform(delete("/api/latest/admin/users/user1"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(userRepository.findById("user1").orElseThrow().getStatus()).isEqualTo(User.Status.CANCELED);
+        Assertions.assertThat(userRepository.findByUsername("user1").orElseThrow().getStatus()).isEqualTo(User.Status.CANCELED);
     }
 }

@@ -1,18 +1,15 @@
 package com.topleader.topleader.feedback.entity;
 
 
-import jakarta.persistence.*;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 @Data
-@Entity(name = "fb_question")
 @Accessors(chain = true)
-@ToString(of={"key"})
-@EqualsAndHashCode(of = {"key"})
+@Table("fb_question")
 public class Question {
 
     @Id

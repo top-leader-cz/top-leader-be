@@ -3,13 +3,6 @@
  */
 package com.topleader.topleader.coach.availability;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -18,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -26,22 +21,18 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
+@Table("coach_availability")
 @Accessors(chain = true)
 @NoArgsConstructor
 public class CoachAvailability {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "coach_availability_seq")
-    @SequenceGenerator(name = "coach_availability_seq", sequenceName = "coach_availability_seq", allocationSize = 1)
     private Long id;
 
     private String username;
 
-    @Enumerated(EnumType.STRING)
     private DayOfWeek dayFrom;
 
-    @Enumerated(EnumType.STRING)
     private DayOfWeek dayTo;
 
     private LocalTime timeFrom;
@@ -53,5 +44,6 @@ public class CoachAvailability {
     private LocalDateTime dateTimeFrom;
 
     private LocalDateTime dateTimeTo;
+
 
 }

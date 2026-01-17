@@ -3,14 +3,16 @@
  */
 package com.topleader.topleader.hr.company;
 
-import jakarta.persistence.*;
+import java.util.HashSet;
 import java.util.Set;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.MappedCollection;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -19,26 +21,34 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
 @Accessors(chain = true)
 @NoArgsConstructor
+@Table("company")
 public class Company {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "company_id_seq")
-    @SequenceGenerator(name = "company_id_seq", sequenceName = "company_id_seq", allocationSize = 1)
     private Long id;
 
     private String name;
 
     private String businessStrategy;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "company_coach_rates", joinColumns = @JoinColumn(name = "company_id"))
-    @Column(name = "rate_name")
-    private Set<String> allowedCoachRates;
+    @MappedCollection(idColumn = "company_id")
+    private Set<CompanyCoachRate> allowedCoachRates = new HashSet<>();
 
     public static Company empty() {
         return new Company();
+    }
+
+    public Set<String> getAllowedCoachRateNames() {
+        return allowedCoachRates.stream()
+            .map(CompanyCoachRate::getRateName)
+            .collect(java.util.stream.Collectors.toSet());
+    }
+
+    public void setAllowedCoachRateNames(Set<String> rateNames) {
+        this.allowedCoachRates = rateNames.stream()
+            .map(name -> new CompanyCoachRate().setRateName(name))
+            .collect(java.util.stream.Collectors.toSet());
     }
 }

@@ -6,13 +6,13 @@ package com.topleader.topleader.feedback.feedback_notification;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
 
 /**
  * @author Daniel Slavik
  */
-public interface FeedbackNotificationRepository extends JpaRepository<FeedbackNotification, Long> {
+public interface FeedbackNotificationRepository extends CrudRepository<FeedbackNotification, Long> {
 
     List<FeedbackNotification> findAllByStatusAndNotificationTimeBefore(FeedbackNotification.Status status, LocalDateTime notificationTime);
 

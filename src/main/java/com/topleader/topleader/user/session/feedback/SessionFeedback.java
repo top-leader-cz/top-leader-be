@@ -1,40 +1,40 @@
 package com.topleader.topleader.user.session.feedback;
 
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.topleader.topleader.common.util.common.JsonUtils;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.io.Serializable;
 import java.util.Map;
 
-@Entity
+@Table("session_feedback")
 @Data
 @Accessors(chain = true)
 public class SessionFeedback {
 
-    @EmbeddedId
-    private SessionFeedbackId id;
+    @Id
+    private Long id;
 
-    @Convert(converter = SessionFeedbackAnswerConverter.class)
-    private Map<String, Integer> answers;
+    private Long sessionId;
+
+    private String username;
+
+    private String answers;
 
     private String feedback;
 
-    @Data
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class SessionFeedbackId implements Serializable {
-
-        @Column(name = "session_id")
-        private Long sessionId;
-
-        @Column(name = "username")
-        private String username;
-
+    public Map<String, Integer> getAnswers() {
+        if (answers == null) {
+            return Map.of();
+        }
+        return JsonUtils.fromJsonString(answers, new TypeReference<Map<String, Integer>>() {});
     }
 
+    public SessionFeedback setAnswers(Map<String, Integer> answers) {
+        this.answers = answers != null ? JsonUtils.toJsonString(answers) : null;
+        return this;
+    }
 }

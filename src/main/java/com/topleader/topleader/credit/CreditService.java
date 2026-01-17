@@ -13,7 +13,7 @@ import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.common.JsonUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -39,12 +39,12 @@ public class CreditService {
     private final CoachRateRepository coachRateRepository;
 
     public boolean canScheduleSession(String username, String coach) {
-        final var coachRate = coachRepository.findById(coach)
+        final var coachRate = coachRepository.findByUsername(coach)
             .map(Coach::getRate)
             .flatMap(coachRateRepository::findById)
             .map(CoachRate::getRateCredit)
             .orElseThrow();
-        final var user = userRepository.findById(username).orElseThrow();
+        final var user = userRepository.findByUsername(username).orElseThrow();
 
         if (coach.equals(user.getFreeCoach())) {
             return true;
@@ -55,7 +55,7 @@ public class CreditService {
 
     @Transactional
     public void topUpCredit(String username) {
-        final var user = userRepository.findById(username).orElseThrow(NotFoundException::new);
+        final var user = userRepository.findByUsername(username).orElseThrow(NotFoundException::new);
 
         final var credit = Optional.ofNullable(user.getRequestedCredit()).orElse(0);
 
@@ -82,12 +82,12 @@ public class CreditService {
             return;
         }
 
-        final var coachRate = coachRepository.findById(session.getCoachUsername())
+        final var coachRate = coachRepository.findByUsername(session.getCoachUsername())
             .map(Coach::getRate)
             .flatMap(coachRateRepository::findById)
             .map(CoachRate::getRateCredit)
             .orElseThrow(NotFoundException::new);
-        final var user = userRepository.findById(session.getUsername()).orElseThrow(NotFoundException::new);
+        final var user = userRepository.findByUsername(session.getUsername()).orElseThrow(NotFoundException::new);
 
         if (Optional.ofNullable(user.getScheduledCredit()).orElse(0) + coachRate > Optional.ofNullable(user.getCredit()).orElse(0)) {
             throw new IllegalStateException("Not enough credit");
@@ -114,12 +114,12 @@ public class CreditService {
             return;
         }
 
-        final var coachRate = coachRepository.findById(session.getCoachUsername())
+        final var coachRate = coachRepository.findByUsername(session.getCoachUsername())
             .map(Coach::getRate)
             .flatMap(coachRateRepository::findById)
             .map(CoachRate::getRateCredit)
             .orElseThrow();
-        final var user = userRepository.findById(session.getUsername()).orElseThrow();
+        final var user = userRepository.findByUsername(session.getUsername()).orElseThrow();
 
         user.setScheduledCredit(Optional.ofNullable(user.getScheduledCredit()).orElse(0) - coachRate);
 
@@ -145,15 +145,15 @@ public class CreditService {
         session.setPaid(true);
         session.setUpdatedAt(LocalDateTime.now());
 
-        final var coachData = coachRepository.findById(session.getCoachUsername());
+        final var coachData = coachRepository.findByUsername(session.getCoachUsername());
 
         final var coachRate = coachData
             .map(Coach::getRate)
             .flatMap(coachRateRepository::findById)
             .map(CoachRate::getRateCredit)
             .orElseThrow();
-        final var coach = userRepository.findById(session.getCoachUsername()).orElseThrow(NotFoundException::new);
-        final var user = userRepository.findById(session.getUsername()).orElseThrow(NotFoundException::new);
+        final var coach = userRepository.findByUsername(session.getCoachUsername()).orElseThrow(NotFoundException::new);
+        final var user = userRepository.findByUsername(session.getUsername()).orElseThrow(NotFoundException::new);
 
         user
             .setCredit(Optional.ofNullable(user.getCredit()).orElse(0) - coachRate)

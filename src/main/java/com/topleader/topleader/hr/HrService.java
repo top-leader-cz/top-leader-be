@@ -3,7 +3,7 @@ package com.topleader.topleader.hr;
 
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,7 +17,7 @@ public class HrService {
 
     public HrView findByUsername(String username) {
         return hrViewRepository.findById(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + username));
+                .orElseThrow(NotFoundException::new);
     }
 
     public List<HrView> findByCompany(Long companyId) {

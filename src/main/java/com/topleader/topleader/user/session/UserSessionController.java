@@ -89,11 +89,12 @@ public class UserSessionController {
                 .map(s -> {
                     log.info("saving user session feedback");
                     return sessionFeedbackRepository.save(new SessionFeedback()
-                        .setId(new SessionFeedback.SessionFeedbackId(s.getId(), user.getUsername()))
+                        .setSessionId(s.getId())
+                        .setUsername(user.getUsername())
                         .setAnswers(request.answers)
                         .setFeedback(request.feedback));
                 })
-                .map(f -> new FeedbackDto(f.getId().getUsername(), f.getId().getSessionId(), f.getAnswers(), f.getFeedback()))
+                .map(f -> new FeedbackDto(f.getUsername(), f.getSessionId(), f.getAnswers(), f.getFeedback()))
                 .orElse(null);
     }
 

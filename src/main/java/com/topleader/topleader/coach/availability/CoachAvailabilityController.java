@@ -56,7 +56,7 @@ public class CoachAvailabilityController {
         @AuthenticationPrincipal UserDetails user,
         @Valid EventFilterDto filterDto
     ) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
+        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(user.getUsername()));
 
         final var from = filterDto.from().atZone(userZoneId).withZoneSameInstant(ZoneOffset.UTC);
         final var to = filterDto.to().atZone(userZoneId).withZoneSameInstant(ZoneOffset.UTC);
@@ -92,7 +92,7 @@ public class CoachAvailabilityController {
     @Secured("COACH")
     @GetMapping("/recurring")
     public List<ReoccurringEventDto> getRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
+        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(user.getUsername()));
 
         return coachAvailabilityService.getReoccurring(user.getUsername()).stream()
                 .map(e ->

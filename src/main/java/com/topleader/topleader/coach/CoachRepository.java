@@ -1,23 +1,22 @@
 package com.topleader.topleader.coach;
 
-import jakarta.transaction.Transactional;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 
 /**
  * @author Daniel Slavik
  */
-public interface CoachRepository extends JpaRepository<Coach, String>, JpaSpecificationExecutor<Coach> {
+public interface CoachRepository extends CrudRepository<Coach, Long>, PagingAndSortingRepository<Coach, Long> {
 
+    java.util.Optional<Coach> findByUsername(String username);
 
-    @Transactional
     @Modifying
-    @Query("update Coach c set c.freeSlots = :freeSlots where c.username = :username")
+    @Query("UPDATE coach SET free_slots = :freeSlots WHERE username = :username")
     void updateCoachSetFreeSlots(String username, boolean freeSlots);
 
-    @Query("select c.freeSlots from Coach c where c.username = :username")
+    @Query("SELECT free_slots FROM coach WHERE username = :username")
     boolean hasFeeSlot(String username);
 }

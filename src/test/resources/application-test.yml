@@ -2,6 +2,11 @@ springdoc:
   api-docs:
     enabled: true
 
+logging:
+  level:
+    org.springframework.jdbc.core: DEBUG
+    org.springframework.data.jdbc: DEBUG
+
 spring:
   docker:
     compose:

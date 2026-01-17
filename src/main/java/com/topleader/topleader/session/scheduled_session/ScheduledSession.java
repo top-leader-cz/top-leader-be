@@ -3,14 +3,14 @@
  */
 package com.topleader.topleader.session.scheduled_session;
 
-import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -19,14 +19,12 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
 @Accessors(chain = true)
 @NoArgsConstructor
+@Table("scheduled_session")
 public class ScheduledSession {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "scheduled_session_id_seq")
-    @SequenceGenerator(name = "scheduled_session_id_seq", sequenceName = "scheduled_session_id_seq", allocationSize = 1)
     private Long id;
 
     private String username;
@@ -39,7 +37,7 @@ public class ScheduledSession {
 
     private boolean isPrivate;
 
-    @Enumerated(EnumType.STRING)
+    @org.springframework.data.relational.core.mapping.Column("status")
     private Status status = Status.UPCOMING;
 
     private LocalDateTime createdAt;
@@ -57,5 +55,4 @@ public class ScheduledSession {
         PENDING,
         NO_SHOW_CLIENT,
     }
-
 }

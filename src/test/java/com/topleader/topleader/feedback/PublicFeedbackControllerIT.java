@@ -69,7 +69,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
         TestUtils.assertJsonEquals(result, expected);
 
         Assertions.assertThat(userRepository.findAll()).hasSize(2);
-        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
+        Assertions.assertThat(userRepository.findByUsername("pepa@cerny.cz").get())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("pepa@cerny.cz", "pepa", "pepa", Set.of(RESPONDENT), VIEWED);
     }
@@ -102,7 +102,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
                         new Tuple(1L , "question.key.2", "scale.2", "pepa@cerny.cz", true));
 
         Assertions.assertThat(userRepository.findAll()).hasSize(2);
-        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
+        Assertions.assertThat(userRepository.findByUsername("pepa@cerny.cz").get())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("pepa@cerny.cz", "pepa", "pepa", Set.of(RESPONDENT), SUBMITTED);
     }
@@ -116,7 +116,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         Assertions.assertThat(userRepository.findAll()).hasSize(2);
-        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
+        Assertions.assertThat(userRepository.findByUsername("pepa@cerny.cz").get())
                 .extracting("username", "firstName", "lastName", "authorities", "status",  "hrEmail")
                 .containsExactly("pepa@cerny.cz", "Pepa", "Cerny", Set.of(RESPONDENT), PENDING, "test.hr@email.com");
 

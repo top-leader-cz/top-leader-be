@@ -4,7 +4,7 @@
 package com.topleader.topleader.user.assessment;
 
 import com.topleader.topleader.common.exception.NotFoundException;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -45,10 +45,7 @@ public class UserAssessmentController {
         @PathVariable Long assessmentId
     ) {
 
-        return userAssessmentRepository.findById(new UserAssessmentId()
-                .setUsername(user.getUsername())
-                .setQuestionId(assessmentId)
-            )
+        return userAssessmentRepository.findByUsernameAndQuestionId(user.getUsername(), assessmentId)
             .map(AnsweredQuestionDto::from)
             .orElseThrow(NotFoundException::new);
     }

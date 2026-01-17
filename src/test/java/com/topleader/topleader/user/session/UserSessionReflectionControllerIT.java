@@ -29,7 +29,6 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -181,9 +180,9 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                     final var historyData = dataHistoryRepository.findAllByUsernameAndType("user2", DataHistory.Type.USER_SESSION);
 
                     Assertions.assertThat(historyData).hasSize(1);
-                    Assertions.assertThat(historyData.get(0).getData()).isInstanceOf(UserSessionStoredData.class);
+                    Assertions.assertThat(historyData.get(0).getDataObject()).isInstanceOf(UserSessionStoredData.class);
 
-                    final var sessionData = (UserSessionStoredData) historyData.get(0).getData();
+                    final var sessionData = (UserSessionStoredData) historyData.get(0).getDataObject();
 
                     Assertions.assertThat(sessionData.getMotivation()).isNull();
                     Assertions.assertThat(sessionData.getReflection()).isEqualTo("you can do it!");
@@ -202,7 +201,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                     Assertions.assertThat(action2Step.getLabel()).isEqualTo("action 2");
                     Assertions.assertThat(action2Step.getDate()).isEqualTo(LocalDate.parse("2023-08-15"));
 
-                    Assertions.assertThat(userInfoRepository.findById("user2").orElseThrow().getLastReflection()).isEqualTo("you can do it!");
+                    Assertions.assertThat(userInfoRepository.findByUsername("user2").orElseThrow().getLastReflection()).isEqualTo("you can do it!");
                     Assertions.assertThat(userInsightRepository.findAll())
                             .extracting("personalGrowthTip")
                             .contains("action-goal-response");
@@ -222,15 +221,20 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                             .extracting("content.date")
                             .contains("2023-10-01", "2023-10-02");
 
-                    Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETED_SHORT_GOAL)))).isNotEmpty();
-                    Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();
+                    Assertions.assertThat(findBadge(Badge.AchievementType.COMPLETED_SHORT_GOAL)).isNotEmpty();
+                    Assertions.assertThat(findBadge(Badge.AchievementType.COMPLETE_SESSION)).isNotEmpty();
                 });
 
     }
 
-    private Badge badge(Badge.AchievementType type) {
+    private java.util.Optional<Badge> findBadge(Badge.AchievementType type) {
         var now = LocalDateTime.now();
-        return new Badge().setBadgeId(new Badge.BadgeId("user2", type, now.getMonth(), now.getYear()));
+        return badgeRepository.findByUsernameAndAchievementTypeAndMonthAndYear(
+                "user2",
+                type.name(),
+                now.getMonth().name(),
+                now.getYear()
+        );
     }
 
 }

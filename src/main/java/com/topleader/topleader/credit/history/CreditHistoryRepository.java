@@ -3,11 +3,12 @@
  */
 package com.topleader.topleader.credit.history;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 
 /**
  * @author Daniel Slavik
  */
-public interface CreditHistoryRepository extends JpaRepository<CreditHistory, Long> {
+public interface CreditHistoryRepository extends CrudRepository<CreditHistory, Long>, PagingAndSortingRepository<CreditHistory, Long> {
 }

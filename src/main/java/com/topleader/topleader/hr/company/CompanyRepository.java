@@ -4,20 +4,19 @@
 package com.topleader.topleader.hr.company;
 
 import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.CrudRepository;
 
 
 /**
  * @author Daniel Slavik
  */
-public interface CompanyRepository extends JpaRepository<Company, Long> {
+public interface CompanyRepository extends CrudRepository<Company, Long> {
 
     Optional<Company> findByName(String name);
 
     @Modifying
-    @Query("update Company c set c.businessStrategy = :strategy where c.id = :companyId")
+    @Query("update company set business_strategy = :strategy where id = :companyId")
     void updateStrategy(long companyId, String strategy);
-
 }

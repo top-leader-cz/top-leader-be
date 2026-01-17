@@ -33,7 +33,7 @@ public class PasswordController {
 
     @PostMapping
     public void changeUserPassword(@AuthenticationPrincipal UserDetails user, @Valid @RequestBody ChangePasswordRequestDto request) {
-        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow();
+        final var dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow();
 
         if (!passwordEncoder.matches(request.oldPassword(), dbUser.getPassword())) {
             throw new ApiValidationException(INVALID_PASSWORD, "oldPassword", null, "Invalid password");
