@@ -24,7 +24,7 @@ openapi:
 
 # Build application locally
 build:
-	$(HOME)/.sdkman/candidates/gradle/current/bin/gradle build --parallel --build-cache
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle build --parallel --build-cache
 
 # Deploy to QA (local build + GitHub Actions verification)
 deploy-qa: build
