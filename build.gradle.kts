@@ -148,7 +148,7 @@ jooq {
             database {
                 name = "org.jooq.meta.postgres.PostgresDatabase"
                 inputSchema = "public"
-                includes = "admin_view"
+                includes = "admin_view|coach_list_view|coach_languages|coach_fields"
             }
             generate {
                 isRecords = true

@@ -30,7 +30,7 @@ public record UserAllocationDto(
                 entity.getConsumedUnits(),
                 reserved,
                 remaining,
-                entity.getStatus(),
+                entity.getStatusEnum(),
                 entity.getContextRef()
         );
     }

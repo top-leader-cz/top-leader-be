@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -34,9 +32,7 @@ public class ManagerService {
             userManagerRepository.cleanUpManagers(user.getUsername());
         }
 
-        if (StringUtils.isNotBlank(request.manager())) {
-            user.setManagers(new HashSet<>(Set.of(new User().setUsername(request.manager()))));
-        }
+        // Manager relationship handled via UsersManagers table
         return userRepository.save(user);
     }
 

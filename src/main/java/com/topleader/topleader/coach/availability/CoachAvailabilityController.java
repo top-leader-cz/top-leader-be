@@ -98,11 +98,11 @@ public class CoachAvailabilityController {
                 .map(e ->
                 {
                     final var userTimeFrom = LocalDateTime.of(
-                            LocalDate.now().with(TemporalAdjusters.next(e.getDayFrom())),
+                            LocalDate.now().with(TemporalAdjusters.next(e.getDayFromEnum())),
                             e.getTimeFrom()
                     ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
                     final var userTimeTo = LocalDateTime.of(
-                            LocalDate.now().with(TemporalAdjusters.next(e.getDayTo())),
+                            LocalDate.now().with(TemporalAdjusters.next(e.getDayToEnum())),
                             e.getTimeTo()
                     ).atZone(ZoneOffset.UTC).withZoneSameInstant(userZoneId);
                     return new ReoccurringEventDto(
@@ -157,7 +157,7 @@ public class CoachAvailabilityController {
     public void updateRecurringSetting(@AuthenticationPrincipal UserDetails user, @RequestBody ReoccurringAvailabilityDto request) {
         availabilitySettingRepository.save(new CoachAvailabilitySettings().setCoach(user.getUsername()).
                 setResource(request.uuid)
-                .setType(request.type)
+                .setTypeEnum(request.type)
                 .setActive(request.active)
         );
     }
@@ -166,7 +166,7 @@ public class CoachAvailabilityController {
     @GetMapping("/recurring/settings")
     public ReoccurringAvailabilityDto getRecurringSetting(@AuthenticationPrincipal UserDetails user) {
         return availabilitySettingRepository.findByActive(user.getUsername())
-                .map(s -> new ReoccurringAvailabilityDto(s.getResource(), s.getType(), s.isActive()))
+                .map(s -> new ReoccurringAvailabilityDto(s.getResource(), s.getTypeEnum(), s.isActive()))
                 .orElse(ReoccurringAvailabilityDto.empty());
     }
 

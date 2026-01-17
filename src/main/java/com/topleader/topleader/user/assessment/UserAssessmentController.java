@@ -45,10 +45,7 @@ public class UserAssessmentController {
         @PathVariable Long assessmentId
     ) {
 
-        return userAssessmentRepository.findById(new UserAssessmentId()
-                .setUsername(user.getUsername())
-                .setQuestionId(assessmentId)
-            )
+        return userAssessmentRepository.findByUsernameAndQuestionId(user.getUsername(), assessmentId)
             .map(AnsweredQuestionDto::from)
             .orElseThrow(NotFoundException::new);
     }

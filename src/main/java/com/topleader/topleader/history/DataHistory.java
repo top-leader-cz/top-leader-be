@@ -4,21 +4,15 @@
 package com.topleader.topleader.history;
 
 import com.topleader.topleader.history.data.StoredData;
-import jakarta.persistence.Column;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
+import com.topleader.topleader.common.util.common.JsonUtils;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -27,26 +21,43 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
+@Table("data_history")
 @Accessors(chain = true)
 @NoArgsConstructor
 public class DataHistory {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "data_history_seq")
-    @SequenceGenerator(name = "data_history_seq", sequenceName = "data_history_seq", allocationSize = 1)
     private Long id;
 
     private String username;
 
-    @Enumerated(EnumType.STRING)
-    private Type type;
+    private String type;
 
     private LocalDateTime createdAt;
 
-    @Convert(converter = HistoryDataConverter.class)
-    @Column(columnDefinition = "text")
-    private StoredData data;
+    private String data;
+
+    public Type getTypeEnum() {
+        return type != null ? Type.valueOf(type) : null;
+    }
+
+    public DataHistory setTypeEnum(Type type) {
+        this.type = type != null ? type.name() : null;
+        return this;
+    }
+
+    public DataHistory setType(Type type) {
+        return setTypeEnum(type);
+    }
+
+    public StoredData getDataObject() {
+        return data != null ? JsonUtils.fromJsonString(data, StoredData.class) : null;
+    }
+
+    public DataHistory setData(StoredData storedData) {
+        this.data = storedData != null ? JsonUtils.toJsonString(storedData) : null;
+        return this;
+    }
 
     public enum Type {
         STRENGTHS,

@@ -7,6 +7,7 @@ import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
@@ -34,7 +35,7 @@ public class CompanyController {
     @GetMapping
     @Secured("ADMIN")
     public List<CompanyDto> listCompanies() {
-        return companyRepository.findAll().stream()
+        return StreamSupport.stream(companyRepository.findAll().spliterator(), false)
             .map(CompanyDto::from)
             .toList();
     }
@@ -68,12 +69,8 @@ public class CompanyController {
         final var existingCompany = companyRepository.findByName(company)
             .orElseThrow(NotFoundException::new);
 
-        return CompanyDto
-            .from(
-                companyRepository.save(
-                    existingCompany.setAllowedCoachRates(request.defaultAllowedCoachRate())
-                )
-            );
+        existingCompany.setAllowedCoachRateNames(request.defaultAllowedCoachRate());
+        return CompanyDto.from(companyRepository.save(existingCompany));
 
     }
 
@@ -85,7 +82,7 @@ public class CompanyController {
 
     public record CompanyDto(Long id, String name, Set<String> defaultAllowedCoachRate) {
         public static CompanyDto from(Company c) {
-            return new CompanyDto(c.getId(), c.getName(), c.getAllowedCoachRates());
+            return new CompanyDto(c.getId(), c.getName(), c.getAllowedCoachRateNames());
         }
     }
 }

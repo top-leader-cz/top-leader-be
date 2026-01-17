@@ -9,7 +9,7 @@ import java.time.ZonedDateTime;
 public record SessionDto(long id, ZonedDateTime date, String client, ScheduledSession.Status status) {
 
     public static SessionDto toDto(ScheduledSession session) {
-        return new SessionDto(session.getId(), session.getTime().atZone(ZoneId.of("UTC")), session.getUsername(), session.getStatus());
+        return new SessionDto(session.getId(), session.getTime().atZone(ZoneId.of("UTC")), session.getUsername(), session.getStatusEnum());
     }
 
 

@@ -34,8 +34,8 @@ public class UserDetailService implements UserDetailsService {
             .orElseThrow(() -> new UsernameNotFoundException(username));
 
         return User.withUsername(user.getUsername())
-            .disabled(com.topleader.topleader.user.User.Status.PENDING == user.getStatus()
-                    || com.topleader.topleader.user.User.Status.CANCELED == user.getStatus())
+            .disabled(com.topleader.topleader.user.User.Status.PENDING == user.getStatusEnum()
+                    || com.topleader.topleader.user.User.Status.CANCELED == user.getStatusEnum())
             .password(user.getPassword())
             .authorities(user.getAuthorities().stream().map(Enum::name).toArray(String[]::new))
             .build();

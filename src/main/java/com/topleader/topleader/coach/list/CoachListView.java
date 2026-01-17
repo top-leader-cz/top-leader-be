@@ -3,18 +3,18 @@
  */
 package com.topleader.topleader.coach.list;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.topleader.topleader.coach.Coach;
-import jakarta.persistence.*;
+import com.topleader.topleader.common.util.common.JsonUtils;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
 
 
 /**
@@ -23,12 +23,10 @@ import org.hibernate.type.SqlTypes;
 @Getter
 @Setter
 @ToString
-@Entity
 @Accessors(chain = true)
 @NoArgsConstructor
 public class CoachListView {
 
-    @Id
     private String username;
 
     private Boolean publicProfile;
@@ -39,20 +37,14 @@ public class CoachListView {
 
     private String email;
 
-    @Column(length = 1000)
     private String webLink;
 
-    @Column(length = 1000)
     private String bio;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "coach_languages", joinColumns = @JoinColumn(name = "coach_username"))
     private Set<String> languages;
 
     private String timeZone;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "coach_fields", joinColumns = @JoinColumn(name = "coach_username"))
     private Set<String> fields;
 
     private LocalDate experienceSince;
@@ -61,18 +53,34 @@ public class CoachListView {
 
     private Integer rateOrder;
 
-    @Column(length = 1000)
     private String linkedinProfile;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<Coach.PrimaryRole> primaryRoles;
+    private String primaryRoles;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<String> certificate;
+    private String certificate;
 
     private int priority;
 
+    public Set<Coach.PrimaryRole> getPrimaryRolesSet() {
+        return primaryRoles != null
+                ? JsonUtils.fromJsonString(primaryRoles, new TypeReference<Set<Coach.PrimaryRole>>() {})
+                : new HashSet<>();
+    }
+
+    public CoachListView setPrimaryRolesSet(Set<Coach.PrimaryRole> roles) {
+        this.primaryRoles = roles != null ? JsonUtils.toJsonString(roles) : null;
+        return this;
+    }
+
+    public Set<String> getCertificateSet() {
+        return certificate != null
+                ? JsonUtils.fromJsonString(certificate, new TypeReference<Set<String>>() {})
+                : new HashSet<>();
+    }
+
+    public CoachListView setCertificateSet(Set<String> certs) {
+        this.certificate = certs != null ? JsonUtils.toJsonString(certs) : null;
+        return this;
+    }
 
 }

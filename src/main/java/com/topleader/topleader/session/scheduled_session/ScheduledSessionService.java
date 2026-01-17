@@ -4,7 +4,7 @@
 package com.topleader.topleader.session.scheduled_session;
 
 import com.topleader.topleader.credit.CreditService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -80,7 +80,7 @@ public class ScheduledSessionService {
     private void cancelSession(Long sessionId, ScheduledSession.Status status, String canceledBy) {
         scheduledSessionRepository.findById(sessionId).ifPresent(s -> {
             creditService.cancelSession(s.getId());
-            s.setStatus(status);
+            s.setStatusEnum(status);
             s.setUpdatedAt(LocalDateTime.now());
             s.setUpdatedBy(canceledBy);
             scheduledSessionRepository.save(s);

@@ -16,7 +16,7 @@ import com.topleader.topleader.session.scheduled_session.ScheduledSessionService
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinsight.UserInsightService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -26,6 +26,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -218,10 +219,10 @@ public class UserInfoController {
             return List.of();
         }
 
-        var coaches = userRepository.findAllById(sessions.stream()
+        var coaches = StreamSupport.stream(userRepository.findAllById(sessions.stream()
                 .map(ScheduledSession::getCoachUsername)
                 .collect(Collectors.toSet())
-            ).stream()
+            ).spliterator(), false)
             .collect(toMap(User::getUsername, Function.identity()));
 
         return sessions.stream()
@@ -332,7 +333,7 @@ public class UserInfoController {
                 u.map(User::getLastName).orElse(null),
                 s.getTime(),
                 s.isPrivate(),
-                s.getStatus()
+                s.getStatusEnum()
             );
         }
     }
@@ -365,7 +366,7 @@ public class UserInfoController {
                 user.getLocale(),
                 Optional.ofNullable(user.getAllowedCoachRates())
                     .filter(not(CollectionUtils::isEmpty))
-                    .orElse(company.map(Company::getAllowedCoachRates).orElse(null))
+                    .orElse(company.map(Company::getAllowedCoachRateNames).orElse(null))
             );
         }
     }

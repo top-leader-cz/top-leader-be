@@ -1,12 +1,13 @@
 package com.topleader.topleader.user.manager;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface UserManagerRepository extends JpaRepository<UsersManagers, UsersManagers.UserManagerId> {
+public interface UserManagerRepository extends CrudRepository<UsersManagers, Long>, PagingAndSortingRepository<UsersManagers, Long> {
 
     @Modifying
-    @Query("delete from UsersManagers u where u.manager.username = :username")
+    @Query("DELETE FROM users_managers WHERE manager_username = :username")
     void cleanUpManagers(String username);
 }

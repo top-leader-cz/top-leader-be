@@ -49,15 +49,15 @@ public class BadgeController {
         return new BadgeResponse()
                 .setCompletedSession(
                         thisMonth.stream()
-                                .anyMatch(b -> b.getAchievementType() == COMPLETE_SESSION)
+                                .anyMatch(b -> b.getAchievementTypeEnum() == COMPLETE_SESSION)
                 )
                 .setCompletedShortTermGoal(
                         thisMonth.stream()
-                                .anyMatch(b -> b.getAchievementType() == COMPLETED_SHORT_GOAL)
+                                .anyMatch(b -> b.getAchievementTypeEnum() == COMPLETED_SHORT_GOAL)
                 )
                 .setWatchedVideo(
                         thisMonth.stream()
-                                .anyMatch(b -> b.getAchievementType() == WATCHED_VIDEO)
+                                .anyMatch(b -> b.getAchievementTypeEnum() == WATCHED_VIDEO)
                 )
                 .setBadges(badges);
     }

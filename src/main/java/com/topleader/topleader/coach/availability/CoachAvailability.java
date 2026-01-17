@@ -3,13 +3,6 @@
  */
 package com.topleader.topleader.coach.availability;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -18,6 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -26,23 +21,19 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
+@Table("coach_availability")
 @Accessors(chain = true)
 @NoArgsConstructor
 public class CoachAvailability {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "coach_availability_seq")
-    @SequenceGenerator(name = "coach_availability_seq", sequenceName = "coach_availability_seq", allocationSize = 1)
     private Long id;
 
     private String username;
 
-    @Enumerated(EnumType.STRING)
-    private DayOfWeek dayFrom;
+    private String dayFrom;
 
-    @Enumerated(EnumType.STRING)
-    private DayOfWeek dayTo;
+    private String dayTo;
 
     private LocalTime timeFrom;
 
@@ -53,5 +44,31 @@ public class CoachAvailability {
     private LocalDateTime dateTimeFrom;
 
     private LocalDateTime dateTimeTo;
+
+    public DayOfWeek getDayFromEnum() {
+        return dayFrom != null ? DayOfWeek.valueOf(dayFrom) : null;
+    }
+
+    public CoachAvailability setDayFromEnum(DayOfWeek dayFrom) {
+        this.dayFrom = dayFrom != null ? dayFrom.name() : null;
+        return this;
+    }
+
+    public CoachAvailability setDayFrom(DayOfWeek dayFrom) {
+        return setDayFromEnum(dayFrom);
+    }
+
+    public DayOfWeek getDayToEnum() {
+        return dayTo != null ? DayOfWeek.valueOf(dayTo) : null;
+    }
+
+    public CoachAvailability setDayToEnum(DayOfWeek dayTo) {
+        this.dayTo = dayTo != null ? dayTo.name() : null;
+        return this;
+    }
+
+    public CoachAvailability setDayTo(DayOfWeek dayTo) {
+        return setDayToEnum(dayTo);
+    }
 
 }

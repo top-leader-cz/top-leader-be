@@ -3,69 +3,61 @@
  */
 package com.topleader.topleader.session.coaching_package;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
 @Data
-@Entity
 @Accessors(chain = true)
 @NoArgsConstructor
-@Table(name = "coaching_package")
+@Table("coaching_package")
 public class CoachingPackage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "coaching_package_id_seq")
-    @SequenceGenerator(name = "coaching_package_id_seq", sequenceName = "coaching_package_id_seq", allocationSize = 1)
     private Long id;
 
-    @Column(name = "company_id", nullable = false)
     private Long companyId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "pool_type", nullable = false)
-    private PoolType poolType;
+    private String poolType;
 
-    @Column(name = "total_units", nullable = false)
     private Integer totalUnits;
 
-    @Column(name = "valid_from")
     private LocalDateTime validFrom;
 
-    @Column(name = "valid_to")
     private LocalDateTime validTo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private PackageStatus status = PackageStatus.ACTIVE;
+    private String status = PackageStatus.ACTIVE.name();
 
-    @Column(name = "context_ref", length = 4000)
     private String contextRef;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "created_by", nullable = false, updatable = false)
     private String createdBy;
 
-    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "updated_by")
     private String updatedBy;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
+    public PoolType getPoolTypeEnum() {
+        return poolType != null ? PoolType.valueOf(poolType) : null;
     }
 
-    @PreUpdate
-    protected void onUpdate() {
-        updatedAt = LocalDateTime.now();
+    public CoachingPackage setPoolTypeEnum(PoolType poolType) {
+        this.poolType = poolType != null ? poolType.name() : null;
+        return this;
+    }
+
+    public PackageStatus getStatusEnum() {
+        return status != null ? PackageStatus.valueOf(status) : null;
+    }
+
+    public CoachingPackage setStatusEnum(PackageStatus status) {
+        this.status = status != null ? status.name() : null;
+        return this;
     }
 
     public enum PoolType {

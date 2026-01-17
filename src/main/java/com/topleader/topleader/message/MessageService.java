@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -77,13 +78,13 @@ public class MessageService {
         final var lastMessages = Optional.of(lastMessageRepository.findAllByChatIdIn(allChats.values()))
             .filter(not(List::isEmpty))
             .map(c ->
-                messageRepository.findAllById(c.stream().map(LastMessage::getMessageId).collect(Collectors.toSet())).stream()
+                StreamSupport.stream(messageRepository.findAllById(c.stream().map(LastMessage::getMessageId).collect(Collectors.toSet())).spliterator(), false)
                     .collect(toMap(Message::getChatId, Function.identity()))
             ).orElse(Map.of());
 
         final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
 
-        final var userInfos = userRepository.findAllById(allChats.keySet()).stream()
+        final var userInfos = StreamSupport.stream(userRepository.findAllById(allChats.keySet()).spliterator(), false)
             .collect(toMap(User::getUsername, UserInfoDto::from));
 
         final var unreadCountMap = messageRepository.getUnreadMessagesCount(username).stream()

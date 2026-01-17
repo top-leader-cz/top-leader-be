@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +80,7 @@ public class HrController {
     }
 
     @Secured({"HR"})
-    @GetMapping("/managers")
+    @GetMapping("a ")
     @Transactional
     public List<ManagerDto> listManagers(@AuthenticationPrincipal UserDetails user) {
         var foundUser = userDetailService.find(user.getUsername());
@@ -161,7 +161,7 @@ public class HrController {
 
         final var user = userDetailService.getUser(username)
                 .orElseThrow(() -> new UsernameNotFoundException(username));
-        final var oldStatus = user.getStatus();
+        final var oldStatus = user.getStatusEnum();
         user.setStatus(request.status());
         user.setFirstName(request.firstName());
         user.setLastName(request.lastName());

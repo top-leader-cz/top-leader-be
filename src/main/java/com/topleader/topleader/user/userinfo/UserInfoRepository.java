@@ -4,10 +4,11 @@
 package com.topleader.topleader.user.userinfo;
 
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 
 /**
  * @author Daniel Slavik
  */
-public interface UserInfoRepository extends CrudRepository<UserInfo, String> {
+public interface UserInfoRepository extends CrudRepository<UserInfo, String>, PagingAndSortingRepository<UserInfo, String> {
 }

@@ -26,10 +26,10 @@ public record HrReportResponse(
             return new PackageInfo(
                     pkg.getId(),
                     pkg.getCompanyId(),
-                    pkg.getPoolType(),
+                    pkg.getPoolTypeEnum(),
                     pkg.getValidFrom(),
                     pkg.getValidTo(),
-                    pkg.getStatus()
+                    pkg.getStatusEnum()
             );
         }
     }

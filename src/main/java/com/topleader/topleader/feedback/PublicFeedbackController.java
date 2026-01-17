@@ -82,7 +82,7 @@ public class PublicFeedbackController {
     }
 
     boolean skipUpdate(User u) {
-        return AUTHORIZED == u.getStatus() || PAID == u.getStatus() || PENDING == u.getStatus();
+        return AUTHORIZED == u.getStatusEnum() || PAID == u.getStatusEnum() || PENDING == u.getStatusEnum();
     }
 
 

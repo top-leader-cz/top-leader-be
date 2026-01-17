@@ -28,11 +28,11 @@ public record CoachingPackageDto(
         return new CoachingPackageDto(
                 entity.getId(),
                 entity.getCompanyId(),
-                entity.getPoolType(),
+                entity.getPoolTypeEnum(),
                 entity.getTotalUnits(),
                 entity.getValidFrom(),
                 entity.getValidTo(),
-                entity.getStatus(),
+                entity.getStatusEnum(),
                 entity.getContextRef(),
                 entity.getCreatedAt(),
                 entity.getCreatedBy(),

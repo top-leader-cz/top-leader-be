@@ -15,6 +15,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
@@ -39,7 +40,9 @@ class ReportSessionController {
                 .map(User::getCompanyId)
                 .orElseThrow(() -> new ApiValidationException(NOT_PART_OF_COMPANY, "user", hrAuth.getUsername(), "User is not part of any company"));
 
-         var all = repository.findAll(ReportSessionSpecification.withFilter(filter, companyId), pageable)
+        LocalDateTime from = filter.from() != null ? filter.from().toLocalDateTime() : null;
+
+         var all = repository.findFiltered(companyId, null, null, from, null)
                 .stream()
                 .map(ReportSessionDto::from)
                 .collect(Collectors.toMap(
@@ -71,8 +74,8 @@ class ReportSessionController {
             return new ReportSessionDto(reportSession.getUsername(),
                     reportSession.getFirstName(),
                     reportSession.getLastName(),
-                    ScheduledSession.Status.COMPLETED == reportSession.getStatus() ? 1 : 0,
-                    ScheduledSession.Status.COMPLETED != reportSession.getStatus() &&  reportSession.getStatus() != null ? 1 : 0 );
+                    ScheduledSession.Status.COMPLETED == reportSession.getStatusEnum() ? 1 : 0,
+                    ScheduledSession.Status.COMPLETED != reportSession.getStatusEnum() &&  reportSession.getStatusEnum() != null ? 1 : 0 );
         }
 
     }

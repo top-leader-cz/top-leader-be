@@ -1,12 +1,9 @@
 package com.topleader.topleader.session.coach_session;
 
 
+import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -26,12 +23,13 @@ public class CoachSessionController {
 
     @Secured({"COACH", "ADMIN"})
     @PostMapping
-    public Page<CoachSessionView.CoachSessionViewDto> getSessions(@PageableDefault(size = 25, sort = "date") Pageable pageable,
-                                                                  @RequestBody SessionFilter filter,
+    public List<CoachSessionView.CoachSessionViewDto> getSessions(@RequestBody SessionFilter filter,
                                                                   @AuthenticationPrincipal UserDetails user) {
-        return repository.findAll(SessionSpecification.withFilter(filter, user.getUsername()), pageable)
-                .map(CoachSessionView::toDto);
-
+        var statusStr = filter.status() != null ? filter.status().name() : null;
+        return repository.findFiltered(user.getUsername(), filter.client(), statusStr, filter.from(), filter.to())
+                .stream()
+                .map(CoachSessionView::toDto)
+                .toList();
     }
 
     @Secured({"COACH", "ADMIN"})
@@ -41,7 +39,7 @@ public class CoachSessionController {
                 .map(s -> s.setStatus(session.status()).setUpdatedAt(LocalDateTime.now()))
                 .map(scheduledSessionRepository::save)
                 .map(SessionDto::toDto)
-                .orElseThrow(() -> new EntityNotFoundException("Entity not found session"));
+                .orElseThrow(NotFoundException::new);
     }
 
     @Secured({"COACH", "ADMIN"})

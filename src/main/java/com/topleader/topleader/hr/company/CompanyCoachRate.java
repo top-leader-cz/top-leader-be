@@ -1,12 +1,12 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.user.assessment;
+package com.topleader.topleader.hr.company;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -16,15 +16,11 @@ import org.springframework.data.relational.core.mapping.Table;
  */
 @Getter
 @Setter
-@ToString
-@Table("user_assessment")
 @Accessors(chain = true)
 @NoArgsConstructor
-public class UserAssessment {
+@EqualsAndHashCode(of = "rateName")
+@Table("company_coach_rates")
+public class CompanyCoachRate {
 
-    private String username;
-
-    private Long questionId;
-
-    private Integer answer;
+    private String rateName;
 }

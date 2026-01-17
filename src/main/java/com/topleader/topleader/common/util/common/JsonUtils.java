@@ -61,4 +61,12 @@ public final class JsonUtils {
             throw new IllegalStateException(e);
         }
     }
+
+    public static java.util.List<String> fromJsonStringToList(String json) {
+        try {
+            return MAPPER.readValue(json, new TypeReference<java.util.List<String>>() {});
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+    }
 }

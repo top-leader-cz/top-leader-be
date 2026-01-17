@@ -23,6 +23,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import org.assertj.core.api.Assertions;
@@ -231,10 +232,10 @@ class UserInfoControllerIT extends IntegrationTest {
         assertEquals(1, data.size());
         final var storedHistoryData = data.get(0);
 
-        assertEquals(DataHistory.Type.STRENGTHS, storedHistoryData.getType());
+        assertEquals(DataHistory.Type.STRENGTHS, storedHistoryData.getTypeEnum());
         assertEquals("user", storedHistoryData.getUsername());
-        assertEquals(StrengthStoredData.class, storedHistoryData.getData().getClass());
-        assertIterableEquals(List.of("v1", "v2"), ((StrengthStoredData)storedHistoryData.getData()).getStrengths());
+        assertEquals(StrengthStoredData.class, storedHistoryData.getDataObject().getClass());
+        assertIterableEquals(List.of("v1", "v2"), ((StrengthStoredData)storedHistoryData.getDataObject()).getStrengths());
     }
 
     @Test
@@ -266,10 +267,10 @@ class UserInfoControllerIT extends IntegrationTest {
         assertEquals(1, data.size());
         final var storedHistoryData = data.get(0);
 
-        assertEquals(DataHistory.Type.VALUES, storedHistoryData.getType());
+        assertEquals(DataHistory.Type.VALUES, storedHistoryData.getTypeEnum());
         assertEquals("user", storedHistoryData.getUsername());
-        assertEquals(ValuesStoredData.class, storedHistoryData.getData().getClass());
-        assertIterableEquals(List.of("v1", "v2"), ((ValuesStoredData)storedHistoryData.getData()).getValues());
+        assertEquals(ValuesStoredData.class, storedHistoryData.getDataObject().getClass());
+        assertIterableEquals(List.of("v1", "v2"), ((ValuesStoredData)storedHistoryData.getDataObject()).getValues());
     }
 
     @Test
@@ -301,7 +302,7 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.coach", nullValue()))
         ;
 
-        final var sessions = scheduledSessionRepository.findAll();
+        final var sessions = StreamSupport.stream(scheduledSessionRepository.findAll().spliterator(), false).toList();
 
         assertEquals(2, sessions.size());
 
@@ -310,12 +311,12 @@ class UserInfoControllerIT extends IntegrationTest {
         assertEquals(180, user.getScheduledCredit());
         assertEquals(400, user.getCredit());
 
-        final var history = creditHistoryRepository.findAll();
+        final var history = StreamSupport.stream(creditHistoryRepository.findAll().spliterator(), false).toList();
 
         assertEquals(2, history.size());
 
-        assertEquals(CreditHistory.Type.CANCELED, history.get(0).getType());
-        assertEquals(CreditHistory.Type.CANCELED, history.get(1).getType());
+        assertEquals(CreditHistory.Type.CANCELED, history.get(0).getTypeEnum());
+        assertEquals(CreditHistory.Type.CANCELED, history.get(1).getTypeEnum());
         assertEquals(110, history.get(0).getCredit());
         assertEquals(110, history.get(1).getCredit());
     }

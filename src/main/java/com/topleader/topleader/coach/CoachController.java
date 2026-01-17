@@ -11,7 +11,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.util.image.ImageUtil;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -65,24 +65,26 @@ public class CoachController {
 
     @GetMapping
     @Secured("COACH")
-    @Transactional
     public CoachDto getCoachInfo(@AuthenticationPrincipal UserDetails user) {
+        var userEntity = userRepository.findById(user.getUsername()).orElseThrow();
         return coachRepository.findById(user.getUsername())
-            .map(CoachDto::from)
+            .map(c -> CoachDto.from(c, userEntity))
             .orElse(CoachDto.EMPTY);
     }
 
     @PostMapping
     @Secured("COACH")
+    @Transactional
     public CoachDto setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid CoachDto request) {
-        var coach = coachRepository.findById(user.getUsername())
-                .orElse(new Coach()
-                        .setUsername(user.getUsername())
-                        .setUser(userRepository.findById(user.getUsername())
-                                .map(u -> u.setEmail(request.email))
-                                .orElseThrow(CommonUtils.entityNotFound("user " + user.getUsername()))));
+        var userEntity = userRepository.findById(user.getUsername())
+                .map(u -> u.setEmail(request.email))
+                .orElseThrow(CommonUtils.entityNotFound("user " + user.getUsername()));
+        userRepository.save(request.updateUser(userEntity));
 
-        return CoachDto.from(coachRepository.save(request.updateCoach(coach)));
+        var coach = coachRepository.findById(user.getUsername())
+                .orElse(new Coach().setUsername(user.getUsername()));
+
+        return CoachDto.from(coachRepository.save(request.updateCoach(coach)), userEntity);
     }
 
     @Transactional
@@ -120,10 +122,10 @@ public class CoachController {
             return List.of();
         }
 
-        final var clients = userRepository.findAllById(sessions.stream()
-                .map(ScheduledSession::getUsername)
-                .collect(Collectors.toSet())
-            ).stream()
+        final var clients = java.util.stream.StreamSupport.stream(
+                userRepository.findAllById(sessions.stream()
+                        .map(ScheduledSession::getUsername)
+                        .collect(Collectors.toSet())).spliterator(), false)
             .collect(toMap(User::getUsername, Function.identity()));
 
         return sessions.stream()
@@ -233,13 +235,12 @@ public class CoachController {
             Set.of(Coach.PrimaryRole.COACH), Set.of(), Set.of(), null, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), null, null
         );
 
-        public static CoachDto from(Coach c) {
-            var user = c.getUser();
+        public static CoachDto from(Coach c, User user) {
             return new CoachDto(
                     c.isPublicProfile(),
                     user.getFirstName(),
                     user.getLastName(),
-                    c.getUserEmail(),
+                    user.getEmail(),
                     c.getWebLink(),
                     c.getBio(),
                     c.getLanguages() != null ? c.getLanguages() : List.of(),
@@ -251,15 +252,15 @@ public class CoachController {
                     c.getLinkedinProfile(),
                     c.isFreeSlots(),
                     c.getPriority(),
-                    c.getPrimaryRoles() != null ? c.getPrimaryRoles() : Set.of(),
-                    c.getCertificate() != null ? c.getCertificate() : Set.of(),
-                    c.getBaseLocations() != null ? c.getBaseLocations() : Set.of(),
+                    c.getPrimaryRolesSet() != null ? c.getPrimaryRolesSet() : Set.of(),
+                    c.getCertificateSet() != null ? c.getCertificateSet() : Set.of(),
+                    c.getBaseLocationsSet() != null ? c.getBaseLocationsSet() : Set.of(),
                     c.getTravelWillingness(),
-                    c.getDeliveryFormat() != null ? c.getDeliveryFormat() : Set.of(),
-                    c.getServiceType() != null ? c.getServiceType() : Set.of(),
-                    c.getTopics() != null ? c.getTopics() : Set.of(),
-                    c.getDiagnosticTools() != null ? c.getDiagnosticTools() : Set.of(),
-                    c.getIndustryExperience() != null ? c.getIndustryExperience() : Set.of(),
+                    c.getDeliveryFormatSet() != null ? c.getDeliveryFormatSet() : Set.of(),
+                    c.getServiceTypeSet() != null ? c.getServiceTypeSet() : Set.of(),
+                    c.getTopicsSet() != null ? c.getTopicsSet() : Set.of(),
+                    c.getDiagnosticToolsSet() != null ? c.getDiagnosticToolsSet() : Set.of(),
+                    c.getIndustryExperienceSet() != null ? c.getIndustryExperienceSet() : Set.of(),
                     c.getReferences(),
                     user.getTimeZone()
             );
@@ -280,25 +281,23 @@ public class CoachController {
                     .setLinkedinProfile(linkedinProfile)
                     .setFreeSlots(freeSlots)
                     .setPriority(priority)
-                    .setPrimaryRoles(primaryRoles)
-                    .setCertificate(certificate)
-                    .setBaseLocations(baseLocations)
+                    .setPrimaryRolesSet(primaryRoles)
+                    .setCertificateSet(certificate)
+                    .setBaseLocationsSet(baseLocations)
                     .setTravelWillingness(travelWillingness)
-                    .setDeliveryFormat(deliveryFormat)
-                    .setServiceType(serviceType)
-                    .setTopics(topics)
-                    .setDiagnosticTools(diagnosticTools)
-                    .setIndustryExperience(industryExperience)
-                    .setReferences(references)
-                    .setUser(updateUser(coach.getUser()));
+                    .setDeliveryFormatSet(deliveryFormat)
+                    .setServiceTypeSet(serviceType)
+                    .setTopicsSet(topics)
+                    .setDiagnosticToolsSet(diagnosticTools)
+                    .setIndustryExperienceSet(industryExperience)
+                    .setReferences(references);
         }
 
         public User updateUser(User user) {
             return user.setFirstName(firstName())
                     .setEmail(email())
                     .setLastName(lastName())
-                    .setTimeZone(timeZone())
-                    ;
+                    .setTimeZone(timeZone());
         }
 
     }

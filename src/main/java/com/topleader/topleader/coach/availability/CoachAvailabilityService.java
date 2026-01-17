@@ -104,7 +104,7 @@ public class CoachAvailabilityService {
 
     public List<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
         Multimap<DayOfWeek, CoachAvailability> reoccurringMap = ArrayListMultimap.create();
-        getReoccurringEvents(username).forEach(e -> reoccurringMap.put(e.getDayFrom(), e));
+        getReoccurringEvents(username).forEach(e -> reoccurringMap.put(e.getDayFromEnum(), e));
         var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to);
 
         return toIntervals(from, to).stream()
@@ -113,8 +113,8 @@ public class CoachAvailabilityService {
                     return testNonReoccurring(r, nonReoccurring) || availabilities.stream()
                             .anyMatch(e -> {
                                 if (e != null && e.getTimeFrom() != null && e.getTimeTo() != null) {
-                                    var timeFrom = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFrom())), e.getTimeFrom());
-                                    var timeTo = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayTo())), e.getTimeTo());
+                                    var timeFrom = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayFromEnum())), e.getTimeFrom());
+                                    var timeTo = LocalDateTime.of(r.toLocalDate().with(TemporalAdjusters.nextOrSame(e.getDayToEnum())), e.getTimeTo());
                                     return testNonReoccurring(r, nonReoccurring) || isInRange(r, timeFrom, timeTo);
                                 }
                                 return false;
@@ -130,7 +130,7 @@ public class CoachAvailabilityService {
         return availabilitySettingRepository.findById(username)
                 .filter(CoachAvailabilitySettings::isActive)
                 .map(a -> {
-                    if (CALENDLY == a.getType()) {
+                    if (CALENDLY == a.getTypeEnum()) {
                         return calendlyService.getEventAvailability(username, a.getResource()).stream()
                                 .map(e -> new CoachAvailability()
                                         .setDayFrom(e.from().day())
@@ -253,16 +253,16 @@ public class CoachAvailabilityService {
 
         final var existingMapped = existing.stream()
             .map(e -> new ReoccurringEventDto(
-                new ReoccurringEventTimeDto(e.getDayFrom(), e.getTimeFrom()),
-                new ReoccurringEventTimeDto(e.getDayTo(), e.getTimeTo())
+                new ReoccurringEventTimeDto(e.getDayFromEnum(), e.getTimeFrom()),
+                new ReoccurringEventTimeDto(e.getDayToEnum(), e.getTimeTo())
             ))
             .collect(Collectors.toSet());
 
         final var toDelete = existing.stream()
             .filter(e -> !shiftedEvents.contains(
                 new ReoccurringEventDto(
-                    new ReoccurringEventTimeDto(e.getDayFrom(), e.getTimeFrom()),
-                    new ReoccurringEventTimeDto(e.getDayTo(), e.getTimeTo())
+                    new ReoccurringEventTimeDto(e.getDayFromEnum(), e.getTimeFrom()),
+                    new ReoccurringEventTimeDto(e.getDayToEnum(), e.getTimeTo())
                 )
             ))
             .toList();

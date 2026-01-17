@@ -1,11 +1,9 @@
 package com.topleader.topleader.hr;
 
-import com.topleader.topleader.admin.AdminView;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
+import org.springframework.data.repository.CrudRepository;
 
-public interface HrViewRepository extends JpaRepository<HrView, String> {
+public interface HrViewRepository extends CrudRepository<HrView, String> {
 
     List<HrView> findAllByCompanyId(Long companyId);
 }

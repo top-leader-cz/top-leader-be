@@ -23,10 +23,10 @@ public record UserDto(
                 user.getFirstName(),
                 user.getLastName(),
                 user.getTimeZone(),
-                user.getStatus(),
+                user.getStatusEnum(),
                 user.getAuthorities(),
                 user.getPosition(),
-                user.getManagers().stream().findFirst().map(User::getUsername).orElse(null),
+                null,
                 user.getAuthorities().contains(User.Authority.MANAGER),
                 user.getAspiredCompetency()
         );

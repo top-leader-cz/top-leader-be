@@ -26,7 +26,6 @@ public class UserSettings {
                 .setEmail(user.getEmail())
                 .setFirstName(user.getFirstName())
                 .setLastName(user.getLastName())
-                .setManager(user.getManagers().stream().findFirst().map(User::getUsername).orElse(null))
                 .setPosition(user.getPosition())
                 .setAspiredCompetency(user.getAspiredCompetency())
                 .setAspiredPosition(user.getAspiredPosition());

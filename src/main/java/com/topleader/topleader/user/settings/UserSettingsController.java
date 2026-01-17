@@ -7,15 +7,15 @@ import com.topleader.topleader.hr.domain.ManagerDto;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.manager.ManagerService;
+import com.topleader.topleader.user.manager.UserManagerRepository;
+import com.topleader.topleader.user.manager.UsersManagers;
 import com.topleader.topleader.user.settings.domain.UserSettingRequest;
 import com.topleader.topleader.user.settings.domain.UserSettings;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
@@ -43,6 +43,8 @@ public class UserSettingsController {
     private final ManagerService managerService;
 
     private final CompanyService companyService;
+
+    private final UserManagerRepository userManagerRepository;
 
     @Secured({"USER"})
     @GetMapping("/managers")
@@ -94,11 +96,15 @@ public class UserSettingsController {
                 .setAspiredCompetency(request.getAspiredCompetency());
 
 
+        userDetailService.save(user);
+
         if (StringUtils.isNotBlank(request.getManager())) {
-            user.setManagers(new HashSet<>(Set.of(new User().setUsername(request.getManager()))));
+            userManagerRepository.save(new UsersManagers()
+                    .setUserUsername(user.getUsername())
+                    .setManagerUsername(request.getManager()));
         }
 
-        return UserSettings.fromUser(userDetailService.save(user));
+        return UserSettings.fromUser(user);
     }
 
 

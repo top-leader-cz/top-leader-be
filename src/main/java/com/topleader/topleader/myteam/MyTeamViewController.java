@@ -66,7 +66,7 @@ public class MyTeamViewController {
                 user.getScheduledCredit(),
                 user.getPaidCredit(),
                 user.getLongTermGoal(),
-                user.getAreaOfDevelopment(),
+                user.getAreaOfDevelopmentList(),
                 user.getTopStrengths()
             );
         }
