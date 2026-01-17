@@ -159,7 +159,7 @@ public class FeedbackService {
     public void generateSummary(long formId) {
         log.info("Generating summary for form: [{}]", formId);
         var form = feedbackFormRepository.getReferenceById(formId);
-        var user = form.getUser();
+        var user = userRepository.findById(form.getUsername()).orElseThrow();
         var formDto = FeedbackFormDto.witAnswer(form);
         var translations = TranslationUtils.getTranslation();
         var questions = formDto.getQuestions().stream()

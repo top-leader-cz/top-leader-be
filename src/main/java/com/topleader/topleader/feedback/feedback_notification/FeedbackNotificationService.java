@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2024 Price f(x), s.r.o.
- */
 package com.topleader.topleader.feedback.feedback_notification;
 
 import com.topleader.topleader.common.email.EmailService;
@@ -8,6 +5,7 @@ import com.topleader.topleader.common.email.TemplateService;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.common.util.transaction.TransactionService;
+import com.topleader.topleader.user.UserRepository;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
@@ -53,6 +51,8 @@ public class FeedbackNotificationService {
 
     private final TemplateService velocityService;
 
+    private final UserRepository userRepository;
+
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -86,6 +86,8 @@ public class FeedbackNotificationService {
             final var feedbackForm = feedbackFormRepository.findById(freshNotification.getFeedbackFormId())
                 .orElseThrow(NotFoundException::new);
 
+            final var user = userRepository.findById(feedbackForm.getUsername()).orElseThrow(NotFoundException::new);
+
             Optional.ofNullable(feedbackForm.getRecipients()).orElse(List.of()).stream()
                 .filter(r -> !r.isSubmitted())
                 .forEach(r -> {
@@ -93,12 +95,12 @@ public class FeedbackNotificationService {
                     var params = Map.of(
                         "validTo", feedbackForm.getValidTo().format(TOP_LEADER_FORMATTER),
                         "link", feedbackLink,
-                        "firstName", feedbackForm.getUser().getFirstName(),
-                        "lastName", feedbackForm.getUser().getLastName());
-                    var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(feedbackForm.getUser().getLocale()));
-                    var subject = String.format(subjects.getOrDefault(feedbackForm.getUser().getLocale(), defaultLocale),
-                        feedbackForm.getUser().getFirstName(),
-                        feedbackForm.getUser().getLastName());
+                        "firstName", user.getFirstName(),
+                        "lastName", user.getLastName());
+                    var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(user.getLocale()));
+                    var subject = String.format(subjects.getOrDefault(user.getLocale(), defaultLocale),
+                        user.getFirstName(),
+                        user.getLastName());
 
                     emailService.sendEmail(r.getRecipient(), subject, body);
                 });
@@ -125,6 +127,8 @@ public class FeedbackNotificationService {
             final var feedbackForm = feedbackFormRepository.findById(freshNotification.getFeedbackFormId())
                 .orElseThrow(NotFoundException::new);
 
+            final var user = userRepository.findById(feedbackForm.getUsername()).orElseThrow(NotFoundException::new);
+
             Optional.ofNullable(feedbackForm.getRecipients()).orElse(List.of()).stream()
                 .filter(r -> !r.isSubmitted())
                 .forEach(r -> {
@@ -132,12 +136,12 @@ public class FeedbackNotificationService {
                     var params = Map.of(
                         "validTo", feedbackForm.getValidTo().format(TOP_LEADER_FORMATTER),
                         "link", feedbackLink,
-                        "firstName", feedbackForm.getUser().getFirstName(),
-                        "lastName", feedbackForm.getUser().getLastName());
-                    var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(feedbackForm.getUser().getLocale()));
-                    var subject = String.format(subjects.getOrDefault(feedbackForm.getUser().getLocale(), defaultLocale),
-                        feedbackForm.getUser().getFirstName(),
-                        feedbackForm.getUser().getLastName());
+                        "firstName", user.getFirstName(),
+                        "lastName", user.getLastName());
+                    var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(user.getLocale()));
+                    var subject = String.format(subjects.getOrDefault(user.getLocale(), defaultLocale),
+                        user.getFirstName(),
+                        user.getLastName());
 
                     emailService.sendEmail(r.getRecipient(), subject, body);
                 });
@@ -180,7 +184,7 @@ public class FeedbackNotificationService {
                 ).orElse(
                     new FeedbackNotification()
                         .setFeedbackFormId(formId)
-                        .setUsername(feedback.getUser().getUsername())
+                        .setUsername(feedback.getUsername())
                         .setStatus(NEW)
                         .setNotificationTime(
                             LocalDateTime.now()

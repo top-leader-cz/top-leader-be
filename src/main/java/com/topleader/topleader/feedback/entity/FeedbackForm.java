@@ -3,7 +3,6 @@ package com.topleader.topleader.feedback.entity;
 
 import com.topleader.topleader.feedback.api.Summary;
 import com.topleader.topleader.feedback.api.converter.SummaryConverter;
-import com.topleader.topleader.user.User;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -38,9 +37,7 @@ public class FeedbackForm {
     @Convert(converter = SummaryConverter.class)
     private Summary summary;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "username")
-    private User user;
+    private String username;
 
     @OneToMany(mappedBy = "form", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<FeedbackFormQuestion> questions = new ArrayList<>();

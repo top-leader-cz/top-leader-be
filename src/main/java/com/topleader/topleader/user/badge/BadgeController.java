@@ -33,7 +33,7 @@ public class BadgeController {
         var userBadges = badgeService.getBadges(username);
 
        var byMonth = userBadges.stream()
-                .collect(Collectors.groupingBy(Badge::getMonth));
+                .collect(Collectors.groupingBy(Badge::getMonthEnum));
 
         var badges = Arrays.stream(Month.values())
                 .takeWhile(m -> m.compareTo(currentMonth) <= 0)

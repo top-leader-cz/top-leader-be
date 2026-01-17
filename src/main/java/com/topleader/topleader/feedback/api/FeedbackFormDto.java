@@ -53,9 +53,7 @@ public class FeedbackFormDto {
 
         return new FeedbackFormDto()
                 .setTitle(feedbackForm.getTitle())
-                .setUsername(feedbackForm.getUser().getUsername())
-                .setFirstName(feedbackForm.getUser().getFirstName())
-                .setLastName(feedbackForm.getUser().getLastName())
+                .setUsername(feedbackForm.getUsername())
                 .setDescription(feedbackForm.getDescription())
                 .setId(feedbackForm.getId())
                 .setValidTo(feedbackForm.getValidTo())
@@ -63,6 +61,12 @@ public class FeedbackFormDto {
                 .setRecipients(recipients)
                 .setSummary(feedbackForm.getSummary())
                 .setDraft(feedbackForm.isDraft());
+    }
+
+    public static FeedbackFormDto of(FeedbackForm feedbackForm, String firstName, String lastName) {
+        return of(feedbackForm)
+                .setFirstName(firstName)
+                .setLastName(lastName);
     }
 
     public static FeedbackFormDto witAnswer(FeedbackForm feedbackForm) {

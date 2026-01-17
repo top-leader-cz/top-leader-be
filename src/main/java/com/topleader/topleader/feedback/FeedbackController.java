@@ -7,6 +7,7 @@ import com.topleader.topleader.feedback.api.*;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.common.util.user.UserDetailUtils;
+import com.topleader.topleader.user.UserRepository;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,13 +29,14 @@ import static com.topleader.topleader.common.exception.ErrorCodeConstants.USER_N
 public class FeedbackController {
 
     private final FeedbackService feedbackService;
+    private final UserRepository userRepository;
 
     @Transactional
     @GetMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormDto getForm(@PathVariable long id) {
         var from = feedbackService.fetchForm(id);
-        validate(from.getUser().getUsername());
+        validate(from.getUsername());
         return FeedbackFormDto.witAnswer(from);
     }
 
@@ -76,7 +78,7 @@ public class FeedbackController {
     @Transactional
     public FeedbackFormDto updateForm(@PathVariable long id,  @RequestBody @Valid FeedbackFormRequest request) {
         var savedForm = feedbackService.fetchForm(id);
-        validate(savedForm.getUser().getUsername());
+        validate(savedForm.getUsername());
         var defaultKeys = feedbackService.fetchOptions().stream().map(Question::getKey)
                 .collect(Collectors.toList());
         feedbackService.updateQuestions(toQuestions(request.getQuestions(), defaultKeys));
@@ -98,19 +100,20 @@ public class FeedbackController {
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public void deleteForm( @PathVariable long id) {
         var savedForm = feedbackService.fetchForm(id);
-        validate(savedForm.getUser().getUsername());
+        validate(savedForm.getUsername());
         feedbackService.deleteForm(id);
     }
 
 
     public FeedbackData getFeedbackData(FeedbackFormRequest request, FeedbackForm form) {
+        var user = userRepository.findById(form.getUsername()).orElseThrow();
         var byUsername = request.getRecipients().stream()
                 .collect(Collectors.toMap(RecipientDto::username, Function.identity()));
         return new FeedbackData().setLocale(request.getLocale())
                 .setValidTo(request.getValidTo())
                 .setFormId(form.getId())
-                .setFirstName(form.getUser().getFirstName())
-                .setLastName(form.getUser().getLastName())
+                .setFirstName(user.getFirstName())
+                .setLastName(user.getLastName())
                 .setRecipients(form.getRecipients().stream()
                         .map(r -> new FeedbackData.Recipient(byUsername.get(r.getRecipient()).id(), r.getRecipient(), r.getToken()))
                         .collect(Collectors.toList()));

@@ -4,7 +4,6 @@ import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
 import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
-import com.topleader.topleader.user.User;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -12,7 +11,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -52,7 +50,7 @@ public class FeedbackFormRequest {
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)))
+                .setUsername(request.getUsername().toLowerCase(Locale.ROOT))
                 .setDraft(request.isDraft());
 
         var feedbackFormQuestion = request.getQuestions().stream()
@@ -88,7 +86,7 @@ public class FeedbackFormRequest {
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)))
+                .setUsername(request.getUsername().toLowerCase(Locale.ROOT))
                 .setDraft(request.isDraft());
     }
 
