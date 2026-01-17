@@ -1,5 +1,5 @@
 # Google Cloud commands
-.PHONY: login logs-qa logs-prod openapi build deploy-qa
+.PHONY: login logs-qa logs-prod openapi build deploy-qa run local-login local-whoami local-google-auth local-api local-health local-create-user
 
 # Login to Google Cloud and set project
 login:
@@ -32,3 +32,50 @@ deploy-qa:
 	git push origin :refs/tags/qa-deploy 2>/dev/null || true
 	git tag qa-deploy
 	git push origin qa-deploy
+
+# =============================================================================
+# LOCAL DEVELOPMENT
+# =============================================================================
+
+# Run application locally
+run:
+	$(HOME)/.sdkman/candidates/gradle/current/bin/gradle bootRun
+
+# Login locally (saves session cookie to /tmp/cookies.txt)
+# Usage: make local-login USER=user@example.com PASS=password
+local-login:
+	@echo "Logging in as $(USER)..."
+	@curl -v -c /tmp/cookies.txt -X POST "http://localhost:8080/login" \
+		-H "Content-Type: application/x-www-form-urlencoded" \
+		-d "username=$(USER)&password=$(PASS)" 2>&1 | grep -E "(HTTP|Set-Cookie|Location)"
+	@echo "\nSession saved to /tmp/cookies.txt"
+
+# Check if logged in
+local-whoami:
+	@curl -s -b /tmp/cookies.txt "http://localhost:8080/api/latest/user-info" | head -100
+
+# Start Google OAuth flow (opens browser)
+local-google-auth:
+	@echo "Opening Google OAuth in browser..."
+	@open "http://localhost:8080/login/google"
+
+# Test API endpoint (with session)
+# Usage: make local-api ENDPOINT=/api/latest/user-info
+local-api:
+	@curl -s -b /tmp/cookies.txt "http://localhost:8080$(ENDPOINT)" | python3 -m json.tool 2>/dev/null || curl -s -b /tmp/cookies.txt "http://localhost:8080$(ENDPOINT)"
+
+# Health check
+local-health:
+	@curl -s "http://localhost:8080/actuator/health" | python3 -m json.tool
+
+# Create test user in local DB (password: test123)
+# BCrypt hash for "test123"
+DB_CONTAINER ?= my-postgres-db
+DB_USER ?= root
+local-create-user:
+	@echo "Creating test user: test@test.com / test123"
+	@docker exec -i $(DB_CONTAINER) psql -U $(DB_USER) -d top_leader -c " \
+		INSERT INTO users (username, first_name, last_name, password, time_zone, status) \
+		VALUES ('test@test.com', 'Test', 'User', '\$$2a\$$12\$$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/X4beRb6R3PLbQFmSy', 'Europe/Prague', 'AUTHORIZED') \
+		ON CONFLICT (username) DO NOTHING;"
+	@echo "Done! Login with: make local-login USER=test@test.com PASS=test123"
