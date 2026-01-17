@@ -2,7 +2,7 @@ package com.topleader.topleader.user.session.reminder;
 
 
 import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.VelocityService;
+import com.topleader.topleader.common.email.TemplateService;
 import com.topleader.topleader.user.session.UserActionStep;
 import com.topleader.topleader.user.session.UserActionStepRepository;
 import java.util.Optional;
@@ -32,7 +32,7 @@ public class SessionReminderService {
 
     private final EmailService emailService;
 
-    private final VelocityService velocityService;
+    private final TemplateService velocityService;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -90,9 +90,9 @@ public class SessionReminderService {
 
     public String parseSessionReminderTemplate(String locale, boolean hasShortTermGoal) {
         if (hasShortTermGoal) {
-            return "templates/sessionReminder/reminder-with-short-term-" + parseLocale(locale) + ".vm";
+            return "templates/sessionReminder/reminder-with-short-term-" + parseLocale(locale) + ".html";
         } else {
-            return "templates/sessionReminder/reminder-without-short-term-" + parseLocale(locale) + ".vm";
+            return "templates/sessionReminder/reminder-without-short-term-" + parseLocale(locale) + ".html";
         }
     }
 

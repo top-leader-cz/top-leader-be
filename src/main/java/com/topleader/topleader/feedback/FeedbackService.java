@@ -2,7 +2,7 @@ package com.topleader.topleader.feedback;
 
 import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.VelocityService;
+import com.topleader.topleader.common.email.TemplateService;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.feedback.api.*;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
@@ -18,7 +18,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.common.TranslationUtils;
 import com.topleader.topleader.common.util.common.user.UserUtils;
-import io.vavr.control.Try;
+import com.topleader.topleader.common.util.common.CommonUtils;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +55,7 @@ public class FeedbackService {
 
     private final FeedbackFormAnswerRepository feedbackFormAnswerRepository;
 
-    private final VelocityService velocityService;
+    private final TemplateService velocityService;
 
     private final EmailService emailService;
 
@@ -169,9 +169,10 @@ public class FeedbackService {
         log.info("Generating summary for form: [{}] with questions: [{}]", formId, questions);
 
         if (formDto.allowSummary(summaryLimit)) {
-            var summary = Try.of(() -> jsonMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class))
-                    .onFailure(e -> log.error("Failed to generate summary for form: [" + formId + "] ", e))
-                            .getOrElse(new Summary());
+            var summary = CommonUtils.tryGetOrElse(
+                    () -> jsonMapper.readValue(aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions), Summary.class),
+                    new Summary(),
+                    "Failed to generate summary for form: [" + formId + "]");
             form.setSummary(summary);
             feedbackFormRepository.save(form);
         }
@@ -183,7 +184,7 @@ public class FeedbackService {
 
 
     public String parseTemplateName(String locale) {
-        return "templates/feedback/feedback-" + parseLocale(locale) + ".vm";
+        return "templates/feedback/feedback-" + parseLocale(locale) + ".html";
     }
 
     public String parseLocale(String locale) {

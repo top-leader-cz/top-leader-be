@@ -6,7 +6,6 @@ import java.time.ZoneOffset;
 import java.util.Locale;
 import java.util.Optional;
 
-import io.vavr.control.Try;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,10 +33,13 @@ public class UserUtils {
             .orElse(ZoneOffset.UTC);
     }
 
-    public  String localeToLanguage(String locale) {
-        return Try.of(() -> Languages.valueOf(locale).language)
-                .onFailure(e -> log.warn("Locale do not exist, defaulting to English. Locale: {}", locale))
-                .getOrElse(Languages.en.language);
+    public String localeToLanguage(String locale) {
+        try {
+            return Languages.valueOf(locale).language;
+        } catch (Exception e) {
+            log.warn("Locale do not exist, defaulting to English. Locale: {}", locale);
+            return Languages.en.language;
+        }
     }
 
     public enum Languages {

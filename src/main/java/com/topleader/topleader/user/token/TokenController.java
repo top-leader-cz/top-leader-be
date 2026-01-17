@@ -1,8 +1,7 @@
 package com.topleader.topleader.user.token;
 
 import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.VelocityService;
-import com.topleader.topleader.user.User;
+import com.topleader.topleader.common.email.TemplateService;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
@@ -39,7 +38,7 @@ public class TokenController {
 
     private final EmailService emailService;
 
-    private final VelocityService velocityService;
+    private final TemplateService velocityService;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -86,7 +85,7 @@ public class TokenController {
     }
 
     public String parseTemplateName(String locale) {
-        return "templates/reset-password/reset-password-" + parseLocale(locale) + ".vm";
+        return "templates/reset-password/reset-password-" + parseLocale(locale) + ".html";
     }
 
     public String parseLocale(String locale) {

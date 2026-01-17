@@ -9,7 +9,7 @@ import org.hibernate.type.SqlTypes;
 import java.time.LocalDateTime;
 
 @Data
-@ToString(of = {"id", "user"})
+@ToString(of = {"id", "username"})
 @Entity
 @Accessors(chain = true)
 public class Article {

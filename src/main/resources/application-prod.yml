@@ -13,8 +13,6 @@ spring:
     gcp:
       sql:
         database-name: top_leader_prod
-      logging:
-        enabled: true
   ai:
     openai:
       chat:

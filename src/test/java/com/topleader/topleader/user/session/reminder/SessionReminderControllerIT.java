@@ -2,7 +2,7 @@ package com.topleader.topleader.user.session.reminder;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
-import io.vavr.control.Try;
+import com.topleader.topleader.common.util.common.CommonUtils;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import java.util.Arrays;
@@ -59,8 +59,9 @@ class SessionReminderControllerIT extends IntegrationTest {
 
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(5);
         final var emails = Arrays.stream(greenMail.getReceivedMessages())
-                .collect(Collectors.toMap(m -> Try.of(() -> GreenMailUtil.getAddressList(m.getAllRecipients()))
-                                .getOrElseThrow(() -> new RuntimeException("Failed to get recipients")), Function.identity()));
+                .collect(Collectors.toMap(m -> CommonUtils.tryGet(
+                        () -> GreenMailUtil.getAddressList(m.getAllRecipients()),
+                        e -> new RuntimeException("Failed to get recipients", e)), Function.identity()));
 
         testEmail(emails.get("user-3-days"), "Vaše cesta k rozvoji čeká, user-3-days last!", "user-3-days last");
         testEmail(emails.get("user-10-days"), "Vaše cesta k rozvoji čeká, user-10-days last!", "user-10-days last");

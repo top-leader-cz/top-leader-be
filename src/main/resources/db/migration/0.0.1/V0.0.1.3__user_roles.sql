@@ -1,1 +1,0 @@
-alter table users add column authorities varchar(500);

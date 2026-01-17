@@ -11,7 +11,7 @@ import java.io.Serializable;
 @Table
 @Accessors(chain = true)
 @EqualsAndHashCode(of = {"id"})
-@ToString(of={"id", "form.id", "question.key", "recipient.recipient", "answer"})
+@ToString(of={"id", "answer"})
 public class FeedbackFormAnswer {
 
     @EmbeddedId

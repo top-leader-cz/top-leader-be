@@ -19,6 +19,11 @@ configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
     }
+    all {
+        exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
+        exclude(group = "ch.qos.logback", module = "logback-classic")
+        exclude(group = "ch.qos.logback", module = "logback-core")
+    }
 }
 
 dependencyManagement {
@@ -31,22 +36,19 @@ dependencyManagement {
 
 dependencies {
     // Google Cloud
-    implementation("com.google.cloud:spring-cloud-gcp-starter-logging") {
-        exclude(group = "commons-logging", module = "commons-logging")
-    }
     implementation("com.google.cloud:spring-cloud-gcp-starter-storage") {
         exclude(group = "commons-logging", module = "commons-logging")
         exclude(group = "com.google.cloud", module = "google-cloud-monitoring")
         exclude(group = "com.google.api.grpc", module = "proto-google-cloud-monitoring-v3")
         exclude(group = "com.google.cloud.opentelemetry", module = "exporter-metrics")
     }
-    implementation("com.google.apis:google-api-services-calendar:v3-rev20240111-2.0.0")
+    implementation("com.google.apis:google-api-services-calendar:v3-rev20250404-2.0.0")
     implementation("com.google.apis:google-api-services-oauth2:v2-rev20200213-2.0.0")
     implementation("com.google.api-client:google-api-client:2.6.0") {
         exclude(group = "commons-logging", module = "commons-logging")
     }
-    implementation("com.google.http-client:google-http-client-jackson2:1.44.2")
-    implementation("com.google.cloud.sql:postgres-socket-factory:1.19.0")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
+    implementation("com.google.cloud.sql:postgres-socket-factory:1.28.0")
 
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web") {
@@ -69,21 +71,22 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
 
     // Spring AI
-    implementation("org.springframework.ai:spring-ai-starter-model-openai") {
-        exclude(group = "io.netty", module = "netty-codec-native-quic")
-        exclude(group = "io.netty", module = "netty-codec-classes-quic")
-        exclude(group = "io.netty", module = "netty-codec-http3")
-    }
+    implementation("org.springframework.ai:spring-ai-starter-model-openai")
 
     // Database
     runtimeOnly("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
 
+    // Logging
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.3")
     // jOOQ
     implementation("org.springframework.boot:spring-boot-starter-jooq")
     jooqCodegen("org.postgresql:postgresql")
 
     // Utilities
+    implementation("dev.failsafe:failsafe:3.3.2")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
     implementation("io.github.resilience4j:resilience4j-retry:2.3.0")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3")
     implementation("org.apache.velocity.tools:velocity-tools-generic:3.1") {
@@ -99,7 +102,7 @@ dependencies {
     testImplementation("org.testcontainers:postgresql")
     testImplementation("org.testcontainers:junit-jupiter")
     testImplementation("org.springframework.security:spring-security-test")
-    testImplementation("com.icegreen:greenmail:2.0.1")
+    testImplementation("com.icegreen:greenmail:2.1.8")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
     testImplementation("org.wiremock:wiremock-standalone:3.10.0")
 }
@@ -108,6 +111,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
     jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
     maxHeapSize = "1024m"
+    exclude("**/OpenApiGeneratorTest.class")
 }
 
 tasks.bootJar {
@@ -122,6 +126,12 @@ val integrationTest by tasks.registering(Test::class) {
     shouldRunAfter(tasks.test)
 }
 
+// OpenAPI spec generation
+val generateOpenApi by tasks.registering(Test::class) {
+    description = "Generates OpenAPI spec."
+    group = "documentation"
+    include("**/OpenApiGeneratorTest.class")
+    shouldRunAfter(tasks.test)
 // jOOQ Code Generation
 val jooqGeneratedDir = layout.buildDirectory.dir("generated/jooq")
 

@@ -7,8 +7,8 @@ import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
+import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.util.image.ArticleImageService;
-import io.vavr.control.Try;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
@@ -50,8 +50,10 @@ public class UserInsightController {
                 })
                 .toList();
 
-        Try.run(() -> userInsight.setUserArticles(jsonMapper.writeValueAsString(articles)))
-                .onFailure(e -> log.error("Error converting user articles to JSON", e));
+        CommonUtils.tryRun(
+            () -> userInsight.setUserArticles(jsonMapper.writeValueAsString(articles)),
+            "Error converting user articles to JSON"
+        );
 
         return Map.of(
                 "leaderShipStyle", new InsightItem(userInsight.getLeadershipStyleAnalysis(), userInsight.isLeadershipPending()),
@@ -97,47 +99,47 @@ public class UserInsightController {
         var user = userDetailService.getUser(username).orElseThrow(EntityNotFoundException::new);
         var userInfo = userInfoService.find(username);
 
-        Thread.ofVirtual().start(() ->
-                Try.run(() -> {
-                            var strengths = userInfo.getStrengths().stream().limit(5).toList();
-                            var suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, strengths, userInfo.getValues(), user.getLocale());
-                            var insight = userInsightService.getInsight(username);
-                            insight.setSuggestion(suggestion);
-                            insight.setSuggestionPending(false);
-                            userInsightService.save(insight);
-                        }).onSuccess(result -> log.info("Suggestion generated: [{}] ", username))
-                        .onFailure(e -> {
-                                    var insight = userInsightService.getInsight(username);
-                                    insight.setSuggestionPending(false);
-                                    userInsightService.save(insight);
-                                    log.error("Error generating suggestions [{}]", username, e);
-                                }
-                        ));
+        Thread.ofVirtual().start(() -> {
+            try {
+                var strengths = userInfo.getStrengths().stream().limit(5).toList();
+                var suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, strengths, userInfo.getValues(), user.getLocale());
+                var insight = userInsightService.getInsight(username);
+                insight.setSuggestion(suggestion);
+                insight.setSuggestionPending(false);
+                userInsightService.save(insight);
+                log.info("Suggestion generated: [{}] ", username);
+            } catch (Exception e) {
+                var insight = userInsightService.getInsight(username);
+                insight.setSuggestionPending(false);
+                userInsightService.save(insight);
+                log.error("Error generating suggestions [{}]", username, e);
+            }
+        });
 
-        Thread.ofVirtual().start(() ->
-                Try.run(() -> {
-                            var previews = userSessionService.handleUserPreview(username, query);
-                            var articles = userSessionService.handleUserArticles(username, query);
-                            var insight = userInsightService.getInsight(username);
-                            insight.setUserPreviews(previews);
-                            userInsightService.save(insight);
-                            if (!articles.isEmpty()) {
-                                articlesRepository.deleteAllByUsername(username);
-                                articles.forEach(article -> articlesRepository.save(new Article()
-                                        .setUsername(username)
-                                        .setContent(article))
-                                );
-                            }
-                            insight.setActionGoalsPending(false);
-                            userInsightService.save(insight);
-                        }).onFailure(e -> {
-                            var insight = userInsightService.getInsight(username);
-                            insight.setActionGoalsPending(false);
-                            userInsightService.save(insight);
-                            log.error("Error converting user articles to JSON", e);
-                        })
-                        .onSuccess(i -> log.info("Videos and articles generated: [{}] ", username))
-        );
+        Thread.ofVirtual().start(() -> {
+            try {
+                var previews = userSessionService.handleUserPreview(username, query);
+                var articles = userSessionService.handleUserArticles(username, query);
+                var insight = userInsightService.getInsight(username);
+                insight.setUserPreviews(previews);
+                userInsightService.save(insight);
+                if (!articles.isEmpty()) {
+                    articlesRepository.deleteAllByUsername(username);
+                    articles.forEach(article -> articlesRepository.save(new Article()
+                            .setUsername(username)
+                            .setContent(article))
+                    );
+                }
+                insight.setActionGoalsPending(false);
+                userInsightService.save(insight);
+                log.info("Videos and articles generated: [{}] ", username);
+            } catch (Exception e) {
+                var insight = userInsightService.getInsight(username);
+                insight.setActionGoalsPending(false);
+                userInsightService.save(insight);
+                log.error("Error converting user articles to JSON", e);
+            }
+        });
 
         log.info("dashboard content process initiated: [{}] ", username);
 

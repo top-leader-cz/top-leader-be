@@ -2,11 +2,9 @@ package com.topleader.topleader.common.calendar.calendly;
 
 
 import com.topleader.topleader.common.calendar.CalendarSyncInfoRepository;
-import com.topleader.topleader.common.calendar.CalendarSyncInfoService;
 import com.topleader.topleader.common.calendar.CalendarToErrorHandler;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.common.util.common.CommonUtils;
-import io.vavr.control.Try;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
@@ -38,13 +36,13 @@ public class CalendlyRefreshAccessTokenJob {
                 .forEach(info -> {
                     CommonUtils.sleep(TimeUnit.MILLISECONDS, 100);
                     log.info("fetching tokens for user: {}", info.getUsername());
-                    Try.of(() -> calendlyService.refreshTokens(info))
-                            .map(tokens ->
-                                 repository.save(info.setRefreshToken(tokens.getRefreshToken())
-                                        .setAccessToken(tokens.getAccessToken())
-                                        .setLastSync(LocalDateTime.now()))
-                            )
-                            .onFailure(e -> errorHandler.handleError(info, e));
+                    CommonUtils.tryMapOrElse(
+                            () -> calendlyService.refreshTokens(info),
+                            tokens -> repository.save(info.setRefreshToken(tokens.getRefreshToken())
+                                    .setAccessToken(tokens.getAccessToken())
+                                    .setLastSync(LocalDateTime.now())),
+                            null,
+                            e -> errorHandler.handleError(info, e));
                 });
     }
 

@@ -1,1 +1,0 @@
-alter table coach add column linkedin_profile varchar(1000);
