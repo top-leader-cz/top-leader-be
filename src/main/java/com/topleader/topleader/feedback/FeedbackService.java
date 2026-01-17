@@ -2,7 +2,7 @@ package com.topleader.topleader.feedback;
 
 import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.VelocityService;
+import com.topleader.topleader.common.email.TemplateService;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.feedback.api.*;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
@@ -55,7 +55,7 @@ public class FeedbackService {
 
     private final FeedbackFormAnswerRepository feedbackFormAnswerRepository;
 
-    private final VelocityService velocityService;
+    private final TemplateService velocityService;
 
     private final EmailService emailService;
 
@@ -184,7 +184,7 @@ public class FeedbackService {
 
 
     public String parseTemplateName(String locale) {
-        return "templates/feedback/feedback-" + parseLocale(locale) + ".vm";
+        return "templates/feedback/feedback-" + parseLocale(locale) + ".html";
     }
 
     public String parseLocale(String locale) {

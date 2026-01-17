@@ -44,4 +44,6 @@ build/
 .gradle/
 build/
 /.claude/
-/.claude/
+
+### Local config ###
+src/main/resources/application-dev.yml

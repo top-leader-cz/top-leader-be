@@ -6,8 +6,7 @@ package com.topleader.topleader.configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import io.github.resilience4j.retry.Retry;
-import io.github.resilience4j.retry.RetryConfig;
+import dev.failsafe.RetryPolicy;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.context.annotation.Bean;
@@ -64,12 +63,12 @@ public class CustomBeansConfig {
     }
 
     @Bean
-    public Retry retry() {
-        return Retry.of("defaultRetry", RetryConfig.custom()
-                .maxAttempts(2)
-                .waitDuration(Duration.ofMillis(500))
-                .retryExceptions(Exception.class)
-                .build());
+    public RetryPolicy<Object> retryPolicy() {
+        return RetryPolicy.builder()
+                .withMaxRetries(2)
+                .withDelay(Duration.ofMillis(500))
+                .handle(Exception.class)
+                .build();
     }
 
     @Bean

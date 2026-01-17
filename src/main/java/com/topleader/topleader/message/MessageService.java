@@ -4,7 +4,7 @@
 package com.topleader.topleader.message;
 
 import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.VelocityService;
+import com.topleader.topleader.common.email.TemplateService;
 import com.topleader.topleader.common.notification.Notification;
 import com.topleader.topleader.common.notification.NotificationService;
 import com.topleader.topleader.common.notification.context.MessageNotificationContext;
@@ -55,7 +55,7 @@ public class MessageService {
 
     private final UserRepository userRepository;
 
-    private final VelocityService velocityService;
+    private final TemplateService velocityService;
 
     private final EmailService emailService;
 
@@ -169,7 +169,7 @@ public class MessageService {
     }
 
     public String parseTemplateName(String locale) {
-        return "templates/message/notification-" +parseLocale(locale) + ".vm";
+        return "templates/message/notification-" +parseLocale(locale) + ".html";
     }
 
     public String parseLocale(String locale) {

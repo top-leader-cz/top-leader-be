@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.view.RedirectView;
 
 
@@ -38,6 +40,9 @@ public class GoogleCalendarController {
     @Value("${google.client.redirectUri}")
     private String redirectURI;
 
+    @Value("${top-leader.app-url}")
+    private String appUrl;
+
 
     @GetMapping("/login/google")
     public RedirectView googleConnectionStatus(
@@ -47,7 +52,7 @@ public class GoogleCalendarController {
     }
 
     @GetMapping(value = "/login/google", params = {"code", "state"})
-    public RedirectView oauth2Callback(
+    public ResponseEntity<String> oauth2Callback(
         @RequestParam(value = "code") String code,
         @RequestParam(value = "state") String state
         ) throws IOException {
@@ -58,7 +63,21 @@ public class GoogleCalendarController {
 
         calendarService.storeTokenInfo(userEmail, response);
 
-        return new RedirectView("/#/sync-success?provider=gcal");
+        var redirectUrl = appUrl + "/#/sync-success?provider=gcal";
+        var html = """
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"><title>Redirecting...</title></head>
+            <body>
+            <script>window.location.href = "%s";</script>
+            <noscript><a href="%s">Click here to continue</a></noscript>
+            </body>
+            </html>
+            """.formatted(redirectUrl, redirectUrl);
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.TEXT_HTML)
+            .body(html);
     }
 
     private String authorize(String username) {

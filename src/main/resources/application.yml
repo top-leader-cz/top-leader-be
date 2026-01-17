@@ -12,8 +12,6 @@ spring:
     gcp:
       sql:
        enabled: false
-      logging:
-        enabled: false
   threads:
     virtual:
       enabled: true
@@ -118,6 +116,13 @@ gcp:
     bucket-name: ai-images-top-leader
 
 thumbmail: http://i3.ytimg.com/vi/%s/hqdefault.jpg
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    url: /openapi.yaml
+    path: /swagger-ui.html
 
 management:
   health:
