@@ -185,7 +185,7 @@ create table if not exists last_message
 
 create table if not exists notification
 (
-    id         bigint       not null primary key,
+    id         bigint       not null primary key default nextval('notification_id_seq'),
     context    text,
     created_at timestamp(6),
     read       boolean      not null,
@@ -203,14 +203,14 @@ create table if not exists coach_image
 
 create table if not exists company
 (
-    id                bigint       not null primary key,
+    id                bigint       not null primary key default nextval('company_id_seq'),
     name              varchar(255) not null,
     business_strategy text
 );
 
 create table if not exists scheduled_session
 (
-    id             bigint                                            not null primary key,
+    id             bigint                                            not null primary key default nextval('scheduled_session_id_seq'),
     username       varchar(255)                                      not null,
     coach_username varchar(255),
     time           timestamp,
@@ -373,7 +373,7 @@ create table if not exists users_managers
 
 create table if not exists sync_event
 (
-    id          bigint       not null primary key,
+    id          bigint       not null primary key default nextval('sync_event_id_seq'),
     username    varchar(50)  not null,
     external_id varchar(255) not null,
     start_date  timestamp(6) not null,
