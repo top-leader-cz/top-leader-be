@@ -120,6 +120,30 @@ We use **Terraform** for infrastructure as code (IaC):
 - **Plan & Apply** - preview changes before applying them
 - **State management** - tracks resource state for safe updates and rollbacks
 
+### Why GCP App Engine + Cloud SQL?
+
+We deploy on **Google Cloud Platform** with the following architecture:
+
+**Backend:**
+- **App Engine** (Standard Environment) - managed Java runtime, auto-scaling, zero server management
+- **Cloud SQL** (PostgreSQL 15) - managed database with automatic backups, high availability
+
+**Frontend:**
+- **React + MUI** (Material UI) - modern SPA with component library
+- **Cloud Storage Bucket** - static file hosting
+- **Cloud CDN** - global edge caching for fast delivery
+- **Global Load Balancer** - HTTPS termination, routing, DDoS protection
+
+**CI/CD:**
+- **GitHub Actions** - automated builds and deployments for both frontend and backend
+- Tag-based deployments (`qa-deploy` tag triggers QA, `prod-deploy` triggers production)
+
+**Why this setup:**
+- **Cost-effective** - pay only for what you use, scale to zero possible
+- **Managed infrastructure** - no servers to patch or maintain
+- **Global performance** - CDN for frontend, regional backend
+- **Automated deployments** - push tag → GitHub Actions → deployed
+
 ### Future Tech Plans
 
 > See [ADR-003: Native Image Strategy](docs/adr/003-native-image-strategy.md) for full decision record.
