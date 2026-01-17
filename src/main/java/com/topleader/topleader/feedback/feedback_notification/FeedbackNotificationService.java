@@ -4,7 +4,7 @@
 package com.topleader.topleader.feedback.feedback_notification;
 
 import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.VelocityService;
+import com.topleader.topleader.common.email.TemplateService;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.common.util.transaction.TransactionService;
@@ -51,7 +51,7 @@ public class FeedbackNotificationService {
 
     private final EmailService emailService;
 
-    private final VelocityService velocityService;
+    private final TemplateService velocityService;
 
 
     @Value("${top-leader.app-url}")
@@ -156,7 +156,7 @@ public class FeedbackNotificationService {
 
 
     public String parseTemplateName(String locale) {
-        return "templates/feedbackNotification/feedback-notification-" + parseLocale(locale) + ".vm";
+        return "templates/feedbackNotification/feedback-notification-" + parseLocale(locale) + ".html";
     }
 
     public String parseLocale(String locale) {

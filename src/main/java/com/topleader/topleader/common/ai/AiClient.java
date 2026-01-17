@@ -5,7 +5,8 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.common.util.common.user.UserUtils;
-import io.github.resilience4j.retry.Retry;
+import dev.failsafe.Failsafe;
+import dev.failsafe.RetryPolicy;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +32,7 @@ public class AiClient {
 
     private final AiPromptService aiPromptService;
 
-    private final Retry retry;
+    private final RetryPolicy<Object> retryPolicy;
 
     public String findLeaderShipStyle(String locale, List<String> strengths, List<String> values) {
         log.info("Finding leadership style for strengths: {} and values: {} locale: {}", strengths, values, locale);
@@ -97,7 +98,7 @@ public class AiClient {
         var query = String.format(prompt, actionsSteps);
         log.info("AI query: {}", query);
 
-        var res = retry.executeSupplier(() -> chatModel.call(query));
+        var res = Failsafe.with(retryPolicy).get(() -> chatModel.call(query));
         log.info("AI user preview response: {}  User:[{}]", res, username);
         return AiUtils.replaceNonJsonString(res);
     }
@@ -112,7 +113,7 @@ public class AiClient {
                         "language", UserUtils.localeToLanguage(user.getLocale())));
         log.info("generateRecommendedGrowths query: {} User:[{}]", prompt.getContents(), username);
 
-        var res = retry.executeSupplier(() -> chatClient.prompt(prompt)
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
                 .call()
                 .entity(new ParameterizedTypeReference<List<RecommendedGrowth>>() {}));
         log.info("AI generateRecommendedGrowths response: {} User:[{}]", res, username);
@@ -126,7 +127,7 @@ public class AiClient {
                         "language", language));
         log.info("AI articles query: {}", prompt.getContents());
 
-        var res = retry.executeSupplier(() -> chatClient.prompt(prompt)
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
         log.info("AI user articles response: {}  User:[{}]", res, username);
@@ -142,7 +143,7 @@ public class AiClient {
                 "language", language));
         log.info("Suggestions query: {}", prompt.getContents());
 
-        var res = retry.executeSupplier(() -> chatClient.prompt(prompt)
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
                 .call()
                 .content());
         log.info("Suggestions response: {}  User:[{}]", res, username);

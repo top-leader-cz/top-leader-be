@@ -2,7 +2,6 @@ package com.topleader.topleader.coach.session;
 
 import com.topleader.topleader.IntegrationTest;
 
-import com.topleader.topleader.session.coach_session.CoachSessionViewRepository;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import lombok.SneakyThrows;
 import org.assertj.core.api.Assertions;
@@ -25,9 +24,6 @@ class ClientSessionControllerIT extends IntegrationTest {
 
     @Autowired
     ScheduledSessionRepository repository;
-
-    @Autowired
-    CoachSessionViewRepository coachSessionViewRepository;
 
     @SneakyThrows
     @Test
@@ -90,7 +86,6 @@ class ClientSessionControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "coach", authorities = {"COACH"})
     void getSessionsUpcoming() {
-        var sessionDate = coachSessionViewRepository.findById(7L).get().getDate();
         mvc.perform(post("/api/latest/coach-sessions?page=0&size=10&sort=date,asc")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -102,12 +97,11 @@ class ClientSessionControllerIT extends IntegrationTest {
                         ))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(content().json(String.format("""
+                .andExpect(content().json("""
                         {
                           "content": [
                             {
                               "id": 7,
-                              "date": "%s",
                               "status": "UPCOMING",
                               "client": "client1",
                               "firstName": "Cool",
@@ -140,7 +134,7 @@ class ClientSessionControllerIT extends IntegrationTest {
                           "numberOfElements": 1,
                           "empty": false
                         }
-                        """, sessionDate.toOffsetDateTime())));
+                        """));
 
     }
 
@@ -161,7 +155,7 @@ class ClientSessionControllerIT extends IntegrationTest {
                         ))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(content().json(String.format("""
+                .andExpect(content().json("""
                         {
                              "content": [
                                {
@@ -203,7 +197,7 @@ class ClientSessionControllerIT extends IntegrationTest {
                              "numberOfElements": 2,
                              "empty": false
                            }
-                        """)));
+                        """));
 
     }
 

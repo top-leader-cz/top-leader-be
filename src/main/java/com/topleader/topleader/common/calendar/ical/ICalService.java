@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.Property;
+import net.fortuna.ical4j.model.component.CalendarComponent;
 import net.fortuna.ical4j.model.component.VEvent;
 import net.fortuna.ical4j.model.parameter.Cn;
 import net.fortuna.ical4j.model.parameter.Role;
@@ -86,7 +87,7 @@ public class ICalService {
         return new Calendar().withProdId("-//Ben Fortuna//iCal4j 1.0//EN")
             .withDefaults()
             .withProperty(new Method(method))
-            .withComponent(
+            .withComponent((CalendarComponent)
                 new VEvent(ZonedDateTime.of(start, ZoneOffset.UTC), ZonedDateTime.of(end, ZoneOffset.UTC), eventName)
                     .withProperty(tz.getProperty(Property.TZID).orElseThrow())
                     .withProperty(new Uid(eventId))
@@ -120,8 +121,7 @@ public class ICalService {
                     .withProperty(new Status(Status.VALUE_CONFIRMED))
                     .withProperty(new Sequence(0))
                     .withProperty(new Transp(Transp.VALUE_OPAQUE))
-                    .getFluentTarget()
-            )
+                    .getFluentTarget())
             .getFluentTarget();
     }
 
@@ -167,7 +167,7 @@ public class ICalService {
         return new Calendar().withProdId("-//Ben Fortuna//iCal4j 1.0//EN")
             .withDefaults()
             .withProperty(new Method(method))
-            .withComponent(
+            .withComponent((CalendarComponent)
                 new VEvent(ZonedDateTime.of(start, ZoneOffset.UTC), ZonedDateTime.of(end, ZoneOffset.UTC), eventName)
                     .withProperty(tz.getProperty(Property.TZID).orElseThrow())
                     .withProperty(new Uid(eventId))
@@ -191,8 +191,7 @@ public class ICalService {
                     .withProperty(new Status(Status.VALUE_CONFIRMED))
                     .withProperty(new Sequence(0))
                     .withProperty(new Transp(Transp.VALUE_OPAQUE))
-                    .getFluentTarget()
-            )
+                    .getFluentTarget())
             .getFluentTarget();
     }
 

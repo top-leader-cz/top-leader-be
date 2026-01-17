@@ -15,7 +15,7 @@
     </Appenders>
 
     <Loggers>
-        <SpringProfile name="default | test">
+        <SpringProfile name="default | dev | test">
             <Root level="INFO">
                 <AppenderRef ref="CONSOLE"/>
             </Root>

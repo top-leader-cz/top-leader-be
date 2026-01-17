@@ -1,1 +1,0 @@
-alter table user_info add column last_reflection varchar(2000);
