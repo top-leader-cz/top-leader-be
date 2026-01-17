@@ -38,6 +38,9 @@ public class GoogleCalendarController {
     @Value("${google.client.redirectUri}")
     private String redirectURI;
 
+    @Value("${top-leader.app-url}")
+    private String appUrl;
+
 
     @GetMapping("/login/google")
     public RedirectView googleConnectionStatus(
@@ -58,7 +61,7 @@ public class GoogleCalendarController {
 
         calendarService.storeTokenInfo(userEmail, response);
 
-        return new RedirectView("/#/sync-success?provider=gcal");
+        return new RedirectView(appUrl + "/#/sync-success?provider=gcal");
     }
 
     private String authorize(String username) {
