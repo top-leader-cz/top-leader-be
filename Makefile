@@ -1,5 +1,5 @@
 # Google Cloud commands
-.PHONY: login logs-qa logs-prod openapi build deploy-qa run local-login local-whoami local-google-auth local-api local-health local-create-user
+.PHONY: login logs-qa logs-prod openapi build deploy-qa deploy-prod run local-login local-whoami local-google-auth local-api local-health local-create-user
 
 # Login to Google Cloud and set project
 login:
@@ -32,4 +32,20 @@ deploy-qa: build
 	git push origin :refs/tags/qa-deploy 2>/dev/null || true
 	git tag qa-deploy
 	git push origin qa-deploy
+
+# Deploy to PROD (creates release-v*.*.* tag, same pattern as frontend)
+deploy-prod: build
+	@LATEST=$$(git tag -l "release-v*.*.*" | sort -V | tail -n1); \
+	if [ -z "$$LATEST" ]; then \
+		NEW_TAG="release-v0.0.1"; \
+	else \
+		MAJOR=$$(echo $$LATEST | sed 's/release-v//' | cut -d. -f1); \
+		MINOR=$$(echo $$LATEST | sed 's/release-v//' | cut -d. -f2); \
+		PATCH=$$(echo $$LATEST | sed 's/release-v//' | cut -d. -f3); \
+		NEW_PATCH=$$((PATCH + 1)); \
+		NEW_TAG="release-v$$MAJOR.$$MINOR.$$NEW_PATCH"; \
+	fi; \
+	echo "Creating tag: $$NEW_TAG"; \
+	git tag "$$NEW_TAG"; \
+	git push origin "$$NEW_TAG"
 

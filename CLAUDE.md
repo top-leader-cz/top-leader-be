@@ -114,6 +114,32 @@ Current latest: `V0.0.1.81__coaching_package.sql`
 - TestContainers for PostgreSQL
 - Test data via SQL scripts in `src/test/resources/sql/`
 
+## Deployment
+
+### CI/CD Triggers
+
+| Event | Action |
+|-------|--------|
+| PR to `develop`/`main` | Build + tests only |
+| Tag `qa-deploy` | Deploy to QA environment |
+| Tag `release-v*.*.*` | Deploy to PROD environment |
+
+### Deploy Commands (Makefile)
+
+```bash
+# Deploy to QA (recreates qa-deploy tag)
+make deploy-qa
+
+# Deploy to PROD (auto-increments version, creates release-v*.*.* tag)
+make deploy-prod
+```
+
+### Version Tagging
+
+- QA: Uses movable `qa-deploy` tag (deleted and recreated each time)
+- PROD: Uses semantic versioning `release-v{major}.{minor}.{patch}` (same pattern as frontend)
+- `make deploy-prod` automatically increments patch version from latest tag
+
 ## Code Style
 
 - Use `var` for local variables
