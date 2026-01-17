@@ -27,7 +27,7 @@ build:
 	$(HOME)/.sdkman/candidates/gradle/current/bin/gradle build --parallel --build-cache
 
 # Deploy to QA (local build + GitHub Actions verification)
-deploy-qa:
+deploy-qa: build
 	git tag -d qa-deploy 2>/dev/null || true
 	git push origin :refs/tags/qa-deploy 2>/dev/null || true
 	git tag qa-deploy
