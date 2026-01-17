@@ -136,7 +136,8 @@ We deploy on **Google Cloud Platform** with the following architecture:
 
 **CI/CD:**
 - **GitHub Actions** - automated builds and deployments for both frontend and backend
-- Tag-based deployments (`qa-deploy` tag triggers QA, `prod-deploy` triggers production)
+- PRs to `develop`/`main` trigger build + tests only (no deploy)
+- Tag-based deployments (`qa-deploy` tag triggers QA, `release-v*.*.*` triggers production)
 
 **Why this setup:**
 - **Cost-effective** - pay only for what you use, scale to zero possible
