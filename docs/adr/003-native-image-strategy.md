@@ -48,6 +48,14 @@ We are **preparing for GraalVM Native Image** compilation through incremental ch
 - [x] **Failsafe** for resilience - no reflection
 - [x] **Virtual Threads** - simplifies concurrency model
 
+### Removed Heavy Reflection Libraries
+- [x] **Apache Velocity** (`velocity-engine-core`, `velocity-tools-generic`) - template engine with heavy reflection, replaced with simple string templates
+- [x] **Resilience4j** - reflection-heavy resilience library, replaced with **Failsafe** (zero reflection)
+- [x] **Vavr** - functional library with reflection overhead, replaced with native Java streams
+- [x] **springdoc-openapi runtime** - dynamic OpenAPI generation, replaced with pre-generated `openapi.yaml`
+- [x] **google-http-client-jackson2** - legacy Google HTTP client, using modern alternatives
+- [x] **spring-cloud-gcp-starter-logging** - removed GCP-specific logging, using standard Log4j2
+
 ### In Progress
 - [ ] Remove **iCal4j** - heavy reflection, replace with simple implementation
 - [ ] Evaluate **Hibernate** alternatives - consider jOOQ or plain JDBC
