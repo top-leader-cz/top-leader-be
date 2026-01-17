@@ -45,7 +45,7 @@ public class GoogleCalendarService {
 
     @Transactional
     public void storeTokenInfo(String username, TokenResponse tokenResponse) {
-        log.info("Storing token info for user {} token info: {}", username, tokenResponse);
+        log.info("caStoring token info for user {} token info: {}", username, tokenResponse);
 
         var id = new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.GOOGLE);
         transactionService.execute(() -> {
