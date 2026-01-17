@@ -77,24 +77,19 @@ dependencies {
     runtimeOnly("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
 
-    // Logging
-    implementation("org.springframework.boot:spring-boot-starter-log4j2")
-    implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.3")
     // jOOQ
     implementation("org.springframework.boot:spring-boot-starter-jooq")
     jooqCodegen("org.postgresql:postgresql")
+    jooqCodegen("org.testcontainers:postgresql:1.21.4")
+    jooqCodegen("org.flywaydb:flyway-database-postgresql:11.8.2")
+
+    // Logging
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
+    implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.3")
 
     // Utilities
     implementation("dev.failsafe:failsafe:3.3.2")
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
-    implementation("io.github.resilience4j:resilience4j-retry:2.3.0")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.3")
-    implementation("org.apache.velocity.tools:velocity-tools-generic:3.1") {
-        exclude(group = "commons-logging", module = "commons-logging")
-    }
-    implementation("org.apache.velocity:velocity-engine-core:2.3")
-    implementation("io.vavr:vavr:0.10.5")
-    implementation("org.mnode.ical4j:ical4j:4.0.0-rc6")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -118,20 +113,14 @@ tasks.bootJar {
     archiveFileName.set("top-leader.jar")
 }
 
-// Integration tests
-val integrationTest by tasks.registering(Test::class) {
-    description = "Runs integration tests."
-    group = "verification"
-    include("**/*IT.class")
-    shouldRunAfter(tasks.test)
-}
-
 // OpenAPI spec generation
 val generateOpenApi by tasks.registering(Test::class) {
     description = "Generates OpenAPI spec."
     group = "documentation"
     include("**/OpenApiGeneratorTest.class")
     shouldRunAfter(tasks.test)
+}
+
 // jOOQ Code Generation
 val jooqGeneratedDir = layout.buildDirectory.dir("generated/jooq")
 
@@ -149,19 +138,17 @@ tasks.compileJava {
 
 jooq {
     configuration {
+        // Testcontainers PostgreSQL - runs Flyway automatically
         jdbc {
-            driver = "org.postgresql.Driver"
-            url = "jdbc:postgresql://localhost:5434/top_leader"
-            user = "root"
-            password = "postgres"
+            driver = "org.testcontainers.jdbc.ContainerDatabaseDriver"
+            url = "jdbc:tc:postgresql:16:///test?TC_INITSCRIPT=file:src/main/resources/db/migration/1.0.0/V1.0.0.1__init.sql"
         }
         generator {
             name = "org.jooq.codegen.JavaGenerator"
             database {
                 name = "org.jooq.meta.postgres.PostgresDatabase"
                 inputSchema = "public"
-                includes = ".*"
-                excludes = "flyway_schema_history"
+                includes = "admin_view"
             }
             generate {
                 isRecords = true

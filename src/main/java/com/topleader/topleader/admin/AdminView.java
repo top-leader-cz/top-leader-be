@@ -6,16 +6,12 @@ package com.topleader.topleader.admin;
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.user.User;
 import java.util.Set;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+
+import lombok.*;
 import lombok.experimental.Accessors;
 
 
-@Getter
-@Setter
-@ToString
+@Data
 @Accessors(chain = true)
 @NoArgsConstructor
 public class AdminView {
