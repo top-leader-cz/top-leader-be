@@ -12,6 +12,8 @@ import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
+import java.util.Set;
+
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -66,12 +68,21 @@ public class PublicFeedbackController {
                         @RequestBody @Valid NewUser newUser) {
         log.info("Receiving respondent form. Respondent: [{}] ", username);
         feedbackService.validateRecipientIfSubmitted(formId, username, token);
+
+        // Check if email is already used by another user
+        userDetailService.getUserByEmail(newUser.getEmail())
+                .ifPresent(existingUser -> {
+                    if (!existingUser.getUsername().equals(username)) {
+                        throw new IllegalArgumentException("Email " + newUser.getEmail() + " is already used by another user");
+                    }
+                });
+
         userDetailService.getUser(username)
                 .ifPresentOrElse(u -> {
                     if (skipUpdate(u)) return;
                     log.info("Updating respondent: [{}] ", username);
                     userDetailService.save(u.setStatus(User.Status.PENDING)
-                            .setUsername(newUser.getEmail())
+                            .setEmail(newUser.getEmail())
                             .setFirstName(newUser.getFirstName())
                             .setLastName(newUser.getLastName())
                             .setHrEmail(newUser.getHrEmail()));
@@ -88,11 +99,13 @@ public class PublicFeedbackController {
 
     private void newUser(NewUser newUser, String username) {
         log.info("Creating respondent: [{}] ", username);
-        userDetailService.save(new User().setStatus(User.Status.PENDING)
-                .setUsername(newUser.getEmail().toLowerCase(Locale.ROOT))
+        userDetailService.save(new User()
+                .setStatus(User.Status.PENDING)
                 .setUsername(username)
+                .setEmail(newUser.getEmail())
                 .setFirstName(newUser.getFirstName())
                 .setLastName(newUser.getLastName())
+                .setAuthorities(Set.of(User.Authority.RESPONDENT))
                 .setHrEmail(newUser.getHrEmail()));
     }
 

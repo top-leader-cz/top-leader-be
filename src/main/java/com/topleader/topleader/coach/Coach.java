@@ -32,6 +32,10 @@ import lombok.experimental.Accessors;
 public class Coach {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
     private String username;
 
     private boolean publicProfile;
@@ -42,12 +46,12 @@ public class Coach {
     @Column(length = 1000)
     private String bio;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "coach_languages", joinColumns = @JoinColumn(name = "coach_username"))
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private List<String> languages;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "coach_fields", joinColumns = @JoinColumn(name = "coach_username"))
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private List<String> fields;
 
     private LocalDate experienceSince;
@@ -68,8 +72,8 @@ public class Coach {
     @Column(columnDefinition = "jsonb")
     private Set<PrimaryRole> primaryRoles;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "username", referencedColumnName = "username")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "username", referencedColumnName = "username", insertable = false, updatable = false)
     private User user;
 
     @JdbcTypeCode(SqlTypes.JSON)

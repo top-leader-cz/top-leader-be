@@ -35,7 +35,9 @@ public class ManagerService {
         }
 
         if (StringUtils.isNotBlank(request.manager())) {
-            user.setManagers(new HashSet<>(Set.of(new User().setUsername(request.manager()))));
+            var manager = userRepository.findByUsername(request.manager())
+                    .orElseThrow(() -> new IllegalArgumentException("Manager not found: " + request.manager()));
+            user.setManagers(new HashSet<>(Set.of(manager)));
         }
         return userRepository.save(user);
     }

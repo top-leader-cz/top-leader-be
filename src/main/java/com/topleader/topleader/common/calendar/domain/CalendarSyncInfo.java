@@ -14,10 +14,10 @@ import java.time.LocalDateTime;
 @Entity
 public class CalendarSyncInfo {
 
-    @EmbeddedId
-    private CalendarInfoId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(insertable = false, updatable = false)
     private String username;
 
     private String refreshToken;
@@ -28,7 +28,6 @@ public class CalendarSyncInfo {
     private Status status;
 
     @Enumerated(EnumType.STRING)
-    @Column(insertable = false, updatable = false)
     private SyncType syncType;
 
     private LocalDateTime lastSync = LocalDateTime.now();
@@ -42,19 +41,5 @@ public class CalendarSyncInfo {
     public enum SyncType {
         GOOGLE, CALENDLY, CUSTOM
     }
-
-    @Data
-    @Embeddable
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class CalendarInfoId implements Serializable {
-
-        private String username;
-
-        @Enumerated(EnumType.STRING)
-        private SyncType syncType;
-
-    }
-
 }
 

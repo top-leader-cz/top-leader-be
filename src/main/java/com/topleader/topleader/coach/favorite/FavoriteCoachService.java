@@ -16,16 +16,17 @@ public class FavoriteCoachService {
 
     @Transactional
     public void saveFavoriteCoaches(String username, List<String> coachUsername) {
-        coachUsername.forEach(coach -> favoriteCoachRepository.save(new FavoriteCoach().setId(new FavoriteCoach.FavoriteCoachId(username, coach))));
+        coachUsername.forEach(coach -> favoriteCoachRepository.save(new FavoriteCoach().setUsername(username).setCoachUsername(coach)));
     }
 
     public List<String> getFavoriteCoaches(String username) {
         return favoriteCoachRepository.findByUsername(username).stream()
-                .map(favoriteCoach -> favoriteCoach.getId().getCoachUsername())
+                .map(FavoriteCoach::getCoachUsername)
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void removeCoach(String username, String coachUsername) {
-        favoriteCoachRepository.deleteById(new FavoriteCoach.FavoriteCoachId(username, coachUsername));
+        favoriteCoachRepository.deleteByUsernameAndCoachUsername(username, coachUsername);
     }
 }

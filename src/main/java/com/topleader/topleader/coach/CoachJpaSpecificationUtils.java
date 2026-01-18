@@ -21,17 +21,37 @@ public final class CoachJpaSpecificationUtils {
     }
 
     public static Specification<CoachListView> hasLanguagesInList(List<String> languages) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.isTrue(
-            root.join("languages")
-                .in(languages)
-        );
+        return (root, query, criteriaBuilder) -> {
+            query.distinct(true);
+            var predicates = languages.stream()
+                .map(lang -> criteriaBuilder.isTrue(
+                    criteriaBuilder.function(
+                        "jsonb_path_exists",
+                        Boolean.class,
+                        root.get("languages"),
+                        criteriaBuilder.literal("$[*] ? (@ == \"" + lang + "\")")
+                    )
+                ))
+                .toArray(jakarta.persistence.criteria.Predicate[]::new);
+            return criteriaBuilder.or(predicates);
+        };
     }
 
     public static Specification<CoachListView> hasFieldsInList(List<String> fields) {
-        return (root, query, criteriaBuilder) -> criteriaBuilder.isTrue(
-            root.join("fields")
-                .in(fields)
-        );
+        return (root, query, criteriaBuilder) -> {
+            query.distinct(true);
+            var predicates = fields.stream()
+                .map(field -> criteriaBuilder.isTrue(
+                    criteriaBuilder.function(
+                        "jsonb_path_exists",
+                        Boolean.class,
+                        root.get("fields"),
+                        criteriaBuilder.literal("$[*] ? (@ == \"" + field + "\")")
+                    )
+                ))
+                .toArray(jakarta.persistence.criteria.Predicate[]::new);
+            return criteriaBuilder.or(predicates);
+        };
     }
 
     public static Specification<CoachListView> hasExperienceFrom(LocalDate from) {

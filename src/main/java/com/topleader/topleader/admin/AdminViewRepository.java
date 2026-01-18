@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 /**
  * @author Daniel Slavik
  */
-public interface AdminViewRepository extends JpaRepository<AdminView, String>, JpaSpecificationExecutor<AdminView> {
+public interface AdminViewRepository extends JpaRepository<AdminView, Long>, JpaSpecificationExecutor<AdminView> {
 
 }

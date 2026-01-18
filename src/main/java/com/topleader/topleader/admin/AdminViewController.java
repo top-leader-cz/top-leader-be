@@ -102,7 +102,7 @@ public class AdminViewController {
                 }
             );
 
-        coachRepository.findById(username)
+        coachRepository.findByUsername(username)
             .map(userRequest::updateCoach)
             .ifPresentOrElse(
                 coachRepository::save,

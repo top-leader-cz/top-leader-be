@@ -16,20 +16,20 @@ public class CoachUserNoteController {
     @Secured({"COACH", "ADMIN"})
     @PostMapping("/{userId}")
     public void addNote(@AuthenticationPrincipal UserDetails auth,  @PathVariable String userId, @RequestBody CoachUserNoteDto note) {
-        repository.save(new CoachUserNote().setId(new CoachUserNote.CoachUserNoteId(auth.getUsername(), userId)).setNote(note.note));
+        repository.save(new CoachUserNote().setCoachId(auth.getUsername()).setUserId(userId).setNote(note.note));
     }
 
     @Secured({"COACH", "ADMIN"})
     @GetMapping("/{userId}")
     public CoachUserNoteDto getNote(@AuthenticationPrincipal UserDetails auth,  @PathVariable String userId, CoachUserNoteDto note) {
-        return repository.findById(new CoachUserNote.CoachUserNoteId(auth.getUsername(), userId))
+        return repository.findByCoachIdAndUserId(auth.getUsername(), userId)
                 .map(CoachUserNoteDto::toDto)
                 .orElse(CoachUserNoteDto.empty(auth.getUsername(), userId));
     }
 
     public record CoachUserNoteDto(String coachId, String userId, String note) {
         public static CoachUserNoteDto toDto(CoachUserNote note) {
-            return new CoachUserNoteDto(note.getId().getCoachId(), note.getId().getUserId(), note.getNote());
+            return new CoachUserNoteDto(note.getCoachId(), note.getUserId(), note.getNote());
         }
 
         public static CoachUserNoteDto empty(String coachId, String userId) {

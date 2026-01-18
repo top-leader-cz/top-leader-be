@@ -6,6 +6,7 @@ import com.topleader.topleader.hr.company.CompanyService;
 import com.topleader.topleader.hr.domain.ManagerDto;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
+import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.manager.ManagerService;
 import com.topleader.topleader.user.settings.domain.UserSettingRequest;
 import com.topleader.topleader.user.settings.domain.UserSettings;
@@ -43,6 +44,8 @@ public class UserSettingsController {
     private final ManagerService managerService;
 
     private final CompanyService companyService;
+
+    private final UserRepository userRepository;
 
     @Secured({"USER"})
     @GetMapping("/managers")
@@ -95,7 +98,9 @@ public class UserSettingsController {
 
 
         if (StringUtils.isNotBlank(request.getManager())) {
-            user.setManagers(new HashSet<>(Set.of(new User().setUsername(request.getManager()))));
+            var manager = userRepository.findByUsername(request.getManager())
+                    .orElseThrow(() -> new IllegalArgumentException("Manager not found: " + request.getManager()));
+            user.setManagers(new HashSet<>(Set.of(manager)));
         }
 
         return UserSettings.fromUser(userDetailService.save(user));

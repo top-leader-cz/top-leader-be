@@ -96,6 +96,14 @@ public class FeedbackService {
         return feedbackFormRepository.saveAndFlush(form);
     }
 
+    @Transactional
+    public FeedbackForm saveFormFromRequest(FeedbackFormRequest request) {
+        var user = userRepository.findByUsername(request.getUsername().toLowerCase(java.util.Locale.ROOT))
+                .orElseThrow(() -> new EntityNotFoundException("User not found: " + request.getUsername()));
+        var form = feedbackFormRepository.saveAndFlush(FeedbackFormRequest.toSimpleForm(request, user));
+        return feedbackFormRepository.saveAndFlush(FeedbackFormRequest.toForm(request.setId(form.getId()), user));
+    }
+
     public void updateQuestions(List<Question> questions) {
         questionRepository.saveAll(questions);
     }
@@ -122,11 +130,20 @@ public class FeedbackService {
 
     @Transactional
     public List<FeedbackFormAnswer> submitForm(List<FeedbackFormAnswer> answers, String username) {
-        userRepository.findById(username)
+        userRepository.findByUsername(username)
                 .ifPresent(u -> {
                     if (skipUpdate(u)) return;
                     userRepository.save(u.setStatus(User.Status.SUBMITTED));
                 });
+
+        // Save the recipient's submitted status
+        if (!answers.isEmpty()) {
+            var recipient = answers.get(0).getRecipient();
+            if (recipient != null) {
+                recipientRepository.save(recipient);
+            }
+        }
+
         return feedbackFormAnswerRepository.saveAll(answers);
     }
 
@@ -140,7 +157,7 @@ public class FeedbackService {
                     var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(data.getLocale()));
                     var subject = String.format(subjects.getOrDefault(data.getLocale(), defaultLocale), data.getFirstName(), data.getLastName());
 
-                    var testedUser = userRepository.findById(r.recipient()).orElse(new User());
+                    var testedUser = userRepository.findByUsername(r.recipient()).orElse(new User());
                     if (!skipUpdate(testedUser)) {
                         var newUser = UserUtils.fromEmail(r.recipient())
                                 .setAuthorities(Set.of(User.Authority.RESPONDENT))

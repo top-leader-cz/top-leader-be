@@ -67,7 +67,7 @@ public class CoachController {
     @Secured("COACH")
     @Transactional
     public CoachDto getCoachInfo(@AuthenticationPrincipal UserDetails user) {
-        return coachRepository.findById(user.getUsername())
+        return coachRepository.findByUsername(user.getUsername())
             .map(CoachDto::from)
             .orElse(CoachDto.EMPTY);
     }
@@ -75,12 +75,16 @@ public class CoachController {
     @PostMapping
     @Secured("COACH")
     public CoachDto setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid CoachDto request) {
-        var coach = coachRepository.findById(user.getUsername())
+        // Update user email first
+        var updatedUser = userRepository.findByUsername(user.getUsername())
+                .map(u -> u.setEmail(request.email))
+                .map(userRepository::save)
+                .orElseThrow(CommonUtils.entityNotFound("user " + user.getUsername()));
+
+        var coach = coachRepository.findByUsername(user.getUsername())
                 .orElse(new Coach()
                         .setUsername(user.getUsername())
-                        .setUser(userRepository.findById(user.getUsername())
-                                .map(u -> u.setEmail(request.email))
-                                .orElseThrow(CommonUtils.entityNotFound("user " + user.getUsername()))));
+                        .setUser(updatedUser));
 
         return CoachDto.from(coachRepository.save(request.updateCoach(coach)));
     }
@@ -101,7 +105,7 @@ public class CoachController {
     @GetMapping("/photo")
     public ResponseEntity<byte[]> getCoachPhoto(@AuthenticationPrincipal UserDetails user) {
 
-        return coachImageRepository.findById(user.getUsername())
+        return coachImageRepository.findByUsername(user.getUsername())
             .map(i -> ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.valueOf(i.getType()))
                 .body(ImageUtil.decompressImage(i.getImageData()))
@@ -120,7 +124,7 @@ public class CoachController {
             return List.of();
         }
 
-        final var clients = userRepository.findAllById(sessions.stream()
+        final var clients = userRepository.findAllByUsernameIn(sessions.stream()
                 .map(ScheduledSession::getUsername)
                 .collect(Collectors.toSet())
             ).stream()

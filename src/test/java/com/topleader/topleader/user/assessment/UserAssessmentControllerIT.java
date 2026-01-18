@@ -73,7 +73,7 @@ class UserAssessmentControllerIT extends IntegrationTest {
             .andExpect(jsonPath("answer").value(2))
         ;
 
-        assertThat(userAssessmentRepository.findById(new UserAssessmentId().setQuestionId(4L).setUsername("user")).orElseThrow().getAnswer(), is(2));
+        assertThat(userAssessmentRepository.findByUsernameAndQuestionId("user", 4L).orElseThrow().getAnswer(), is(2));
 
     }
 
@@ -85,5 +85,32 @@ class UserAssessmentControllerIT extends IntegrationTest {
             .andExpect(jsonPath("questionId").value(3))
             .andExpect(jsonPath("answer").value(2))
         ;
+    }
+
+    @Test
+    @WithMockUser
+    void updateExistingUserAssessmentTest() throws Exception {
+        // First verify the existing answer
+        mvc.perform(get("/api/latest/user-assessments/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("questionId").value(1))
+            .andExpect(jsonPath("answer").value(1));
+
+        // Update the existing assessment with a new answer
+        mvc.perform(post("/api/latest/user-assessments/1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "answer": 5
+                    }
+                    """)
+            )
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("questionId").value(1))
+            .andExpect(jsonPath("answer").value(5));
+
+        // Verify the answer was updated, not duplicated
+        assertThat(userAssessmentRepository.findByUsernameAndQuestionId("user", 1L).orElseThrow().getAnswer(), is(5));
+        assertThat(userAssessmentRepository.findAll(), hasSize(3)); // Still only 3 assessments, not 4
     }
 }

@@ -68,7 +68,7 @@ class AdminViewControllerIT extends IntegrationTest {
         mvc.perform(post("/api/latest/admin/users/user1/confirm-requested-credits"))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("user1").orElseThrow();
+        final var fetchedUser = userRepository.findByUsername("user1").orElseThrow();
         assertThat(fetchedUser).isNotNull();
         assertThat(fetchedUser.getCredit()).isEqualTo(150);
         assertThat(fetchedUser.getPaidCredit()).isEqualTo(100);
@@ -90,7 +90,7 @@ class AdminViewControllerIT extends IntegrationTest {
                 .content(jsonMapper.writeValueAsString(createUserRequestDto)))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("newuser@gmail.com").orElseThrow();
+        final var fetchedUser = userRepository.findByUsername("newuser@gmail.com").orElseThrow();
         assertThat(fetchedUser).isNotNull();
         assertThat(fetchedUser.getUsername()).isEqualTo(createUserRequestDto.username().toLowerCase(Locale.ROOT));
         assertThat(fetchedUser.getFirstName()).isEqualTo(createUserRequestDto.firstName());
@@ -99,7 +99,7 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getCompanyId()).isEqualTo(createUserRequestDto.companyId());
         assertThat(fetchedUser.getAuthorities()).containsExactlyInAnyOrderElementsOf(createUserRequestDto.authorities());
 
-        var coach = coachRepository.findById("newuser@gmail.com").orElseThrow();
+        var coach = coachRepository.findByUsername("newuser@gmail.com").orElseThrow();
         assertThat(coach.getRate()).isEqualTo("$");
         assertThat(coach.getInternalRate()).isEqualTo(165);
         assertThat(coach.getCertificate()).isEqualTo(Set.of("ACC"));
@@ -119,7 +119,7 @@ class AdminViewControllerIT extends IntegrationTest {
                 .content(jsonMapper.writeValueAsString(updatedUser)))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("user4").orElseThrow();
+        final var fetchedUser = userRepository.findByUsername("user4").orElseThrow();
         assertThat(fetchedUser).isNotNull();
         assertThat(fetchedUser.getFirstName()).isEqualTo(updatedUser.firstName());
         assertThat(fetchedUser.getLastName()).isEqualTo(updatedUser.lastName());
@@ -143,7 +143,7 @@ class AdminViewControllerIT extends IntegrationTest {
                 .contains("http://app-test-ur=\r\nl/#/api/public/set-password/")
                 .contains("Unlock Your ");
 
-        Assertions.assertThat(userRepository.findById("user4")).isNotEmpty();
+        Assertions.assertThat(userRepository.findByUsername("user4")).isNotEmpty();
     }
 
     @Test
@@ -166,7 +166,7 @@ class AdminViewControllerIT extends IntegrationTest {
                 .contains("http://app-test-ur=\r\nl/#/api/public/set-password/")
                 .contains("Unlock Your ");
 
-        Assertions.assertThat(userRepository.findById("user4")).isNotEmpty();
+        Assertions.assertThat(userRepository.findByUsername("user4")).isNotEmpty();
     }
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
@@ -181,7 +181,7 @@ class AdminViewControllerIT extends IntegrationTest {
                 .content(jsonMapper.writeValueAsString(updatedUser)))
             .andExpect(status().isOk());
 
-        final var fetchedUser = userRepository.findById("user1").orElseThrow();
+        final var fetchedUser = userRepository.findByUsername("user1").orElseThrow();
         assertThat(fetchedUser).isNotNull();
         assertThat(fetchedUser.getFirstName()).isEqualTo(updatedUser.firstName());
         assertThat(fetchedUser.getLastName()).isEqualTo(updatedUser.lastName());
@@ -420,6 +420,6 @@ class AdminViewControllerIT extends IntegrationTest {
         mvc.perform(delete("/api/latest/admin/users/user1"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(userRepository.findById("user1").orElseThrow().getStatus()).isEqualTo(User.Status.CANCELED);
+        Assertions.assertThat(userRepository.findByUsername("user1").orElseThrow().getStatus()).isEqualTo(User.Status.CANCELED);
     }
 }

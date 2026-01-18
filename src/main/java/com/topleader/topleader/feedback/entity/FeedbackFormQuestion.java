@@ -12,35 +12,29 @@ import java.io.Serializable;
 @Entity
 @Accessors(chain = true)
 @EqualsAndHashCode(of = {"id"})
-@ToString(of={"id", "form", "question", "type", "required"})
+@ToString(of={"id", "feedbackFormId", "questionKey", "type", "required"})
 public class FeedbackFormQuestion {
 
-    @EmbeddedId
-    private FeedbackFormQuestionId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "form_id")
+    private Long feedbackFormId;
+
+    @Column(name = "question_key")
+    private String questionKey;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("formId")
+    @JoinColumn(name = "form_id", insertable = false, updatable = false)
     private FeedbackForm form;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @MapsId("questionKey")
+    @JoinColumn(name = "question_key", insertable = false, updatable = false)
     private Question question;
 
     @Enumerated(EnumType.STRING)
     private QuestionType type;
 
     private boolean required;
-
-    @Data
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class FeedbackFormQuestionId implements Serializable {
-
-        @Column(name = "feedback_form_id")
-        private Long formId;
-
-        @Column(name = "question_key")
-        private String questionKey;
-    }
 }

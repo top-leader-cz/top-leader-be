@@ -45,10 +45,7 @@ public class UserAssessmentController {
         @PathVariable Long assessmentId
     ) {
 
-        return userAssessmentRepository.findById(new UserAssessmentId()
-                .setUsername(user.getUsername())
-                .setQuestionId(assessmentId)
-            )
+        return userAssessmentRepository.findByUsernameAndQuestionId(user.getUsername(), assessmentId)
             .map(AnsweredQuestionDto::from)
             .orElseThrow(NotFoundException::new);
     }
@@ -60,13 +57,15 @@ public class UserAssessmentController {
         @RequestBody SetAssessmentRequest request
     ) {
 
-        return AnsweredQuestionDto.from(
-            userAssessmentRepository.save(new UserAssessment()
+        var assessment = userAssessmentRepository.findByUsernameAndQuestionId(user.getUsername(), assessmentId)
+            .orElse(new UserAssessment()
                 .setUsername(user.getUsername())
                 .setQuestionId(assessmentId)
-                .setAnswer(request.answer())
-            )
-        );
+            );
+
+        assessment.setAnswer(request.answer());
+
+        return AnsweredQuestionDto.from(userAssessmentRepository.save(assessment));
     }
 
     public record SetAssessmentRequest(Integer answer) {

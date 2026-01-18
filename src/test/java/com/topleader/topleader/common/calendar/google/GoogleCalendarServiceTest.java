@@ -28,9 +28,7 @@ class GoogleCalendarServiceTest extends IntegrationTest {
 
         googleCalendarService.storeTokenInfo(username, tokenResponse);
 
-        var saved = calendarSyncInfoRepository.findById(
-                new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.GOOGLE)
-        );
+        var saved = calendarSyncInfoRepository.findByUsernameAndSyncType(username, CalendarSyncInfo.SyncType.GOOGLE);
 
         assertThat(saved).isPresent();
         assertThat(saved.get().getRefreshToken()).isEqualTo("new-refresh-token");
@@ -48,9 +46,7 @@ class GoogleCalendarServiceTest extends IntegrationTest {
 
         googleCalendarService.storeTokenInfo(username, tokenResponse);
 
-        var saved = calendarSyncInfoRepository.findById(
-                new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.GOOGLE)
-        );
+        var saved = calendarSyncInfoRepository.findByUsernameAndSyncType(username, CalendarSyncInfo.SyncType.GOOGLE);
 
         assertThat(saved).isPresent();
         assertThat(saved.get().getRefreshToken()).isEqualTo("refresh-token");

@@ -3,5 +3,9 @@ package com.topleader.topleader.coach.note;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface CoachUserNoteRepository extends JpaRepository<CoachUserNote, CoachUserNote.CoachUserNoteId> {
+import java.util.Optional;
+
+public interface CoachUserNoteRepository extends JpaRepository<CoachUserNote, Long> {
+
+    Optional<CoachUserNote> findByCoachIdAndUserId(String coachId, String userId);
 }

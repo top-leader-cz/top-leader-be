@@ -45,14 +45,14 @@ public class CoachListView {
     @Column(length = 1000)
     private String bio;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "coach_languages", joinColumns = @JoinColumn(name = "coach_username"))
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private Set<String> languages;
 
     private String timeZone;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "coach_fields", joinColumns = @JoinColumn(name = "coach_username"))
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(columnDefinition = "jsonb")
     private Set<String> fields;
 
     private LocalDate experienceSince;

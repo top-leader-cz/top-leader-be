@@ -1,7 +1,6 @@
 package com.topleader.topleader.user.userinsight;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -12,10 +11,14 @@ import java.time.LocalDateTime;
 @Data
 @Entity
 @Accessors(chain = true)
-@EqualsAndHashCode(of = {"username"})
+@EqualsAndHashCode(of = {"id"})
 public class UserInsight {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
     private String username;
 
     private String leadershipStyleAnalysis;

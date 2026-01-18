@@ -14,7 +14,19 @@ public class BadgeService {
 
     public void recordAchievement(String username, Badge.AchievementType type) {
         var now = LocalDate.now();
-        badgeRepository.save(new Badge().setBadgeId(new Badge.BadgeId(username, type, now.getMonth(), now.getYear())));
+        var month = now.getMonth();
+        var year = now.getYear();
+
+        // Only save if badge doesn't already exist for this user/type/month/year
+        badgeRepository.findByUsernameAndAchievementTypeAndMonthAndYear(username, type, month, year)
+                .ifPresentOrElse(
+                        existing -> {}, // Badge already exists, do nothing
+                        () -> badgeRepository.save(new Badge()
+                                .setUsername(username)
+                                .setAchievementType(type)
+                                .setMonth(month)
+                                .setYear(year))
+                );
     }
 
 

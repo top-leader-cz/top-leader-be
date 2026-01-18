@@ -15,26 +15,16 @@ import java.util.Map;
 @Accessors(chain = true)
 public class SessionFeedback {
 
-    @EmbeddedId
-    private SessionFeedbackId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private Long sessionId;
+
+    private String username;
 
     @Convert(converter = SessionFeedbackAnswerConverter.class)
     private Map<String, Integer> answers;
 
     private String feedback;
-
-    @Data
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class SessionFeedbackId implements Serializable {
-
-        @Column(name = "session_id")
-        private Long sessionId;
-
-        @Column(name = "username")
-        private String username;
-
-    }
-
 }

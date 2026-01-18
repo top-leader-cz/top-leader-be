@@ -115,6 +115,6 @@ class PasswordControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
         ;
 
-        assertTrue(passwordEncoder.matches("newPass", userRepository.findById("user").orElseThrow().getPassword()));
+        assertTrue(passwordEncoder.matches("newPass", userRepository.findByUsername("user").orElseThrow().getPassword()));
     }
 }

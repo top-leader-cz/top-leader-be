@@ -56,7 +56,7 @@ public class TokenController {
         var savedToken = tokenService.findByTokenAndType(token, Token.Type.SET_PASSWORD)
                 .orElseThrow(() -> new EntityNotFoundException("Token not found. Token: " + token));
 
-        var user = userRepository.findById(savedToken.getUsername())
+        var user = userRepository.findByUsername(savedToken.getUsername())
                 .orElseThrow(() -> new EntityNotFoundException("User not found. User: " + savedToken.getUsername()));
 
         log.info("Token found for user {}", user.getUsername());

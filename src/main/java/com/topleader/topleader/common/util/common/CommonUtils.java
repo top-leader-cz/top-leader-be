@@ -48,9 +48,6 @@ public class CommonUtils {
         }
     }
 
-    public <T> T tryGet(Callable<T> supplier) {
-        return tryGet(supplier, RuntimeException::new);
-    }
 
     /**
      * Try.of(() -> ...).onFailure(log::error).getOrElse(defaultValue)
@@ -64,13 +61,6 @@ public class CommonUtils {
         }
     }
 
-    public <T> T tryGetOrElse(Callable<T> supplier, T defaultValue) {
-        try {
-            return supplier.call();
-        } catch (Exception e) {
-            return defaultValue;
-        }
-    }
 
     /**
      * Try.of(() -> ...).map(mapper).onFailure(errorHandler).getOrElse(defaultValue)

@@ -81,9 +81,9 @@ public class MessageService {
                     .collect(toMap(Message::getChatId, Function.identity()))
             ).orElse(Map.of());
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
+        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(username));
 
-        final var userInfos = userRepository.findAllById(allChats.keySet()).stream()
+        final var userInfos = userRepository.findAllByUsernameIn(allChats.keySet()).stream()
             .collect(toMap(User::getUsername, UserInfoDto::from));
 
         final var unreadCountMap = messageRepository.getUnreadMessagesCount(username).stream()
@@ -135,7 +135,7 @@ public class MessageService {
                 .setMessageId(message.getId())
         );
 
-        final var user = userRepository.findById(username).orElseThrow();
+        final var user = userRepository.findByUsername(username).orElseThrow();
 
         notificationService.addNotification(
             new NotificationService.CreateNotificationRequest(
@@ -159,7 +159,7 @@ public class MessageService {
         var usersToNotify = messageRepository.findUndisplayed();
         log.info("User to receive message display notifications: {}", usersToNotify);
         usersToNotify.forEach(user ->
-                userRepository.findById(user).ifPresent(userToNotify -> {
+                userRepository.findByUsername(user).ifPresent(userToNotify -> {
                     var params = Map.of("firstName", userToNotify.getFirstName(), "lastName", userToNotify.getLastName(), "link", appUrl);
                     var emailBody = velocityService.getMessage(new HashMap<>(params), parseTemplateName(userToNotify.getLocale()));
                     emailService.sendEmail(userToNotify.getEmail(), subjects.getOrDefault(userToNotify.getLocale(), defaultLocale), emailBody);

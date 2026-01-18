@@ -25,7 +25,7 @@ class GoogleTokenInfoControllerIT extends IntegrationTest {
         mvc.perform(delete("/api/latest/google-disconnect"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(syncInfoRepository.findById(new CalendarSyncInfo.CalendarInfoId("coach1", GOOGLE))
+        Assertions.assertThat(syncInfoRepository.findByUsernameAndSyncType("coach1", GOOGLE)
                 .isEmpty());
     }
 

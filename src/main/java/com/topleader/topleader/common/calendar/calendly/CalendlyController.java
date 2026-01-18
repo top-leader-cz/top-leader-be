@@ -26,7 +26,8 @@ public class CalendlyController {
         try {
             var tokens = calendlyService.fetchTokens(code, username);
             info = new CalendarSyncInfo()
-                    .setId(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.CALENDLY))
+                    .setUsername(username)
+                    .setSyncType(CalendarSyncInfo.SyncType.CALENDLY)
                     .setRefreshToken(tokens.getRefreshToken())
                     .setAccessToken(tokens.getAccessToken())
                     .setOwnerUrl(tokens.getOwner())
@@ -37,7 +38,7 @@ public class CalendlyController {
             return new RedirectView("/#/sync-error?provider=calendly&error=sync.failed");
         }
 
-        log.info("Saving Calendly info: {}", info.getId().getUsername());
+        log.info("Saving Calendly info: {}", info.getUsername());
 
         try {
             calendlyService.saveInfo(info);

@@ -19,7 +19,9 @@ public class FeedbackSubmitRequest {
         return request.getAnswers().stream()
                 .map(answerDto ->
                         new FeedbackFormAnswer()
-                                .setId(new FeedbackFormAnswer.FeedbackFormAnswerId(formId, recipient.getId(), answerDto.question()))
+                                .setFormId(formId)
+                                .setRecipientId(recipient.getId())
+                                .setQuestionKey(answerDto.question())
                                 .setForm(new FeedbackForm().setId(formId))
                                 .setQuestion(new Question().setKey(answerDto.question()))
                                 .setAnswer(answerDto.answer())

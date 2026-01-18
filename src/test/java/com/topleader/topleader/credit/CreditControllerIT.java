@@ -41,17 +41,17 @@ class CreditControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
         ;
 
-        final var coach = userRepository.findById("coach").orElseThrow();
+        final var coach = userRepository.findByUsername("coach").orElseThrow();
 
         assertThat(coach.getCredit(), is(0));
 
-        final var client1 = userRepository.findById("client1").orElseThrow();
+        final var client1 = userRepository.findByUsername("client1").orElseThrow();
 
         assertThat(client1.getCredit(), is(80));
-        final var client2 = userRepository.findById("client1").orElseThrow();
+        final var client2 = userRepository.findByUsername("client1").orElseThrow();
 
         assertThat(client2.getCredit(), is(80));
-        final var client3 = userRepository.findById("client1").orElseThrow();
+        final var client3 = userRepository.findByUsername("client1").orElseThrow();
 
         assertThat(client3.getCredit(), is(80));
 

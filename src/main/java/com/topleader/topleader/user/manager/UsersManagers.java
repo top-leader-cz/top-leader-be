@@ -14,25 +14,21 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class UsersManagers {
 
-    @EmbeddedId
-    private UserManagerId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "user_username")
+    private String userUsername;
+
+    @Column(name = "manager_username")
+    private String managerUsername;
 
     @ManyToOne
-    @MapsId("userUsername")
+    @JoinColumn(name = "user_username", referencedColumnName = "username", insertable = false, updatable = false)
     private User user;
 
     @ManyToOne
-    @MapsId("managerUsername")
+    @JoinColumn(name = "manager_username", referencedColumnName = "username", insertable = false, updatable = false)
     private User manager;
-
-    @Data
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class UserManagerId implements Serializable {
-
-        private String userUsername;
-
-        private String managerUsername;
-    }
 }

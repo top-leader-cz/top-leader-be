@@ -71,7 +71,7 @@ public class CoachClientController {
     @Secured("COACH")
     @DeleteMapping("/{username}")
     public void removeClient(@AuthenticationPrincipal UserDetails user, @PathVariable String username) {
-        userRepository.findById(username)
+        userRepository.findByUsername(username)
             .filter(u -> user.getUsername().equals(u.getCoach()))
             .map(u -> u.setCoach(null))
             .ifPresent(u -> {
@@ -93,9 +93,9 @@ public class CoachClientController {
         @AuthenticationPrincipal UserDetails user, @RequestBody @Valid UserInvitationRequestDto request
     ) {
 
-        final var coach = userRepository.findById(user.getUsername()).orElseThrow();
+        final var coach = userRepository.findByUsername(user.getUsername()).orElseThrow();
 
-        userRepository.findById(request.email())
+        userRepository.findByUsername(request.email())
                 .or(() -> userRepository.findByEmail(request.email()))
                 .ifPresent(u -> {
                     throw new ApiValidationException(EMAIL_USED, "email", request.email(), "Already used");

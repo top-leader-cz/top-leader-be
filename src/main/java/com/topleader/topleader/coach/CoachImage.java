@@ -3,10 +3,7 @@
  */
 package com.topleader.topleader.coach;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Lob;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,11 +23,14 @@ import lombok.experimental.Accessors;
 public class CoachImage {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
     private String username;
 
     private String type;
 
-    @Lob
-    @Column(length = 4000)
+    @Column(name = "image_data")
     private byte[] imageData;
 }

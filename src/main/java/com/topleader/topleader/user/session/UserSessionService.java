@@ -42,8 +42,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -234,12 +232,13 @@ public class UserSessionService {
     }
 
     private boolean urlValid(String url) {
-        return CommonUtils.tryGetOrElse(
-                () -> restTemplate.getForEntity(url, String.class),
-                ResponseEntity.status(404).body("Not Found"),
-                "Failed to get url: [" + url + "]")
-                .getStatusCode()
-                .value() != INVALID_LINK;
+        try {
+            var response = restTemplate.getForEntity(url, String.class);
+            return response.getStatusCode().value() != INVALID_LINK;
+        } catch (Exception e) {
+            log.warn("Failed to get url: [{}]", url, e);
+            return false;
+        }
     }
 
     public List<UserActionStep> prepareActualActionSteps(

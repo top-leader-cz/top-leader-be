@@ -7,13 +7,15 @@ import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
 
-public interface AvailabilitySettingRepository extends JpaRepository<CoachAvailabilitySettings, String> {
+public interface AvailabilitySettingRepository extends JpaRepository<CoachAvailabilitySettings, Long> {
 
     @Query("select a.active from  CoachAvailabilitySettings a where a.coach= :coach and a.type= :syncType and a.resource = :resource")
     Boolean isActive(String coach, CalendarSyncInfo.SyncType syncType, String resource);
 
     @Query("select a from  CoachAvailabilitySettings a where a.active = true and a.coach = :coach")
     Optional<CoachAvailabilitySettings> findByActive(String coach);
+
+    Optional<CoachAvailabilitySettings> findByCoach(String coach);
 
     void deleteByCoach(String coach);
 }

@@ -3,3 +3,6 @@ values ('jakub.svezi@dummy.com', 'Jakub', 'Svezi','$2a$12$jsTVqLPSt7pqxT.sPYKZ/.
 
 insert into token (username, token, type)
 values ('jakub.svezi@dummy.com', 'test-token', 'SET_PASSWORD');
+
+-- Reset sequence to avoid duplicate key violations
+SELECT setval('token_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM token), false);

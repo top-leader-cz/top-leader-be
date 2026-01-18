@@ -14,22 +14,11 @@ import java.io.Serializable;
 @Accessors(chain = true)
 public class FavoriteCoach {
 
-    @EmbeddedId
-    private FavoriteCoachId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(insertable = false, updatable = false)
     private String username;
 
-    @Data
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class FavoriteCoachId implements Serializable {
-
-        @Column(name = "username")
-        private String username;
-
-        @Column(name = "coach_username")
-        private String coachUsername;
-    }
+    private String coachUsername;
 }

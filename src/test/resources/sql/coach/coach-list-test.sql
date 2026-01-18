@@ -12,24 +12,11 @@ VALUES ('user', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 
 INSERT INTO users (username, password, status, authorities, time_zone, coach, credit, scheduled_credit, free_coach, locale)
 VALUES ('user-with-filter', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER", "COACH"]', 'UTC', 'coach3', 400, 400, 'coach3', 'cs');
 
-INSERT INTO coach (username, public_profile,  web_link, bio, experience_since, rate, rate_order, linkedin_profile, free_slots, priority)
-VALUES ('coach1', true, 'http://some_video1', 'Experienced coach', '2021-01-01', '$', 1, null, false , 0),
-       ('coach2', true,  'http://some_video2', 'Passionate about coaching', '2017-05-15', '$$', 2, null, false, 2),
-       ('coach3', true,  'http://some_video3', 'Certified fitness coach', '2019-09-10', '$$$', 3, 'http://linkac', false, 1),
-       ('coach4', false, 'http://some_video4', 'Certified fitness coach', '2019-09-10', '$$$', 3, null, false, 0);
-
-INSERT INTO coach_languages (coach_username, languages)
-VALUES ('coach1', 'English'),
-       ('coach1', 'French'),
-       ('coach2', 'English'),
-       ('coach2', 'Spanish'),
-       ('coach3', 'German');
-
-INSERT INTO coach_fields (coach_username, fields)
-VALUES ('coach1', 'Fitness'),
-       ('coach2', 'Yoga'),
-       ('coach2', 'Meditation'),
-       ('coach3', 'Weightlifting');
+INSERT INTO coach (username, public_profile,  web_link, bio, experience_since, rate, rate_order, linkedin_profile, free_slots, priority, languages, fields)
+VALUES ('coach1', true, 'http://some_video1', 'Experienced coach', '2021-01-01', '$', 1, null, false , 0, '["English", "French"]', '["Fitness"]'),
+       ('coach2', true,  'http://some_video2', 'Passionate about coaching', '2017-05-15', '$$', 2, null, false, 2, '["English", "Spanish"]', '["Yoga", "Meditation"]'),
+       ('coach3', true,  'http://some_video3', 'Certified fitness coach', '2019-09-10', '$$$', 3, 'http://linkac', false, 1, '["German"]', '["Weightlifting"]'),
+       ('coach4', false, 'http://some_video4', 'Certified fitness coach', '2019-09-10', '$$$', 3, null, false, 0, '[]', '[]');
 
 insert into coach_availability (id, username, recurring, day_from, time_from, day_to, time_to)
 values (nextval('coach_availability_seq'), 'coach1', true, 'MONDAY', '13:00:00', 'MONDAY', '14:00:00');

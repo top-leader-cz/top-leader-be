@@ -60,8 +60,7 @@ public class FeedbackController {
         var defaultKeys = feedbackService.fetchOptions().stream().map(Question::getKey)
                 .collect(Collectors.toList());
         feedbackService.updateQuestions(toQuestions(request.getQuestions(), defaultKeys));
-        var form = feedbackService.saveForm(FeedbackFormRequest.toSimpleForm(request));
-        return feedbackService.saveForm(FeedbackFormRequest.toForm(request.setId(form.getId())));
+        return feedbackService.saveFormFromRequest(request);
     }
 
     private List<Question> toQuestions(List<QuestionDto> questions, List<String> defaultKeys) {

@@ -6,12 +6,15 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Optional;
+
 
 /**
  * @author Daniel Slavik
  */
-public interface CoachRepository extends JpaRepository<Coach, String>, JpaSpecificationExecutor<Coach> {
+public interface CoachRepository extends JpaRepository<Coach, Long>, JpaSpecificationExecutor<Coach> {
 
+    Optional<Coach> findByUsername(String username);
 
     @Transactional
     @Modifying

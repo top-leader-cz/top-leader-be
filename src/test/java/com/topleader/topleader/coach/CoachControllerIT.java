@@ -95,7 +95,7 @@ class CoachControllerIT extends IntegrationTest {
                 .file(file))
             .andExpect(status().isOk());
 
-        final var image = coachImageRepository.findById("coach");
+        final var image = coachImageRepository.findByUsername("coach");
 
         assertThat(image.isPresent(), is(true));
         assertThat(image.get().getType(), is("image/jpeg"));
@@ -263,7 +263,7 @@ class CoachControllerIT extends IntegrationTest {
 
         ;
         Assertions.assertThat(userRepository.findByEmail("cool-test@email.cz")).isPresent();
-        final var coach = coachRepository.findById("coach_no_info").orElseThrow();
+        final var coach = coachRepository.findByUsername("coach_no_info").orElseThrow();
         assertThat(coach.getRateOrder(), nullValue());
     }
 

@@ -1,10 +1,8 @@
 package com.topleader.topleader.coach.note;
 
 import com.topleader.topleader.coach.favorite.FavoriteCoach;
-import jakarta.persistence.Column;
-import jakarta.persistence.Embeddable;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -18,22 +16,15 @@ import java.time.LocalDateTime;
 @Accessors(chain = true)
 public class CoachUserNote {
 
-    @EmbeddedId
-    private CoachUserNoteId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String coachId;
+
+    private String userId;
 
     private String note;
 
     private LocalDateTime createdAt = LocalDateTime.now();
-
-
-    @Data
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class CoachUserNoteId implements Serializable {
-
-        private String coachId;
-
-        private String userId;
-    }
 }

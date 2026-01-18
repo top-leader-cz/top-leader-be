@@ -42,7 +42,7 @@ public class BadgeControllerTest extends IntegrationTest {
 
     private Badge badge(Badge.AchievementType type) {
         var now = LocalDate.now();
-        return new Badge().setBadgeId(new Badge.BadgeId("jakub.svezi@dummy.com", type, now.getMonth(), now.getYear()));
+        return new Badge().setUsername("jakub.svezi@dummy.com").setAchievementType(type).setMonth(now.getMonth()).setYear(now.getYear());
     }
 
     @Test

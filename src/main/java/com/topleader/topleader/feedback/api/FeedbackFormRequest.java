@@ -45,21 +45,22 @@ public class FeedbackFormRequest {
 
     private boolean draft;
 
-    public static FeedbackForm toForm(FeedbackFormRequest request) {
+    public static FeedbackForm toForm(FeedbackFormRequest request, User user) {
         var feedbackForm = new FeedbackForm()
                 .setId(request.getId())
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)))
+                .setUser(user)
                 .setDraft(request.isDraft());
 
         var feedbackFormQuestion = request.getQuestions().stream()
                 .map(q -> {
                     var question = new Question().setKey(q.key());
                     return new FeedbackFormQuestion()
-                            .setId(new FeedbackFormQuestion.FeedbackFormQuestionId(request.getId(), q.key()))
+                            .setFeedbackFormId(request.getId())
+                            .setQuestionKey(q.key())
                             .setType(q.type())
                             .setRequired(q.required())
                             .setQuestion(question)
@@ -81,14 +82,14 @@ public class FeedbackFormRequest {
         return feedbackForm;
     }
 
-    public static FeedbackForm toSimpleForm(FeedbackFormRequest request) {
+    public static FeedbackForm toSimpleForm(FeedbackFormRequest request, User user) {
         return new FeedbackForm()
                 .setId(request.getId())
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)))
+                .setUser(user)
                 .setDraft(request.isDraft());
     }
 
@@ -97,7 +98,8 @@ public class FeedbackFormRequest {
                 .map(q -> {
                     var question = new Question().setKey(q.key());
                     return new FeedbackFormQuestion()
-                            .setId(new FeedbackFormQuestion.FeedbackFormQuestionId(feedbackForm.getId(), q.key()))
+                            .setFeedbackFormId(feedbackForm.getId())
+                            .setQuestionKey(q.key())
                             .setType(q.type())
                             .setRequired(q.required())
                             .setQuestion(question)

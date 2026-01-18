@@ -17,47 +17,23 @@ import static jakarta.persistence.EnumType.STRING;
 @Accessors(chain = true)
 public class Badge {
 
-    @EmbeddedId
-    private BadgeId  badgeId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    @Column(insertable=false, updatable=false)
     private String username;
 
     @Enumerated(value = STRING)
-    @Column(insertable=false, updatable=false)
     private AchievementType achievementType;
 
     @Enumerated(value = STRING)
-    @Column(insertable=false, updatable=false)
     private Month month;
 
-    @Column(insertable=false, updatable=false)
     private Integer year;
 
     public enum AchievementType {
         COMPLETE_SESSION,
         WATCHED_VIDEO,
         COMPLETED_SHORT_GOAL
-
-    }
-
-
-
-    @Data
-    @Embeddable
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class BadgeId implements Serializable {
-
-        private String username;
-
-        @Enumerated(value = STRING)
-        private AchievementType achievementType;
-
-        @Enumerated(value = STRING)
-        private Month month;
-
-        private Integer year;
-
     }
 }

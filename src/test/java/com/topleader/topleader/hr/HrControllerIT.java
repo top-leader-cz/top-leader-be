@@ -188,7 +188,7 @@ class HrControllerIT extends IntegrationTest {
         Assertions.assertThat(body).contains("Jakub Svezi,").contains("http://app-test-url/#/api/public/set-password/").contains("Odemkn=C4=9Bte");
 
 
-        Optional<User> user = userRepository.findById("jakub.svezi@dummy.com");
+        Optional<User> user = userRepository.findByUsername("jakub.svezi@dummy.com");
         Assertions.assertThat(user).isNotEmpty();
         Assertions.assertThat(managerRepository.findAll()).extracting("username").containsExactly("jakub.svezi@dummy.com");
     }
@@ -244,11 +244,11 @@ class HrControllerIT extends IntegrationTest {
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Odemkněte svůj potenciál s TopLeader!");
         Assertions.assertThat(body).contains("Jakub1 Svezi2,").contains("http://app-test-url/#/api/public/set-password/");
 
-        Assertions.assertThat(userRepository.findById("hrUser")).isNotEmpty();
+        Assertions.assertThat(userRepository.findByUsername("hrUser")).isNotEmpty();
 
         var transactionTemplate = new TransactionTemplate(transactionManager);
         transactionTemplate.executeWithoutResult(status -> {
-            Assertions.assertThat(userRepository.findById("hrUser").get().getManagers()).extracting("username").containsExactly("manager.one@dummy.com");
+            Assertions.assertThat(userRepository.findByUsername("hrUser").get().getManagers()).extracting("username").containsExactly("manager.one@dummy.com");
         });
 
     }

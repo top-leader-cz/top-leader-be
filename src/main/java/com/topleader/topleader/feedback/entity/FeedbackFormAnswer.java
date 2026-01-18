@@ -14,39 +14,30 @@ import java.io.Serializable;
 @ToString(of={"id", "answer"})
 public class FeedbackFormAnswer {
 
-    @EmbeddedId
-    private FeedbackFormAnswerId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "form_id")
+    private Long formId;
+
+    @Column(name = "recipient_id")
+    private Long recipientId;
+
+    @Column(name = "question_key")
+    private String questionKey;
 
     @ManyToOne
-    @MapsId("formId")
+    @JoinColumn(name = "form_id", insertable = false, updatable = false)
     private FeedbackForm form;
 
     @ManyToOne
-    @MapsId("questionKey")
+    @JoinColumn(name = "question_key", insertable = false, updatable = false)
     private Question question;
 
     @ManyToOne(cascade = { CascadeType.MERGE})
-    @MapsId("recipientId")
+    @JoinColumn(name = "recipient_id", insertable = false, updatable = false)
     private Recipient recipient;
 
     private String answer;
-
-
-    @Data
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class FeedbackFormAnswerId implements Serializable {
-
-        @Column(name = "form_id")
-        private Long formId;
-
-        @Column(name = "recipient_id")
-        private Long recipientId;
-
-        @Column(name = "question_key")
-        private String questionKey;
-
-
-    }
 }

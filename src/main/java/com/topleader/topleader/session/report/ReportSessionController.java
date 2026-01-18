@@ -35,7 +35,7 @@ class ReportSessionController {
                                          @RequestBody ReportSessionFilter filter,
                                          @AuthenticationPrincipal UserDetails hrAuth) {
 
-        var companyId = userRepository.findById(hrAuth.getUsername())
+        var companyId = userRepository.findByUsername(hrAuth.getUsername())
                 .map(User::getCompanyId)
                 .orElseThrow(() -> new ApiValidationException(NOT_PART_OF_COMPANY, "user", hrAuth.getUsername(), "User is not part of any company"));
 

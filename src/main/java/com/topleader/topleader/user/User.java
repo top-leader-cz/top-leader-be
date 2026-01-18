@@ -22,6 +22,10 @@ import lombok.experimental.Accessors;
 public class User {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true, nullable = false)
     private String username;
 
     private String password;
@@ -69,14 +73,15 @@ public class User {
     private String aspiredPosition;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_coach_rates", joinColumns = @JoinColumn(name = "username"))
+    @CollectionTable(name = "user_coach_rates", joinColumns = @JoinColumn(name = "username", referencedColumnName = "username"))
     @Column(name = "rate_name")
     private Set<String> allowedCoachRates;
 
     @ManyToMany
     @JoinTable(
-            joinColumns = { @JoinColumn(name = "user_username") },
-            inverseJoinColumns = { @JoinColumn(name = "manager_username") }
+            name = "users_managers",
+            joinColumns = { @JoinColumn(name = "user_username", referencedColumnName = "username") },
+            inverseJoinColumns = { @JoinColumn(name = "manager_username", referencedColumnName = "username") }
     )
     Set<User> managers = new HashSet<>();
 
@@ -93,7 +98,7 @@ public class User {
     }
 
     @OneToOne
-    @JoinColumn(name = "username", unique = true)
+    @JoinColumn(name = "username", referencedColumnName = "username", insertable = false, updatable = false)
     private Coach coachData;
 
     public enum Authority {

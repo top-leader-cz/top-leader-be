@@ -2,10 +2,7 @@ package com.topleader.topleader.user.manager;
 
 
 import com.topleader.topleader.user.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import java.util.HashSet;
@@ -17,6 +14,9 @@ import java.util.Set;
 public class Manager {
 
     @Id
+    private Long id;
+
+    @Column(insertable = false, updatable = false)
     private String username;
 
     @Column(insertable = false, updatable = false)

@@ -298,7 +298,7 @@ class UserSessionControllerIT extends IntegrationTest {
 
     private Badge badge(Badge.AchievementType type) {
         var now = LocalDateTime.now();
-        return new Badge().setBadgeId(new Badge.BadgeId("user", type, now.getMonth(), now.getYear()));
+        return new Badge().setUsername("user").setAchievementType(type).setMonth(now.getMonth()).setYear(now.getYear());
     }
 
 

@@ -99,7 +99,7 @@ public class CoachListController {
         @PathVariable String username,
         @RequestBody ScheduleSessionRequest request
     ) {
-        final var userInDb = userRepository.findById(user.getUsername()).orElseThrow();
+        final var userInDb = userRepository.findByUsername(user.getUsername()).orElseThrow();
 
         if (hasText(userInDb.getCoach()) && !userInDb.getCoach().equals(username)) {
             throw new ApiValidationException(DIFFERENT_COACH_NOT_PERMITTED, "username", username, "Cannot schedule a session with a different coach then already picked");
@@ -119,7 +119,7 @@ public class CoachListController {
         @RequestBody ScheduleSessionRequest request
     ) {
 
-        final var coachName = userRepository.findById(user.getUsername()).orElseThrow().getCoach();
+        final var coachName = userRepository.findByUsername(user.getUsername()).orElseThrow().getCoach();
 
         scheduleSession(user.getUsername(), coachName, request.time(), true);
     }
@@ -147,7 +147,7 @@ public class CoachListController {
             throw new ApiValidationException(NOT_ENOUGH_CREDITS, "user", clientName, "User does not have enough credit");
         }
 
-        final var user = userRepository.findById(clientName).orElseThrow();
+        final var user = userRepository.findByUsername(clientName).orElseThrow();
 
         final var session = scheduledSessionService.scheduleSession(
             new ScheduledSession()
@@ -171,7 +171,7 @@ public class CoachListController {
         @AuthenticationPrincipal UserDetails loggedUser
         ) {
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(loggedUser.getUsername()));
+        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(loggedUser.getUsername()));
 
         final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
                 .map(ScheduledSession::getTime)
@@ -186,7 +186,7 @@ public class CoachListController {
     @GetMapping("/{username}/photo")
     public ResponseEntity<byte[]> getCoachPhoto(@PathVariable String username) {
 
-        return coachImageRepository.findById(username)
+        return coachImageRepository.findByUsername(username)
             .map(i -> ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.valueOf(i.getType()))
                 .body(ImageUtil.decompressImage(i.getImageData()))
@@ -208,7 +208,7 @@ public class CoachListController {
         @RequestBody @Valid FilterRequest request
     ) {
 
-        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow();
+        final var dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow();
 
         return findCoaches(
             Stream.concat(maxRateFilter(dbUser).stream(), request.toSpecification().stream()).toList(),

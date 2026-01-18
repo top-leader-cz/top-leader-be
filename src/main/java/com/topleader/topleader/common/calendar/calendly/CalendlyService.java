@@ -56,9 +56,9 @@ public class CalendlyService {
 
     @Transactional
     public void saveInfo(CalendarSyncInfo info) {
-        log.info("Saving Calendly info: {}", info.getId().getUsername());
-        repository.deleteByUsername(info.getId().getUsername());
-        availabilitySettingRepository.deleteByCoach(info.getId().getUsername());
+        log.info("Saving Calendly info: {}", info.getUsername());
+        repository.deleteByUsername(info.getUsername());
+        availabilitySettingRepository.deleteByCoach(info.getUsername());
         repository.save(info);
     }
 
@@ -94,7 +94,7 @@ public class CalendlyService {
 
     public List<SyncEvent> getUserEvents(String username, LocalDateTime startDate, LocalDateTime endDate) {
         log.info("Looking for Calendly info");
-        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.CALENDLY))
+        return repository.findByUsernameAndSyncType(username, CalendarSyncInfo.SyncType.CALENDLY)
                 .map(info -> {
                     log.info("Fetching Calendly user events");
                     try {
@@ -122,7 +122,7 @@ public class CalendlyService {
 
     public List<EventType> getEventTypes(String username) {
         log.info("Fetching Calendly events types");
-        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CALENDLY))
+        return repository.findByUsernameAndSyncType(username, CALENDLY)
                 .map(info -> {
                     try {
                         var response = restClient.get().uri(properties.getBaseApiUrl().concat("/event_types?user={user}"),
@@ -153,7 +153,7 @@ public class CalendlyService {
 
     public List<ReoccurringEventDto> getEventAvailability(String username, String uuid) {
         log.info("Fetching Calendly scheduled availability");
-        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CALENDLY))
+        return repository.findByUsernameAndSyncType(username, CALENDLY)
                 .map(info -> {
                     try {
                         var from = LocalDate.now().plusDays(1).atStartOfDay();
