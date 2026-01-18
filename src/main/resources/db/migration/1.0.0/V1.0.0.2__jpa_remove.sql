@@ -51,6 +51,11 @@ ALTER TABLE coach_image ADD CONSTRAINT coach_image_username_unique UNIQUE (usern
 -- Convert image_data from OID (large object) to bytea
 ALTER TABLE coach_image ALTER COLUMN image_data TYPE bytea USING CASE WHEN image_data IS NOT NULL THEN lo_get(image_data) ELSE NULL END;
 
+-- Add auto-generated id as primary key for coach_availability_settings
+ALTER TABLE coach_availability_settings DROP CONSTRAINT IF EXISTS coach_availability_settings_pkey CASCADE;
+ALTER TABLE coach_availability_settings ADD COLUMN id bigserial;
+ALTER TABLE coach_availability_settings ADD PRIMARY KEY (id);
+ALTER TABLE coach_availability_settings ADD CONSTRAINT coach_availability_settings_coach_unique UNIQUE (coach);
 
 -- =====================================================
 -- USERS TABLE: Add auto-generated ID
@@ -83,13 +88,13 @@ ALTER TABLE user_info ADD COLUMN id bigserial;
 ALTER TABLE user_info ADD PRIMARY KEY (id);
 ALTER TABLE user_info ADD CONSTRAINT user_info_username_unique UNIQUE (username);
 ALTER TABLE user_info ADD CONSTRAINT fk_user_info_users
-    FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE;
+    FOREIGN KEY (username) REFERENCES users(username);
 CREATE INDEX IF NOT EXISTS user_info_username_idx ON user_info(username);
 
 -- coach table
 ALTER TABLE coach DROP CONSTRAINT IF EXISTS fk_users_username;
 ALTER TABLE coach ADD CONSTRAINT fk_users_username
-    FOREIGN KEY (username) REFERENCES users(username) ON DELETE CASCADE;
+    FOREIGN KEY (username) REFERENCES users(username);
 
 -- coach_availability table
 ALTER TABLE coach_availability DROP CONSTRAINT IF EXISTS fk_coach_availability_user;
@@ -231,4 +236,11 @@ ALTER TABLE users_managers DROP CONSTRAINT IF EXISTS users_managers_pkey CASCADE
 ALTER TABLE users_managers ADD COLUMN id bigserial;
 ALTER TABLE users_managers ADD PRIMARY KEY (id);
 ALTER TABLE users_managers ADD CONSTRAINT users_managers_user_manager_unique UNIQUE (user_username, manager_username);
+
+-- user_assessment table - add id column as primary key
+ALTER TABLE user_assessment DROP CONSTRAINT IF EXISTS user_assessment_pkey CASCADE;
+ALTER TABLE user_assessment ADD COLUMN id bigserial;
+ALTER TABLE user_assessment ADD PRIMARY KEY (id);
+ALTER TABLE user_assessment ADD CONSTRAINT user_assessment_username_question_unique UNIQUE (username, question_id);
+CREATE INDEX IF NOT EXISTS user_assessment_username_idx ON user_assessment(username);
 
