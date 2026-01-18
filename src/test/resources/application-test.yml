@@ -4,8 +4,6 @@ springdoc:
 
 logging:
   level:
-    org.hibernate.SQL: DEBUG
-    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.engine.jdbc.spi.SqlExceptionHelper: ERROR
     org.springframework.jdbc.core: DEBUG
     org.springframework.web: DEBUG
@@ -13,16 +11,8 @@ logging:
     com.topleader.topleader: DEBUG
 
 spring:
-  docker:
-    compose:
-      enabled: false
   main:
     allow-bean-definition-overriding: true
-  jpa:
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
 
   jackson:
     deserialization:

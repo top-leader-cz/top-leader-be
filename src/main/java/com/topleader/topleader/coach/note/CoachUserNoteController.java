@@ -15,13 +15,18 @@ public class CoachUserNoteController {
 
     @Secured({"COACH", "ADMIN"})
     @PostMapping("/{userId}")
-    public void addNote(@AuthenticationPrincipal UserDetails auth,  @PathVariable String userId, @RequestBody CoachUserNoteDto note) {
-        repository.save(new CoachUserNote().setCoachId(auth.getUsername()).setUserId(userId).setNote(note.note));
+    public void addNote(@AuthenticationPrincipal UserDetails auth, @PathVariable String userId, @RequestBody CoachUserNoteDto note) {
+        var existingNote = repository.findByCoachIdAndUserId(auth.getUsername(), userId);
+        var noteEntity = existingNote.orElse(new CoachUserNote()
+                .setCoachId(auth.getUsername())
+                .setUserId(userId));
+        noteEntity.setNote(note.note);
+        repository.save(noteEntity);
     }
 
     @Secured({"COACH", "ADMIN"})
     @GetMapping("/{userId}")
-    public CoachUserNoteDto getNote(@AuthenticationPrincipal UserDetails auth,  @PathVariable String userId, CoachUserNoteDto note) {
+    public CoachUserNoteDto getNote(@AuthenticationPrincipal UserDetails auth, @PathVariable String userId, CoachUserNoteDto note) {
         return repository.findByCoachIdAndUserId(auth.getUsername(), userId)
                 .map(CoachUserNoteDto::toDto)
                 .orElse(CoachUserNoteDto.empty(auth.getUsername(), userId));

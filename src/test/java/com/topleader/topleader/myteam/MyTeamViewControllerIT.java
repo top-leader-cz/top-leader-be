@@ -106,4 +106,37 @@ class MyTeamViewControllerIT extends IntegrationTest {
                 """));
     }
 
+    @Test
+    @WithMockUser(username = "user1", authorities = "USER")
+    void testAccessDeniedForNonManager() throws Exception {
+        mvc.perform(get("/api/latest/my-team"))
+            .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "managerUser", authorities = "MANAGER")
+    void testPaginationAndSorting() throws Exception {
+        mvc.perform(get("/api/latest/my-team")
+                .param("page", "0")
+                .param("size", "1")
+                .param("sort", "firstName,asc")
+            )
+            .andExpect(status().isOk())
+            .andExpect(content().json("""
+                {
+                  "content": [
+                    {
+                      "firstName": "Alice",
+                      "lastName": "Smith",
+                      "username": "user1"
+                    }
+                  ],
+                  "totalElements": 2,
+                  "totalPages": 2,
+                  "size": 1,
+                  "number": 0
+                }
+                """, false));
+    }
+
 }

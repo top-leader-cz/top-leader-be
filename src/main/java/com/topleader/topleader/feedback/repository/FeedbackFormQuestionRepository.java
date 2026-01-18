@@ -1,8 +1,16 @@
 package com.topleader.topleader.feedback.repository;
 
 import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface FeedbackFormQuestionRepository extends JpaRepository<FeedbackFormQuestion, Long> {
+import java.util.List;
+import java.util.Optional;
 
+public interface FeedbackFormQuestionRepository extends CrudRepository<FeedbackFormQuestion, Long> {
+
+    List<FeedbackFormQuestion> findByFeedbackFormId(long feedbackFormId);
+
+    Optional<FeedbackFormQuestion> findByFeedbackFormIdAndQuestionKey(long feedbackFormId, String questionKey);
+
+    void deleteByFeedbackFormId(long feedbackFormId);
 }

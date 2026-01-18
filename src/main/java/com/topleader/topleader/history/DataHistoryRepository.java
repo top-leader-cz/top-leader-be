@@ -1,20 +1,16 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.history;
+
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.ListCrudRepository;
 
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.repository.CrudRepository;
+public interface DataHistoryRepository extends ListCrudRepository<DataHistory, Long> {
 
+    @Query("SELECT * FROM data_history WHERE username = :username AND type = :type")
+    List<DataHistory> findByUsernameAndType(String username, String type);
 
-/**
- * @author Daniel Slavik
- */
-public interface DataHistoryRepository extends CrudRepository<DataHistory, String> {
-
-    List<DataHistory> findAllByUsernameAndType(String username, DataHistory.Type type);
-
-    Optional<DataHistory> findTopByUsernameAndTypeOrderByIdDesc(String username, DataHistory.Type type);
+    @Query("SELECT * FROM data_history WHERE username = :username AND type = :type ORDER BY id DESC LIMIT 1")
+    Optional<DataHistory> findTopByUsernameAndType(String username, String type);
 }

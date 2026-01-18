@@ -1,6 +1,6 @@
 package com.topleader.topleader.common.ai;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
-public interface AiPromptRepository extends JpaRepository<AiPrompt, AiPrompt.PromptType> {
+public interface AiPromptRepository extends CrudRepository<AiPrompt, AiPrompt.PromptType> {
 }

@@ -3,29 +3,46 @@
  */
 package com.topleader.topleader.message;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
+import org.springframework.data.relational.core.mapping.Table;
 
 
-/**
- * @author Daniel Slavik
- */
 @Getter
 @Setter
 @ToString
-@Entity
 @NoArgsConstructor
 @Accessors(chain = true)
-public class LastMessage {
+@Table(name = "last_message")
+public class LastMessage implements Persistable<Long> {
 
     @Id
     private Long chatId;
 
     private Long messageId;
+
+    @Transient
+    private boolean isNew = true;
+
+    @Override
+    public Long getId() {
+        return chatId;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public LastMessage markAsExisting() {
+        this.isNew = false;
+        return this;
+    }
 
 }

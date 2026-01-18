@@ -1,7 +1,6 @@
 package com.topleader.topleader.hr.domain;
 
 import com.topleader.topleader.user.User;
-import com.topleader.topleader.user.manager.Manager;
 
 import java.util.Set;
 
@@ -17,7 +16,7 @@ public record UserDto(
         boolean isManager,
         String aspiredCompetency
  ) {
-    public static UserDto fromUser(User user) {
+    public static UserDto fromUser(User user, String managerUsername) {
         return new UserDto(
                 user.getUsername(),
                 user.getFirstName(),
@@ -26,10 +25,9 @@ public record UserDto(
                 user.getStatus(),
                 user.getAuthorities(),
                 user.getPosition(),
-                user.getManagers().stream().findFirst().map(User::getUsername).orElse(null),
+                managerUsername,
                 user.getAuthorities().contains(User.Authority.MANAGER),
                 user.getAspiredCompetency()
         );
      }
 }
-

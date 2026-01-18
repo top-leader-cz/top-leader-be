@@ -5,14 +5,11 @@ import com.topleader.topleader.IntegrationTest;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Example;
 import org.springframework.security.test.context.support.WithUserDetails;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.LocalDate;
-import java.util.List;
 
-import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -51,7 +48,12 @@ public class BadgeControllerTest extends IntegrationTest {
         mvc.perform(post("/api/latest/user-badges/watched-video"))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.WATCHED_VIDEO)))).isNotEmpty();
+        var now = LocalDate.now();
+        var badges = badgeRepository.getUserBadges("jakub.svezi@dummy.com", now.getYear());
+        Assertions.assertThat(badges.stream()
+                .filter(b -> b.getAchievementType() == Badge.AchievementType.WATCHED_VIDEO)
+                .filter(b -> b.getMonth() == now.getMonth())
+                .findFirst()).isNotEmpty();
     }
 
  }

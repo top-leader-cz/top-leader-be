@@ -1,21 +1,18 @@
 package com.topleader.topleader.common.calendar.domain;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @Accessors(chain = true)
-@Entity
+@Table("calendar_sync_info")
 public class CalendarSyncInfo {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String username;
@@ -24,10 +21,8 @@ public class CalendarSyncInfo {
 
     private String accessToken;
 
-    @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Enumerated(EnumType.STRING)
     private SyncType syncType;
 
     private LocalDateTime lastSync = LocalDateTime.now();

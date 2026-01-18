@@ -7,13 +7,11 @@ import com.topleader.topleader.feedback.api.FeedbackSubmitRequest;
 import com.topleader.topleader.feedback.api.NewUser;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
 import java.util.Locale;
-import java.util.Set;
-
 import lombok.RequiredArgsConstructor;
 
 import lombok.extern.slf4j.Slf4j;
@@ -34,14 +32,12 @@ public class PublicFeedbackController {
 
     private final EmailService emailService;
 
-    @Transactional
     @GetMapping("/options")
     public FeedbackFormOptions getOptions() {
         return FeedbackFormOptions.of(feedbackService.fetchOptions());
     }
 
 
-    @Transactional
     @GetMapping("/{formId}/{username}/{token}")
     public FeedbackFormDto getForm(@PathVariable long formId, @PathVariable String username, @PathVariable String token) {
         feedbackService.validateRecipientIfValid(formId, username, token);
@@ -50,7 +46,7 @@ public class PublicFeedbackController {
                     if (skipUpdate(u)) return;
                     userDetailService.save(u.setStatus(User.Status.VIEWED));
                 });
-        return FeedbackFormDto.of(feedbackService.fetchForm(formId));
+        return feedbackService.toFeedbackFormDto(feedbackService.fetchForm(formId));
     }
 
     @PostMapping("/{formId}/{username}/{token}")
@@ -58,7 +54,7 @@ public class PublicFeedbackController {
                            @RequestBody @Valid FeedbackSubmitRequest request) {
         log.info("submition answers for respondent: [{}] ", username);
         var recipient = feedbackService.validateRecipientIfValid(formId, username, token);
-        feedbackService.submitForm(FeedbackSubmitRequest.toAnswers(request, formId, recipient), username);
+        feedbackService.submitForm(FeedbackSubmitRequest.toAnswers(request, formId, recipient), username, recipient);
         feedbackService.generateSummary(formId);
     }
 
@@ -68,21 +64,12 @@ public class PublicFeedbackController {
                         @RequestBody @Valid NewUser newUser) {
         log.info("Receiving respondent form. Respondent: [{}] ", username);
         feedbackService.validateRecipientIfSubmitted(formId, username, token);
-
-        // Check if email is already used by another user
-        userDetailService.getUserByEmail(newUser.getEmail())
-                .ifPresent(existingUser -> {
-                    if (!existingUser.getUsername().equals(username)) {
-                        throw new IllegalArgumentException("Email " + newUser.getEmail() + " is already used by another user");
-                    }
-                });
-
         userDetailService.getUser(username)
                 .ifPresentOrElse(u -> {
                     if (skipUpdate(u)) return;
                     log.info("Updating respondent: [{}] ", username);
                     userDetailService.save(u.setStatus(User.Status.PENDING)
-                            .setEmail(newUser.getEmail())
+                            .setUsername(newUser.getEmail())
                             .setFirstName(newUser.getFirstName())
                             .setLastName(newUser.getLastName())
                             .setHrEmail(newUser.getHrEmail()));
@@ -99,13 +86,11 @@ public class PublicFeedbackController {
 
     private void newUser(NewUser newUser, String username) {
         log.info("Creating respondent: [{}] ", username);
-        userDetailService.save(new User()
-                .setStatus(User.Status.PENDING)
+        userDetailService.save(new User().setStatus(User.Status.PENDING)
+                .setUsername(newUser.getEmail().toLowerCase(Locale.ROOT))
                 .setUsername(username)
-                .setEmail(newUser.getEmail())
                 .setFirstName(newUser.getFirstName())
                 .setLastName(newUser.getLastName())
-                .setAuthorities(Set.of(User.Authority.RESPONDENT))
                 .setHrEmail(newUser.getHrEmail()));
     }
 

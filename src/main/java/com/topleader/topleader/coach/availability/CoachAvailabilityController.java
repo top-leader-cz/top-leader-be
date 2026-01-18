@@ -157,11 +157,9 @@ public class CoachAvailabilityController {
     public void updateRecurringSetting(@AuthenticationPrincipal UserDetails user, @RequestBody ReoccurringAvailabilityDto request) {
         var settings = availabilitySettingRepository.findByCoach(user.getUsername())
                 .orElse(new CoachAvailabilitySettings().setCoach(user.getUsername()));
-
         settings.setResource(request.uuid)
                 .setType(request.type)
                 .setActive(request.active);
-
         availabilitySettingRepository.save(settings);
     }
 

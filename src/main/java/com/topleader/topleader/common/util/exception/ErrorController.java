@@ -7,6 +7,7 @@ import com.topleader.topleader.common.exception.ApiValidationException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * @author Daniel Slavik
  */
+@Slf4j
 @RestController
 @ControllerAdvice
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
@@ -63,6 +65,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(value = AccessDeniedException.class)
     public List<ErrorDto> handleAccessDeniedException(AccessDeniedException ex) {
+        log.warn("Access denied: {}", ex.getMessage());
         return List.of(
             new ErrorDto(
                 "ACCESS_DENIED",
@@ -75,6 +78,7 @@ public class ErrorController {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(value = Exception.class)
     public List<ErrorDto> handleGenericException(Exception ex) {
+        log.error("Internal server error", ex);
         return List.of(
             new ErrorDto(
                 "INTERNAL_ERROR",

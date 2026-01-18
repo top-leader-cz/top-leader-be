@@ -3,12 +3,13 @@
  */
 package com.topleader.topleader.coach;
 
-import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -17,20 +18,17 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
+@Table("coach_image")
 @Accessors(chain = true)
 @NoArgsConstructor
 public class CoachImage {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
     private String username;
 
     private String type;
 
-    @Column(name = "image_data")
     private byte[] imageData;
 }

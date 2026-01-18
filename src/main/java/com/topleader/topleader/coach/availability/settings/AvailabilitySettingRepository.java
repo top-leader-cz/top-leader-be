@@ -1,21 +1,29 @@
 package com.topleader.topleader.coach.availability.settings;
 
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
-import jakarta.transaction.Transactional;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.Optional;
 
-public interface AvailabilitySettingRepository extends JpaRepository<CoachAvailabilitySettings, Long> {
+public interface AvailabilitySettingRepository extends CrudRepository<CoachAvailabilitySettings, Long>, PagingAndSortingRepository<CoachAvailabilitySettings, Long> {
 
-    @Query("select a.active from  CoachAvailabilitySettings a where a.coach= :coach and a.type= :syncType and a.resource = :resource")
-    Boolean isActive(String coach, CalendarSyncInfo.SyncType syncType, String resource);
+    @Query("SELECT active FROM coach_availability_settings WHERE coach = :coach AND type = :syncType AND resource = :resource")
+    Boolean isActiveNative(String coach, String syncType, String resource);
 
-    @Query("select a from  CoachAvailabilitySettings a where a.active = true and a.coach = :coach")
+    default Boolean isActive(String coach, CalendarSyncInfo.SyncType syncType, String resource) {
+        return isActiveNative(coach, syncType != null ? syncType.name() : null, resource);
+    }
+
+    @Query("SELECT * FROM coach_availability_settings WHERE active = true AND coach = :coach")
     Optional<CoachAvailabilitySettings> findByActive(String coach);
 
+    @Query("SELECT * FROM coach_availability_settings WHERE coach = :coach")
     Optional<CoachAvailabilitySettings> findByCoach(String coach);
 
+    @Modifying
+    @Query("DELETE FROM coach_availability_settings WHERE coach = :coach")
     void deleteByCoach(String coach);
 }

@@ -277,12 +277,11 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
                                 """))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(availabilitySettingRepository.findAll()).containsExactly(
-                new CoachAvailabilitySettings().setCoach("coach1")
-                        .setResource("a6797441-2311-4687-bdc8-30e1ce338b56")
-                        .setActive(true)
-                        .setType(CALENDLY)
-        );
+        var settings = availabilitySettingRepository.findByCoach("coach1").orElseThrow();
+        Assertions.assertThat(settings.getCoach()).isEqualTo("coach1");
+        Assertions.assertThat(settings.getResource()).isEqualTo("a6797441-2311-4687-bdc8-30e1ce338b56");
+        Assertions.assertThat(settings.isActive()).isTrue();
+        Assertions.assertThat(settings.getType()).isEqualTo(CALENDLY);
 
     }
 

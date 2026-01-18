@@ -16,18 +16,14 @@ public class FeedbackSubmitRequest {
     private List<AnswerDto> answers;
 
     public static List<FeedbackFormAnswer> toAnswers(FeedbackSubmitRequest request, long formId, Recipient recipient) {
+        recipient.setSubmitted(true);
         return request.getAnswers().stream()
-                .map(answerDto ->
-                        new FeedbackFormAnswer()
+                .map(answerDto -> new FeedbackFormAnswer()
                                 .setFormId(formId)
                                 .setRecipientId(recipient.getId())
                                 .setQuestionKey(answerDto.question())
-                                .setForm(new FeedbackForm().setId(formId))
-                                .setQuestion(new Question().setKey(answerDto.question()))
-                                .setAnswer(answerDto.answer())
-                                .setRecipient(recipient.setSubmitted(true)))
-                .collect(Collectors.toList());
-
+                                .setAnswer(answerDto.answer()))
+                .toList();
     }
 
     public record AnswerDto(String question, String answer) {

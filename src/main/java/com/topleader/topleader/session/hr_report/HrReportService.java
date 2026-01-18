@@ -26,7 +26,6 @@ public class HrReportService {
     private final UserAllocationRepository userAllocationRepository;
     private final ScheduledSessionRepository scheduledSessionRepository;
 
-    @Transactional(readOnly = true)
     public HrReportResponse generateReport(Long packageId, LocalDate from, LocalDate to) {
         log.debug("Generating HR report for package {} (from={}, to={})", packageId, from, to);
 

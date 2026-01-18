@@ -8,6 +8,7 @@ import com.topleader.topleader.credit.history.CreditHistory;
 import com.topleader.topleader.credit.history.CreditHistoryRepository;
 import com.topleader.topleader.user.UserRepository;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -56,10 +57,11 @@ class CreditControllerIT extends IntegrationTest {
         assertThat(client3.getCredit(), is(80));
 
         final var creditHistory = creditHistoryRepository.findAll();
+        final var creditHistoryList = StreamSupport.stream(creditHistory.spliterator(), false).toList();
 
-        assertThat(creditHistory, hasSize(12));
+        assertThat(creditHistoryList, hasSize(12));
 
-        final var received = creditHistory.stream()
+        final var received = StreamSupport.stream(creditHistory.spliterator(), false)
             .filter(c -> c.getType().equals(CreditHistory.Type.RECEIVED))
             .toList();
 
@@ -67,7 +69,7 @@ class CreditControllerIT extends IntegrationTest {
         assertThat(received.stream().allMatch(e -> e.getUsername().equals("coach")), is(true));
         assertThat(received.stream().allMatch(e -> e.getCredit().equals(90)), is(true));
 
-        final var paid = creditHistory.stream()
+        final var paid = StreamSupport.stream(creditHistory.spliterator(), false)
             .filter(c -> c.getType().equals(CreditHistory.Type.PAID))
             .toList();
 

@@ -61,7 +61,7 @@ dependencies {
     }
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-mail")
@@ -72,7 +72,7 @@ dependencies {
     implementation("org.springframework.ai:spring-ai-starter-model-openai")
 
     // Database
-    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
 
     // Logging
@@ -103,14 +103,6 @@ tasks.withType<Test> {
 
 tasks.bootJar {
     archiveFileName.set("top-leader.jar")
-}
-
-// Integration tests
-val integrationTest by tasks.registering(Test::class) {
-    description = "Runs integration tests."
-    group = "verification"
-    include("**/*IT.class")
-    shouldRunAfter(tasks.test)
 }
 
 // OpenAPI spec generation

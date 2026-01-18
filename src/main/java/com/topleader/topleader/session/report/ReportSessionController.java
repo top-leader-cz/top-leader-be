@@ -15,7 +15,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZonedDateTime;
 import java.util.Comparator;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
@@ -39,7 +41,8 @@ class ReportSessionController {
                 .map(User::getCompanyId)
                 .orElseThrow(() -> new ApiValidationException(NOT_PART_OF_COMPANY, "user", hrAuth.getUsername(), "User is not part of any company"));
 
-         var all = repository.findAll(ReportSessionSpecification.withFilter(filter, companyId), pageable)
+        var fromDate = Optional.ofNullable(filter.from()).map(ZonedDateTime::toLocalDateTime).orElse(null);
+         var all = repository.findFiltered(companyId, fromDate)
                 .stream()
                 .map(ReportSessionDto::from)
                 .collect(Collectors.toMap(

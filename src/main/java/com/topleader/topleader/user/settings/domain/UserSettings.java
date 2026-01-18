@@ -20,13 +20,13 @@ public class UserSettings {
     private String aspiredCompetency;
     private String aspiredPosition;
 
-    public static UserSettings fromUser(User user) {
+    public static UserSettings fromUser(User user, String managerUsername) {
         return new UserSettings()
                 .setUsername(user.getUsername())
                 .setEmail(user.getEmail())
                 .setFirstName(user.getFirstName())
                 .setLastName(user.getLastName())
-                .setManager(user.getManagers().stream().findFirst().map(User::getUsername).orElse(null))
+                .setManager(managerUsername)
                 .setPosition(user.getPosition())
                 .setAspiredCompetency(user.getAspiredCompetency())
                 .setAspiredPosition(user.getAspiredPosition());

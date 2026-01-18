@@ -1,23 +1,18 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.coach;
 
-import com.topleader.topleader.user.User;
-import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
-
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.topleader.topleader.common.util.common.JsonbValue;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Set;
 
 
 /**
@@ -26,33 +21,25 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
+@Table("coach")
 @Accessors(chain = true)
 @NoArgsConstructor
 public class Coach {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
     private String username;
 
     private boolean publicProfile;
 
-    @Column(length = 1000)
     private String webLink;
 
-    @Column(length = 1000)
     private String bio;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private List<String> languages;
+    private JsonbValue languages;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private List<String> fields;
+    private JsonbValue fields;
 
     private LocalDate experienceSince;
 
@@ -68,180 +55,71 @@ public class Coach {
 
     private int priority;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<PrimaryRole> primaryRoles;
+    private JsonbValue primaryRoles;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "username", referencedColumnName = "username", insertable = false, updatable = false)
-    private User user;
+    private JsonbValue certificate;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<String> certificate;
+    private JsonbValue baseLocations;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<String> baseLocations;
-
-    @Column(length = 255)
     private String travelWillingness;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<String> deliveryFormat;
+    private JsonbValue deliveryFormat;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<String> serviceType;
+    private JsonbValue serviceType;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<String> topics;
+    private JsonbValue topics;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<String> diagnosticTools;
+    private JsonbValue diagnosticTools;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<String> industryExperience;
+    private JsonbValue industryExperience;
 
-    @Column(name = "user_references")
-    private String references;
+    private String userReferences;
 
-    public enum CertificateType {
-        ACC,
-        PCC,
-        MCC,
-        MBTI,
-        GALLUP_STRENGTHSFINDER,
-        DISC,
-        HOGAN,
-        LPI,
-        FEEDBACK_360,
-        SHL,
-        INSIGHTS_DISCOVERY,
-        OTHER
-    }
 
     public enum PrimaryRole {
-        COACH,
-        MENTOR,
-        TRAINER,
-        FACILITATOR,
-        CONSULTANT,
-        SPEAKER
+        COACH, MENTOR, TRAINER, FACILITATOR, CONSULTANT, SPEAKER
     }
 
-    public enum TravelWillingness {
-        NO,
-        WITHIN_CITY,
-        WITHIN_COUNTRY,
-        WITHIN_REGION,
-        WITHIN_EUROPE,
-        GLOBALLY,
-        OTHER
+
+    private static final TypeReference<Set<PrimaryRole>> PRIMARY_ROLES_TYPE = new TypeReference<>() {};
+
+    public List<String> getLanguagesList() { return JsonbValue.toStringList(languages); }
+    public Coach setLanguagesList(List<String> v) { this.languages = JsonbValue.fromList(v); return this; }
+
+    public List<String> getFieldsList() { return JsonbValue.toStringList(fields); }
+    public Coach setFieldsList(List<String> v) { this.fields = JsonbValue.fromList(v); return this; }
+
+    public Set<PrimaryRole> getPrimaryRolesSet() { return JsonbValue.toSet(primaryRoles, PRIMARY_ROLES_TYPE); }
+    public Coach setPrimaryRolesSet(Set<PrimaryRole> v) { this.primaryRoles = JsonbValue.fromSet(v); return this; }
+
+    public Set<String> getCertificateSet() { return JsonbValue.toStringSet(certificate); }
+    public Coach setCertificateSet(Set<String> v) { this.certificate = JsonbValue.fromSet(v); return this; }
+
+    public Set<String> getBaseLocationsSet() { return JsonbValue.toStringSet(baseLocations); }
+    public Coach setBaseLocationsSet(Set<String> v) { this.baseLocations = JsonbValue.fromSet(v); return this; }
+
+    public Set<String> getDeliveryFormatSet() { return JsonbValue.toStringSet(deliveryFormat); }
+    public Coach setDeliveryFormatSet(Set<String> v) { this.deliveryFormat = JsonbValue.fromSet(v); return this; }
+
+    public Set<String> getServiceTypeSet() { return JsonbValue.toStringSet(serviceType); }
+    public Coach setServiceTypeSet(Set<String> v) { this.serviceType = JsonbValue.fromSet(v); return this; }
+
+    public Set<String> getTopicsSet() { return JsonbValue.toStringSet(topics); }
+    public Coach setTopicsSet(Set<String> v) { this.topics = JsonbValue.fromSet(v); return this; }
+
+    public Set<String> getDiagnosticToolsSet() { return JsonbValue.toStringSet(diagnosticTools); }
+    public Coach setDiagnosticToolsSet(Set<String> v) { this.diagnosticTools = JsonbValue.fromSet(v); return this; }
+
+    public Set<String> getIndustryExperienceSet() { return JsonbValue.toStringSet(industryExperience); }
+    public Coach setIndustryExperienceSet(Set<String> v) { this.industryExperience = JsonbValue.fromSet(v); return this; }
+
+    public String getReferences() {
+        return userReferences;
     }
 
-    public enum DeliveryFormat {
-        ONLINE,
-        ONSITE,
-        HYBRID,
-        OTHER
+    public Coach setReferences(String references) {
+        this.userReferences = references;
+        return this;
     }
 
-    public enum ServiceType {
-        ONE_TO_ONE,
-        EXECUTIVE,
-        TEAM,
-        CAREER,
-        GROUP,
-        PEER_MENTORING,
-        WORKSHOPS,
-        LONGER_PROGRAMS,
-        OTHER
-    }
-
-    public enum Topic {
-        AI_ADOPTION_FOR_LEADERS,
-        AI_GOVERNANCE_AND_ETHICS,
-        BUSINESS,
-        CAREER,
-        CHANGE,
-        COACHING_SKILLS_FOR_MANAGERS,
-        COMMUNICATION,
-        CONFIDENCE,
-        CONFLICT,
-        CROSS_CULTURAL_LEADERSHIP,
-        CULTURAL_DIFFERENCES,
-        DECISION_MAKING,
-        DELEGATION,
-        DIVERSITY,
-        EMOTIONAL_INTELLIGENCE,
-        ENTREPRENEURSHIP,
-        EXECUTIVE,
-        FACILITATION,
-        FEEDBACK_CULTURE,
-        FITNESS,
-        HEALTH,
-        IMPOSTER_SYNDROME,
-        INFLUENCING_SKILLS,
-        INNOVATION_AND_CREATIVITY,
-        LEADERSHIP,
-        LEADING_WITHOUT_AUTHORITY,
-        LIFE,
-        MANAGEMENT,
-        MENTAL_FITNESS,
-        MENTORSHIP,
-        NEGOTIATIONS,
-        ORGANIZATIONAL_DEVELOPMENT,
-        PERFORMANCE,
-        PSYCHOLOGICAL_SAFETY,
-        RELATIONSHIPS,
-        REMOTE_LEADERSHIP,
-        RESILIENCE,
-        SALES,
-        SELF_CRITICISM,
-        SELF_LEADERSHIP,
-        STRATEGIC_THINKING,
-        STRESS_MANAGEMENT,
-        TEAMS,
-        TIME_MANAGEMENT,
-        TRANSFORMATIONS,
-        WELLBEING,
-        WOMEN,
-        OTHER
-    }
-
-    public enum DiagnosticTool {
-        MBTI,
-        GALLUP_STRENGTHSFINDER,
-        DISC,
-        HOGAN,
-        LPI,
-        FEEDBACK_360,
-        SHL,
-        INSIGHTS_DISCOVERY,
-        OTHER
-    }
-
-    public enum IndustryExperience {
-        TECH,
-        FINANCE,
-        PHARMA,
-        RETAIL,
-        MANUFACTURING,
-        LOGISTICS,
-        TELECOMMUNICATIONS,
-        PUBLIC_SECTOR,
-        GENERAL_CROSS_INDUSTRY,
-        OTHER
-    }
-
-    public String getUserEmail() {
-        return Optional.ofNullable(user)
-                .map(User::getEmail)
-                .orElse(username);
-    }
 }

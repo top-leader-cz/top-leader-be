@@ -4,19 +4,17 @@ package com.topleader.topleader.user.settings;
 
 import com.topleader.topleader.hr.company.CompanyService;
 import com.topleader.topleader.hr.domain.ManagerDto;
-import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.manager.ManagerService;
+import com.topleader.topleader.user.manager.UserManagerRepository;
+import com.topleader.topleader.user.manager.UsersManagers;
 import com.topleader.topleader.user.settings.domain.UserSettingRequest;
 import com.topleader.topleader.user.settings.domain.UserSettings;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import lombok.AllArgsConstructor;
@@ -47,9 +45,10 @@ public class UserSettingsController {
 
     private final UserRepository userRepository;
 
+    private final UserManagerRepository userManagerRepository;
+
     @Secured({"USER"})
     @GetMapping("/managers")
-    @Transactional
     public List<ManagerDto> listManagers(@AuthenticationPrincipal UserDetails user) {
         var foundUser = userDetailService.find(user.getUsername());
         if (foundUser.getCompanyId() == null) {
@@ -66,14 +65,12 @@ public class UserSettingsController {
 
     @Secured({"USER"})
     @GetMapping
-    @Transactional
     public UserSettings fetchUserSetting(@AuthenticationPrincipal UserDetails loggedUser) {
         return settingsService.getUserSettings(loggedUser.getUsername());
     }
 
     @Secured({"USER"})
     @PutMapping
-    @Transactional
     public UserSettings updateUserSetting(
         @AuthenticationPrincipal UserDetails loggedUser,
         @RequestBody @Valid UserSettingRequest request
@@ -96,14 +93,25 @@ public class UserSettingsController {
                 .setAspiredPosition(request.getAspiredPosition())
                 .setAspiredCompetency(request.getAspiredCompetency());
 
+        var savedUser = userDetailService.save(user);
 
+        String managerUsername = null;
         if (StringUtils.isNotBlank(request.getManager())) {
             var manager = userRepository.findByUsername(request.getManager())
                     .orElseThrow(() -> new IllegalArgumentException("Manager not found: " + request.getManager()));
-            user.setManagers(new HashSet<>(Set.of(manager)));
+
+            // Delete existing manager relationships for this user
+            userManagerRepository.findByUserUsername(loggedUser.getUsername())
+                    .forEach(um -> userManagerRepository.delete(um));
+
+            // Create new manager relationship
+            userManagerRepository.save(new UsersManagers()
+                    .setUserUsername(loggedUser.getUsername())
+                    .setManagerUsername(manager.getUsername()));
+            managerUsername = manager.getUsername();
         }
 
-        return UserSettings.fromUser(userDetailService.save(user));
+        return UserSettings.fromUser(savedUser, managerUsername);
     }
 
 

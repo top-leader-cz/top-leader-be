@@ -9,26 +9,20 @@ import com.topleader.topleader.common.calendar.domain.SyncEvent;
 import com.topleader.topleader.common.calendar.calendly.domain.TokenResponse;
 
 import com.topleader.topleader.coach.availability.AvailabilityUtils;
-import com.topleader.topleader.coach.availability.CoachAvailabilityRepository;
 import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
-import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
 import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
-import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
 import java.nio.charset.Charset;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;

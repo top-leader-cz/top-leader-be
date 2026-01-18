@@ -10,7 +10,8 @@ TopLeader is a Spring Boot backend application for a coaching/mentoring platform
 
 - **Java 25** with Spring Boot 4.0.1
 - **PostgreSQL** with Flyway migrations
-- **Spring Data JPA** (Hibernate 7.x)
+- **Spring Data JDBC** (migrating from JPA/Hibernate)
+- **Spring Data JPA** (Hibernate 7.x) - legacy entities being migrated
 - **Spring Security** (form login + session-based auth)
 - **Lombok** for boilerplate reduction
 - **Gradle 9.2.1** build system (Kotlin DSL)
@@ -75,14 +76,105 @@ src/main/java/com/topleader/topleader/
 
 ## Key Patterns
 
-### Entity Pattern
-- Use `@Entity` with Lombok (`@Data`, , `@Accessors(chain = true)`)
+### Entity Pattern (JDBC - New Standard)
+- Use `@Table(name = "table_name")` with Lombok (`@Data`, `@Accessors(chain = true)`)
+- Use Spring Data annotations: `@Id`, `@Transient`
+- For entities with manual ID control, implement `Persistable<ID>`
+- Store enums as VARCHAR strings, JSON data as JSONB
+- Use custom converters in `JdbcConfiguration` for complex types
+
+### Entity Pattern (JPA - Legacy, Being Migrated)
+- Use `@Entity` with Lombok (`@Data`, `@Accessors(chain = true)`)
 - ID generation: `GenerationType.SEQUENCE` for Long, `GenerationType.UUID` for UUID
 - Audit fields: `createdAt`, `createdBy`, `updatedAt`, `updatedBy` with `@PrePersist`/`@PreUpdate`
 
-### Repository Pattern
+### Repository Pattern (JDBC - New Standard)
+- Extend `ListCrudRepository<T, ID>` for basic CRUD only
+- Add `PagingAndSortingRepository<T, ID>` only when pagination is actually needed
+- **Prefer `@Query` over derived query methods** - avoids need for converters and gives full SQL control
+- Use `@Modifying` for INSERT/UPDATE/DELETE operations
+- **Pass enums as strings** using `.name()` to avoid converter complexity:
+  ```java
+  // Repository
+  @Query("SELECT * FROM table WHERE type = :type")
+  List<Entity> findByType(String type);
+
+  // Usage
+  repository.findByType(MyEnum.VALUE.name());
+  ```
+
+### Nullable Parameters in @Query (JDBC)
+Spring Data JDBC does **NOT** support `:param IS NULL` syntax like JPA. Use these PostgreSQL techniques instead:
+
+**For String parameters** - use COALESCE:
+```sql
+@Query("""
+    SELECT * FROM my_table
+    WHERE (COALESCE(:name, '') = '' OR name = :name)
+    """)
+List<MyEntity> findFiltered(String name);
+```
+
+**For DateTime parameters** - use CAST:
+```sql
+@Query("""
+    SELECT * FROM my_table
+    WHERE (CAST(:fromDate AS timestamp) IS NULL OR date >= :fromDate)
+    AND (CAST(:toDate AS timestamp) IS NULL OR date <= :toDate)
+    """)
+List<MyEntity> findFiltered(LocalDateTime fromDate, LocalDateTime toDate);
+```
+
+**For nullable columns with LEFT JOIN** - handle NULL in column:
+```sql
+WHERE (CAST(:fromDate AS timestamp) IS NULL OR date IS NULL OR date >= :fromDate)
+```
+
+**DO NOT use** (doesn't work in JDBC):
+```sql
+WHERE (:param IS NULL OR column = :param)  -- This fails!
+```
+
+### Pagination with @Query (JDBC)
+Spring Data JDBC @Query does **NOT** support `countQuery` attribute like JPA. Use separate methods:
+
+```java
+@Query("""
+    SELECT * FROM my_table
+    WHERE (COALESCE(:name, '') = '' OR name = :name)
+    """)
+List<MyEntity> findFiltered(String name, Pageable pageable);  // Adds LIMIT/OFFSET automatically
+
+@Query("""
+    SELECT COUNT(*) FROM my_table
+    WHERE (COALESCE(:name, '') = '' OR name = :name)
+    """)
+long countFiltered(String name);
+```
+
+In controller, combine both to create Page:
+```java
+var content = repository.findFiltered(name, pageable).stream().map(Entity::toDto).toList();
+var total = repository.countFiltered(name);
+return new PageImpl<>(content, pageable, total);
+```
+
+### Repository Pattern (JPA - Legacy)
 - Extend `JpaRepository<T, ID>`
 - Add `JpaSpecificationExecutor<T>` for complex queries
+
+### Transaction Management
+- **AVOID `@Transactional` in most cases** - Spring Data JDBC handles transactions automatically per operation
+- **Only use `@Transactional` when something fails** and you need:
+  - Multiple write operations to be atomic (all succeed or all fail)
+  - Explicit rollback behavior on exceptions
+- **DO NOT** use `@Transactional` for:
+  - Simple repository reads (findById, findAll, etc.)
+  - Single repository write operations (save, delete)
+  - Methods that only call one repository method
+  - @Modifying @Query methods (they handle their own transaction)
+- When migrating from JPA, **remove** `@Transactional` unless tests fail without it
+- Spring Data JDBC repositories handle transactions per operation automatically
 
 ### Controller Pattern
 - Use `@RestController` with `/api/latest/...` paths
@@ -92,6 +184,25 @@ src/main/java/com/topleader/topleader/
 ### RBAC Roles
 - `RESPONDENT`, `USER`, `MANAGER`, `COACH`, `HR`, `ADMIN`
 
+### JDBC Custom Converters
+All converters are in `configuration/JdbcConfiguration`:
+- Use `@ReadingConverter` for database → Java conversions
+- Use `@WritingConverter` for Java → database conversions
+- **Always use Optional for null-safe conversions**:
+  ```java
+  @ReadingConverter
+  static class MyConverter implements Converter<String, MyType> {
+      public MyType convert(String source) {
+          return Optional.ofNullable(source)
+                  .filter(StringUtils::isNotBlank)
+                  .map(MyType::valueOf)
+                  .orElse(null);
+      }
+  }
+  ```
+- Register converters in `jdbcCustomConversions()` method
+- Converters handle: Enums, JSONB types, custom objects
+
 ### Exception Handling
 All exception classes are in `common/exception/`:
 - `NotFoundException` - no-arg constructor, returns 404
@@ -100,13 +211,69 @@ All exception classes are in `common/exception/`:
 - `ErrorController` - global exception handler (@ControllerAdvice)
 - `JsonConversionException` - JSON parsing/serialization errors
 
+## JPA to JDBC Migration Guide
+
+### Why Spring Data JDBC?
+This project uses **Spring Data JDBC** instead of jOOQ to avoid:
+- Additional DSL complexity
+- Code generation overhead
+- Extra dependencies and build steps
+
+Spring Data JDBC provides a simpler, more lightweight alternative to JPA while maintaining type safety and native SQL support.
+
+### Migrated Modules (JDBC)
+The following modules have been fully migrated to Spring Data JDBC:
+- **message** - User messaging system (Message, UserChat, LastMessage)
+- **myteam** - Team management views (MyTeamView)
+- **session** - All session-related entities:
+  - CoachSessionView - View for coach sessions
+  - CoachingPackage - Coaching package management
+  - ReportSessionView - Session reporting view
+  - ScheduledSession - Scheduled coaching sessions
+  - UserAllocation - User credit allocation
+
+### Migration Steps
+When migrating an entity from JPA to JDBC:
+
+1. **Update Entity Annotations**:
+   - Remove: `@Entity`, `@GeneratedValue`, `@SequenceGenerator`, `@Column`
+   - Add: `@Table(name = "table_name")` from `org.springframework.data.relational.core.mapping`
+   - Change: `@Id` to `org.springframework.data.annotation.Id`
+
+2. **Update Repository**:
+   - Change from: `JpaRepository<T, ID>`
+   - To: `ListCrudRepository<T, ID>, PagingAndSortingRepository<T, ID>`
+   - **IMPORTANT**: Always use `ListCrudRepository` instead of `CrudRepository` to return `List` instead of `Iterable`
+   - All repository methods should return `List<T>` for consistency and ease of use in tests
+   - Use `@Query` from `org.springframework.data.jdbc.repository.query` where enum are query to avoid converters else use named query
+   - Convert JPQL to native SQL
+
+3. **Update Service Layer**:
+   - Change: `jakarta.transaction.Transactional` → `org.springframework.transaction.annotation.Transactional`
+   - Remove JPA `Example` API usage
+   - **@PrePersist/@PreUpdate replacement**: Manually set `createdAt`, `updatedAt` timestamps in service methods using `LocalDateTime.now()`
+   - **NEVER use fully qualified class names** - always import classes and use simple names (e.g., `LocalDateTime.now()`, not `java.time.LocalDateTime.now()`)
+
+4. **Handle Complex Types**:
+   - JSON arrays/objects: Store as String (JSONB), add getter methods for deserialization
+   - Enums: Convert via custom converters in `JdbcConfiguration`
+   - Custom types: Add `@ReadingConverter` and `@WritingConverter`
+
+5. **Update Tests**:
+   - Replace JPA `Example` API with stream filtering
+   - Add `@Transactional` to tests accessing lazy-loaded data
+
 ## Database Migrations
 
-Flyway migrations in `src/main/resources/db/migration/0.0.1/`
+Flyway migrations in `src/main/resources/db/migration/`
 
-Naming: `V0.0.1.{number}__{description}.sql`
+Current directories:
+- `0.0.1/` - Initial migrations (legacy)
+- `1.0.0/` - JPA to JDBC migration scripts
 
-Current latest: `V0.0.1.81__coaching_package.sql`
+Naming: `V{version}.{number}__{description}.sql`
+
+Example: `V1.0.0.2__jpa_remove.sql`
 
 ## Testing
 
@@ -148,3 +315,15 @@ make deploy-prod
 - Validation with Jakarta `@NotNull`, `@Valid`, `@Min`
 - **No JavaDoc comments above methods** - keep code clean without method documentation
 - **Prefer streams over for/while loops** - use functional style with `stream()`, `map()`, `filter()`, `collect()`, etc.
+- **Use Optional for null-safe operations** - avoid ternary operators and if-null checks:
+  ```java
+  // Good - using Optional
+  return Optional.ofNullable(source)
+          .filter(StringUtils::isNotBlank)
+          .map(MyType::valueOf)
+          .orElse(defaultValue);
+
+  // Bad - ternary operator
+  var value = source != null ? source.getValue() : null;
+  if (StringUtils.isBlank(value)) return defaultValue;
+  ```

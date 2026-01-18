@@ -16,7 +16,7 @@ import com.topleader.topleader.session.scheduled_session.ScheduledSessionService
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinsight.UserInsightService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -230,7 +230,6 @@ public class UserInfoController {
             .toList();
     }
 
-    @Transactional
     @PostMapping("/private-session")
     public UpcomingSessionDto schedulePrivateSession(@RequestBody SchedulePrivateSessionRequest request, @AuthenticationPrincipal UserDetails user) {
         final var time = request.time();
@@ -263,7 +262,6 @@ public class UserInfoController {
     }
 
 
-    @Transactional
     @DeleteMapping("/upcoming-sessions/{sessionId}")
     public void cancelSession(@PathVariable Long sessionId, @AuthenticationPrincipal UserDetails user) {
 

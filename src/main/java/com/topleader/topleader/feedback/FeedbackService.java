@@ -11,6 +11,7 @@ import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.feedback.feedback_notification.FeedbackNotificationService;
 import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
+import com.topleader.topleader.feedback.repository.FeedbackFormQuestionRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
@@ -19,8 +20,8 @@ import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.common.TranslationUtils;
 import com.topleader.topleader.common.util.common.user.UserUtils;
 import com.topleader.topleader.common.util.common.CommonUtils;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import com.topleader.topleader.common.exception.NotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,8 @@ public class FeedbackService {
             "de", "Ihre wertvolle Rückmeldung für %s %s's Entwicklung auf TopLeader erbeten");
 
     private final FeedbackFormRepository feedbackFormRepository;
+
+    private final FeedbackFormQuestionRepository feedbackFormQuestionRepository;
 
     private final QuestionRepository questionRepository;
 
@@ -85,66 +88,72 @@ public class FeedbackService {
 
     public FeedbackForm fetchForm(long id) {
         return feedbackFormRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Feedback form not found! id: " + id));
+                .orElseThrow(() -> new NotFoundException());
     }
 
     public List<FeedbackForm> fetchForms(String username) {
         return feedbackFormRepository.findByUsername(username);
     }
 
-    public FeedbackForm saveForm(FeedbackForm form) {
-        return feedbackFormRepository.saveAndFlush(form);
+    public List<FeedbackFormAnswer> getAnswersByFormId(long formId) {
+        return feedbackFormAnswerRepository.findByFormId(formId);
     }
 
-    @Transactional
-    public FeedbackForm saveFormFromRequest(FeedbackFormRequest request) {
-        var user = userRepository.findByUsername(request.getUsername().toLowerCase(java.util.Locale.ROOT))
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + request.getUsername()));
-        var form = feedbackFormRepository.saveAndFlush(FeedbackFormRequest.toSimpleForm(request, user));
-        return feedbackFormRepository.saveAndFlush(FeedbackFormRequest.toForm(request.setId(form.getId()), user));
+    public FeedbackForm saveForm(FeedbackForm form) {
+        return feedbackFormRepository.save(form);
     }
 
     public void updateQuestions(List<Question> questions) {
-        questionRepository.saveAll(questions);
+        var newQuestions = questions.stream()
+                .filter(q -> !questionRepository.existsByKey(q.getKey()))
+                .toList();
+        questionRepository.saveAll(newQuestions);
     }
 
     public void deleteForm(long id) {
         feedbackFormRepository.deleteById(id);
     }
 
-    @Transactional
     public Recipient validateRecipientIfValid(long formId, String recipient, String token) {
-        return recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
-                .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo().plusDays(1)) && !r.isSubmitted())
+        var recipientEntity = recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
                 .orElseThrow(() -> new ApiValidationException(FROM_ALREADY_SUBMITTED, "user", recipient, String
                         .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token)));
+
+        var form = feedbackFormRepository.findById(formId)
+                .orElseThrow(NotFoundException::new);
+
+        if (LocalDateTime.now().isAfter(form.getValidTo().plusDays(1)) || recipientEntity.isSubmitted()) {
+            throw new ApiValidationException(FROM_ALREADY_SUBMITTED, "user", recipient, String
+                    .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token));
+        }
+
+        return recipientEntity;
     }
 
-    @Transactional
     public void validateRecipientIfSubmitted(long formId, String recipient, String token) {
-        recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
-                .filter(r -> LocalDateTime.now().isBefore(r.getForm().getValidTo().plusDays(1)) && r.isSubmitted())
+        var recipientEntity = recipientRepository.findByFormIdAndRecipientAndToken(formId, recipient, token)
                 .orElseThrow(() -> new ApiValidationException(FROM_ALREADY_SUBMITTED, "user", recipient, String
                         .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token)));
+
+        var form = feedbackFormRepository.findById(formId)
+                .orElseThrow(NotFoundException::new);
+
+        if (LocalDateTime.now().isAfter(form.getValidTo().plusDays(1)) || !recipientEntity.isSubmitted()) {
+            throw new ApiValidationException(FROM_ALREADY_SUBMITTED, "user", recipient, String
+                    .format("Recipient or form is invalid! formId: %s recipient: %s token %s", formId, recipient, token));
+        }
     }
 
     @Transactional
-    public List<FeedbackFormAnswer> submitForm(List<FeedbackFormAnswer> answers, String username) {
+    public List<FeedbackFormAnswer> submitForm(List<FeedbackFormAnswer> answers, String username, Recipient recipient) {
         userRepository.findByUsername(username)
                 .ifPresent(u -> {
                     if (skipUpdate(u)) return;
                     userRepository.save(u.setStatus(User.Status.SUBMITTED));
                 });
-
-        // Save the recipient's submitted status
-        if (!answers.isEmpty()) {
-            var recipient = answers.get(0).getRecipient();
-            if (recipient != null) {
-                recipientRepository.save(recipient);
-            }
-        }
-
-        return feedbackFormAnswerRepository.saveAll(answers);
+        recipientRepository.save(recipient);
+        var saved = feedbackFormAnswerRepository.saveAll(answers);
+        return java.util.stream.StreamSupport.stream(saved.spliterator(), false).toList();
     }
 
     void sendFeedbacks(FeedbackData data) {
@@ -152,13 +161,16 @@ public class FeedbackService {
                 .filter(r -> r.id() == null)
                 .forEach(r -> {
                     var feedbackLink = String.format("%s/#/feedback/%s/%s/%s", appUrl, data.getFormId(), r.recipient(), r.token());
-                    var params = Map.of("validTo", data.getValidTo().format(TOP_LEADER_FORMATTER),
+                    var validTo = Optional.ofNullable(data.getValidTo())
+                            .map(v -> v.format(TOP_LEADER_FORMATTER))
+                            .orElse(null);
+                    var params = Map.of("validTo", validTo,
                             "link", feedbackLink, "firstName", data.getFirstName(), "lastName", data.getLastName());
                     var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(data.getLocale()));
                     var subject = String.format(subjects.getOrDefault(data.getLocale(), defaultLocale), data.getFirstName(), data.getLastName());
 
-                    var testedUser = userRepository.findByUsername(r.recipient()).orElse(new User());
-                    if (!skipUpdate(testedUser)) {
+                    var existingUser = userRepository.findByUsernameOrEmail(r.recipient());
+                    if (existingUser.isEmpty()) {
                         var newUser = UserUtils.fromEmail(r.recipient())
                                 .setAuthorities(Set.of(User.Authority.RESPONDENT))
                                 .setStatus(User.Status.REQUESTED);
@@ -172,12 +184,19 @@ public class FeedbackService {
     }
 
     @SneakyThrows
-    @Transactional
     public void generateSummary(long formId) {
         log.info("Generating summary for form: [{}]", formId);
-        var form = feedbackFormRepository.getReferenceById(formId);
-        var user = form.getUser();
-        var formDto = FeedbackFormDto.witAnswer(form);
+        var form = feedbackFormRepository.findById(formId)
+                .orElseThrow(() -> new NotFoundException());
+        var user = userRepository.findByUsername(form.getUsername()).orElseThrow();
+
+        var formQuestions = feedbackFormQuestionRepository.findByFeedbackFormId(formId);
+        var formRecipients = recipientRepository.findByFormId(formId);
+        var formAnswers = feedbackFormAnswerRepository.findByFormId(formId);
+        var recipientMap = formRecipients.stream()
+                .collect(Collectors.toMap(Recipient::getId, r -> r));
+
+        var formDto = FeedbackFormDto.witAnswer(form, formQuestions, formRecipients, formAnswers, recipientMap);
         var translations = TranslationUtils.getTranslation();
         var questions = formDto.getQuestions().stream()
                 .collect(Collectors.toMap(q -> TranslationUtils.translate(q.key(), translations), q -> q.answers().stream()
@@ -209,9 +228,13 @@ public class FeedbackService {
     }
 
 
-    @Transactional
     public FeedbackFormDto toFeedbackFormDto(FeedbackForm form) {
-        return FeedbackFormDto.of(form);
+        var formQuestions = feedbackFormQuestionRepository.findByFeedbackFormId(form.getId());
+        var formRecipients = recipientRepository.findByFormId(form.getId());
+        var user = userRepository.findByUsername(form.getUsername()).orElseThrow();
+        return FeedbackFormDto.of(form, formQuestions, formRecipients)
+                .setFirstName(user.getFirstName())
+                .setLastName(user.getLastName());
     }
 
 

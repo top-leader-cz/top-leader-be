@@ -276,4 +276,23 @@ class FeedbackControllerIT extends IntegrationTest {
         Assertions.assertThat(repository.findById(1L)).isEmpty();
 
     }
+
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @WithUserDetails("jakub.svezi@dummy.com")
+    void updateFormWithRemovedRecipients() throws Exception {
+        var result = mvc.perform(put("/api/latest/feedback/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.readFileAsString("feedback/json/update-form-removed-recipient-request.json")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("feedback/json/update-form-removed-recipient-response.json");
+
+        TestUtils.assertJsonEquals(result, expected);
+
+        Assertions.assertThat(greenMail.getReceivedMessages()).isEmpty();
+    }
 }

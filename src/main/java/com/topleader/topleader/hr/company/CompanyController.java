@@ -35,8 +35,14 @@ public class CompanyController {
     @Secured("ADMIN")
     public List<CompanyDto> listCompanies() {
         return companyRepository.findAll().stream()
+            .map(this::loadWithRates)
             .map(CompanyDto::from)
             .toList();
+    }
+
+    private Company loadWithRates(Company company) {
+        var rates = companyRepository.findCoachRatesByCompanyId(company.getId());
+        return company.setAllowedCoachRates(rates);
     }
 
     @PostMapping
@@ -68,13 +74,12 @@ public class CompanyController {
         final var existingCompany = companyRepository.findByName(company)
             .orElseThrow(NotFoundException::new);
 
-        return CompanyDto
-            .from(
-                companyRepository.save(
-                    existingCompany.setAllowedCoachRates(request.defaultAllowedCoachRate())
-                )
-            );
+        companyRepository.deleteCoachRates(existingCompany.getId());
+        request.defaultAllowedCoachRate().forEach(rate ->
+            companyRepository.insertCoachRate(existingCompany.getId(), rate)
+        );
 
+        return CompanyDto.from(existingCompany.setAllowedCoachRates(request.defaultAllowedCoachRate()));
     }
 
     public record CreateCompanyRequest(String name) {

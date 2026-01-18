@@ -47,8 +47,7 @@ public class MetricsConfiguration {
         // Gauge for sessions by status
         for (ScheduledSession.Status status : ScheduledSession.Status.values()) {
             Gauge.builder("topleader.sessions.by_status", repository,
-                            repo -> repo.count((root, query, cb) ->
-                                    cb.equal(root.get("status"), status)))
+                            repo -> repo.countByStatus(status))
                     .tag("status", status.name().toLowerCase())
                     .description("Number of scheduled sessions by status")
                     .register(registry);

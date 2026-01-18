@@ -10,7 +10,7 @@ import com.topleader.topleader.common.notification.NotificationService;
 import com.topleader.topleader.common.notification.context.MessageNotificationContext;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.HashMap;
@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -74,10 +75,14 @@ public class MessageService {
         final var allChats = userChatRepository.findAllForUser(username).stream()
             .collect(toMap(chat -> chat.getUser1().equals(username) ? chat.getUser2() : chat.getUser1(), UserChat::getChatId));
 
+        if (allChats.isEmpty()) {
+            return List.of();
+        }
+
         final var lastMessages = Optional.of(lastMessageRepository.findAllByChatIdIn(allChats.values()))
             .filter(not(List::isEmpty))
             .map(c ->
-                messageRepository.findAllById(c.stream().map(LastMessage::getMessageId).collect(Collectors.toSet())).stream()
+                StreamSupport.stream(messageRepository.findAllById(c.stream().map(LastMessage::getMessageId).collect(Collectors.toSet())).spliterator(), false)
                     .collect(toMap(Message::getChatId, Function.identity()))
             ).orElse(Map.of());
 
@@ -87,9 +92,10 @@ public class MessageService {
             .collect(toMap(User::getUsername, UserInfoDto::from));
 
         final var unreadCountMap = messageRepository.getUnreadMessagesCount(username).stream()
-            .collect(toMap(UnreadMessagesCount::getUserFrom, UnreadMessagesCount::getUnread));
+            .collect(toMap(UnreadMessagesCount::userfrom, UnreadMessagesCount::unread));
 
         return allChats.entrySet().stream()
+            .filter(e -> lastMessages.containsKey(e.getValue())) // Only chats with messages
             .map(e -> new ChatInfoDto(
                 e.getKey(),
                 unreadCountMap.getOrDefault(e.getKey(), 0L),
@@ -103,7 +109,6 @@ public class MessageService {
             .toList();
     }
 
-    @Transactional
     public Page<Message> findUserMessages(String username, String addressee, Pageable pageable) {
         markAllMessagesAsDisplayed(username);
         return userChatRepository.findUserChat(username, addressee)
@@ -129,11 +134,7 @@ public class MessageService {
                 .setDisplayed(false)
         );
 
-        lastMessageRepository.save(
-            new LastMessage()
-                .setChatId(chat.getChatId())
-                .setMessageId(message.getId())
-        );
+        lastMessageRepository.upsert(chat.getChatId(), message.getId());
 
         final var user = userRepository.findByUsername(username).orElseThrow();
 

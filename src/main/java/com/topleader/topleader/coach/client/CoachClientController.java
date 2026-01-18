@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.coach.client;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
@@ -11,7 +8,6 @@ import com.topleader.topleader.common.notification.context.CoachUnlinkedNotifica
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -67,7 +63,6 @@ public class CoachClientController {
             .toList();
     }
 
-    @Transactional
     @Secured("COACH")
     @DeleteMapping("/{username}")
     public void removeClient(@AuthenticationPrincipal UserDetails user, @PathVariable String username) {
@@ -86,7 +81,6 @@ public class CoachClientController {
             });
     }
 
-    @Transactional
     @Secured("COACH")
     @PostMapping
     public CoachClientDto inviteUser(

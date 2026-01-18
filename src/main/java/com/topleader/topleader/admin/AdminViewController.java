@@ -10,13 +10,12 @@ import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
-import jakarta.transaction.Transactional;
+import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -26,15 +25,14 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import static com.topleader.topleader.common.util.user.UserDetailUtils.sendInvite;
-import static java.util.function.Predicate.not;
 
 
 /**
@@ -56,21 +54,88 @@ public class AdminViewController {
 
     private final CoachRepository coachRepository;
 
+    private final UserRepository userRepository;
+
     @Secured("ADMIN")
     @GetMapping("/users")
     public Page<AdminView> getUsers(
         FilterDto filterDto,
         Pageable pageable
     ) {
+        var filter = Optional.ofNullable(filterDto).orElse(new FilterDto(
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null, null, null
+        ));
+        var allFiltered = repository.findFiltered(
+                filter.username(),
+                filter.firstName(),
+                filter.lastName(),
+                filter.timeZone(),
+                Optional.ofNullable(filter.status()).map(Enum::name).orElse(null),
+                filter.companyId(),
+                filter.companyName(),
+                filter.coach(),
+                filter.coachFirstName(),
+                filter.coachLastName(),
+                filter.credit(),
+                filter.requestedCredit(),
+                filter.sumRequestedCredit(),
+                filter.paidCredit(),
+                filter.hrs(),
+                filter.requestedBy(),
+                filter.freeCoach(),
+                filter.maxCoachRate(),
+                filter.showCanceled(),
+                pageable
+        );
 
-        return Optional.ofNullable(filterDto)
-            .map(FilterDto::toSpecifications)
-            .filter(not(List::isEmpty))
-            .map(filter -> repository.findAll(Specification.allOf(filter), pageable))
-            .orElseGet(() -> repository.findAll(pageable));
+        var sorted = pageable.getSort().isSorted()
+                ? sortResults(allFiltered, pageable)
+                : allFiltered;
+
+        int start = (int) pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), sorted.size());
+        var pageContent = start < sorted.size() ? sorted.subList(start, end) : List.<AdminView>of();
+
+        return new PageImpl<>(pageContent, pageable, sorted.size());
     }
 
-    @Transactional
+    private List<AdminView> sortResults(List<AdminView> results, Pageable pageable) {
+        return results.stream()
+                .sorted((a, b) -> {
+                    for (var order : pageable.getSort()) {
+                        var comparison = compareByField(a, b, order.getProperty());
+                        if (comparison != 0) {
+                            return order.isAscending() ? comparison : -comparison;
+                        }
+                    }
+                    return 0;
+                })
+                .toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    private int compareByField(AdminView a, AdminView b, String field) {
+        return switch (field) {
+            case "username" -> compareNullSafe(a.getUsername(), b.getUsername());
+            case "firstName" -> compareNullSafe(a.getFirstName(), b.getFirstName());
+            case "lastName" -> compareNullSafe(a.getLastName(), b.getLastName());
+            case "status" -> compareNullSafe(
+                    Optional.ofNullable(a.getStatus()).map(Enum::name).orElse(null),
+                    Optional.ofNullable(b.getStatus()).map(Enum::name).orElse(null));
+            case "companyName" -> compareNullSafe(a.getCompanyName(), b.getCompanyName());
+            case "credit" -> compareNullSafe(a.getCredit(), b.getCredit());
+            default -> 0;
+        };
+    }
+
+    private <T extends Comparable<T>> int compareNullSafe(T a, T b) {
+        if (a == null && b == null) return 0;
+        if (a == null) return 1;
+        if (b == null) return -1;
+        return a.compareTo(b);
+    }
+
     @Secured("ADMIN")
     @PostMapping("/users")
     public void createUser(@AuthenticationPrincipal UserDetails u, @RequestBody @Valid CreateUserRequestDto userRequest) {
@@ -81,7 +146,6 @@ public class AdminViewController {
         }
     }
 
-    @Transactional
     @Secured("ADMIN")
     @PostMapping("/users/{username}")
     public void updateUser(@PathVariable String username, @RequestBody @Valid UpdateUserRequestDto userRequest) {
@@ -96,7 +160,10 @@ public class AdminViewController {
                 return user;
             })
             .ifPresentOrElse(
-                userDetailService::save,
+                user -> {
+                    userDetailService.save(user);
+                    updateAllowedCoachRates(username, userRequest.allowedCoachRates());
+                },
                 () -> {
                     throw new NotFoundException();
                 }
@@ -110,7 +177,6 @@ public class AdminViewController {
 
     }
 
-    @Transactional
     @Secured("ADMIN")
     @PostMapping("/users/{username}/resent-invitation")
     public void resentInvitation(@PathVariable String username, @RequestBody @Valid ResentInvitationRequestDto userRequest) {
@@ -120,7 +186,6 @@ public class AdminViewController {
 
     }
 
-    @Transactional
     @Secured("ADMIN")
     @PostMapping("/users/{username}/confirm-requested-credits")
     public void topUpCredits(@PathVariable String username) {
@@ -132,6 +197,13 @@ public class AdminViewController {
     @DeleteMapping("/users/{username}")
     public void deleteUser(@PathVariable String username) {
         userDetailService.delete(username);
+    }
+
+    private void updateAllowedCoachRates(String username, Set<String> rates) {
+        userRepository.deleteAllowedCoachRates(username);
+        if (rates != null) {
+            rates.forEach(rate -> userRepository.insertAllowedCoachRate(username, rate));
+        }
     }
 
     public record ResentInvitationRequestDto(
@@ -177,7 +249,7 @@ public class AdminViewController {
         public Coach updateCoach(Coach coach) {
             Optional.ofNullable(rate).ifPresent(coach::setRate);
             Optional.ofNullable(internalRate).ifPresent(coach::setInternalRate);
-            Optional.ofNullable(certificate).ifPresent(coach::setCertificate);
+            Optional.ofNullable(certificate).ifPresent(coach::setCertificateSet);
             return coach;
         }
 
@@ -187,7 +259,7 @@ public class AdminViewController {
                     .setUsername(username)
                     .setRate(rate)
                     .setInternalRate(internalRate)
-                    .setCertificate(certificate)
+                    .setCertificateSet(certificate)
             );
         }
     }
@@ -226,7 +298,7 @@ public class AdminViewController {
                 new Coach()
                     .setUsername(username.toLowerCase(Locale.ROOT))
                     .setRate(rate)
-                    .setCertificate(certificate)
+                    .setCertificateSet(certificate)
                     .setInternalRate(internalRate)
             );
         }
@@ -250,38 +322,10 @@ public class AdminViewController {
         String hrs,
         String requestedBy,
         Boolean isTrial,
-
         String freeCoach,
         String maxCoachRate,
         Boolean showCanceled
     ) {
-
-        public List<Specification<AdminView>> toSpecifications() {
-            List<Specification<AdminView>> specs = new ArrayList<>();
-
-            AdminViewSpecifications.usernameEquals(username).ifPresent(specs::add);
-            AdminViewSpecifications.firstNameContains(firstName).ifPresent(specs::add);
-            AdminViewSpecifications.lastNameEquals(lastName).ifPresent(specs::add);
-            AdminViewSpecifications.timeZoneEquals(timeZone).ifPresent(specs::add);
-            AdminViewSpecifications.statusEquals(status).ifPresent(specs::add);
-            AdminViewSpecifications.companyIdEquals(companyId).ifPresent(specs::add);
-            AdminViewSpecifications.companyNameContains(companyName).ifPresent(specs::add);
-            AdminViewSpecifications.coachContains(coach).ifPresent(specs::add);
-            AdminViewSpecifications.coachFirstNameContains(coachFirstName).ifPresent(specs::add);
-            AdminViewSpecifications.coachLastNameContains(coachLastName).ifPresent(specs::add);
-            AdminViewSpecifications.creditEquals(credit).ifPresent(specs::add);
-            AdminViewSpecifications.requestedCreditEquals(requestedCredit).ifPresent(specs::add);
-            AdminViewSpecifications.sumRequestedCreditEquals(sumRequestedCredit).ifPresent(specs::add);
-            AdminViewSpecifications.paidCreditEquals(paidCredit).ifPresent(specs::add);
-            AdminViewSpecifications.hrsContains(hrs).ifPresent(specs::add);
-            AdminViewSpecifications.requestedByContains(requestedBy).ifPresent(specs::add);
-            AdminViewSpecifications.isTrialEquals(isTrial).ifPresent(specs::add);
-            AdminViewSpecifications.freeCoach(freeCoach).ifPresent(specs::add);
-            AdminViewSpecifications.maxCoachRateContains(maxCoachRate).ifPresent(specs::add);
-            AdminViewSpecifications.showCanceled(showCanceled).ifPresent(specs::add);
-
-            return specs;
-        }
     }
 
 }

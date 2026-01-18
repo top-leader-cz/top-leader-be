@@ -8,6 +8,8 @@ import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.manager.ManagerRepository;
+import com.topleader.topleader.user.manager.UserManagerRepository;
+import com.topleader.topleader.user.manager.UsersManagers;
 import com.topleader.topleader.user.token.TokenRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -46,6 +48,9 @@ class HrControllerIT extends IntegrationTest {
 
     @Autowired
     ManagerRepository managerRepository;
+
+    @Autowired
+    UserManagerRepository userManagerRepository;
 
     @Autowired
     private PlatformTransactionManager transactionManager;
@@ -246,10 +251,9 @@ class HrControllerIT extends IntegrationTest {
 
         Assertions.assertThat(userRepository.findByUsername("hrUser")).isNotEmpty();
 
-        var transactionTemplate = new TransactionTemplate(transactionManager);
-        transactionTemplate.executeWithoutResult(status -> {
-            Assertions.assertThat(userRepository.findByUsername("hrUser").get().getManagers()).extracting("username").containsExactly("manager.one@dummy.com");
-        });
+        Assertions.assertThat(userManagerRepository.findByUserUsername("hrUser"))
+                .extracting(UsersManagers::getManagerUsername)
+                .containsExactly("manager.one@dummy.com");
 
     }
 

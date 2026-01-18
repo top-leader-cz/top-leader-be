@@ -178,7 +178,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                 .atMost(Duration.ofSeconds(1))
                 .pollInterval(Duration.ofMillis(500))
                 .untilAsserted(() -> {
-                    final var historyData = dataHistoryRepository.findAllByUsernameAndType("user2", DataHistory.Type.USER_SESSION);
+                    final var historyData = dataHistoryRepository.findByUsernameAndType("user2", DataHistory.Type.USER_SESSION.name());
 
                     Assertions.assertThat(historyData).hasSize(1);
                     Assertions.assertThat(historyData.get(0).getData()).isInstanceOf(UserSessionStoredData.class);
@@ -222,8 +222,16 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                             .extracting("content.date")
                             .contains("2023-10-01", "2023-10-02");
 
-                    Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETED_SHORT_GOAL)))).isNotEmpty();
-                    Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();
+                    var now = LocalDateTime.now();
+                    var badges = badgeRepository.getUserBadges("user2", now.getYear());
+                    Assertions.assertThat(badges.stream()
+                            .filter(b -> b.getAchievementType() == Badge.AchievementType.COMPLETED_SHORT_GOAL)
+                            .filter(b -> b.getMonth() == now.getMonth())
+                            .findFirst()).isNotEmpty();
+                    Assertions.assertThat(badges.stream()
+                            .filter(b -> b.getAchievementType() == Badge.AchievementType.COMPLETE_SESSION)
+                            .filter(b -> b.getMonth() == now.getMonth())
+                            .findFirst()).isNotEmpty();
                 });
 
     }

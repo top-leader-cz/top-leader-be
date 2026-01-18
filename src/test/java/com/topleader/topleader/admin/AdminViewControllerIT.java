@@ -102,7 +102,7 @@ class AdminViewControllerIT extends IntegrationTest {
         var coach = coachRepository.findByUsername("newuser@gmail.com").orElseThrow();
         assertThat(coach.getRate()).isEqualTo("$");
         assertThat(coach.getInternalRate()).isEqualTo(165);
-        assertThat(coach.getCertificate()).isEqualTo(Set.of("ACC"));
+        assertThat(coach.getCertificateSet()).isEqualTo(Set.of("ACC"));
 
     }
 
@@ -129,7 +129,7 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getCoach()).isEqualTo(updatedUser.coach());
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
         assertThat(fetchedUser.getFreeCoach()).isEqualTo(updatedUser.freeCoach());
-        assertThat(fetchedUser.getAllowedCoachRates()).isEqualTo(updatedUser.allowedCoachRates());
+        assertThat(userRepository.findAllowedCoachRates(fetchedUser.getUsername())).isEqualTo(updatedUser.allowedCoachRates());
 
 
         var receivedMessage = greenMail.getReceivedMessages()[0];

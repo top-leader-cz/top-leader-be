@@ -13,7 +13,7 @@ import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.common.JsonUtils;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
