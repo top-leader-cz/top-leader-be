@@ -1,15 +1,13 @@
 package com.topleader.topleader.session.coach_session;
 
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.ZonedDateTime;
 
-@Entity
+@Table("coach_session_view")
 @Data
 public class CoachSessionView {
 
@@ -20,7 +18,6 @@ public class CoachSessionView {
 
     private ZonedDateTime date;
 
-    @Enumerated(EnumType.STRING)
     private ScheduledSession.Status status;
 
     private String client;

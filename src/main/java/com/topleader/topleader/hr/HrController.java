@@ -9,12 +9,13 @@ import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.hr.domain.*;
 import com.topleader.topleader.user.*;
 import com.topleader.topleader.user.manager.ManagerService;
+import com.topleader.topleader.user.manager.UserManagerRepository;
+import com.topleader.topleader.user.manager.UsersManagers;
 import com.topleader.topleader.common.util.transaction.TransactionService;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,8 @@ public class HrController {
 
     private final ManagerService managerService;
 
+    private final UserManagerRepository userManagerRepository;
+
     @Secured({"HR"})
     @GetMapping
     public List<CreditsDto> listUsers(@AuthenticationPrincipal UserDetails user) {
@@ -74,15 +77,18 @@ public class HrController {
 
     @Secured({"HR"})
     @GetMapping("/{username}")
-    @Transactional
     public UserDto getUser(@PathVariable String username) {
-        return UserDto.fromUser(userDetailService.find(username));
+        var user = userDetailService.find(username);
+        var managerUsername = userManagerRepository.findByUserUsername(username).stream()
+                .findFirst()
+                .map(UsersManagers::getManagerUsername)
+                .orElse(null);
+        return UserDto.fromUser(user, managerUsername);
     }
 
     @Secured({"HR"})
     @GetMapping("/managers")
-    @Transactional
-    public List<ManagerDto> listManagers(@AuthenticationPrincipal UserDetails user) {
+        public List<ManagerDto> listManagers(@AuthenticationPrincipal UserDetails user) {
         var foundUser = userDetailService.find(user.getUsername());
         if (foundUser.getCompanyId() == null) {
             log.warn("User {} has no companyId, returning empty list", user.getUsername());
@@ -98,8 +104,7 @@ public class HrController {
 
     @Secured({"HR"})
     @PostMapping
-    @Transactional
-    public UserDto addUser(@AuthenticationPrincipal UserDetails loggedUser, @RequestBody @Valid AddUserRequest request) {
+        public UserDto addUser(@AuthenticationPrincipal UserDetails loggedUser, @RequestBody @Valid AddUserRequest request) {
 
         var user = new User();
         user.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
@@ -138,13 +143,12 @@ public class HrController {
             emailService.sendEmail("info@topleader.io", "New Pending user in the TopLeader platform", body);
         }
 
-        return UserDto.fromUser(saved);
+        return UserDto.fromUser(saved, request.manager());
     }
 
     @Secured({"HR"})
     @PutMapping("/{username}")
-    @Transactional
-    public UserDto updateUser(
+        public UserDto updateUser(
             @AuthenticationPrincipal UserDetails loggedUser,
             @PathVariable String username,
             @RequestBody @Valid UpdateUserRequest request
@@ -177,7 +181,7 @@ public class HrController {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, request.locale()));
         }
 
-        return UserDto.fromUser(updatedUser);
+        return UserDto.fromUser(updatedUser, request.manager());
     }
 
 

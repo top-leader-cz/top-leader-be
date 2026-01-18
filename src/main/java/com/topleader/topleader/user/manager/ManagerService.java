@@ -8,9 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -27,17 +25,27 @@ public class ManagerService {
     }
 
     public User processUser(User user, UserRequest request) {
+        var authorities = new java.util.HashSet<>(user.getAuthorities());
         if (request.isManager()) {
-            user.getAuthorities().add(User.Authority.MANAGER);
+            authorities.add(User.Authority.MANAGER);
         } else {
-            user.getAuthorities().remove(User.Authority.MANAGER);
+            authorities.remove(User.Authority.MANAGER);
             userManagerRepository.cleanUpManagers(user.getUsername());
         }
+        user.setAuthorities(authorities);
 
         if (StringUtils.isNotBlank(request.manager())) {
             var manager = userRepository.findByUsername(request.manager())
                     .orElseThrow(() -> new IllegalArgumentException("Manager not found: " + request.manager()));
-            user.setManagers(new HashSet<>(Set.of(manager)));
+
+            // Delete existing manager relationships for this user
+            userManagerRepository.findByUserUsername(user.getUsername())
+                    .forEach(um -> userManagerRepository.delete(um));
+
+            // Create new manager relationship
+            userManagerRepository.save(new UsersManagers()
+                    .setUserUsername(user.getUsername())
+                    .setManagerUsername(manager.getUsername()));
         }
         return userRepository.save(user);
     }

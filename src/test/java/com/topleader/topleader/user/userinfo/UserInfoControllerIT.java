@@ -226,7 +226,7 @@ class UserInfoControllerIT extends IntegrationTest {
 
         assertIterableEquals(List.of("v1", "v2"), userInfoData.getStrengths());
 
-        final var data = dataHistoryRepository.findAllByUsernameAndType("user", DataHistory.Type.STRENGTHS);
+        final var data = dataHistoryRepository.findByUsernameAndType("user", DataHistory.Type.STRENGTHS.name());
 
         assertEquals(1, data.size());
         final var storedHistoryData = data.get(0);
@@ -261,7 +261,7 @@ class UserInfoControllerIT extends IntegrationTest {
 
         assertIterableEquals(List.of("v1", "v2"), userInfoData.getValues());
 
-        final var data = dataHistoryRepository.findAllByUsernameAndType("user", DataHistory.Type.VALUES);
+        final var data = dataHistoryRepository.findByUsernameAndType("user", DataHistory.Type.VALUES.name());
 
         assertEquals(1, data.size());
         final var storedHistoryData = data.get(0);

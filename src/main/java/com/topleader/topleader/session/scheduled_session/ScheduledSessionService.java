@@ -4,7 +4,7 @@
 package com.topleader.topleader.session.scheduled_session;
 
 import com.topleader.topleader.credit.CreditService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -104,7 +104,6 @@ public class ScheduledSessionService {
         return scheduledSessionRepository.findById(sessionId);
     }
 
-    @Transactional
     public int markPendingSessionsAsNoShowClient() {
         var now = LocalDateTime.now();
         var threshold = now.minusHours(48);

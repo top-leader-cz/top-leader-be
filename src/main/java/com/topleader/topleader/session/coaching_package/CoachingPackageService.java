@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
@@ -39,7 +40,6 @@ public class CoachingPackageService {
      * @param createdBy the username of the creator
      * @return the created package with metrics
      */
-    @Transactional
     public CoachingPackageDto createPackage(Long companyId, CreateCoachingPackageRequest request, String createdBy) {
         log.info("Creating coaching package for company {} by user {}", companyId, createdBy);
 
@@ -47,6 +47,7 @@ public class CoachingPackageService {
         companyRepository.findById(companyId)
                 .orElseThrow(NotFoundException::new);
 
+        var now = LocalDateTime.now();
         var entity = new CoachingPackage()
                 .setCompanyId(companyId)
                 .setPoolType(request.poolType())
@@ -54,7 +55,9 @@ public class CoachingPackageService {
                 .setValidFrom(request.validFrom())
                 .setValidTo(request.validTo())
                 .setContextRef(request.contextRef())
+                .setCreatedAt(now)
                 .setCreatedBy(createdBy)
+                .setUpdatedAt(now)
                 .setUpdatedBy(createdBy);
 
         var saved = coachingPackageRepository.save(entity);
@@ -69,7 +72,6 @@ public class CoachingPackageService {
      * @param companyId the company ID
      * @return list of packages with metrics
      */
-    @Transactional(readOnly = true)
     public List<CoachingPackageDto> listPackagesByCompany(Long companyId) {
         log.debug("Listing coaching packages for company {}", companyId);
 
@@ -84,7 +86,6 @@ public class CoachingPackageService {
      * @param packageId the package ID
      * @return the package with metrics
      */
-    @Transactional(readOnly = true)
     public CoachingPackageDto getPackage(Long packageId) {
         log.debug("Getting coaching package {}", packageId);
 
@@ -95,14 +96,12 @@ public class CoachingPackageService {
     }
 
 
-    @Transactional(readOnly = true)
     public CoachingPackage getPackageEntity(Long packageId) {
         return coachingPackageRepository.findById(packageId)
                 .orElseThrow(NotFoundException::new);
     }
 
 
-    @Transactional
     public CoachingPackageDto updatePackage(Long packageId, UpdateCoachingPackageRequest request, String updatedBy) {
         log.info("Updating coaching package {} by user {}", packageId, updatedBy);
 
@@ -110,6 +109,7 @@ public class CoachingPackageService {
                 .orElseThrow(NotFoundException::new);
 
         entity.setStatus(request.status())
+                        .setUpdatedAt(LocalDateTime.now())
                         .setUpdatedBy(updatedBy)
                         .setTotalUnits(request.totalUnits() > entity.getTotalUnits() ? request.totalUnits(): entity.getTotalUnits());
 

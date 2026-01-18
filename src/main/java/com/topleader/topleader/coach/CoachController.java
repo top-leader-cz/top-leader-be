@@ -11,7 +11,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.util.image.ImageUtil;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -65,40 +65,37 @@ public class CoachController {
 
     @GetMapping
     @Secured("COACH")
-    @Transactional
     public CoachDto getCoachInfo(@AuthenticationPrincipal UserDetails user) {
+        var userEntity = userRepository.findByUsername(user.getUsername()).orElseThrow();
         return coachRepository.findByUsername(user.getUsername())
-            .map(CoachDto::from)
+            .map(c -> CoachDto.from(c, userEntity))
             .orElse(CoachDto.EMPTY);
     }
 
     @PostMapping
     @Secured("COACH")
+    @Transactional
     public CoachDto setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid CoachDto request) {
-        // Update user email first
-        var updatedUser = userRepository.findByUsername(user.getUsername())
+        var userEntity = userRepository.findByUsername(user.getUsername())
                 .map(u -> u.setEmail(request.email))
-                .map(userRepository::save)
                 .orElseThrow(CommonUtils.entityNotFound("user " + user.getUsername()));
+        userRepository.save(request.updateUser(userEntity));
 
         var coach = coachRepository.findByUsername(user.getUsername())
-                .orElse(new Coach()
-                        .setUsername(user.getUsername())
-                        .setUser(updatedUser));
+                .orElse(new Coach().setUsername(user.getUsername()));
 
-        return CoachDto.from(coachRepository.save(request.updateCoach(coach)));
+        return CoachDto.from(coachRepository.save(request.updateCoach(coach)), userEntity);
     }
 
-    @Transactional
     @Secured("COACH")
     @PostMapping("/photo")
     public void setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestParam("image") MultipartFile file) throws IOException {
 
-        coachImageRepository.save(new CoachImage()
-            .setUsername(user.getUsername())
-            .setType(file.getContentType())
-            .setImageData(ImageUtil.compressImage(file.getBytes()))
-        );
+        var image = coachImageRepository.findByUsername(user.getUsername())
+                .orElse(new CoachImage().setUsername(user.getUsername()));
+        image.setType(file.getContentType())
+            .setImageData(ImageUtil.compressImage(file.getBytes()));
+        coachImageRepository.save(image);
     }
 
     @Secured("COACH")
@@ -113,7 +110,6 @@ public class CoachController {
             .orElseThrow(NotFoundException::new);
     }
 
-    @Transactional
     @Secured("COACH")
     @GetMapping("/upcoming-sessions")
     public List<UpcomingSessionDto> getUpcomingSessions(@AuthenticationPrincipal UserDetails user) {
@@ -125,9 +121,8 @@ public class CoachController {
         }
 
         final var clients = userRepository.findAllByUsernameIn(sessions.stream()
-                .map(ScheduledSession::getUsername)
-                .collect(Collectors.toSet())
-            ).stream()
+                        .map(ScheduledSession::getUsername)
+                        .collect(Collectors.toSet())).stream()
             .collect(toMap(User::getUsername, Function.identity()));
 
         return sessions.stream()
@@ -137,7 +132,6 @@ public class CoachController {
 
     }
 
-    @Transactional
     @DeleteMapping("/upcoming-sessions/{sessionId}")
     public void cancelSession(@PathVariable Long sessionId, @AuthenticationPrincipal UserDetails user) {
 
@@ -237,17 +231,16 @@ public class CoachController {
             Set.of(Coach.PrimaryRole.COACH), Set.of(), Set.of(), null, Set.of(), Set.of(), Set.of(), Set.of(), Set.of(), null, null
         );
 
-        public static CoachDto from(Coach c) {
-            var user = c.getUser();
+        public static CoachDto from(Coach c, User user) {
             return new CoachDto(
                     c.isPublicProfile(),
                     user.getFirstName(),
                     user.getLastName(),
-                    c.getUserEmail(),
+                    user.getEmail(),
                     c.getWebLink(),
                     c.getBio(),
-                    c.getLanguages() != null ? c.getLanguages() : List.of(),
-                    c.getFields() != null ? c.getFields() : List.of(),
+                    c.getLanguagesList(),
+                    c.getFieldsList(),
                     c.getExperienceSince(),
                     c.getRate(),
                     c.getRateOrder(),
@@ -255,15 +248,15 @@ public class CoachController {
                     c.getLinkedinProfile(),
                     c.isFreeSlots(),
                     c.getPriority(),
-                    c.getPrimaryRoles() != null ? c.getPrimaryRoles() : Set.of(),
-                    c.getCertificate() != null ? c.getCertificate() : Set.of(),
-                    c.getBaseLocations() != null ? c.getBaseLocations() : Set.of(),
+                    c.getPrimaryRolesSet() != null ? c.getPrimaryRolesSet() : Set.of(),
+                    c.getCertificateSet() != null ? c.getCertificateSet() : Set.of(),
+                    c.getBaseLocationsSet() != null ? c.getBaseLocationsSet() : Set.of(),
                     c.getTravelWillingness(),
-                    c.getDeliveryFormat() != null ? c.getDeliveryFormat() : Set.of(),
-                    c.getServiceType() != null ? c.getServiceType() : Set.of(),
-                    c.getTopics() != null ? c.getTopics() : Set.of(),
-                    c.getDiagnosticTools() != null ? c.getDiagnosticTools() : Set.of(),
-                    c.getIndustryExperience() != null ? c.getIndustryExperience() : Set.of(),
+                    c.getDeliveryFormatSet() != null ? c.getDeliveryFormatSet() : Set.of(),
+                    c.getServiceTypeSet() != null ? c.getServiceTypeSet() : Set.of(),
+                    c.getTopicsSet() != null ? c.getTopicsSet() : Set.of(),
+                    c.getDiagnosticToolsSet() != null ? c.getDiagnosticToolsSet() : Set.of(),
+                    c.getIndustryExperienceSet() != null ? c.getIndustryExperienceSet() : Set.of(),
                     c.getReferences(),
                     user.getTimeZone()
             );
@@ -275,8 +268,8 @@ public class CoachController {
                     .setPublicProfile(publicProfile)
                     .setWebLink(webLink)
                     .setBio(bio)
-                    .setLanguages(languages)
-                    .setFields(fields)
+                    .setLanguagesList(languages)
+                    .setFieldsList(fields)
                     .setExperienceSince(experienceSince)
                     .setRate(rate)
                     .setRateOrder(rateOrder)
@@ -284,25 +277,23 @@ public class CoachController {
                     .setLinkedinProfile(linkedinProfile)
                     .setFreeSlots(freeSlots)
                     .setPriority(priority)
-                    .setPrimaryRoles(primaryRoles)
-                    .setCertificate(certificate)
-                    .setBaseLocations(baseLocations)
+                    .setPrimaryRolesSet(primaryRoles)
+                    .setCertificateSet(certificate)
+                    .setBaseLocationsSet(baseLocations)
                     .setTravelWillingness(travelWillingness)
-                    .setDeliveryFormat(deliveryFormat)
-                    .setServiceType(serviceType)
-                    .setTopics(topics)
-                    .setDiagnosticTools(diagnosticTools)
-                    .setIndustryExperience(industryExperience)
-                    .setReferences(references)
-                    .setUser(updateUser(coach.getUser()));
+                    .setDeliveryFormatSet(deliveryFormat)
+                    .setServiceTypeSet(serviceType)
+                    .setTopicsSet(topics)
+                    .setDiagnosticToolsSet(diagnosticTools)
+                    .setIndustryExperienceSet(industryExperience)
+                    .setReferences(references);
         }
 
         public User updateUser(User user) {
             return user.setFirstName(firstName())
                     .setEmail(email())
                     .setLastName(lastName())
-                    .setTimeZone(timeZone())
-                    ;
+                    .setTimeZone(timeZone());
         }
 
     }

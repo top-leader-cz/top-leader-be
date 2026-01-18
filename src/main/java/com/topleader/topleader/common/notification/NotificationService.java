@@ -4,30 +4,22 @@
 package com.topleader.topleader.common.notification;
 
 import com.topleader.topleader.common.notification.context.NotificationContext;
-import java.time.LocalDateTime;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 
-/**
- * @author Daniel Slavik
- */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
-    @Autowired
-    public NotificationService(NotificationRepository notificationRepository) {
-        this.notificationRepository = notificationRepository;
-    }
-
-    @Transactional
     public void markAllNotificationsAsReadForUser(String username) {
         notificationRepository.markAllAsReadForUser(username);
     }
@@ -42,7 +34,7 @@ public class NotificationService {
 
         if (notificationRepository.existsByUsernameAndTypeAndCreatedAtAfterAndReadIsFalse(
             request.username(),
-            request.type(),
+            request.type().name(),
             now.minusHours(1)
         )) {
             log.info("The same unread notification already exists. Skipping creation of the {}", request);

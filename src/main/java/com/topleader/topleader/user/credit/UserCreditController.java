@@ -5,7 +5,6 @@ import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.hr.domain.CreditRequestDto;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.common.util.transaction.TransactionService;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
@@ -30,7 +29,7 @@ public class UserCreditController {
     @Secured({"USER"})
     @GetMapping
     public RequestCreditsDto getCredits(@AuthenticationPrincipal UserDetails user) {
-        return RequestCreditsDto.from(userDetailService.getUser(user.getUsername()).orElseThrow(EntityNotFoundException::new));
+        return RequestCreditsDto.from(userDetailService.getUser(user.getUsername()).orElseThrow(NotFoundException::new));
     }
 
     @Secured({"USER"})

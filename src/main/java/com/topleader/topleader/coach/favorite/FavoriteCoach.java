@@ -1,21 +1,19 @@
 package com.topleader.topleader.coach.favorite;
 
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
-
-import java.io.Serializable;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Data
-@Entity
+@Table("favorite_coach")
+@NoArgsConstructor
 @Accessors(chain = true)
 public class FavoriteCoach {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String username;

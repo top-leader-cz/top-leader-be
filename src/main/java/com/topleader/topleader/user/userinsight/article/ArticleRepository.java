@@ -1,20 +1,17 @@
 package com.topleader.topleader.user.userinsight.article;
 
-import jakarta.transaction.Transactional;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.ListCrudRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
-public interface ArticleRepository extends JpaRepository<Article, Long> {
+public interface ArticleRepository extends ListCrudRepository<Article, Long> {
 
-    @Query("select a from Article a where a.username = :username")
+    @Query("SELECT * FROM article WHERE username = :username")
     List<Article> findByUsername(String username);
 
-    @Transactional
     @Modifying
+    @Query("DELETE FROM article WHERE username = :username")
     void deleteAllByUsername(String username);
 }

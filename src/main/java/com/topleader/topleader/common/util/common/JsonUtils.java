@@ -26,7 +26,7 @@ public final class JsonUtils {
 
     public static <T> T fromJson(String json, ParameterizedTypeReference<T> typeReference) {
         try {
-            return MAPPER.readValue(json, new TypeReference<T>() {
+            return MAPPER.readValue(json, new TypeReference<>() {
                 @Override
                 public java.lang.reflect.Type getType() {
                     return typeReference.getType();
@@ -57,6 +57,14 @@ public final class JsonUtils {
     public static <T> T fromJsonString(String json, TypeReference<T> type) {
         try {
             return MAPPER.readValue(json, type);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static java.util.List<String> fromJsonStringToList(String json) {
+        try {
+            return MAPPER.readValue(json, new TypeReference<>() {});
         } catch (JsonProcessingException e) {
             throw new IllegalStateException(e);
         }

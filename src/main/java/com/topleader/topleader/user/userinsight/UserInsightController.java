@@ -9,7 +9,7 @@ import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.util.image.ArticleImageService;
-import jakarta.persistence.EntityNotFoundException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -80,7 +80,7 @@ public class UserInsightController {
                     article.getContent().setImageData(articleImageService.getImageAsBase64(article.getContent().getImageUrl()));
                     return article.getContent();
                 })
-                .orElseThrow(() -> new EntityNotFoundException("Article not found for id " + articleId));
+                .orElseThrow(NotFoundException::new);
     }
 
     public record InsightItem(String text, boolean isPending) {
@@ -96,7 +96,7 @@ public class UserInsightController {
         userInsight.setActionGoalsPending(true);
         userInsight.setSuggestionPending(true);
         userInsightService.save(userInsight);
-        var user = userDetailService.getUser(username).orElseThrow(EntityNotFoundException::new);
+        var user = userDetailService.getUser(username).orElseThrow(NotFoundException::new);
         var userInfo = userInfoService.find(username);
 
         Thread.ofVirtual().start(() -> {

@@ -1,13 +1,13 @@
 package com.topleader.topleader.common.calendar.calendly.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-@Entity
 @Data
 @Accessors(chain = true)
+@Table("calendly_info")
 public class CalendlyInfo {
 
     @Id

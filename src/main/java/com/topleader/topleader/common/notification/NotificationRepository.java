@@ -3,31 +3,38 @@
  */
 package com.topleader.topleader.common.notification;
 
-import jakarta.transaction.Transactional;
-import java.time.LocalDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
+
+import java.time.LocalDateTime;
+import java.util.List;
 
 
-/**
- * @author Daniel Slavik
- */
-public interface NotificationRepository extends JpaRepository<Notification, Long> {
+public interface NotificationRepository extends ListCrudRepository<Notification, Long>,
+                                                  PagingAndSortingRepository<Notification, Long> {
 
-
+    @Query("""
+        SELECT COUNT(*) > 0 FROM notification
+        WHERE username = :username
+        AND type = :type
+        AND created_at > :startTime
+        AND read = false
+        """)
     boolean existsByUsernameAndTypeAndCreatedAtAfterAndReadIsFalse(
         String username,
-        Notification.Type type,
+        String type,
         LocalDateTime startTime
     );
 
+    List<Notification> findByUsername(String username);
+
     Page<Notification> findByUsername(String username, Pageable pageable);
 
-    @Transactional
     @Modifying
-    @Query("UPDATE Notification n SET n.read = true WHERE n.username = :username")
+    @Query("UPDATE notification SET read = true WHERE username = :username")
     void markAllAsReadForUser(String username);
 }

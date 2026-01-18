@@ -229,8 +229,62 @@ class MessageControllerIT extends IntegrationTest {
                         "errorMessage": "Message length needs to be at least 1 character"
                       }
                     ]
-        
+
                 """));
+    }
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void testLastMessageUpsert() throws Exception {
+        // Send first message
+        mvc.perform(post("/api/latest/messages")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "userTo": "user2",
+                        "messageData": "First message"
+                    }
+                    """)
+        ).andExpect(status().isOk());
+
+        var chat = userChatRepository.findUserChat("user1", "user2").orElseThrow();
+        var firstLastMessage = lastMessageRepository.findById(chat.getChatId()).orElseThrow();
+        var firstMessage = messageRepository.findById(firstLastMessage.getMessageId()).orElseThrow();
+        assertThat(firstMessage.getMessageData(), is("First message"));
+
+        // Send second message - should update last message
+        mvc.perform(post("/api/latest/messages")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                        "userTo": "user2",
+                        "messageData": "Second message"
+                    }
+                    """)
+        ).andExpect(status().isOk());
+
+        var secondLastMessage = lastMessageRepository.findById(chat.getChatId()).orElseThrow();
+        var secondMessage = messageRepository.findById(secondLastMessage.getMessageId()).orElseThrow();
+
+        // Verify last message was updated (upserted)
+        assertThat(secondMessage.getMessageData(), is("Second message"));
+        assertThat(secondMessage.getId() > firstMessage.getId(), is(true));
+    }
+
+    @Test
+    @WithMockUser(username = "user1", roles = "USER")
+    void testMarkMessagesAsDisplayed() throws Exception {
+        // Initially user1 has unread messages from user2 and user3
+        var unreadBefore = messageRepository.getUnreadMessagesCount("user1");
+        assertThat(unreadBefore, hasSize(2));
+
+        // Get chat with user2 marks ALL messages for user1 as displayed
+        mvc.perform(get("/api/latest/messages/user2"))
+            .andExpect(status().isOk());
+
+        // All messages should now be marked as displayed
+        var unreadAfter = messageRepository.getUnreadMessagesCount("user1");
+        assertThat(unreadAfter, hasSize(0));
     }
 
 

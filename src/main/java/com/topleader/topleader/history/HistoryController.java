@@ -25,6 +25,6 @@ public class HistoryController {
 
     @GetMapping("/{type}")
     public List<DataHistory> findHistoryByType(@AuthenticationPrincipal UserDetails user, @PathVariable DataHistory.Type type) {
-        return dataHistoryRepository.findAllByUsernameAndType(user.getUsername(), type);
+        return dataHistoryRepository.findByUsernameAndType(user.getUsername(), type.name());
     }
 }

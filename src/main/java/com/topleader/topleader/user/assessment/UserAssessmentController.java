@@ -4,7 +4,6 @@
 package com.topleader.topleader.user.assessment;
 
 import com.topleader.topleader.common.exception.NotFoundException;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,7 +33,6 @@ public class UserAssessmentController {
     }
 
     @DeleteMapping
-    @Transactional
     public void deleteUserAssessments(@AuthenticationPrincipal UserDetails user) {
         userAssessmentRepository.deleteAllByUsername(user.getUsername());
     }

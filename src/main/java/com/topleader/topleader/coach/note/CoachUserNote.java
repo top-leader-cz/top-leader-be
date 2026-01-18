@@ -1,23 +1,20 @@
 package com.topleader.topleader.coach.note;
 
-import com.topleader.topleader.coach.favorite.FavoriteCoach;
-import jakarta.persistence.*;
-
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
-@Entity
+@Table("coach_user_note")
 @Data
+@NoArgsConstructor
 @Accessors(chain = true)
 public class CoachUserNote {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String coachId;

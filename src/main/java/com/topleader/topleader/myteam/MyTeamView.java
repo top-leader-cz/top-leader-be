@@ -3,10 +3,8 @@
  */
 package com.topleader.topleader.myteam;
 
-import com.topleader.topleader.common.util.converter.SetConverter;
-import jakarta.persistence.Convert;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import com.topleader.topleader.common.util.common.JsonUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -14,6 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -21,10 +21,10 @@ import lombok.experimental.Accessors;
  */
 @Getter
 @Setter
-@Entity
 @ToString
 @NoArgsConstructor
 @Accessors(chain = true)
+@Table("my_team_view")
 public class MyTeamView {
 
     @Id
@@ -58,14 +58,20 @@ public class MyTeamView {
 
     private String longTermGoal;
 
-    @Convert(converter = SetConverter.class)
-    private List<String> strengths = new ArrayList<>();
+    private String strengths;
 
-    @Convert(converter = SetConverter.class)
-    private List<String> areaOfDevelopment = new ArrayList<>();
+    private String areaOfDevelopment;
+
+    public List<String> getStrengthsList() {
+        return strengths != null ? JsonUtils.fromJsonStringToList(strengths) : new ArrayList<>();
+    }
+
+    public List<String> getAreaOfDevelopmentList() {
+        return areaOfDevelopment != null ? JsonUtils.fromJsonStringToList(areaOfDevelopment) : new ArrayList<>();
+    }
 
     public List<String> getTopStrengths() {
-        var strengthSize = strengths.size();
-        return strengths.subList(0, Math.min(strengthSize, 5));
+        var list = getStrengthsList();
+        return list.subList(0, Math.min(list.size(), 5));
     }
 }

@@ -18,7 +18,7 @@ public class BadgeService {
         var year = now.getYear();
 
         // Only save if badge doesn't already exist for this user/type/month/year
-        badgeRepository.findByUsernameAndAchievementTypeAndMonthAndYear(username, type, month, year)
+        badgeRepository.findByUsernameAndAchievementTypeAndMonthAndYear(username, type.name(), month.name(), year)
                 .ifPresentOrElse(
                         existing -> {}, // Badge already exists, do nothing
                         () -> badgeRepository.save(new Badge()

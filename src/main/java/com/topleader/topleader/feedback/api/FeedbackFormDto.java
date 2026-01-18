@@ -39,23 +39,18 @@ public class FeedbackFormDto {
 
     private boolean draft;
 
-    public static FeedbackFormDto of(FeedbackForm feedbackForm) {
-        var questions = feedbackForm.getQuestions().stream()
-                .map(q -> {
-                    var question = q.getQuestion();
-                    return new QuestionDto(question.getKey(), q.getType(), q.isRequired(), List.of());
-                })
+    public static FeedbackFormDto of(FeedbackForm feedbackForm, List<com.topleader.topleader.feedback.entity.FeedbackFormQuestion> formQuestions, List<com.topleader.topleader.feedback.entity.Recipient> formRecipients) {
+        var questions = formQuestions.stream()
+                .map(q -> new QuestionDto(q.getQuestionKey(), q.getType(), q.isRequired(), List.of()))
                 .collect(Collectors.toList());
 
-        var recipients = feedbackForm.getRecipients().stream()
+        var recipients = formRecipients.stream()
                 .map(r -> new RecipientDto(r.getId(), r.getRecipient(), r.isSubmitted()))
                 .collect(Collectors.toList());
 
         return new FeedbackFormDto()
                 .setTitle(feedbackForm.getTitle())
-                .setUsername(feedbackForm.getUser().getUsername())
-                .setFirstName(feedbackForm.getUser().getFirstName())
-                .setLastName(feedbackForm.getUser().getLastName())
+                .setUsername(feedbackForm.getUsername())
                 .setDescription(feedbackForm.getDescription())
                 .setId(feedbackForm.getId())
                 .setValidTo(feedbackForm.getValidTo())
@@ -65,16 +60,25 @@ public class FeedbackFormDto {
                 .setDraft(feedbackForm.isDraft());
     }
 
-    public static FeedbackFormDto witAnswer(FeedbackForm feedbackForm) {
-        var dto = of(feedbackForm);
+    public static FeedbackFormDto of(FeedbackForm feedbackForm, List<com.topleader.topleader.feedback.entity.FeedbackFormQuestion> formQuestions, List<com.topleader.topleader.feedback.entity.Recipient> formRecipients, String firstName, String lastName) {
+        return of(feedbackForm, formQuestions, formRecipients)
+                .setFirstName(firstName)
+                .setLastName(lastName);
+    }
+
+    public static FeedbackFormDto witAnswer(FeedbackForm feedbackForm, List<com.topleader.topleader.feedback.entity.FeedbackFormQuestion> formQuestions, List<com.topleader.topleader.feedback.entity.Recipient> formRecipients, List<com.topleader.topleader.feedback.entity.FeedbackFormAnswer> formAnswers, java.util.Map<Long, com.topleader.topleader.feedback.entity.Recipient> recipientMap) {
+        var dto = of(feedbackForm, formQuestions, formRecipients);
 
         var result = new HashMap<String, List<AnswerRecipientDto>>();
-        feedbackForm.getAnswers().forEach(a -> {
-            result.compute(a.getQuestion().getKey(), (v, k) -> {
-                var answers = result.getOrDefault(a.getQuestion().getKey(), new ArrayList<>());
-                answers.add(new AnswerRecipientDto(a.getAnswer(), a.getRecipient().getRecipient()));
-                return answers;
-            });
+        formAnswers.forEach(a -> {
+            var recipient = recipientMap.get(a.getRecipientId());
+            if (recipient != null) {
+                result.compute(a.getQuestionKey(), (v, k) -> {
+                    var answers = result.getOrDefault(a.getQuestionKey(), new ArrayList<>());
+                    answers.add(new AnswerRecipientDto(a.getAnswer(), recipient.getRecipient()));
+                    return answers;
+                });
+            }
         });
 
         dto.setQuestions(dto.getQuestions().stream()

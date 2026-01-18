@@ -6,7 +6,8 @@ package com.topleader.topleader.feedback.feedback_notification;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
-import jakarta.transaction.Transactional;
+import com.topleader.topleader.feedback.repository.RecipientRepository;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +37,8 @@ public class FeedbackNotificationController {
 
     private final FeedbackFormRepository feedbackFormRepository;
 
-    @Transactional
+    private final RecipientRepository recipientRepository;
+
     @GetMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormNotificationDto getForm(
@@ -50,7 +52,6 @@ public class FeedbackNotificationController {
             .orElseThrow(NotFoundException::new);
     }
 
-    @Transactional
     @PostMapping("/{id}/manual-reminder")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public FeedbackFormNotificationDto triggerManualReminder(
@@ -66,9 +67,9 @@ public class FeedbackNotificationController {
     }
 
     private boolean isUnanswered(Long formId) {
-        return feedbackFormRepository.findById(formId)
-            .map(f -> f.getRecipients().stream().anyMatch(not(Recipient::isSubmitted)))
-            .orElseThrow(NotFoundException::new);
+        feedbackFormRepository.findById(formId).orElseThrow(NotFoundException::new);
+        return recipientRepository.findByFormId(formId).stream()
+                .anyMatch(not(Recipient::isSubmitted));
     }
 
     public record FeedbackFormNotificationDto(

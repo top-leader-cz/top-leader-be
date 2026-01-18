@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,14 +43,12 @@ public class GoogleCalendarService {
 
     private final CalendarToErrorHandler errorHandler;
 
-    @Transactional
     public void storeTokenInfo(String username, TokenResponse tokenResponse) {
         log.info("caStoring token info for user {} token info: {}", username, tokenResponse);
 
         transactionService.execute(() -> {
             calendarSyncInfoRepository.deleteByUsername(username);
             availabilitySettingRepository.deleteByCoach(username);
-            calendarSyncInfoRepository.flush();
 
             var info = new CalendarSyncInfo()
                     .setUsername(username)

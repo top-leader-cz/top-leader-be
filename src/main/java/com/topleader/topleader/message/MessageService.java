@@ -104,7 +104,6 @@ public class MessageService {
             .toList();
     }
 
-    @Transactional
     public Page<Message> findUserMessages(String username, String addressee, Pageable pageable) {
         markAllMessagesAsDisplayed(username);
         return userChatRepository.findUserChat(username, addressee)

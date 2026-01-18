@@ -1,17 +1,14 @@
 package com.topleader.topleader.session.report;
 
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
-import static jakarta.persistence.EnumType.STRING;
-
-@Entity
+@Table("report_session_view")
 @Data
 @Accessors(chain = true)
 public class ReportSessionView {
@@ -25,7 +22,6 @@ public class ReportSessionView {
 
     private String lastName;
 
-    @Enumerated(value = STRING)
     private ScheduledSession.Status status;
 
     private long companyId;

@@ -1,13 +1,8 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.credit.history;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.ListPagingAndSortingRepository;
 
 
-/**
- * @author Daniel Slavik
- */
-public interface CreditHistoryRepository extends JpaRepository<CreditHistory, Long> {
+public interface CreditHistoryRepository extends ListCrudRepository<CreditHistory, Long> {
 }

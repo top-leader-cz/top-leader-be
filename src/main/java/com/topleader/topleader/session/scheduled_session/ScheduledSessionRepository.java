@@ -1,31 +1,26 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.session.scheduled_session;
+
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.ListCrudRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-
 
 /**
  * @author Daniel Slavik
  */
-public interface ScheduledSessionRepository extends JpaSpecificationExecutor<ScheduledSession> , JpaRepository<ScheduledSession, Long>  {
+public interface ScheduledSessionRepository extends ListCrudRepository<ScheduledSession, Long> {
     boolean existsByCoachUsernameAndTime(String coachUsername, LocalDateTime time);
 
-
-    @Query("SELECT s FROM ScheduledSession s WHERE s.coachUsername = :coach AND s.time > :time AND s.status = 'UPCOMING'")
+    @Query("SELECT * FROM scheduled_session WHERE coach_username = :coach AND time > :time AND status = 'UPCOMING'")
     List<ScheduledSession> findAllByCoachUsernameAndTimeIsAfterAndStatusUpcoming(String coach, LocalDateTime time);
 
     List<ScheduledSession> findAllByUsernameAndTimeIsAfterAndIsPrivateIsFalse(String username, LocalDateTime now);
 
-    @Query("SELECT s FROM ScheduledSession s WHERE s.username = :username AND s.time > :time AND s.status = 'UPCOMING'")
+    @Query("SELECT * FROM scheduled_session WHERE username = :username AND time > :time AND status = 'UPCOMING'")
     List<ScheduledSession> findAllByUsernameAndTimeIsAfterAndStatusUpcoming(String username, LocalDateTime time);
 
     List<ScheduledSession> findAllByTimeBeforeAndPaidIsFalse(LocalDateTime time);
@@ -34,41 +29,43 @@ public interface ScheduledSessionRepository extends JpaSpecificationExecutor<Sch
 
     List<ScheduledSession> findAllByUsername(String username);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'UPCOMING' AND s.time < CURRENT_TIMESTAMP")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'UPCOMING' AND time < CURRENT_TIMESTAMP")
     int countUpcomingByUsernames(List<String> usernames);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status in  ('COMPLETED', 'NO_SHOW_CLIENT')")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status IN ('COMPLETED', 'NO_SHOW_CLIENT')")
     int countConsumedByUsernames(List<String> usernames);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'UPCOMING' AND s.time < CURRENT_TIMESTAMP")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'UPCOMING' AND time < CURRENT_TIMESTAMP")
     int countUpcomingByUsername(String username);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'COMPLETED'")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'COMPLETED'")
     int countCompletedByUsername(String username);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'NO_SHOW_CLIENT'")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'NO_SHOW_CLIENT'")
     int countNoShowClientByUsername(String username);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'UPCOMING' AND s.time >= :from AND s.time < :to AND s.time < CURRENT_TIMESTAMP")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'UPCOMING' AND time >= :from AND time < :to AND time < CURRENT_TIMESTAMP")
     int countUpcomingByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'COMPLETED' AND s.time >= :from AND s.time < :to")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'COMPLETED' AND time >= :from AND time < :to")
     int countCompletedByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username IN :usernames AND s.status = 'NO_SHOW_CLIENT' AND s.time >= :from AND s.time < :to")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'NO_SHOW_CLIENT' AND time >= :from AND time < :to")
     int countNoShowClientByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'UPCOMING' AND s.time >= :from AND s.time < :to AND s.time < CURRENT_TIMESTAMP")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'UPCOMING' AND time >= :from AND time < :to AND time < CURRENT_TIMESTAMP")
     int countUpcomingByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'COMPLETED' AND s.time >= :from AND s.time < :to")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'COMPLETED' AND time >= :from AND time < :to")
     int countCompletedByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
 
-    @Query("SELECT COUNT(s) FROM ScheduledSession s WHERE s.username = :username AND s.status = 'NO_SHOW_CLIENT' AND s.time >= :from AND s.time < :to")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'NO_SHOW_CLIENT' AND time >= :from AND time < :to")
     int countNoShowClientByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
 
     @Modifying
-    @Query("UPDATE ScheduledSession s SET s.status = 'COMPLETED', s.updatedAt = :now, s.updatedBy = :updatedBy WHERE s.status = 'UPCOMING' AND s.time < :threshold")
+    @Query("UPDATE scheduled_session SET status = 'COMPLETED', updated_at = :now, updated_by = :updatedBy WHERE status = 'UPCOMING' AND time < :threshold")
     int markPendingSessionsAsCompleted(LocalDateTime threshold, LocalDateTime now, String updatedBy);
+
+    long countByStatus(ScheduledSession.Status status);
 
 }

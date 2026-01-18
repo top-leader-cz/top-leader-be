@@ -14,7 +14,7 @@ import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto
 import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
 import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
 import com.topleader.topleader.user.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;

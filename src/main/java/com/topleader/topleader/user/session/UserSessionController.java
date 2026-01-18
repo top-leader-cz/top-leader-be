@@ -85,7 +85,7 @@ public class UserSessionController {
     @Secured({"USER", "ADMIN"})
     @PostMapping("/feedback")
     public FeedbackDto setFeedback(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid FeedbackDto request) {
-        return dataHistoryRepository.findTopByUsernameAndTypeOrderByIdDesc(user.getUsername(), DataHistory.Type.USER_SESSION)
+        return dataHistoryRepository.findTopByUsernameAndType(user.getUsername(), DataHistory.Type.USER_SESSION.name())
                 .map(s -> {
                     log.info("saving user session feedback");
                     return sessionFeedbackRepository.save(new SessionFeedback()

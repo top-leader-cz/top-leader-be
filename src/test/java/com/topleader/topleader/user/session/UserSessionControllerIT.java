@@ -27,7 +27,6 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -129,7 +128,7 @@ class UserSessionControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.actionSteps[0].checked", is(false)))
         ;
 
-        final var historyData = dataHistoryRepository.findAllByUsernameAndType("user", DataHistory.Type.USER_SESSION);
+        final var historyData = dataHistoryRepository.findByUsernameAndType("user", DataHistory.Type.USER_SESSION.name());
 
         assertThat(historyData, hasSize(1));
         assertThat(historyData.get(0).getData(), instanceOf(UserSessionStoredData.class));
@@ -142,7 +141,12 @@ class UserSessionControllerIT extends IntegrationTest {
         assertThat(sessionData.getAreaOfDevelopment(), hasSize(2));
         assertThat(sessionData.getAreaOfDevelopment(), hasItems("a1", "a2"));
 
-        Assertions.assertThat(badgeRepository.findOne(Example.of(badge(Badge.AchievementType.COMPLETE_SESSION)))).isNotEmpty();
+        var now = LocalDateTime.now();
+        var badges = badgeRepository.getUserBadges("user", now.getYear());
+        Assertions.assertThat(badges.stream()
+                .filter(b -> b.getAchievementType() == Badge.AchievementType.COMPLETE_SESSION)
+                .filter(b -> b.getMonth() == now.getMonth())
+                .findFirst()).isNotEmpty();
 
     }
 
@@ -171,7 +175,7 @@ class UserSessionControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.actionSteps[0].checked", is(false)))
         ;
 
-        final var historyData = dataHistoryRepository.findAllByUsernameAndType("user2", DataHistory.Type.USER_SESSION);
+        final var historyData = dataHistoryRepository.findByUsernameAndType("user2", DataHistory.Type.USER_SESSION.name());
 
         assertThat(historyData, hasSize(1));
         assertThat(historyData.get(0).getData(), instanceOf(UserSessionStoredData.class));

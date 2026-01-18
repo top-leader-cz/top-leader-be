@@ -1,24 +1,23 @@
 package com.topleader.topleader.user.userinsight;
 
-import jakarta.persistence.*;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
 
 
 @Data
-@Entity
+@Table("user_insight")
 @Accessors(chain = true)
 @EqualsAndHashCode(of = {"id"})
 public class UserInsight {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
     private String username;
 
     private String leadershipStyleAnalysis;
