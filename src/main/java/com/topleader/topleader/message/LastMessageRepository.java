@@ -5,12 +5,18 @@ package com.topleader.topleader.message;
 
 import java.util.Collection;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.ListCrudRepository;
 
 
-/**
- * @author Daniel Slavik
- */
-public interface LastMessageRepository extends JpaRepository<LastMessage, Long> {
+public interface LastMessageRepository extends ListCrudRepository<LastMessage, Long> {
+
+    @Query("SELECT * FROM last_message WHERE chat_id IN (:ids)")
     List<LastMessage> findAllByChatIdIn(Collection<Long> ids);
+
+    @Modifying
+    @Query("INSERT INTO last_message (chat_id, message_id) VALUES (:chatId, :messageId) " +
+           "ON CONFLICT (chat_id) DO UPDATE SET message_id = :messageId")
+    void upsert(Long chatId, Long messageId);
 }

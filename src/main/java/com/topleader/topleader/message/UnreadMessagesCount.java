@@ -3,11 +3,5 @@
  */
 package com.topleader.topleader.message;
 
-/**
- * @author Daniel Slavik
- */
-public interface UnreadMessagesCount {
-    String getUserFrom();
-
-    Long getUnread();
+public record UnreadMessagesCount(String userfrom, Long unread) {
 }

@@ -3,40 +3,31 @@
  */
 package com.topleader.topleader.message;
 
-import java.time.LocalDateTime;
 import java.util.List;
-
-import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 
-/**
- * @author Daniel Slavik
- */
-public interface MessageRepository extends JpaRepository<Message, Long> {
+public interface MessageRepository extends ListCrudRepository<Message, Long>, PagingAndSortingRepository<Message, Long> {
 
     Page<Message> findAllByChatId(Long chatId, Pageable pageable);
 
-
     @Modifying
-    @Query("update Message set displayed = true where userTo = :username")
+    @Query("UPDATE user_message SET displayed = true WHERE user_to = :username")
     void setAllUserMessagesAsDisplayed(String username);
 
-    @Query("select m.userFrom as userFrom, count(*) as unread from Message m where m.userTo = :username and m.displayed = false group by m.userFrom")
+    @Query("SELECT user_from AS userFrom, COUNT(*) AS unread FROM user_message WHERE user_to = :username AND displayed = false GROUP BY user_from")
     List<UnreadMessagesCount> getUnreadMessagesCount(String username);
 
-
-    @Query("select m.userTo from Message m  where m.displayed = false  and m.notified = false group by m.userTo")
+    @Query("SELECT DISTINCT user_to FROM user_message WHERE displayed = false AND notified = false")
     List<String> findUndisplayed();
 
     @Modifying
-    @Transactional
-    @Query("update Message m set m.notified = true where m.userTo in(:username)")
-    void setNotified(List<String> username);
-
+    @Query("UPDATE user_message SET notified = true WHERE user_to IN (:usernames)")
+    void setNotified(List<String> usernames);
 
 }
