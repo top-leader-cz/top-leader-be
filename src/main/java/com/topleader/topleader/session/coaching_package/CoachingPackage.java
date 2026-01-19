@@ -4,20 +4,22 @@
 package com.topleader.topleader.session.coaching_package;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
-import com.topleader.topleader.common.entity.BaseEntity;
 
 @Data
-@EqualsAndHashCode(callSuper=false)
 @Accessors(chain = true)
 @NoArgsConstructor
 @Table("coaching_package")
-public class CoachingPackage extends BaseEntity {
+public class CoachingPackage {
+
+    @Id
+    private Long id;
+
     private Long companyId;
 
     private PoolType poolType;

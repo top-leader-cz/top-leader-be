@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-import com.topleader.topleader.common.entity.BaseEntity;
 
 
 /**
@@ -22,7 +22,11 @@ import com.topleader.topleader.common.entity.BaseEntity;
 @Table("user_action_step")
 @Accessors(chain = true)
 @NoArgsConstructor
-public class UserActionStep extends BaseEntity {
+public class UserActionStep {
+
+    @Id
+    private Long id;
+
     private String username;
 
     private String label;

@@ -3,17 +3,21 @@ package com.topleader.topleader.user.userinsight;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
-import com.topleader.topleader.common.entity.BaseEntity;
 
 
 @Data
 @Table("user_insight")
 @Accessors(chain = true)
 @EqualsAndHashCode(of = {"id"})
-public class UserInsight extends BaseEntity {
+public class UserInsight {
+
+    @Id
+    private Long id;
+
     private String username;
 
     private String leadershipStyleAnalysis;

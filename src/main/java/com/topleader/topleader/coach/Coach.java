@@ -7,12 +7,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
-import com.topleader.topleader.common.entity.BaseEntity;
 
 
 /**
@@ -24,7 +24,11 @@ import com.topleader.topleader.common.entity.BaseEntity;
 @Table("coach")
 @Accessors(chain = true)
 @NoArgsConstructor
-public class Coach extends BaseEntity {
+public class Coach {
+
+    @Id
+    private Long id;
+
     private String username;
 
     private boolean publicProfile;

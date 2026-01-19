@@ -54,15 +54,14 @@ public class FeedbackFormRequest {
     }
 
     public static FeedbackForm toSimpleForm(FeedbackFormRequest request) {
-        var form = new FeedbackForm()
+        return new FeedbackForm()
+                .setId(request.getId())
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
                 .setUsername(request.getUsername().toLowerCase(Locale.ROOT))
                 .setDraft(request.isDraft());
-        form.setId(request.getId());
-        return form;
     }
 
     public static List<FeedbackFormQuestion> toQuestions(List<QuestionDto> questions, long feedbackFormId) {
@@ -77,15 +76,12 @@ public class FeedbackFormRequest {
 
     public static List<Recipient> toRecipients(List<RecipientDto> recipients, long feedbackFormId) {
         return recipients.stream()
-                .map(r -> {
-                    var recipient = new Recipient()
-                            .setFormId(feedbackFormId)
-                            .setToken(r.id() != null ? null : CommonUtils.generateToken())
-                            .setRecipient(r.username())
-                            .setSubmitted(r.submitted());
-                    recipient.setId(r.id());
-                    return recipient;
-                })
+                .map(r -> new Recipient()
+                        .setId(r.id())
+                        .setFormId(feedbackFormId)
+                        .setToken(r.id() != null ? null : CommonUtils.generateToken())
+                        .setRecipient(r.username())
+                        .setSubmitted(r.submitted()))
                 .collect(Collectors.toList());
     }
 }

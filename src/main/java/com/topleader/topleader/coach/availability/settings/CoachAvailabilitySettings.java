@@ -2,16 +2,18 @@ package com.topleader.topleader.coach.availability.settings;
 
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
-import com.topleader.topleader.common.entity.BaseEntity;
 
 @Data
-@EqualsAndHashCode(callSuper=false)
 @Table("coach_availability_settings")
 @Accessors(chain = true)
-public class CoachAvailabilitySettings extends BaseEntity {
+public class CoachAvailabilitySettings  {
+
+    @Id
+    private Long id;
+
     private String coach;
 
     private CalendarSyncInfo.SyncType type;

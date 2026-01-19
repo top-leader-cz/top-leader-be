@@ -12,9 +12,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Table;
-import com.topleader.topleader.common.entity.BaseEntity;
 
 
 @Getter
@@ -23,7 +23,11 @@ import com.topleader.topleader.common.entity.BaseEntity;
 @Table("users")
 @Accessors(chain = true)
 @NoArgsConstructor
-public class User extends BaseEntity {
+public class User {
+
+    @Id
+    private Long id;
+
     private String username;
 
     private String password;
