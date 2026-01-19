@@ -40,7 +40,7 @@
       "Bash($GRADLE_HOME/bin/gradle test)",
       "Bash(~/.sdkman/candidates/gradle/current/bin/gradle test)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle test:*)",
-      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle compileJava:*)"
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle compileJava:*)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 mvn compile:*)",
       "Bash(~/.sdkman/candidates/gradle/current/bin/gradle compileJava:*)",
       "Bash(export JAVA_HOME=~/.sdkman/candidates/java/25:*)",
