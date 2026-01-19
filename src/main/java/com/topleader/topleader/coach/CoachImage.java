@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import com.topleader.topleader.common.entity.BaseEntity;
 
 
 /**
@@ -21,11 +21,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("coach_image")
 @Accessors(chain = true)
 @NoArgsConstructor
-public class CoachImage {
-
-    @Id
-    private Long id;
-
+public class CoachImage extends BaseEntity {
     private String username;
 
     private String type;

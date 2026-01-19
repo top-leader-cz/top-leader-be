@@ -11,8 +11,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import com.topleader.topleader.common.entity.BaseEntity;
 
 
 /**
@@ -24,11 +24,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("coach_availability")
 @Accessors(chain = true)
 @NoArgsConstructor
-public class CoachAvailability {
-
-    @Id
-    private Long id;
-
+public class CoachAvailability extends BaseEntity {
     private String username;
 
     private DayOfWeek dayFrom;

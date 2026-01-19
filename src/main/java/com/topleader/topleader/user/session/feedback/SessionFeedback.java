@@ -4,20 +4,18 @@ package com.topleader.topleader.user.session.feedback;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.topleader.topleader.common.util.common.JsonUtils;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Map;
+import com.topleader.topleader.common.entity.BaseEntity;
 
 @Table("session_feedback")
 @Data
+@EqualsAndHashCode(callSuper=false)
 @Accessors(chain = true)
-public class SessionFeedback {
-
-    @Id
-    private Long id;
-
+public class SessionFeedback extends BaseEntity {
     private Long sessionId;
 
     private String username;

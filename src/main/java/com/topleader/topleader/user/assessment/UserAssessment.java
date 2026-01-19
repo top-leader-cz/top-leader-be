@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
+import com.topleader.topleader.common.entity.BaseEntity;
 
 
 /**
@@ -21,11 +21,7 @@ import org.springframework.data.relational.core.mapping.Table;
 @Table("user_assessment")
 @Accessors(chain = true)
 @NoArgsConstructor
-public class UserAssessment {
-
-    @Id
-    private Long id;
-
+public class UserAssessment extends BaseEntity {
     private String username;
 
     private Long questionId;

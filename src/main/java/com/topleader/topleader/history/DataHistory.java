@@ -5,20 +5,18 @@ package com.topleader.topleader.history;
 
 import com.topleader.topleader.history.data.StoredData;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import com.topleader.topleader.common.entity.BaseEntity;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 @Table("data_history")
 @Accessors(chain = true)
-public class DataHistory {
-
-    @Id
-    private Long id;
-
+public class DataHistory extends BaseEntity {
     private String username;
 
     private Type type;

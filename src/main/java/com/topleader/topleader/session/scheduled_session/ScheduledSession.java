@@ -8,10 +8,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
+import com.topleader.topleader.common.entity.BaseEntity;
 
 
 /**
@@ -23,11 +23,7 @@ import java.time.LocalDateTime;
 @Table("scheduled_session")
 @Accessors(chain = true)
 @NoArgsConstructor
-public class ScheduledSession {
-
-    @Id
-    private Long id;
-
+public class ScheduledSession extends BaseEntity {
     private String username;
 
     private String coachUsername;
