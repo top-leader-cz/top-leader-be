@@ -54,7 +54,21 @@
       "Bash(~/.sdkman/candidates/gradle/current/bin/gradle test)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle test:*)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle compileJava:*)",
-      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle:*)"
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle:*)",
+      "Bash(make:*)",
+      "Bash(~/.sdkman/candidates/gradle/current/bin/gradle:*)",
+      "Bash($HOME/.sdkman/candidates/gradle/current/bin/gradle:*)",
+      "Bash(JAVA_HOME=$HOME/.sdkman/candidates/java/25.0.1-graalce $HOME/.sdkman/candidates/gradle/current/bin/gradle:*)",
+      "Bash(JAVA_HOME=/Users/jakubkrhovjak/.sdkman/candidates/java/25.0.1-graalce /Users/jakubkrhovjak/.sdkman/candidates/gradle/current/bin/gradle tasks:*)",
+      "Bash($GRADLE_HOME/bin/gradle tasks:*)",
+      "Bash(./gradlew tasks:*)",
+      "Bash($GRADLE_HOME/bin/gradle help:*)",
+      "Bash(export JAVA_HOME=~/.sdkman/candidates/java/25.0.1-graalce:*)",
+      "Bash($GRADLE_HOME/bin/gradle nativeTest --no-configuration-cache --build-cache)",
+      "Bash(JAVA_HOME=~/.sdkman/candidates/java/25.0.1-graalce ~/.sdkman/candidates/gradle/current/bin/gradle nativeTest:*)",
+      "Bash($GRADLE_HOME/bin/gradle compileJava --console=plain)",
+      "Bash(export JAVA_HOME=$HOME/.sdkman/candidates/java/25:*)",
+      "Bash(GCP_JSON_LOGS=CONSOLE_JSON JAVA_HOME=$HOME/.sdkman/candidates/java/25 $HOME/.sdkman/candidates/gradle/current/bin/gradle bootRun:*)"
     ]
   }
 }

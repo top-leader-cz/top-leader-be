@@ -84,6 +84,31 @@ $GRADLE_HOME/bin/gradle build -x test
 $GRADLE_HOME/bin/gradle bootJar
 ```
 
+### Native Image Build (GraalVM)
+
+```bash
+# Install GraalVM 25 via SDKMAN
+sdk install java 25.0.1-graalce
+export JAVA_HOME=~/.sdkman/candidates/java/25.0.1-graalce
+
+# Build native image (quick mode for development ~2-3 min)
+$GRADLE_HOME/bin/gradle nativeCompile --no-configuration-cache --build-cache
+
+# Build native image (production - slower build, faster runtime)
+# Remove "-Ob" flag from build.gradle.kts graalvmNative section
+
+# Run native executable
+./build/native/nativeCompile/top-leader
+
+# Native image location
+# build/native/nativeCompile/top-leader (253 MB)
+```
+
+**Native Build Configuration:**
+- `build.gradle.kts` - GraalVM plugin and build args
+- `NativeImageConfiguration.java` - Reflection hints for runtime
+- `application-nativeaot.yml` - AOT processing profile (uses H2)
+
 ## Project Structure
 
 ```

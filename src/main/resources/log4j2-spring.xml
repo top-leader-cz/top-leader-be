@@ -1,32 +1,30 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Log4j2 with JSON-like PatternLayout for GCP (native-image compatible) -->
 <Configuration status="WARN">
     <Properties>
         <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{username}] %-5level %logger{36} - %msg%n</Property>
     </Properties>
 
     <Appenders>
-        <Console name="CONSOLE" target="SYSTEM_OUT">
+        <!-- Local development: Plain text logs -->
+        <Console name="CONSOLE_TEXT" target="SYSTEM_OUT">
             <PatternLayout pattern="${LOG_PATTERN}"/>
         </Console>
 
+        <!-- GCP (prod/qa): JSON logs with severity mapping for Cloud Logging -->
         <Console name="CONSOLE_JSON" target="SYSTEM_OUT">
-            <JsonTemplateLayout eventTemplateUri="classpath:gcpLayout.json"/>
+            <!-- Use PatternLayout with JSON-like output that GCP can parse -->
+            <PatternLayout>
+                <pattern>{"severity":"%level{UPPER}","message":"%enc{%message}{JSON}","logger":"%logger","thread":"%thread","timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}","username":"%X{username}"%notEmpty{,"stacktrace":"%enc{%xThrowable}{JSON}"}}%n</pattern>
+            </PatternLayout>
         </Console>
     </Appenders>
 
     <Loggers>
-        <SpringProfile name="default | dev | test">
-            <Root level="INFO">
-                <AppenderRef ref="CONSOLE"/>
-            </Root>
-        </SpringProfile>
-
-        <SpringProfile name="qa | prod">
-            <Root level="INFO">
-                <AppenderRef ref="CONSOLE_JSON"/>
-            </Root>
-        </SpringProfile>
-
+        <Root level="INFO">
+            <!-- Use ${env:GCP_JSON_LOGS} to switch between JSON (GCP) and TEXT (local) -->
+            <AppenderRef ref="${env:GCP_JSON_LOGS:-CONSOLE_TEXT}"/>
+        </Root>
         <Logger name="org.springframework.web" level="INFO"/>
     </Loggers>
 </Configuration>

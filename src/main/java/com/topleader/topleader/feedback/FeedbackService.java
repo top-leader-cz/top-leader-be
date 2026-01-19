@@ -164,9 +164,12 @@ public class FeedbackService {
                     var validTo = Optional.ofNullable(data.getValidTo())
                             .map(v -> v.format(TOP_LEADER_FORMATTER))
                             .orElse(null);
-                    var params = Map.of("validTo", validTo,
-                            "link", feedbackLink, "firstName", data.getFirstName(), "lastName", data.getLastName());
-                    var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(data.getLocale()));
+                    var params = new HashMap<String, Object>();
+                    params.put("validTo", validTo);
+                    params.put("link", feedbackLink);
+                    params.put("firstName", data.getFirstName());
+                    params.put("lastName", data.getLastName());
+                    var body = velocityService.getMessage(params, parseTemplateName(data.getLocale()));
                     var subject = String.format(subjects.getOrDefault(data.getLocale(), defaultLocale), data.getFirstName(), data.getLastName());
 
                     var existingUser = userRepository.findByUsernameOrEmail(r.recipient());

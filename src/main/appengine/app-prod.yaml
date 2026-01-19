@@ -9,6 +9,7 @@ network:
   session_affinity: true
 env_variables:
   SPRING_PROFILES_ACTIVE: "prod"
+  GCP_JSON_LOGS: "CONSOLE_JSON"
   SPRING_DATASOURCE_URL: "jdbc:postgresql:///top_leader_prod?socketFactory=com.google.cloud.sql.postgres.SocketFactory&cloudSqlInstance=topleader-394306:europe-west3:top-leader-db"
   SPRING_DATASOURCE_USERNAME: "top-leader-prod"
   SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD}"

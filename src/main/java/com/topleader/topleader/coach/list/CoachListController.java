@@ -6,11 +6,11 @@ package com.topleader.topleader.coach.list;
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
+import com.topleader.topleader.common.metrics.MetricsService;
 import com.topleader.topleader.hr.company.Company;
 import com.topleader.topleader.hr.company.CompanyRepository;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
-import io.micrometer.core.instrument.Counter;
 import com.topleader.topleader.common.email.EmailTemplateService;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
@@ -78,7 +78,7 @@ public class CoachListController {
 
     private final CompanyRepository companyRepository;
 
-    private final Counter sessionScheduledCounter;
+    private final MetricsService metrics;
 
 
     @PostMapping("/{username}/schedule")
@@ -146,7 +146,7 @@ public class CoachListController {
             clientName
         );
 
-        sessionScheduledCounter.increment();
+        metrics.incrementSessionScheduled();
         emailTemplateService.sendBookingAlertEmail(session.getId());
     }
 
