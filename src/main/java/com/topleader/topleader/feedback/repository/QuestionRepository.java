@@ -11,5 +11,6 @@ public interface QuestionRepository extends CrudRepository<Question, Long> {
     @Query("SELECT * FROM fb_question WHERE default_question = true")
     List<Question> getDefaultOptions();
 
+    @Query("SELECT COUNT(*) > 0 FROM fb_question WHERE key = :key")
     boolean existsByKey(String key);
 }

@@ -15,6 +15,7 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
 
      Optional<User> findByUsername(String username);
 
+     @Query("SELECT * FROM users WHERE username IN (:usernames)")
      List<User> findAllByUsernameIn(Collection<String> usernames);
 
      @Query("SELECT rate_name FROM user_coach_rates WHERE username = :username")

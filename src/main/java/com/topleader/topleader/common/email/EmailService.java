@@ -31,6 +31,11 @@ public class EmailService {
 
     @SneakyThrows
     public void sendEmail(String from, String to, String subject, String body) {
+        if (to == null || to.isBlank()) {
+            log.warn("Skipping email send - recipient address is empty. Subject: [{}]", subject);
+            return;
+        }
+
         log.info("Sending email to: [{}] subject: [{}]", to, subject);
         var message = mailSender.createMimeMessage();
         var helper = new MimeMessageHelper(message, "utf-8");
@@ -44,6 +49,11 @@ public class EmailService {
 
     @SneakyThrows
     public void sendEmail(String to, String subject, String body, ICalEvent event) {
+        if (to == null || to.isBlank()) {
+            log.warn("Skipping email send - recipient address is empty. Subject: [{}]", subject);
+            return;
+        }
+
         log.info("Sending email to: [{}] subject: [{}]", to, subject);
         var message = mailSender.createMimeMessage();
         var helper = new MimeMessageHelper(message, true, "utf-8");
