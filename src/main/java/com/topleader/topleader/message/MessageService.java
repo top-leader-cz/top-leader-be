@@ -75,6 +75,10 @@ public class MessageService {
         final var allChats = userChatRepository.findAllForUser(username).stream()
             .collect(toMap(chat -> chat.getUser1().equals(username) ? chat.getUser2() : chat.getUser1(), UserChat::getChatId));
 
+        if (allChats.isEmpty()) {
+            return List.of();
+        }
+
         final var lastMessages = Optional.of(lastMessageRepository.findAllByChatIdIn(allChats.values()))
             .filter(not(List::isEmpty))
             .map(c ->
