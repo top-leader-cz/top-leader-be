@@ -2,6 +2,7 @@ server:
   port: 8080
   servlet:
     session:
+      timeout: 15m
       cookie:
         same-site: lax
         secure: false
@@ -30,6 +31,12 @@ spring:
     hikari:
       minimum-idle: 1
       maximum-pool-size: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      leak-detection-threshold: 60000
+      data-source-properties:
+        prepStmtCacheSize: 100
+        prepStmtCacheSqlLimit: 1024
 
   flyway:
     enabled: true
