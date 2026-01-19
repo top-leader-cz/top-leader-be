@@ -66,6 +66,32 @@ We chose a monolithic architecture primarily for **cost savings**. A monolith is
 
 We use **Jetty** instead of Tomcat because it's **lightweight** and doesn't carry the overhead of Tomcat. Jetty has a smaller memory footprint and faster startup time, which aligns with our goal of keeping the application lean and efficient.
 
+### Why Spring Data JDBC over Hibernate?
+
+We migrated from **Hibernate/JPA to Spring Data JDBC** for GraalVM native image compatibility:
+
+**Native Image Friendly:**
+- Minimal reflection required - Spring Data JDBC uses simple JDBC operations
+- No runtime bytecode generation or proxies like Hibernate
+- Smaller native image size and faster startup
+
+**Simpler Model:**
+- No lazy loading, proxy objects, or detached entities
+- Direct mapping between database rows and Java objects
+- Easier to reason about and debug
+
+**Full SQL Control:**
+- Write native SQL with `@Query` - no JPQL/HQL learning curve
+- No hidden queries or N+1 problems
+- Better query optimization and performance tuning
+
+**Less Reflection:**
+- Aligns with our goal of avoiding reflection-heavy libraries
+- Better tooling support (IDE autocomplete, refactoring)
+- Compile-time safety with strong typing
+
+For a monolithic application targeting native images, Spring Data JDBC provides the right balance of simplicity and performance.
+
 ### Why Avoid Reflection-based Libraries?
 
 We deliberately avoid libraries that rely heavily on reflection. For example, we use **Failsafe** for resilience patterns because it works without reflection. This approach:
@@ -151,7 +177,7 @@ We deploy on **Google Cloud Platform** with the following architecture:
 
 **GraalVM Native Images:**
 - ~~Remove **iCal4j** library~~ ✅ Replaced with template-based implementation (see `templates/ical/`)
-- Remove **Hibernate** (migrate to lighter alternatives like JDBC or jOOQ)
+- ~~Remove **Hibernate**~~ ✅ Migrated to **Spring Data JDBC** for native image compatibility
 
 Native images provide instant startup and reduced memory footprint, which is ideal for cloud deployment and cost optimization.
 
@@ -165,7 +191,7 @@ Native images provide instant startup and reduced memory footprint, which is ide
 
 - **Java 25** with Spring Boot 4.0.1
 - **PostgreSQL 15** database
-- **Spring Data JPA** with Hibernate 7.x
+- **Spring Data JDBC** for lightweight data access
 - **Spring Security** (session-based authentication)
 - **Spring AI** with OpenAI integration
 - **Spring Session JDBC** for distributed sessions
@@ -369,7 +395,7 @@ Key configuration properties in `application.yml`:
 - **Virtual Threads**: Enabled
 - **Docker Compose**: Auto-enabled for local development
 - **Flyway**: Auto-migration enabled
-- **JPA**: Validate mode with lazy initialization
+- **Spring Data JDBC**: Lightweight data access layer
 - **Session**: JDBC-backed sessions
 - **Actuator**: Health, metrics, and Prometheus endpoints exposed
 
@@ -385,10 +411,11 @@ Key configuration properties in `application.yml`:
 - Records for DTOs
 - Lombok annotations (`@Data`, `@Accessors(chain = true)`)
 - Jakarta validation (`@NotNull`, `@Valid`)
-- Entity pattern with `@Entity` and audit fields
-- Repository pattern with `JpaRepository`
+- Entity pattern with `@Table` and Spring Data annotations
+- Repository pattern with `ListCrudRepository` (prefer `@Query` for complex operations)
 - Controller pattern with `@RestController` and `/api/latest/*` paths
 - Secured endpoints with `@Secured` annotations
 - Prefer streams over loops
+- Use Optional for null-safe operations
 - No JavaDoc above methods
 
