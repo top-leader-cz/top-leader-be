@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "4.0.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.freefair.lombok") version "9.2.0"
+    id("org.graalvm.buildtools.native") version "0.10.6"
 }
 
 group = "com.topleader"
@@ -68,6 +69,10 @@ dependencies {
     implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
 
+    // H2 for main AOT processing only
+    runtimeOnly("com.h2database:h2")
+
+
     // Logging
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
     implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.3")
@@ -104,4 +109,42 @@ val generateOpenApi by tasks.registering(Test::class) {
     group = "documentation"
     include("**/OpenApiGeneratorTest.class")
     shouldRunAfter(tasks.test)
+}
+
+// GraalVM Native Image configuration
+graalvmNative {
+    binaries {
+        named("main") {
+            imageName.set("top-leader")
+            mainClass.set("com.topleader.topleader.TopLeaderApplication")
+            buildArgs.addAll(
+                "-H:+ReportExceptionStackTraces",
+                "-Ob",  // Quick build - faster compilation, slower runtime
+                "-J-Xmx10g",  // More heap for faster build
+                listOf(
+                    "org.slf4j",
+                    "org.apache.logging.slf4j",
+                    "org.apache.logging.log4j",
+                    "org.apache.commons.logging",
+                    "org.springframework.boot.logging",
+                    "org.springframework.boot.ansi",
+                    "com.fasterxml.jackson",
+                    "org.yaml.snakeyaml",
+                    "org.codehaus.stax2",
+                    "com.ctc.wstx"
+                ).joinToString(",", prefix = "--initialize-at-build-time=")
+            )
+        }
+    }
+    toolchainDetection.set(false)
+}
+
+// Configure AOT processing to use H2 profile (only for AOT hint generation, not for actual tests)
+tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") {
+    args("--spring.profiles.active=nativeaot")
+}
+
+// Test AOT uses TestContainers with PostgreSQL - filter out H2 from classpath
+tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
+    classpath = classpath.filter { !it.name.startsWith("h2-") }
 }

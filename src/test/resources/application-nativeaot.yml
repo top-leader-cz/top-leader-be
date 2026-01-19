@@ -1,0 +1,8 @@
+# Test AOT uses TestContainers with PostgreSQL (same as regular tests)
+# This profile only provides defaults that might be missing
+spring:
+  ai:
+    openai:
+      api-key: dummy-key
+  main:
+    allow-bean-definition-overriding: true
