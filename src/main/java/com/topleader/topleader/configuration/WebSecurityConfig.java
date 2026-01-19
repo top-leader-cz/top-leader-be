@@ -47,8 +47,7 @@ public class WebSecurityConfig {
             .securityMatcher("/api/protected/**")
             .userDetailsService(new InMemoryUserDetailsManager(
                 User.withUsername("job-trigger")
-                    .passwordEncoder(passwordEncoder::encode)
-                    .password(jobTriggerPassword)
+                    .password(passwordEncoder.encode(jobTriggerPassword))
                     .authorities("JOB")
                     .build()
             ))
