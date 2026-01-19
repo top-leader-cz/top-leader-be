@@ -10,10 +10,10 @@ public interface UserAllocationRepository extends ListCrudRepository<UserAllocat
 
     List<UserAllocation> findByPackageId(Long packageId);
 
-    Optional<UserAllocation> findByPackageIdAndUserId(Long packageId, String userId);
+    Optional<UserAllocation> findByPackageIdAndUsername(Long packageId, String username);
 
-    @Query("SELECT * FROM user_allocation WHERE package_id = :packageId AND user_id = :userId FOR UPDATE")
-    Optional<UserAllocation> findByPackageIdAndUserIdForUpdate(Long packageId, String userId);
+    @Query("SELECT * FROM user_allocation WHERE package_id = :packageId AND username = :username FOR UPDATE")
+    Optional<UserAllocation> findByPackageIdAndUsernameForUpdate(Long packageId, String username);
 
     @Query("SELECT COALESCE(SUM(allocated_units), 0) FROM user_allocation WHERE package_id = :packageId")
     int sumAllocatedUnitsByPackageId(Long packageId);

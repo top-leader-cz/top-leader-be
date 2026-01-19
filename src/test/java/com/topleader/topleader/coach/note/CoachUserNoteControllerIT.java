@@ -32,7 +32,7 @@ class CoachUserNoteControllerIT extends IntegrationTest {
                                 """))
                 .andExpect(status().isOk());
 
-        Assertions.assertThat(repository.findByCoachIdAndUserId("petr.cocah@dummy.com", "jakub.user@dummy.com").get().getNote())
+        Assertions.assertThat(repository.findByCoachUsernameAndUsername("petr.cocah@dummy.com", "jakub.user@dummy.com").get().getNote())
                 .isEqualTo("test note");
 
     }

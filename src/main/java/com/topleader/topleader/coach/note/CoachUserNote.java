@@ -17,9 +17,9 @@ public class CoachUserNote {
     @Id
     private Long id;
 
-    private String coachId;
+    private String coachUsername;
 
-    private String userId;
+    private String username;
 
     private String note;
 

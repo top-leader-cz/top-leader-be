@@ -8,6 +8,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 public interface CoachUserNoteRepository extends CrudRepository<CoachUserNote, Long>, PagingAndSortingRepository<CoachUserNote, Long> {
 
-    @Query("SELECT * FROM coach_user_note WHERE coach_id = :coachId AND user_id = :userId")
-    Optional<CoachUserNote> findByCoachIdAndUserId(String coachId, String userId);
+    @Query("SELECT * FROM coach_user_note WHERE coach_username = :coachUsername AND username = :username")
+    Optional<CoachUserNote> findByCoachUsernameAndUsername(String coachUsername, String username);
 }

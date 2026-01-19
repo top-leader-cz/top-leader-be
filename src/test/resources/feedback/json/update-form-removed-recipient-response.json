@@ -1,0 +1,35 @@
+{
+  "id": 1,
+  "title": "update-from",
+  "description": "update test description",
+  "username": "jakub.svezi@dummy.com",
+  "validTo": "2023-12-13T00:00:00",
+  "firstName":"Jakub",
+  "lastName":"Svezi",
+  "questions": [
+    {
+      "key": "question.key.1",
+      "type": "SCALE",
+      "required": true,
+      "answers": []
+    },
+    {
+      "key": "question.key.2",
+      "type": "PARAGRAPH",
+      "required": false,
+      "answers": []
+    }
+  ],
+  "recipients": [
+    {
+      "id": 1,
+      "username": "pepa@cerny.cz",
+      "submitted": false
+    }
+  ],
+  "summary": {
+    "strongAreas": "strongAreas",
+    "areasOfImprovement": "areasOfImprovement"
+  },
+  "draft":false
+}

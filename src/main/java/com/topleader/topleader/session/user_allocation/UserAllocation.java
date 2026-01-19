@@ -24,7 +24,7 @@ public class UserAllocation {
 
     private Long packageId;
 
-    private String userId;
+    private String username;
 
     private Integer allocatedUnits = 0;
 

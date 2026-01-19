@@ -17,8 +17,8 @@ public record BulkAllocationRequest(
 ) {
 
     public record BulkAllocationItem(
-            @NotNull(message = "User ID is required")
-            String userId,
+            @NotNull(message = "Username is required")
+            String username,
 
             @NotNull(message = "Allocated units is required")
             @Min(value = 0, message = "Allocated units must be >= 0")

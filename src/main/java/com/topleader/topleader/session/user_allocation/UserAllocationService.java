@@ -31,7 +31,7 @@ public class UserAllocationService {
         log.info("Creating allocation for package {} user {} by {}", packageId, userId, createdBy);
 
         var pkg = getActivePackage(packageId);
-        var existingAllocation = userAllocationRepository.findByPackageIdAndUserId(packageId, userId);
+        var existingAllocation = userAllocationRepository.findByPackageIdAndUsername(packageId, userId);
 
         if (existingAllocation.isPresent()) {
             throw new ApiValidationException(ALLOCATION_ALREADY_EXISTS, "userId", userId,
@@ -44,7 +44,7 @@ public class UserAllocationService {
         var allocation = new UserAllocation()
                 .setPackageId(packageId)
                 .setCompanyId(pkg.getCompanyId())
-                .setUserId(userId)
+                .setUsername(userId)
                 .setAllocatedUnits(request.allocatedUnits())
                 .setStatus(request.status() != null ? request.status() : UserAllocation.AllocationStatus.ACTIVE)
                 .setContextRef(request.contextRef())
@@ -63,7 +63,7 @@ public class UserAllocationService {
         log.info("Updating allocation for package {} user {} by {}", packageId, userId, updatedBy);
 
         var pkg = getActivePackage(packageId);
-        var allocation = userAllocationRepository.findByPackageIdAndUserIdForUpdate(packageId, userId)
+        var allocation = userAllocationRepository.findByPackageIdAndUsernameForUpdate(packageId, userId)
                 .orElseThrow(NotFoundException::new);
 
         int currentAllocated = allocation.getAllocatedUnits();
@@ -98,14 +98,14 @@ public class UserAllocationService {
 
         var totalDelta = request.items().stream()
                 .mapToInt(item -> {
-                    var existing = userAllocationRepository.findByPackageIdAndUserId(packageId, item.userId());
+                    var existing = userAllocationRepository.findByPackageIdAndUsername(packageId, item.username());
                     var currentAllocated = existing.map(UserAllocation::getAllocatedUnits).orElse(0);
                     var currentConsumed = existing.map(UserAllocation::getConsumedUnits).orElse(0);
 
                     if (item.allocatedUnits() < currentConsumed) {
                         throw new ApiValidationException(ALLOCATED_BELOW_CONSUMED, "allocatedUnits",
-                                item.userId() + ":" + item.allocatedUnits(),
-                                "Allocated units for user " + item.userId() + " cannot be less than consumed units (" + currentConsumed + ")");
+                                item.username() + ":" + item.allocatedUnits(),
+                                "Allocated units for user " + item.username() + " cannot be less than consumed units (" + currentConsumed + ")");
                     }
 
                     return item.allocatedUnits() - currentAllocated;
@@ -116,13 +116,13 @@ public class UserAllocationService {
 
         var results = request.items().stream()
                 .map(item -> {
-                    var existing = userAllocationRepository.findByPackageIdAndUserIdForUpdate(packageId, item.userId());
+                    var existing = userAllocationRepository.findByPackageIdAndUsernameForUpdate(packageId, item.username());
                     var now = LocalDateTime.now();
 
                     var allocation = existing.orElseGet(() -> new UserAllocation()
                             .setPackageId(packageId)
                             .setCompanyId(pkg.getCompanyId())
-                            .setUserId(item.userId())
+                            .setUsername(item.username())
                             .setCreatedAt(now)
                             .setCreatedBy(updatedBy));
 
@@ -133,7 +133,7 @@ public class UserAllocationService {
 
                     var saved = userAllocationRepository.save(allocation);
                     return new BulkAllocationResponse.BulkAllocationItemResponse(
-                            saved.getUserId(),
+                            saved.getUsername(),
                             saved.getAllocatedUnits(),
                             saved.getStatus()
                     );
@@ -147,7 +147,7 @@ public class UserAllocationService {
     public UserAllocation consumeUnit(Long packageId, String userId) {
         log.info("Consuming unit for package {} user {}", packageId, userId);
 
-        var allocation = userAllocationRepository.findByPackageIdAndUserIdForUpdate(packageId, userId)
+        var allocation = userAllocationRepository.findByPackageIdAndUsernameForUpdate(packageId, userId)
                 .orElseThrow(NotFoundException::new);
 
         if (allocation.getStatus() != UserAllocation.AllocationStatus.ACTIVE) {
@@ -172,7 +172,7 @@ public class UserAllocationService {
     }
 
     public int getAvailableUnits(Long packageId, String userId) {
-        return userAllocationRepository.findByPackageIdAndUserId(packageId, userId)
+        return userAllocationRepository.findByPackageIdAndUsername(packageId, userId)
                 .filter(a -> a.getStatus() == UserAllocation.AllocationStatus.ACTIVE)
                 .map(a -> a.getAllocatedUnits() - a.getConsumedUnits())
                 .orElse(0);

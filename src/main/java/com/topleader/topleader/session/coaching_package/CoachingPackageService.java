@@ -153,7 +153,7 @@ public class CoachingPackageService {
 
     private List<String> getUserIdsForPackage(Long packageId) {
         return userAllocationRepository.findByPackageId(packageId).stream()
-                .map(UserAllocation::getUserId)
+                .map(UserAllocation::getUsername)
                 .toList();
     }
 }
