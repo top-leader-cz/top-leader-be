@@ -69,13 +69,12 @@ dependencies {
     implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
 
-    // H2 for main AOT processing only
+    // H2 for AOT processing only - excluded from native image via nativeImageClasspath
     runtimeOnly("com.h2database:h2")
 
 
-    // Logging
+    // Logging (JSON formatting handled by Spring Boot structured logging, not Log4j2 JsonTemplateLayout)
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
-    implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.3")
 
     // Utilities
     implementation("dev.failsafe:failsafe:3.3.2")
@@ -134,14 +133,23 @@ graalvmNative {
                     "com.ctc.wstx"
                 ).joinToString(",", prefix = "--initialize-at-build-time=")
             )
+            // Exclude H2 from native image - only needed for AOT processing
+            classpath = classpath.filter { !it.name.startsWith("h2-") }
         }
     }
     toolchainDetection.set(false)
 }
 
-// Configure AOT processing to use H2 profile (only for AOT hint generation, not for actual tests)
+// Configure AOT processing to use H2 (only for AOT hint generation, not baked into runtime)
 tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") {
-    args("--spring.profiles.active=nativeaot")
+    args(
+        "--spring.datasource.url=jdbc:h2:mem:aot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "--spring.datasource.username=sa",
+        "--spring.datasource.password=",
+        "--spring.datasource.driver-class-name=org.h2.Driver",
+        "--spring.flyway.enabled=false",
+        "--spring.ai.openai.api-key=dummy-key"
+    )
 }
 
 // Test AOT uses TestContainers with PostgreSQL - filter out H2 from classpath

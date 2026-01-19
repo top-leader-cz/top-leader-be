@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Log4j2 config - JSON formatting is handled by Spring Boot structured logging (logging.structured.format.console=gcp) -->
 <Configuration status="WARN">
     <Properties>
         <Property name="LOG_PATTERN">%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{username}] %-5level %logger{36} - %msg%n</Property>
@@ -8,32 +9,12 @@
         <Console name="CONSOLE" target="SYSTEM_OUT">
             <PatternLayout pattern="${LOG_PATTERN}"/>
         </Console>
-
-        <Console name="CONSOLE_JSON" target="SYSTEM_OUT">
-            <JsonTemplateLayout eventTemplateUri="classpath:gcpLayout.json"/>
-        </Console>
     </Appenders>
 
     <Loggers>
-        <SpringProfile name="default | dev | test">
-            <Root level="INFO">
-                <AppenderRef ref="CONSOLE"/>
-            </Root>
-        </SpringProfile>
-
-        <SpringProfile name="qa | prod">
-            <Root level="INFO">
-                <AppenderRef ref="CONSOLE_JSON"/>
-            </Root>
-        </SpringProfile>
-
-        <!-- Native image doesn't support JsonTemplateLayout well -->
-        <SpringProfile name="native">
-            <Root level="INFO">
-                <AppenderRef ref="CONSOLE"/>
-            </Root>
-        </SpringProfile>
-
+        <Root level="INFO">
+            <AppenderRef ref="CONSOLE"/>
+        </Root>
         <Logger name="org.springframework.web" level="INFO"/>
     </Loggers>
 </Configuration>

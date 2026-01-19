@@ -8,6 +8,12 @@ server:
         secure: true
         http-only: true
 
+# Use Spring Boot structured logging for GCP (works in native image, unlike Log4j2 JsonTemplateLayout)
+logging:
+  structured:
+    format:
+      console: gcp
+
 spring:
   cloud:
     gcp:

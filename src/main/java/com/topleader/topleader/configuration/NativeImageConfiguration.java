@@ -84,17 +84,6 @@ public class NativeImageConfiguration {
         private void registerLog4j2Classes(RuntimeHints hints, ClassLoader classLoader) {
             // Log4j2 TypeConverters that need reflection
             hints.reflection().registerTypeIfPresent(classLoader,
-                    "org.apache.logging.log4j.layout.template.json.util.RecyclerFactoryConverter",
-                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-                    MemberCategory.INVOKE_DECLARED_METHODS);
-
-            hints.reflection().registerTypeIfPresent(classLoader,
-                    "org.apache.logging.log4j.layout.template.json.JsonTemplateLayout",
-                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
-                    MemberCategory.INVOKE_DECLARED_METHODS,
-                    MemberCategory.INVOKE_PUBLIC_METHODS);
-
-            hints.reflection().registerTypeIfPresent(classLoader,
                     "org.apache.logging.log4j.core.config.plugins.convert.TypeConverterRegistry",
                     MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                     MemberCategory.INVOKE_DECLARED_METHODS);
