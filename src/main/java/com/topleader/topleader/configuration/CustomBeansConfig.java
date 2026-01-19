@@ -18,7 +18,6 @@ import org.springframework.boot.restclient.RestClientCustomizer;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,12 +30,6 @@ import java.time.Duration;
  */
 @Configuration
 public class CustomBeansConfig {
-
-    @Bean
-    @Lazy
-    public LocalValidatorFactoryBean validator() {
-        return new LocalValidatorFactoryBean();
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {

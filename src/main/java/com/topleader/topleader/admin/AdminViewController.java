@@ -12,7 +12,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
+import com.topleader.topleader.common.validation.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

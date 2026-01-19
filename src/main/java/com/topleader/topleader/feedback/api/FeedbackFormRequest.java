@@ -1,11 +1,10 @@
 package com.topleader.topleader.feedback.api;
 
+import com.topleader.topleader.common.validation.Email;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
-import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.common.util.common.CommonUtils;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;

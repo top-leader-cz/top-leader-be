@@ -9,7 +9,7 @@ import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
+import com.topleader.topleader.common.validation.Email;
 import jakarta.validation.constraints.NotEmpty;
 import java.time.LocalDateTime;
 import java.util.List;

@@ -13,7 +13,7 @@ import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.util.image.ImageUtil;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
+import com.topleader.topleader.common.validation.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
