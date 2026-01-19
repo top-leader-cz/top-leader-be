@@ -1,8 +1,5 @@
 package com.topleader.topleader.common.util.image;
 
-import com.google.cloud.storage.BlobId;
-import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Storage;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +14,7 @@ import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
+import java.util.Map;
 
 @Slf4j
 @Service
@@ -28,7 +26,7 @@ public class ArticleImageService {
 
     private final RestClient restClient;
 
-    private final Storage storage;
+    private final GcsLightweightClient gcsClient;
 
     private final RetryPolicy<Object> retryPolicy;
 
@@ -124,21 +122,15 @@ public class ArticleImageService {
             }
 
             var fileName = generateFileName(prompt);
-            var blobId = BlobId.of(bucketName, fileName);
-
-            var blobInfo = BlobInfo.newBuilder(blobId)
-                .setContentType("image/png")
-                .setMetadata(java.util.Map.of(
+            var metadata = Map.of(
                     "prompt", prompt,
                     "generated_at", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME),
                     "model", "dall-e-3",
                     "size", "1024x1024",
                     "searchable_keywords", extractKeywords(revisedPrompt)
-                ))
-                .build();
+            );
 
-            storage.create(blobInfo, image);
-            String gcpUrl = String.format("gs://%s/%s", bucketName, fileName);
+            var gcpUrl = gcsClient.uploadImage(image, fileName, metadata);
             log.info("Image stored in GCP bucket with URL: {}", gcpUrl);
             return gcpUrl;
         } catch (Exception e) {
@@ -174,19 +166,9 @@ public class ArticleImageService {
                 return null;
             }
 
-            var parts = gcpUrl.replace("gs://", "").split("/", 2);
-            if (parts.length != 2) {
-                log.error("Invalid GCP URL format: {}", gcpUrl);
-                return null;
-            }
+            var content = gcsClient.downloadImage(gcpUrl);
 
-            var bucketName = parts[0];
-            var fileName = parts[1];
-
-            var blobId = BlobId.of(bucketName, fileName);
-            var content = storage.readAllBytes(blobId);
-
-            if (content == null) {
+            if (content == null || content.length == 0) {
                 log.warn("No content found for GCP URL: {}", gcpUrl);
                 return null;
             }

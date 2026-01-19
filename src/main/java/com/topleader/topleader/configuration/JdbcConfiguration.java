@@ -130,6 +130,12 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
         }
     }
 
+    private static PGobject toPGobject(Object source) {
+        return Optional.ofNullable(source)
+                .map(obj -> createJsonbPGobject(writeJsonToString(obj)))
+                .orElse(null);
+    }
+
     @ReadingConverter
     static class AuthoritiesReadingConverter implements Converter<PGobject, Set<User.Authority>> {
         @Override
@@ -171,13 +177,6 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
                     .orElse(null);
         }
     }
-
-    private static PGobject toPGobject(Object source) {
-        return Optional.ofNullable(source)
-                .map(obj -> createJsonbPGobject(writeJsonToString(obj)))
-                .orElse(null);
-    }
-
 
     @ReadingConverter
     static class ScheduledSessionStatusReadingConverter implements Converter<String, ScheduledSession.Status> {

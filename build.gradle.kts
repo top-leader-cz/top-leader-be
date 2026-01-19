@@ -28,19 +28,12 @@ configurations {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.ai:spring-ai-bom:2.0.0-M1")
-        mavenBom("com.google.cloud:spring-cloud-gcp-dependencies:7.4.2")
         mavenBom("org.testcontainers:testcontainers-bom:1.21.4")
     }
 }
 
 dependencies {
     // Google Cloud
-    implementation("com.google.cloud:spring-cloud-gcp-starter-storage") {
-        exclude(group = "commons-logging", module = "commons-logging")
-        exclude(group = "com.google.cloud", module = "google-cloud-monitoring")
-        exclude(group = "com.google.api.grpc", module = "proto-google-cloud-monitoring-v3")
-        exclude(group = "com.google.cloud.opentelemetry", module = "exporter-metrics")
-    }
     implementation("com.google.apis:google-api-services-calendar:v3-rev20250404-2.0.0")
     implementation("com.google.apis:google-api-services-oauth2:v2-rev20200213-2.0.0")
     implementation("com.google.api-client:google-api-client:2.6.0") {

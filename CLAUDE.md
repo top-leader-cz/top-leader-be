@@ -6,12 +6,57 @@ This file provides guidance to Claude Code (claude.ai/claude-code) when working 
 
 TopLeader is a Spring Boot backend application for a coaching/mentoring platform. It connects coaches with users (coachees), manages scheduling, feedback, and credits.
 
+## Agent Usage Preferences
+
+**IMPORTANT:** Always use specialized agents for tasks that match their capabilities. Default to running agents in background when possible.
+
+### Automatic Agent Selection Rules
+
+- **Code Exploration** - ALWAYS use **Explore agent** for:
+  - Questions starting with: "find", "where is", "how does", "show me", "search for"
+  - Analyzing codebase structure or patterns
+  - Understanding how features work
+  - Example: "find all REST endpoints", "how does authentication work?"
+
+- **Implementation Tasks** - ALWAYS use **Plan agent first**, then implement:
+  - Adding new features or functionality
+  - Refactoring existing code
+  - Architectural changes
+  - Example: "implement user logout", "add new API endpoint"
+
+- **Complex Analysis** - Use **general-purpose agent** for:
+  - Multi-step research and analysis tasks
+  - Native image readiness analysis
+  - Dependency analysis
+  - Performance optimization analysis
+
+### Background Execution
+
+**Run agents in background (`run_in_background: true`) when:**
+- User indicates they have another question ("mám další otázku", "meanwhile", "in the background")
+- User explicitly mentions "agent" or "na pozadí" at end of request
+- Task is exploratory/analytical and doesn't block user's next question
+- Analysis will take multiple steps but user doesn't need immediate results
+
+**Example triggers for background execution:**
+- "analyzuj XYZ, mám další otázku"
+- "najdi všechny XYZ agent"
+- "prozkoumej XYZ na pozadí"
+
+### Agent Keywords (Czech/English)
+
+| Czech Keywords | English Keywords | Agent Type |
+|----------------|------------------|------------|
+| najdi, kde je, jak funguje | find, where is, how does | Explore |
+| implementuj, přidej, refaktoruj | implement, add, refactor | Plan |
+| analyzuj, prozkoumej, vyhodnoť | analyze, explore, evaluate | General-purpose |
+| na pozadí, agent | in background, agent | run_in_background=true |
+
 ## Tech Stack
 
 - **Java 25** with Spring Boot 4.0.1
 - **PostgreSQL** with Flyway migrations
-- **Spring Data JDBC** (migrating from JPA/Hibernate)
-- **Spring Data JPA** (Hibernate 7.x) - legacy entities being migrated
+- **Spring Data JDBC** (fully migrated from Hibernate/JPA for native image compatibility)
 - **Spring Security** (form login + session-based auth)
 - **Lombok** for boilerplate reduction
 - **Gradle 9.2.1** build system (Kotlin DSL)
@@ -76,19 +121,14 @@ src/main/java/com/topleader/topleader/
 
 ## Key Patterns
 
-### Entity Pattern (JDBC - New Standard)
+### Entity Pattern (JDBC)
 - Use `@Table(name = "table_name")` with Lombok (`@Data`, `@Accessors(chain = true)`)
 - Use Spring Data annotations: `@Id`, `@Transient`
 - For entities with manual ID control, implement `Persistable<ID>`
 - Store enums as VARCHAR strings, JSON data as JSONB
 - Use custom converters in `JdbcConfiguration` for complex types
 
-### Entity Pattern (JPA - Legacy, Being Migrated)
-- Use `@Entity` with Lombok (`@Data`, `@Accessors(chain = true)`)
-- ID generation: `GenerationType.SEQUENCE` for Long, `GenerationType.UUID` for UUID
-- Audit fields: `createdAt`, `createdBy`, `updatedAt`, `updatedBy` with `@PrePersist`/`@PreUpdate`
-
-### Repository Pattern (JDBC - New Standard)
+### Repository Pattern (JDBC)
 - Extend `ListCrudRepository<T, ID>` for basic CRUD only
 - Add `PagingAndSortingRepository<T, ID>` only when pagination is actually needed
 - **Prefer `@Query` over derived query methods** - avoids need for converters and gives full SQL control
@@ -159,10 +199,6 @@ var total = repository.countFiltered(name);
 return new PageImpl<>(content, pageable, total);
 ```
 
-### Repository Pattern (JPA - Legacy)
-- Extend `JpaRepository<T, ID>`
-- Add `JpaSpecificationExecutor<T>` for complex queries
-
 ### Transaction Management
 - **AVOID `@Transactional` in most cases** - Spring Data JDBC handles transactions automatically per operation
 - **Only use `@Transactional` when something fails** and you need:
@@ -211,18 +247,26 @@ All exception classes are in `common/exception/`:
 - `ErrorController` - global exception handler (@ControllerAdvice)
 - `JsonConversionException` - JSON parsing/serialization errors
 
-## JPA to JDBC Migration Guide
+## JDBC Migration - Completed ✅
 
 ### Why Spring Data JDBC?
-This project uses **Spring Data JDBC** instead of jOOQ to avoid:
-- Additional DSL complexity
-- Code generation overhead
-- Extra dependencies and build steps
+This project has **fully migrated from Hibernate/JPA to Spring Data JDBC** for native image compatibility.
 
-Spring Data JDBC provides a simpler, more lightweight alternative to JPA while maintaining type safety and native SQL support.
+**Reasons for choosing Spring Data JDBC over jOOQ:**
+- Simpler than jOOQ - no DSL complexity
+- No code generation overhead
+- Fewer dependencies and build steps
+- Better Spring Boot integration
 
-### Migrated Modules (JDBC)
-The following modules have been fully migrated to Spring Data JDBC:
+**Benefits over Hibernate/JPA:**
+- Minimal reflection usage (native image ready)
+- No lazy loading proxies or runtime bytecode generation
+- Direct row-to-object mapping
+- Full SQL control with `@Query`
+- Smaller native image footprint
+
+### Migration Status
+**ALL modules fully migrated** to Spring Data JDBC:
 - **message** - User messaging system (Message, UserChat, LastMessage)
 - **myteam** - Team management views (MyTeamView)
 - **session** - All session-related entities:

@@ -33,7 +33,6 @@ import java.time.Duration;
 public class CustomBeansConfig {
 
     @Bean
-    @Lazy
     public LocalValidatorFactoryBean validator() {
         return new LocalValidatorFactoryBean();
     }
