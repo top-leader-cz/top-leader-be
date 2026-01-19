@@ -89,7 +89,19 @@ public class NativeImageConfiguration {
                     MemberCategory.INVOKE_DECLARED_METHODS);
 
             hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.apache.logging.log4j.layout.template.json.JsonTemplateLayout",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS,
+                    MemberCategory.INVOKE_PUBLIC_METHODS);
+
+            hints.reflection().registerTypeIfPresent(classLoader,
                     "org.apache.logging.log4j.core.config.plugins.convert.TypeConverterRegistry",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS);
+
+            // Jetty security handler
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.eclipse.jetty.ee11.servlet.security.ConstraintSecurityHandler",
                     MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
                     MemberCategory.INVOKE_DECLARED_METHODS);
         }

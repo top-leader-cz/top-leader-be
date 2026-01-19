@@ -27,6 +27,13 @@
             </Root>
         </SpringProfile>
 
+        <!-- Native image doesn't support JsonTemplateLayout well -->
+        <SpringProfile name="native">
+            <Root level="INFO">
+                <AppenderRef ref="CONSOLE"/>
+            </Root>
+        </SpringProfile>
+
         <Logger name="org.springframework.web" level="INFO"/>
     </Loggers>
 </Configuration>
