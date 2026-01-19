@@ -91,6 +91,7 @@ public class MessageService {
             .collect(toMap(UnreadMessagesCount::userfrom, UnreadMessagesCount::unread));
 
         return allChats.entrySet().stream()
+            .filter(e -> lastMessages.containsKey(e.getValue())) // Only chats with messages
             .map(e -> new ChatInfoDto(
                 e.getKey(),
                 unreadCountMap.getOrDefault(e.getKey(), 0L),

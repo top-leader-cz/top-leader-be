@@ -87,8 +87,13 @@ public class FeedbackController {
         var formQuestions = FeedbackFormRequest.toQuestions(request.getQuestions(), form.getId());
         feedbackFormQuestionRepository.saveAll(formQuestions);
 
-        var recipients = FeedbackFormRequest.toRecipients(request.getRecipients(), form.getId());
-        recipientRepository.saveAll(recipients);
+        // Only save new recipients (those without IDs)
+        var newRecipients = FeedbackFormRequest.toRecipients(
+                request.getRecipients().stream()
+                        .filter(r -> r.id() == null)
+                        .toList(),
+                form.getId());
+        recipientRepository.saveAll(newRecipients);
 
         return form;
     }
