@@ -29,4 +29,7 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
      @Query("INSERT INTO user_coach_rates (username, rate_name) VALUES (:username, :rateName)")
      void insertAllowedCoachRate(String username, String rateName);
 
+     @Query("SELECT * FROM users WHERE username = :usernames OR email = :username")
+     Optional<User> findByUsernameOrEmail(String username);
+
 }

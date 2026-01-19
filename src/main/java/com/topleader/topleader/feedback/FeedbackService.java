@@ -166,15 +166,11 @@ public class FeedbackService {
                     var body = velocityService.getMessage(new HashMap<>(params), parseTemplateName(data.getLocale()));
                     var subject = String.format(subjects.getOrDefault(data.getLocale(), defaultLocale), data.getFirstName(), data.getLastName());
 
-                    var existingByUsername = userRepository.findByUsername(r.recipient());
-                    var existingByEmail = userRepository.findByEmail(r.recipient());
-
-                    if (existingByUsername.isEmpty() && existingByEmail.isEmpty()) {
-                        var newUser = UserUtils.fromEmail(r.recipient())
+                    userRepository.findByUsernameOrEmail(r.recipient()).ifPresent(u ->
+                        userRepository.save(UserUtils.fromEmail(u.getEmail())
                                 .setAuthorities(Set.of(User.Authority.RESPONDENT))
-                                .setStatus(User.Status.REQUESTED);
-                        userRepository.save(newUser);
-                    }
+                                .setStatus(User.Status.REQUESTED))
+                    );
 
                     emailService.sendEmail(r.recipient(), subject, body);
                 });

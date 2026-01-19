@@ -169,6 +169,7 @@ public class FeedbackController {
                 .setFirstName(user.getFirstName())
                 .setLastName(user.getLastName())
                 .setRecipients(formRecipients.stream()
+                        .filter(r -> byUsername.containsKey(r.getRecipient())) // Only recipients in request
                         .map(r -> new FeedbackData.Recipient(byUsername.get(r.getRecipient()).id(), r.getRecipient(), r.getToken()))
                         .collect(Collectors.toList()));
     }
