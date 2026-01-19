@@ -152,7 +152,16 @@ tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") 
     )
 }
 
-// Test AOT uses TestContainers with PostgreSQL - filter out H2 from classpath
+// Test AOT needs H2 for AOT processing (TestContainers dynamic properties don't work during AOT)
 tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
-    classpath = classpath.filter { !it.name.startsWith("h2-") }
+    jvmArgs(
+        "-Dspring.datasource.url=jdbc:h2:mem:testaot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "-Dspring.datasource.username=sa",
+        "-Dspring.datasource.password=",
+        "-Dspring.datasource.driver-class-name=org.h2.Driver",
+        "-Dspring.flyway.enabled=false",
+        "-Dspring.ai.openai.api-key=dummy-key",
+        "-Dspring.test.database.replace=NONE"
+    )
 }
+

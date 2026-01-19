@@ -36,6 +36,27 @@ public class NativeImageConfiguration {
             // Log4j2 TypeConverters - needed for native image
             registerLog4j2Classes(hints, classLoader);
 
+            // Swagger UI / SpringDoc for native image
+            hints.resources().registerPattern("META-INF/resources/webjars/swagger-ui/**");
+            hints.resources().registerPattern("org/springdoc/**");
+
+            // SpringDoc classes
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springdoc.webmvc.api.OpenApiWebMvcResource",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS,
+                    MemberCategory.INVOKE_PUBLIC_METHODS);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springdoc.webmvc.ui.SwaggerWelcomeWebMvc",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS,
+                    MemberCategory.INVOKE_PUBLIC_METHODS);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springdoc.webmvc.ui.SwaggerConfigResource",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS,
+                    MemberCategory.INVOKE_PUBLIC_METHODS);
+
             // JSON polymorphic types - NotificationContext hierarchy
             registerForJsonSerialization(hints, NotificationContext.class);
             registerForJsonSerialization(hints, MessageNotificationContext.class);
