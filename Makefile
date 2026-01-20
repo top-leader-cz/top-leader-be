@@ -1,5 +1,5 @@
 # Google Cloud commands
-.PHONY: login logs-qa logs-prod openapi build deploy-qa deploy-prod run local-login local-whoami local-google-auth local-api local-health local-create-user
+.PHONY: login logs-qa logs-prod openapi build native deploy-qa deploy-prod run local-login local-whoami local-google-auth local-api local-health local-create-user
 
 # Login to Google Cloud and set project
 login:
@@ -25,6 +25,10 @@ openapi:
 # Build application locally
 build:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle build --parallel --build-cache
+
+# Build native image with GraalVM (quick mode ~2-3 min)
+native:
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25.0.1-graalce $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache
 
 # Deploy to QA (local build + GitHub Actions verification)
 deploy-qa: build
