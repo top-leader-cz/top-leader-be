@@ -1,0 +1,36 @@
+{
+  "id": 1,
+  "title": "update-from",
+  "description": "test duplicate recipient",
+  "username": "jakub.svezi@dummy.com",
+  "validTo": "2023-12-13T00:00:00",
+  "questions": [
+    {
+      "key": "question.key.1",
+      "type": "SCALE",
+      "required": true
+    },
+    {
+      "key": "question.key.2",
+      "type": "PARAGRAPH",
+      "required": false
+    }
+  ],
+  "recipients": [
+    {
+      "id": 1,
+      "username": "pepa@cerny.cz",
+      "submitted": false
+    },
+    {
+      "id": 2,
+      "username": "ilja@bily.cz",
+      "submitted": false
+    },
+    {
+      "username": "pepa@cerny.cz"
+    }
+  ],
+  "locale": "en",
+  "draft": true
+}
