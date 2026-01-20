@@ -146,7 +146,7 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(session.getUsername(), is("user"));
         assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findById("user").orElseThrow();
+        final var user = userRepository.findByUsername("user").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(110));
         assertThat(user.getCredit(), is(400));
@@ -207,7 +207,7 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(session.getUsername(), is("user"));
         assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findById("user").orElseThrow();
+        final var user = userRepository.findByUsername("user").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(110));
         assertThat(user.getCredit(), is(400));
@@ -278,7 +278,7 @@ class CoachListControllerIT extends IntegrationTest {
 
         assertThat(sessions, hasSize(0));
 
-        final var user = userRepository.findById("no-credit-user").orElseThrow();
+        final var user = userRepository.findByUsername("no-credit-user").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(400));
         assertThat(user.getCredit(), is(400));
@@ -326,7 +326,7 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(session.getUsername(), is("no-credit-user-free-coach"));
         assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findById("no-credit-user-free-coach").orElseThrow();
+        final var user = userRepository.findByUsername("no-credit-user-free-coach").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(400));
         assertThat(user.getCredit(), is(400));

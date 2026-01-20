@@ -4,45 +4,33 @@
 package com.topleader.topleader.admin;
 
 import com.topleader.topleader.coach.Coach;
-import com.topleader.topleader.user.RoleConverter;
 import com.topleader.topleader.user.User;
-import jakarta.persistence.*;
-
-import java.security.cert.Certificate;
-import java.util.Set;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.Data;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
+import java.util.Set;
 
 
-/**
- * @author Daniel Slavik
- */
-@Getter
-@Setter
-@ToString
-@Entity
+@Data
 @Accessors(chain = true)
-@NoArgsConstructor
+@Table("admin_view")
 public class AdminView {
 
     @Id
+    private Long id;
+
     private String username;
 
     private String firstName;
 
     private String lastName;
 
-    @Convert(converter = RoleConverter.class)
     private Set<User.Authority> authorities;
 
     private String timeZone;
 
-    @Enumerated(EnumType.STRING)
     private User.Status status;
 
     private Long companyId;
@@ -77,13 +65,9 @@ public class AdminView {
 
     private String rate;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
     private Set<String> certificate;
 
     private Integer internalRate;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
     private Set<Coach.PrimaryRole> primaryRoles;
 }

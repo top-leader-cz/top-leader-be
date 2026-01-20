@@ -4,7 +4,6 @@ import com.topleader.topleader.feedback.entity.FeedbackForm;
 import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
 import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
-import com.topleader.topleader.user.User;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
@@ -12,7 +11,6 @@ import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -46,39 +44,13 @@ public class FeedbackFormRequest {
     private boolean draft;
 
     public static FeedbackForm toForm(FeedbackFormRequest request) {
-        var feedbackForm = new FeedbackForm()
-                .setId(request.getId())
+        return new FeedbackForm()
                 .setTitle(request.getTitle())
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)))
+                .setUsername(request.getUsername().toLowerCase(Locale.ROOT))
                 .setDraft(request.isDraft());
-
-        var feedbackFormQuestion = request.getQuestions().stream()
-                .map(q -> {
-                    var question = new Question().setKey(q.key());
-                    return new FeedbackFormQuestion()
-                            .setId(new FeedbackFormQuestion.FeedbackFormQuestionId(request.getId(), q.key()))
-                            .setType(q.type())
-                            .setRequired(q.required())
-                            .setQuestion(question)
-                            .setForm(new FeedbackForm().setId(feedbackForm.getId()));
-                })
-                .collect(Collectors.toList());
-        feedbackForm.setQuestions(feedbackFormQuestion);
-
-        var recipients = request.getRecipients().stream()
-                .map(r -> new Recipient().setId(r.id())
-                        .setForm(feedbackForm)
-                        .setToken(CommonUtils.generateToken())
-                        .setRecipient(r.username())
-                        .setSubmitted(r.submitted())
-                        .setForm(new FeedbackForm().setId(feedbackForm.getId())))
-                .collect(Collectors.toList());
-        feedbackForm.setRecipients(recipients);
-
-        return feedbackForm;
     }
 
     public static FeedbackForm toSimpleForm(FeedbackFormRequest request) {
@@ -88,31 +60,28 @@ public class FeedbackFormRequest {
                 .setDescription(request.getDescription())
                 .setValidTo(request.getValidTo())
                 .setCreatedAt(LocalDateTime.now())
-                .setUser(new User().setUsername(request.getUsername().toLowerCase(Locale.ROOT)))
+                .setUsername(request.getUsername().toLowerCase(Locale.ROOT))
                 .setDraft(request.isDraft());
     }
 
-    public static List<FeedbackFormQuestion> toQuestions(List<QuestionDto> questions, FeedbackForm feedbackForm) {
+    public static List<FeedbackFormQuestion> toQuestions(List<QuestionDto> questions, long feedbackFormId) {
         return questions.stream()
-                .map(q -> {
-                    var question = new Question().setKey(q.key());
-                    return new FeedbackFormQuestion()
-                            .setId(new FeedbackFormQuestion.FeedbackFormQuestionId(feedbackForm.getId(), q.key()))
-                            .setType(q.type())
-                            .setRequired(q.required())
-                            .setQuestion(question)
-                            .setForm(new FeedbackForm().setId(feedbackForm.getId()));
-                })
+                .map(q -> new FeedbackFormQuestion()
+                        .setFeedbackFormId(feedbackFormId)
+                        .setQuestionKey(q.key())
+                        .setType(q.type())
+                        .setRequired(q.required()))
                 .collect(Collectors.toList());
     }
 
-    public static List<Recipient> toRecipients(List<RecipientDto> recipients, FeedbackForm feedbackForm) {
+    public static List<Recipient> toRecipients(List<RecipientDto> recipients, long feedbackFormId) {
         return recipients.stream()
-                .map(r -> new Recipient().setId(r.id())
-                        .setToken(CommonUtils.generateToken())
+                .map(r -> new Recipient()
+                        .setId(r.id())
+                        .setFormId(feedbackFormId)
+                        .setToken(r.id() != null ? null : CommonUtils.generateToken())
                         .setRecipient(r.username())
-                        .setSubmitted(r.submitted())
-                        .setForm(new FeedbackForm().setId(feedbackForm.getId())))
+                        .setSubmitted(r.submitted()))
                 .collect(Collectors.toList());
     }
 }

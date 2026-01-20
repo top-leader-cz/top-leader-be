@@ -118,7 +118,7 @@ class CoachClientControllerIT extends IntegrationTest {
             .andExpect(status().isOk())
             ;
 
-        assertThat(userRepository.findById("client1").orElseThrow().getCoach(), nullValue());
+        assertThat(userRepository.findByUsername("client1").orElseThrow().getCoach(), nullValue());
 
         final var notifications = notificationRepository.findAll();
 
@@ -162,7 +162,7 @@ class CoachClientControllerIT extends IntegrationTest {
                 """))
         ;
 
-        final var user = userRepository.findById("user4@gmail.com").orElseThrow();
+        final var user = userRepository.findByUsername("user4@gmail.com").orElseThrow();
 
         assertThat(user.getCoach(), is("coach"));
         assertThat(user.getFreeCoach(), is("coach"));
@@ -199,7 +199,7 @@ class CoachClientControllerIT extends IntegrationTest {
                 """))
         ;
 
-        final var user = userRepository.findById("user4@gmail.com").orElseThrow();
+        final var user = userRepository.findByUsername("user4@gmail.com").orElseThrow();
 
         assertThat(user.getCoach(), is("coach"));
         assertThat(user.getFreeCoach(), is("coach"));

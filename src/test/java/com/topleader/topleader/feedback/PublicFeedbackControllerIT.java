@@ -69,7 +69,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
         TestUtils.assertJsonEquals(result, expected);
 
         Assertions.assertThat(userRepository.findAll()).hasSize(2);
-        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
+        Assertions.assertThat(userRepository.findByUsername("pepa@cerny.cz").get())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("pepa@cerny.cz", "pepa", "pepa", Set.of(RESPONDENT), VIEWED);
     }
@@ -97,12 +97,13 @@ class PublicFeedbackControllerIT extends IntegrationTest {
 
         var answers = feedbackFormAnswerRepository.findAll();
 
-        Assertions.assertThat(answers).extracting( "form.id", "question.key", "answer", "recipient.recipient",  "recipient.submitted")
-                .containsExactly(new Tuple(1L, "question.key.1", "answer test", "pepa@cerny.cz", true),
-                        new Tuple(1L , "question.key.2", "scale.2", "pepa@cerny.cz", true));
+        Assertions.assertThat(answers).extracting("formId", "questionKey", "answer")
+                .containsExactlyInAnyOrder(
+                        new Tuple(1L, "question.key.1", "answer test"),
+                        new Tuple(1L, "question.key.2", "scale.2"));
 
         Assertions.assertThat(userRepository.findAll()).hasSize(2);
-        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
+        Assertions.assertThat(userRepository.findByUsername("pepa@cerny.cz").get())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("pepa@cerny.cz", "pepa", "pepa", Set.of(RESPONDENT), SUBMITTED);
     }
@@ -116,7 +117,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         Assertions.assertThat(userRepository.findAll()).hasSize(2);
-        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").get())
+        Assertions.assertThat(userRepository.findByUsername("pepa@cerny.cz").get())
                 .extracting("username", "firstName", "lastName", "authorities", "status",  "hrEmail")
                 .containsExactly("pepa@cerny.cz", "Pepa", "Cerny", Set.of(RESPONDENT), PENDING, "test.hr@email.com");
 

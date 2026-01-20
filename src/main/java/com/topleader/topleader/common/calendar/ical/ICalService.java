@@ -1,45 +1,31 @@
-/*
- * Copyright (c) 2024 Price f(x), s.r.o.
- */
 package com.topleader.topleader.common.calendar.ical;
 
-import java.net.URI;
+import com.topleader.topleader.common.email.TemplateService;
 import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Map;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import net.fortuna.ical4j.model.Parameter;
-import net.fortuna.ical4j.model.TimeZoneRegistryFactory;
-import net.fortuna.ical4j.model.parameter.CuType;
-import net.fortuna.ical4j.model.parameter.PartStat;
-import net.fortuna.ical4j.model.parameter.Rsvp;
-import net.fortuna.ical4j.model.property.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import net.fortuna.ical4j.model.Calendar;
-import net.fortuna.ical4j.model.Property;
-import net.fortuna.ical4j.model.component.CalendarComponent;
-import net.fortuna.ical4j.model.component.VEvent;
-import net.fortuna.ical4j.model.parameter.Cn;
-import net.fortuna.ical4j.model.parameter.Role;
-
-
-/**
- * @author Daniel Slavik
- */
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class ICalService {
+
+    private static final DateTimeFormatter ICAL_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss'Z'");
+    private static final String METHOD_REQUEST = "REQUEST";
+    private static final String METHOD_CANCEL = "CANCEL";
+    private static final String EVENT_TEMPLATE = "templates/ical/event.ics";
+    private static final String PRIVATE_EVENT_TEMPLATE = "templates/ical/private-event.ics";
+
+    private final TemplateService templateService;
 
     @Value("${top-leader.default-from}")
     private String defaultFrom;
 
-    private static final String MAILTO = "mailto:";
-
-    public Calendar createCalendarEvent(
+    public ICalEvent createCalendarEvent(
         LocalDateTime start,
         LocalDateTime end,
         String coach,
@@ -49,12 +35,12 @@ public class ICalService {
         String eventName,
         String eventId
     ) {
-        final var calendar = baseCalendarEvent(start, end, coach, coachName, client, clientName, eventName, eventId, Method.VALUE_REQUEST);
-        log.debug(calendar.toString());
-        return calendar;
+        var event = buildCalendarEvent(start, end, coach, coachName, client, clientName, eventName, eventId, METHOD_REQUEST);
+        log.debug(event.toString());
+        return event;
     }
 
-    public Calendar cancelCalendarEvent(
+    public ICalEvent cancelCalendarEvent(
         LocalDateTime start,
         LocalDateTime end,
         String coach,
@@ -64,10 +50,34 @@ public class ICalService {
         String eventName,
         String eventId
     ) {
-        return baseCalendarEvent(start, end, coach, coachName, client, clientName, eventName, eventId, Method.VALUE_CANCEL);
+        return buildCalendarEvent(start, end, coach, coachName, client, clientName, eventName, eventId, METHOD_CANCEL);
     }
 
-    public Calendar baseCalendarEvent(
+    public ICalEvent createCalendarPrivateEvent(
+        LocalDateTime start,
+        LocalDateTime end,
+        String client,
+        String clientName,
+        String eventName,
+        String eventId
+    ) {
+        var event = buildPrivateCalendarEvent(start, end, client, clientName, eventName, eventId, METHOD_REQUEST);
+        log.debug(event.toString());
+        return event;
+    }
+
+    public ICalEvent cancelCalendarPrivateEvent(
+        LocalDateTime start,
+        LocalDateTime end,
+        String client,
+        String clientName,
+        String eventName,
+        String eventId
+    ) {
+        return buildPrivateCalendarEvent(start, end, client, clientName, eventName, eventId, METHOD_CANCEL);
+    }
+
+    private ICalEvent buildCalendarEvent(
         LocalDateTime start,
         LocalDateTime end,
         String coach,
@@ -78,78 +88,23 @@ public class ICalService {
         String eventId,
         String method
     ) {
-
-        // Create a TimeZone
-        final var registry = TimeZoneRegistryFactory.getInstance().createRegistry();
-        final var timezone = registry.getTimeZone("UTC");
-        final var tz = timezone.getVTimeZone();
-
-        return new Calendar().withProdId("-//Ben Fortuna//iCal4j 1.0//EN")
-            .withDefaults()
-            .withProperty(new Method(method))
-            .withComponent((CalendarComponent)
-                new VEvent(ZonedDateTime.of(start, ZoneOffset.UTC), ZonedDateTime.of(end, ZoneOffset.UTC), eventName)
-                    .withProperty(tz.getProperty(Property.TZID).orElseThrow())
-                    .withProperty(new Uid(eventId))
-                    .withProperty(
-                        new Organizer(URI.create(MAILTO + defaultFrom))
-                            .withParameter(new Cn(defaultFrom))
-                            .getFluentTarget())
-                    .withProperty(
-                        new Attendee(URI.create(MAILTO + coach))
-                            .withParameter(Role.REQ_PARTICIPANT)
-                            .withParameter(new Cn(coachName))
-                            .withParameter(new CuType(CuType.INDIVIDUAL.getValue()))
-                            .withParameter(new Role(Role.REQ_PARTICIPANT.getValue()))
-                            .withParameter(new PartStat(PartStat.NEEDS_ACTION.getValue()))
-                            .withParameter(new Rsvp(true))
-                            .withParameter(new XNoGuestsParameter())
-                            .getFluentTarget())
-                    .withProperty(
-                        new Attendee(URI.create(MAILTO + client))
-                            .withParameter(Role.REQ_PARTICIPANT)
-                            .withParameter(new Cn(clientName))
-                            .withParameter(new CuType(CuType.INDIVIDUAL.getValue()))
-                            .withParameter(new Role(Role.REQ_PARTICIPANT.getValue()))
-                            .withParameter(new PartStat(PartStat.NEEDS_ACTION.getValue()))
-                            .withParameter(new Rsvp(true))
-                            .withParameter(new XNoGuestsParameter())
-                            .getFluentTarget())
-                    .withProperty(new Description(eventName))
-                    .withProperty(new Priority(Priority.VALUE_MEDIUM))
-                    .withProperty(new Clazz(Clazz.VALUE_PUBLIC))
-                    .withProperty(new Status(Status.VALUE_CONFIRMED))
-                    .withProperty(new Sequence(0))
-                    .withProperty(new Transp(Transp.VALUE_OPAQUE))
-                    .getFluentTarget())
-            .getFluentTarget();
+        var params = Map.<String, Object>of(
+            "method", method,
+            "startDate", start.format(ICAL_DATE_FORMAT),
+            "endDate", end.format(ICAL_DATE_FORMAT),
+            "eventId", eventId,
+            "eventName", escapeText(eventName),
+            "organizer", defaultFrom,
+            "coach", coach,
+            "coachName", escapeText(coachName),
+            "client", client,
+            "clientName", escapeText(clientName)
+        );
+        var content = templateService.getMessage(params, EVENT_TEMPLATE);
+        return new ICalEvent(content);
     }
 
-    public Calendar createCalendarPrivateEvent(
-        LocalDateTime start,
-        LocalDateTime end,
-        String client,
-        String clientName,
-        String eventName,
-        String eventId
-    ) {
-        final var calendar = baseCalendarPrivateSessionEvent(start, end, client, clientName, eventName, eventId, Method.VALUE_REQUEST);
-        log.debug(calendar.toString());
-        return calendar;
-    }
-
-    public Calendar cancelCalendarPrivateEvent(
-        LocalDateTime start,
-        LocalDateTime end,
-        String client,
-        String clientName,
-        String eventName,
-        String eventId
-    ) {
-        return baseCalendarPrivateSessionEvent(start, end, client, clientName, eventName, eventId, Method.VALUE_CANCEL);
-    }
-
-    public Calendar baseCalendarPrivateSessionEvent(
+    private ICalEvent buildPrivateCalendarEvent(
         LocalDateTime start,
         LocalDateTime end,
         String client,
@@ -158,51 +113,28 @@ public class ICalService {
         String eventId,
         String method
     ) {
-
-        // Create a TimeZone
-        final var registry = TimeZoneRegistryFactory.getInstance().createRegistry();
-        final var timezone = registry.getTimeZone("UTC");
-        final var tz = timezone.getVTimeZone();
-
-        return new Calendar().withProdId("-//Ben Fortuna//iCal4j 1.0//EN")
-            .withDefaults()
-            .withProperty(new Method(method))
-            .withComponent((CalendarComponent)
-                new VEvent(ZonedDateTime.of(start, ZoneOffset.UTC), ZonedDateTime.of(end, ZoneOffset.UTC), eventName)
-                    .withProperty(tz.getProperty(Property.TZID).orElseThrow())
-                    .withProperty(new Uid(eventId))
-                    .withProperty(
-                        new Organizer(URI.create(MAILTO + defaultFrom))
-                            .withParameter(new Cn(defaultFrom))
-                            .getFluentTarget())
-                    .withProperty(
-                        new Attendee(URI.create(MAILTO + client))
-                            .withParameter(Role.REQ_PARTICIPANT)
-                            .withParameter(new Cn(clientName))
-                            .withParameter(new CuType(CuType.INDIVIDUAL.getValue()))
-                            .withParameter(new Role(Role.REQ_PARTICIPANT.getValue()))
-                            .withParameter(new PartStat(PartStat.NEEDS_ACTION.getValue()))
-                            .withParameter(new Rsvp(true))
-                            .withParameter(new XNoGuestsParameter())
-                            .getFluentTarget())
-                    .withProperty(new Description(eventName))
-                    .withProperty(new Priority(Priority.VALUE_MEDIUM))
-                    .withProperty(new Clazz(Clazz.VALUE_PUBLIC))
-                    .withProperty(new Status(Status.VALUE_CONFIRMED))
-                    .withProperty(new Sequence(0))
-                    .withProperty(new Transp(Transp.VALUE_OPAQUE))
-                    .getFluentTarget())
-            .getFluentTarget();
+        var params = Map.<String, Object>of(
+            "method", method,
+            "startDate", start.format(ICAL_DATE_FORMAT),
+            "endDate", end.format(ICAL_DATE_FORMAT),
+            "eventId", eventId,
+            "eventName", escapeText(eventName),
+            "organizer", defaultFrom,
+            "client", client,
+            "clientName", escapeText(clientName)
+        );
+        var content = templateService.getMessage(params, PRIVATE_EVENT_TEMPLATE);
+        return new ICalEvent(content);
     }
 
-    public static class XNoGuestsParameter extends Parameter {
-        public XNoGuestsParameter() {
-            super("X-NUM-GUESTS");
+    private String escapeText(String text) {
+        if (text == null) {
+            return "";
         }
-
-        @Override
-        public String getValue() {
-            return "0";
-        }
+        return text
+            .replace("\\", "\\\\")
+            .replace(",", "\\,")
+            .replace(";", "\\;")
+            .replace("\n", "\\n");
     }
 }

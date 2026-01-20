@@ -12,8 +12,13 @@ create sequence if not exists message_id_seq;
 create sequence if not exists notification_id_seq;
 create sequence if not exists company_id_seq;
 create sequence if not exists scheduled_session_id_seq;
+create sequence if not exists token_id_seq;
+create sequence if not exists feedback_form_id_seq;
+create sequence if not exists fb_recipient_id_seq;
 create sequence if not exists credit_history_seq;
 create sequence if not exists sync_event_id_seq;
+create sequence if not exists feedback_notification_id_seq;
+create sequence if not exists article_id_seq;
 create sequence if not exists coaching_package_id_seq;
 create sequence if not exists user_allocation_id_seq;
 
@@ -74,7 +79,7 @@ create table if not exists user_info
 
 create table if not exists data_history
 (
-    id         bigint not null primary key,
+    id         bigint not null primary key default nextval('data_history_seq'),
     created_at timestamp(6),
     data       text,
     type       varchar(255),
@@ -124,7 +129,7 @@ create table if not exists coach_languages
 
 create table if not exists coach_availability
 (
-    id             bigint not null primary key,
+    id             bigint not null primary key default nextval('coach_availability_seq'),
     recurring      boolean,
     time_from      time(6),
     time_to        time(6),
@@ -145,7 +150,7 @@ create table if not exists user_assessment
 
 create table if not exists user_action_step
 (
-    id       bigint not null primary key,
+    id       bigint not null primary key default nextval('user_action_step_seq'),
     checked  boolean,
     date     date,
     label    varchar(255),
@@ -154,7 +159,7 @@ create table if not exists user_action_step
 
 create table if not exists user_chat
 (
-    chat_id bigint not null primary key,
+    chat_id bigint not null primary key default nextval('chat_id_seq'),
     user1   varchar(255),
     user2   varchar(255),
     constraint ukhbn1s0q7a8m9nybsrcna43pqb unique (user1, user2)
@@ -162,7 +167,7 @@ create table if not exists user_chat
 
 create table if not exists user_message
 (
-    id           bigint not null primary key,
+    id           bigint not null primary key default nextval('message_id_seq'),
     created_at   timestamp(6),
     displayed    boolean,
     message_data varchar(3100),
@@ -180,7 +185,7 @@ create table if not exists last_message
 
 create table if not exists notification
 (
-    id         bigint       not null primary key,
+    id         bigint       not null primary key default nextval('notification_id_seq'),
     context    text,
     created_at timestamp(6),
     read       boolean      not null,
@@ -198,14 +203,14 @@ create table if not exists coach_image
 
 create table if not exists company
 (
-    id                bigint       not null primary key,
+    id                bigint       not null primary key default nextval('company_id_seq'),
     name              varchar(255) not null,
     business_strategy text
 );
 
 create table if not exists scheduled_session
 (
-    id             bigint                                            not null primary key,
+    id             bigint                                            not null primary key default nextval('scheduled_session_id_seq'),
     username       varchar(255)                                      not null,
     coach_username varchar(255),
     time           timestamp,
@@ -294,7 +299,7 @@ create index if not exists feedback_form_answer_recipient_idx on feedback_form_a
 
 create table if not exists credit_history
 (
-    id       bigint not null primary key,
+    id       bigint not null primary key default nextval('credit_history_seq'),
     time     timestamp,
     type     varchar(255),
     username varchar(255),
@@ -368,7 +373,7 @@ create table if not exists users_managers
 
 create table if not exists sync_event
 (
-    id          bigint       not null primary key,
+    id          bigint       not null primary key default nextval('sync_event_id_seq'),
     username    varchar(50)  not null,
     external_id varchar(255) not null,
     start_date  timestamp(6) not null,

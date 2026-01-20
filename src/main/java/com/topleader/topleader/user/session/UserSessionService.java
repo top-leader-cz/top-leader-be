@@ -27,8 +27,8 @@ import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.common.util.common.user.UserUtils;
 import com.topleader.topleader.common.util.image.ArticleImageService;
 import com.topleader.topleader.common.util.common.CommonUtils;
-import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
+import com.topleader.topleader.common.exception.NotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -42,8 +42,6 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -89,7 +87,6 @@ public class UserSessionService {
     private String thumbmail;
 
 
-    @Transactional
     public void setUserSessionReflection(String username, UserSessionReflectionController.UserSessionReflectionRequest request) {
         final var existingActionSteps = userActionStepRepository.findAllByUsername(username);
 
@@ -157,7 +154,7 @@ public class UserSessionService {
         var userInsight = userInsightService.getInsight(username);
         userInsight.setUsername(username);
         userInsight.setActionGoalsPending(true);
-        userInsightService.save(userInsight);
+        userInsight = userInsightService.save(userInsight);
 
         var actionGoals = userActionSteps.stream()
                 .filter(step -> !step.getChecked())
@@ -234,12 +231,13 @@ public class UserSessionService {
     }
 
     private boolean urlValid(String url) {
-        return CommonUtils.tryGetOrElse(
-                () -> restTemplate.getForEntity(url, String.class),
-                ResponseEntity.status(404).body("Not Found"),
-                "Failed to get url: [" + url + "]")
-                .getStatusCode()
-                .value() != INVALID_LINK;
+        try {
+            var response = restTemplate.getForEntity(url, String.class);
+            return response.getStatusCode().value() != INVALID_LINK;
+        } catch (Exception e) {
+            log.warn("Failed to get url: [{}]", url, e);
+            return false;
+        }
     }
 
     public List<UserActionStep> prepareActualActionSteps(
@@ -346,7 +344,7 @@ public class UserSessionService {
     public List<RecommendedGrowth> generateRecommendedGrowths(String username) {
         log.warn("generating recommend growth");
         var user = userDetailService.getUser(username)
-                .orElseThrow(() -> new EntityNotFoundException("User not found: " + username));
+                .orElseThrow(NotFoundException::new);
         var company = companyRepository.findById(user.getCompanyId()).orElse(Company.empty());
 
         var businessStrategy = company.getBusinessStrategy();

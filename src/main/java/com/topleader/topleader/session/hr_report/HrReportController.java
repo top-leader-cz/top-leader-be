@@ -46,7 +46,7 @@ public class HrReportController {
     }
 
     private void validateAccess(UserDetails userDetails, Long packageId) {
-        var user = userRepository.findById(userDetails.getUsername()).orElseThrow();
+        var user = userRepository.findByUsername(userDetails.getUsername()).orElseThrow();
         var pkg = coachingPackageRepository.findById(packageId).orElseThrow();
 
         var isAdmin = user.getAuthorities().contains(User.Authority.ADMIN);

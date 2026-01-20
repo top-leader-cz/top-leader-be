@@ -1,34 +1,28 @@
 package com.topleader.topleader.common.calendar.domain;
 
-import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
 @Accessors(chain = true)
-@Entity
+@Table("calendar_sync_info")
 public class CalendarSyncInfo {
 
-    @EmbeddedId
-    private CalendarInfoId id;
+    @Id
+    private Long id;
 
-    @Column(insertable = false, updatable = false)
     private String username;
 
     private String refreshToken;
 
     private String accessToken;
 
-    @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(insertable = false, updatable = false)
     private SyncType syncType;
 
     private LocalDateTime lastSync = LocalDateTime.now();
@@ -42,19 +36,5 @@ public class CalendarSyncInfo {
     public enum SyncType {
         GOOGLE, CALENDLY, CUSTOM
     }
-
-    @Data
-    @Embeddable
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class CalendarInfoId implements Serializable {
-
-        private String username;
-
-        @Enumerated(EnumType.STRING)
-        private SyncType syncType;
-
-    }
-
 }
 

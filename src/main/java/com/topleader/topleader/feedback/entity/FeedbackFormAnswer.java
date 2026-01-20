@@ -1,52 +1,25 @@
 package com.topleader.topleader.feedback.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.io.Serializable;
 
 @Data
-@Entity
-@Table
 @Accessors(chain = true)
-@EqualsAndHashCode(of = {"id"})
-@ToString(of={"id", "answer"})
+@Table("feedback_form_answer")
 public class FeedbackFormAnswer {
 
-    @EmbeddedId
-    private FeedbackFormAnswerId id;
+    @Id
+    private Long id;
 
-    @ManyToOne
-    @MapsId("formId")
-    private FeedbackForm form;
+    private Long formId;
 
-    @ManyToOne
-    @MapsId("questionKey")
-    private Question question;
+    private Long recipientId;
 
-    @ManyToOne(cascade = { CascadeType.MERGE})
-    @MapsId("recipientId")
-    private Recipient recipient;
+    private String questionKey;
 
     private String answer;
 
-
-    @Data
-    @Embeddable
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class FeedbackFormAnswerId implements Serializable {
-
-        @Column(name = "form_id")
-        private Long formId;
-
-        @Column(name = "recipient_id")
-        private Long recipientId;
-
-        @Column(name = "question_key")
-        private String questionKey;
-
-
-    }
 }

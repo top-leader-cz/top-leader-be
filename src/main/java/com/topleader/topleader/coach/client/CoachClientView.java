@@ -3,14 +3,14 @@
  */
 package com.topleader.topleader.coach.client;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -19,7 +19,7 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
+@Table("coach_client_view")
 @Accessors(chain = true)
 @NoArgsConstructor
 public class CoachClientView {

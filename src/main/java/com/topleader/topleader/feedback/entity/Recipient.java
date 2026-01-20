@@ -1,30 +1,22 @@
 package com.topleader.topleader.feedback.entity;
 
 
-import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
-import java.io.Serializable;
-import java.util.List;
 
 @Data
-@Entity
-@Table(name = "fb_recipient")
 @Accessors(chain = true)
-@EqualsAndHashCode(of = {"id", "recipient", "form"})
-@ToString(of={"id", "form", "recipient", "token", "submitted"})
+@Table("fb_recipient")
 public class Recipient {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "fb_recipient_id_seq")
-    @SequenceGenerator(name = "fb_recipient_id_seq", sequenceName = "fb_recipient_id_seq", allocationSize = 1)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    private FeedbackForm form;
+    private Long formId;
 
-    @Column(name = "recipient")
     private String recipient;
 
     private String token;

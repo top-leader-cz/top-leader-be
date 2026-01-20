@@ -10,4 +10,4 @@ INSERT INTO coach (username, public_profile,  web_link, bio, experience_since, r
 VALUES ('petr.cocah@dummy.com', true, 'http://some_video1', 'Experienced coach', '2021-01-01', '$', 90);
 
 
-insert into coach_user_note(coach_id, user_id, note) values ('petr.cocah@dummy.com', 'jakub.user2@dummy.com', 'note1')
+insert into coach_user_note(coach_username, username, note) values ('petr.cocah@dummy.com', 'jakub.user2@dummy.com', 'note1')

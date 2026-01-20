@@ -122,11 +122,11 @@ class FeedbackControllerIT extends IntegrationTest {
 
 
         Assertions.assertThat(userRepository.findAll()).hasSize(3);
-        Assertions.assertThat(userRepository.findById("pepa@cerny.cz").orElseThrow())
+        Assertions.assertThat(userRepository.findByUsername("pepa@cerny.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("pepa@cerny.cz", "pepa", "pepa", Set.of(RESPONDENT), REQUESTED);
 
-        Assertions.assertThat(userRepository.findById("ilja@bily.cz").orElseThrow())
+        Assertions.assertThat(userRepository.findByUsername("ilja@bily.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("ilja@bily.cz", "ilja", "ilja", Set.of(RESPONDENT), REQUESTED);
 
@@ -207,12 +207,12 @@ class FeedbackControllerIT extends IntegrationTest {
         Assertions.assertThat(receivedMessage.getSubject()).isEqualTo("Your Valuable Feedback Requested for Jakub Svezi Growth on TopLeader");
 
         Assertions.assertThat(userRepository.findAll()).hasSize(3);
-        Assertions.assertThat(userRepository.findById("mala@mela.cz").orElseThrow())
+        Assertions.assertThat(userRepository.findByUsername("mala@mela.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("mala@mela.cz", "mala", "mala", Set.of(RESPONDENT), REQUESTED);
         Assertions.assertThat(receivedMessage.getContent().toString()).contains("Jakub Svezi");
 
-        Assertions.assertThat(userRepository.findById("kuku@kuku.cz").orElseThrow())
+        Assertions.assertThat(userRepository.findByUsername("kuku@kuku.cz").orElseThrow())
                 .extracting("username", "lastName", "firstName", "authorities", "status")
                 .containsExactly("kuku@kuku.cz", "kuku", "kuku", Set.of(RESPONDENT), REQUESTED);
 
@@ -275,5 +275,24 @@ class FeedbackControllerIT extends IntegrationTest {
 
         Assertions.assertThat(repository.findById(1L)).isEmpty();
 
+    }
+
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @WithUserDetails("jakub.svezi@dummy.com")
+    void updateFormWithRemovedRecipients() throws Exception {
+        var result = mvc.perform(put("/api/latest/feedback/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.readFileAsString("feedback/json/update-form-removed-recipient-request.json")))
+                .andExpect(status().isOk())
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
+
+        var expected = TestUtils.readFileAsString("feedback/json/update-form-removed-recipient-response.json");
+
+        TestUtils.assertJsonEquals(result, expected);
+
+        Assertions.assertThat(greenMail.getReceivedMessages()).isEmpty();
     }
 }

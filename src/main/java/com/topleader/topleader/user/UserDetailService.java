@@ -30,7 +30,7 @@ public class UserDetailService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) {
         var sinInName = username.toLowerCase(Locale.ROOT);
         var user = userRepository.findByEmail(sinInName)
-                .or(() -> userRepository.findById(sinInName))
+                .or(() -> userRepository.findByUsername(sinInName))
             .orElseThrow(() -> new UsernameNotFoundException(username));
 
         return User.withUsername(user.getUsername())
@@ -44,11 +44,15 @@ public class UserDetailService implements UserDetailsService {
 
 
     public Optional<com.topleader.topleader.user.User> getUser(String username) {
-        return userRepository.findById(username);
+        return userRepository.findByUsername(username);
+    }
+
+    public Optional<com.topleader.topleader.user.User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
     public boolean userExist(String username) {
-        return userRepository.findById(username)
+        return userRepository.findByUsername(username)
                 .or(() -> userRepository.findByEmail(username))
                 .isPresent();
     }
@@ -60,12 +64,12 @@ public class UserDetailService implements UserDetailsService {
     }
 
     public com.topleader.topleader.user.User find(String username) {
-        return userRepository.findById(username).orElse(com.topleader.topleader.user.User.empty());
+        return userRepository.findByUsername(username).orElse(com.topleader.topleader.user.User.empty());
     }
 
     public void delete(String username) {
         log.info("Deleting user: {}", username);
-        userRepository.findById(username)
+        userRepository.findByUsername(username)
                 .map(u -> u.setStatus(com.topleader.topleader.user.User.Status.CANCELED))
                 .ifPresentOrElse(userRepository::save,
                         () -> {

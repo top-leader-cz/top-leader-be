@@ -16,7 +16,7 @@ import com.topleader.topleader.session.scheduled_session.ScheduledSessionService
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinsight.UserInsightService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -72,7 +72,7 @@ public class UserInfoController {
     @GetMapping
     public UserInfoDto getUserInfo(@AuthenticationPrincipal UserDetails user) {
 
-        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
+        final var dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow(NotFoundException::new);
         final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
 
         return UserInfoDto.from(
@@ -85,7 +85,7 @@ public class UserInfoController {
     @PostMapping("/locale")
     public UserInfoDto setLocale(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetLocaleRequestDto request) {
 
-        final var dbUser = userRepository.findById(user.getUsername())
+        final var dbUser = userRepository.findByUsername(user.getUsername())
             .map(u -> u.setLocale(request.locale()))
             .map(userRepository::save)
             .orElseThrow(NotFoundException::new);
@@ -123,7 +123,7 @@ public class UserInfoController {
             userInsightService.setUserInsight(userInfo);
         }
 
-        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
+        final var dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow(NotFoundException::new);
         final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
 
 
@@ -142,7 +142,7 @@ public class UserInfoController {
             userInsightService.setUserInsight(userInfo);
         }
 
-        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
+        final var dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow(NotFoundException::new);
         final var company = Optional.ofNullable(dbUser.getCompanyId()).flatMap(companyRepository::findById);
 
         return UserInfoDto.from(
@@ -155,7 +155,7 @@ public class UserInfoController {
     @PostMapping("/timezone")
     public UserInfoDto setValues(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetTimezoneRequestDto request) {
 
-        final var dbUser = userRepository.findById(user.getUsername())
+        final var dbUser = userRepository.findByUsername(user.getUsername())
             .map(u -> u.setTimeZone(request.timezone()))
             .map(userRepository::save)
             .orElseThrow(NotFoundException::new);
@@ -173,7 +173,7 @@ public class UserInfoController {
     @PostMapping("/coach")
     public UserInfoDto setCoach(@AuthenticationPrincipal UserDetails user, @RequestBody @Valid SetCoachRequestDto request) {
 
-        final var currentUser = userRepository.findById(user.getUsername()).orElseThrow(NotFoundException::new);
+        final var currentUser = userRepository.findByUsername(user.getUsername()).orElseThrow(NotFoundException::new);
 
         if (!Objects.equals(request.coach(), currentUser.getCoach())) {
             currentUser.setCoach(request.coach());
@@ -189,7 +189,7 @@ public class UserInfoController {
             }
         }
 
-        final var dbUser = userRepository.findById(user.getUsername())
+        final var dbUser = userRepository.findByUsername(user.getUsername())
             .map(u -> u.setCoach(request.coach()))
             .map(userRepository::save)
             .orElseThrow(NotFoundException::new);
@@ -218,7 +218,7 @@ public class UserInfoController {
             return List.of();
         }
 
-        var coaches = userRepository.findAllById(sessions.stream()
+        var coaches = userRepository.findAllByUsernameIn(sessions.stream()
                 .map(ScheduledSession::getCoachUsername)
                 .collect(Collectors.toSet())
             ).stream()
@@ -230,12 +230,11 @@ public class UserInfoController {
             .toList();
     }
 
-    @Transactional
     @PostMapping("/private-session")
     public UpcomingSessionDto schedulePrivateSession(@RequestBody SchedulePrivateSessionRequest request, @AuthenticationPrincipal UserDetails user) {
         final var time = request.time();
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(user.getUsername()));
+        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(user.getUsername()));
 
         final var shiftedTime = time
             .atZone(userZoneId)
@@ -263,7 +262,6 @@ public class UserInfoController {
     }
 
 
-    @Transactional
     @DeleteMapping("/upcoming-sessions/{sessionId}")
     public void cancelSession(@PathVariable Long sessionId, @AuthenticationPrincipal UserDetails user) {
 

@@ -1,22 +1,15 @@
 package com.topleader.topleader.hr;
 
-import com.topleader.topleader.common.util.converter.SetConverter;
-import jakarta.persistence.*;
+import lombok.Data;
+import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.experimental.Accessors;
-
-
-@Getter
-@Setter
-@Entity
-@ToString
-@NoArgsConstructor
+@Data
+@Table("hr_view")
 @Accessors(chain = true)
 public class HrView {
 
@@ -47,15 +40,12 @@ public class HrView {
 
     private String longTermGoal;
 
-    @Convert(converter = SetConverter.class)
     private List<String> strengths = new ArrayList<>();
 
-    @Convert(converter = SetConverter.class)
     private List<String> areaOfDevelopment = new ArrayList<>();
 
     public List<String> getTopStrengths() {
         var strengthSize = strengths.size();
-        return  strengths.subList(0, Math.min(strengthSize, 5));
+        return strengths.subList(0, Math.min(strengthSize, 5));
     }
-
 }

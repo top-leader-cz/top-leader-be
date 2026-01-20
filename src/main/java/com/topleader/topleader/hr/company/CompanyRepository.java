@@ -3,21 +3,29 @@
  */
 package com.topleader.topleader.hr.company;
 
+import org.springframework.data.jdbc.repository.query.Modifying;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.ListCrudRepository;
+
 import java.util.Optional;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import java.util.Set;
 
-
-/**
- * @author Daniel Slavik
- */
-public interface CompanyRepository extends JpaRepository<Company, Long> {
+public interface CompanyRepository extends ListCrudRepository<Company, Long> {
 
     Optional<Company> findByName(String name);
 
     @Modifying
-    @Query("update Company c set c.businessStrategy = :strategy where c.id = :companyId")
+    @Query("UPDATE company SET business_strategy = :strategy WHERE id = :companyId")
     void updateStrategy(long companyId, String strategy);
 
+    @Query("SELECT rate_name FROM company_coach_rates WHERE company_id = :companyId")
+    Set<String> findCoachRatesByCompanyId(long companyId);
+
+    @Modifying
+    @Query("DELETE FROM company_coach_rates WHERE company_id = :companyId")
+    void deleteCoachRates(long companyId);
+
+    @Modifying
+    @Query("INSERT INTO company_coach_rates (company_id, rate_name) VALUES (:companyId, :rateName)")
+    void insertCoachRate(long companyId, String rateName);
 }

@@ -1,27 +1,33 @@
 package com.topleader.topleader.user;
 
-import com.topleader.topleader.coach.Coach;
-import jakarta.persistence.*;
+import com.topleader.topleader.common.util.common.JsonUtils;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 @Getter
 @Setter
 @ToString(of={"username"})
-@Entity
+@Table("users")
 @Accessors(chain = true)
 @NoArgsConstructor
-@Table(name = "users")
 public class User {
 
     @Id
+    private Long id;
+
     private String username;
 
     private String password;
@@ -32,12 +38,8 @@ public class User {
 
     private String email;
 
-    @Convert(converter = RoleConverter.class)
-    private Set<Authority> authorities;
+    private String authorities;
 
-    private String timeZone;
-
-    @Enumerated(EnumType.STRING)
     private Status status;
 
     private Long companyId;
@@ -68,17 +70,35 @@ public class User {
 
     private String aspiredPosition;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "user_coach_rates", joinColumns = @JoinColumn(name = "username"))
-    @Column(name = "rate_name")
-    private Set<String> allowedCoachRates;
+    private String timeZone;
 
-    @ManyToMany
-    @JoinTable(
-            joinColumns = { @JoinColumn(name = "user_username") },
-            inverseJoinColumns = { @JoinColumn(name = "manager_username") }
-    )
-    Set<User> managers = new HashSet<>();
+    @Transient
+    private Set<UserCoachRate> userCoachRates = new HashSet<>();
+
+    public Set<Authority> getAuthorities() {
+        if (authorities == null) {
+            return Set.of(Authority.USER);
+        }
+        return JsonUtils.fromJsonString(authorities, new TypeReference<Set<Authority>>() {});
+    }
+
+    public User setAuthorities(Set<Authority> authorities) {
+        this.authorities = authorities != null ? JsonUtils.toJsonString(authorities) : null;
+        return this;
+    }
+
+    public Set<String> getAllowedCoachRates() {
+        return userCoachRates.stream()
+                .map(UserCoachRate::getRateName)
+                .collect(Collectors.toSet());
+    }
+
+    public User setAllowedCoachRates(Set<String> rates) {
+        this.userCoachRates = rates != null
+                ? rates.stream().map(UserCoachRate::new).collect(Collectors.toSet())
+                : new HashSet<>();
+        return this;
+    }
 
     public static User empty() {
         return new User()
@@ -91,10 +111,6 @@ public class User {
             .setStatus(Status.PENDING)
             .setLocale("en");
     }
-
-    @OneToOne
-    @JoinColumn(name = "username", unique = true)
-    private Coach coachData;
 
     public enum Authority {
         RESPONDENT,

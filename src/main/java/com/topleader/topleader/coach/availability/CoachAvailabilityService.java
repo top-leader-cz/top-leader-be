@@ -14,7 +14,7 @@ import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto
 import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
 import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
 import com.topleader.topleader.user.UserRepository;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -127,7 +127,7 @@ public class CoachAvailabilityService {
     }
 
     private List<CoachAvailability> getReoccurringEvents(String username) {
-        return availabilitySettingRepository.findById(username)
+        return availabilitySettingRepository.findByCoach(username)
                 .filter(CoachAvailabilitySettings::isActive)
                 .map(a -> {
                     if (CALENDLY == a.getType()) {
@@ -172,7 +172,7 @@ public class CoachAvailabilityService {
             return;
         }
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
+        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(username));
 
         final var from = request.timeFrame().from()
             .atZone(userZoneId)
@@ -230,7 +230,7 @@ public class CoachAvailabilityService {
 
     @Transactional
     public void setRecurringAvailability(String username, List<ReoccurringEventDto> events) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(username));
+        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(username));
 
         final var shiftedEvents = events.stream()
             .map(e -> {

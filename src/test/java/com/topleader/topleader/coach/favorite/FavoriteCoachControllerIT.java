@@ -34,7 +34,7 @@ class FavoriteCoachControllerIT extends IntegrationTest {
                 .andExpect(status().isOk())
         ;
         Assertions.assertThat(favoriteCoachRepository.findAll())
-                .extracting( i -> i.getId().getCoachUsername())
+                .extracting(FavoriteCoach::getCoachUsername)
                 .containsExactlyInAnyOrder("coach", "coach2", "test@coach1", "test@coach2");
 
     }
@@ -56,7 +56,7 @@ class FavoriteCoachControllerIT extends IntegrationTest {
                 .andExpect(status().isOk());
 
         Assertions.assertThat(favoriteCoachRepository.findAll())
-                .extracting( i -> i.getId().getCoachUsername())
+                .extracting(FavoriteCoach::getCoachUsername)
                 .containsExactlyInAnyOrder("coach2");
 
         Assertions.assertThat(favoriteCoachRepository.findByUsername("jakub.svezi@dummy.com")).isEmpty();

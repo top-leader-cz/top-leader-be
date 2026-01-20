@@ -28,9 +28,9 @@ class UserAllocationControllerIT extends IntegrationTest {
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].userId").value("user1"))
+                .andExpect(jsonPath("$[0].username").value("user1"))
                 .andExpect(jsonPath("$[0].allocatedUnits").value(10))
-                .andExpect(jsonPath("$[1].userId").value("user2"))
+                .andExpect(jsonPath("$[1].username").value("user2"))
                 .andExpect(jsonPath("$[1].allocatedUnits").value(20));
     }
 
@@ -55,12 +55,12 @@ class UserAllocationControllerIT extends IntegrationTest {
                                 """))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(jsonPath("$.userId").value("user3"))
+                .andExpect(jsonPath("$.username").value("user3"))
                 .andExpect(jsonPath("$.allocatedUnits").value(15))
                 .andExpect(jsonPath("$.status").value("ACTIVE"))
                 .andExpect(jsonPath("$.contextRef").value("test-context"));
 
-        var allocation = userAllocationRepository.findByPackageIdAndUserId(1L, "user3").orElseThrow();
+        var allocation = userAllocationRepository.findByPackageIdAndUsername(1L, "user3").orElseThrow();
         assertThat(allocation.getAllocatedUnits()).isEqualTo(15);
     }
 
@@ -91,10 +91,10 @@ class UserAllocationControllerIT extends IntegrationTest {
                                 }
                                 """))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.userId").value("user1"))
+                .andExpect(jsonPath("$.username").value("user1"))
                 .andExpect(jsonPath("$.allocatedUnits").value(25));
 
-        var allocation = userAllocationRepository.findByPackageIdAndUserId(1L, "user1").orElseThrow();
+        var allocation = userAllocationRepository.findByPackageIdAndUsername(1L, "user1").orElseThrow();
         assertThat(allocation.getAllocatedUnits()).isEqualTo(25);
     }
 
@@ -135,8 +135,8 @@ class UserAllocationControllerIT extends IntegrationTest {
                         .content("""
                                 {
                                     "items": [
-                                        { "userId": "user1", "allocatedUnits": 5 },
-                                        { "userId": "user3", "allocatedUnits": 10 }
+                                        { "username": "user1", "allocatedUnits": 5 },
+                                        { "username": "user3", "allocatedUnits": 10 }
                                     ]
                                 }
                                 """))
@@ -145,10 +145,10 @@ class UserAllocationControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.updated").value(2))
                 .andExpect(jsonPath("$.items.length()").value(2));
 
-        var allocation1 = userAllocationRepository.findByPackageIdAndUserId(1L, "user1").orElseThrow();
+        var allocation1 = userAllocationRepository.findByPackageIdAndUsername(1L, "user1").orElseThrow();
         assertThat(allocation1.getAllocatedUnits()).isEqualTo(5);
 
-        var allocation3 = userAllocationRepository.findByPackageIdAndUserId(1L, "user3").orElseThrow();
+        var allocation3 = userAllocationRepository.findByPackageIdAndUsername(1L, "user3").orElseThrow();
         assertThat(allocation3.getAllocatedUnits()).isEqualTo(10);
     }
 
@@ -161,7 +161,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                         .content("""
                                 {
                                     "items": [
-                                        { "userId": "user3", "allocatedUnits": 80 }
+                                        { "username": "user3", "allocatedUnits": 80 }
                                     ]
                                 }
                                 """))
@@ -239,11 +239,11 @@ class UserAllocationControllerIT extends IntegrationTest {
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user1:consume"))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(jsonPath("$.userId").value("user1"))
+                .andExpect(jsonPath("$.username").value("user1"))
                 .andExpect(jsonPath("$.consumedUnits").value(1))
                 .andExpect(jsonPath("$.allocatedUnits").value(10));
 
-        var allocation = userAllocationRepository.findByPackageIdAndUserId(1L, "user1").orElseThrow();
+        var allocation = userAllocationRepository.findByPackageIdAndUsername(1L, "user1").orElseThrow();
         assertThat(allocation.getConsumedUnits()).isEqualTo(1);
     }
 
@@ -251,7 +251,7 @@ class UserAllocationControllerIT extends IntegrationTest {
     @WithMockUser(username = "hrUser", authorities = {"HR"})
     void consumeUnit_exceedsAllocated_fails() throws Exception {
         // First, set user1 allocation to exactly consumedUnits
-        userAllocationRepository.findByPackageIdAndUserId(1L, "user1").ifPresent(a -> {
+        userAllocationRepository.findByPackageIdAndUsername(1L, "user1").ifPresent(a -> {
             a.setAllocatedUnits(1);
             a.setConsumedUnits(1);
             userAllocationRepository.save(a);
@@ -268,7 +268,7 @@ class UserAllocationControllerIT extends IntegrationTest {
     @WithMockUser(username = "hrUser", authorities = {"HR"})
     void consumeUnit_inactiveAllocation_fails() throws Exception {
         // Deactivate user1's allocation first
-        userAllocationRepository.findByPackageIdAndUserId(1L, "user1").ifPresent(a -> {
+        userAllocationRepository.findByPackageIdAndUsername(1L, "user1").ifPresent(a -> {
             a.setStatus(UserAllocation.AllocationStatus.INACTIVE);
             userAllocationRepository.save(a);
         });
@@ -288,7 +288,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                         .content("""
                                 {
                                     "items": [
-                                        { "userId": "user2", "allocatedUnits": 2 }
+                                        { "username": "user2", "allocatedUnits": 2 }
                                     ]
                                 }
                                 """))
@@ -302,7 +302,7 @@ class UserAllocationControllerIT extends IntegrationTest {
     void createAllocation_inactiveAllocationConsumedUnitsCountTowardsCapacity() throws Exception {
         // Package has 100 total, 30 allocated (10+20)
         // Deactivate user1's allocation (10 allocated, 0 consumed) - this sets allocatedUnits to consumedUnits (0)
-        userAllocationRepository.findByPackageIdAndUserId(1L, "user1").ifPresent(a -> {
+        userAllocationRepository.findByPackageIdAndUsername(1L, "user1").ifPresent(a -> {
             a.setStatus(UserAllocation.AllocationStatus.INACTIVE);
             a.setAllocatedUnits(a.getConsumedUnits()); // Service logic: set allocated to consumed
             userAllocationRepository.save(a);
@@ -326,7 +326,7 @@ class UserAllocationControllerIT extends IntegrationTest {
     void createAllocation_inactiveAllocationWithConsumedUnitsBlocksCapacity() throws Exception {
         // Package has 100 total, 30 allocated (10+20), user2 has 5 consumed
         // Deactivate user2's allocation - this sets allocatedUnits to consumedUnits (5)
-        userAllocationRepository.findByPackageIdAndUserId(1L, "user2").ifPresent(a -> {
+        userAllocationRepository.findByPackageIdAndUsername(1L, "user2").ifPresent(a -> {
             a.setStatus(UserAllocation.AllocationStatus.INACTIVE);
             a.setAllocatedUnits(a.getConsumedUnits()); // Service logic: set allocated to consumed
             userAllocationRepository.save(a);

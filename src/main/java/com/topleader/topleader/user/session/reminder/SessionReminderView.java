@@ -1,17 +1,15 @@
 package com.topleader.topleader.user.session.reminder;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
 @Setter
-@Entity
+@Table("session_reminder_view")
 @ToString(of = {"username"})
 public class SessionReminderView {
 
@@ -28,7 +26,6 @@ public class SessionReminderView {
 
     private LocalDateTime time;
 
-    @Enumerated(EnumType.STRING)
     private ReminderInterval reminderInterval;
 
     public enum ReminderInterval {

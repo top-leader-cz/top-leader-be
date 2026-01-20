@@ -3,17 +3,14 @@
  */
 package com.topleader.topleader.user.session;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.SequenceGenerator;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
 
 
 /**
@@ -22,14 +19,12 @@ import lombok.experimental.Accessors;
 @Getter
 @Setter
 @ToString
-@Entity
+@Table("user_action_step")
 @Accessors(chain = true)
 @NoArgsConstructor
 public class UserActionStep {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_action_step_seq")
-    @SequenceGenerator(name = "user_action_step_seq", sequenceName = "user_action_step_seq", allocationSize = 1)
     private Long id;
 
     private String username;

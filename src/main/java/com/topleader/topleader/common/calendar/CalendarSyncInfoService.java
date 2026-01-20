@@ -18,7 +18,7 @@ public class CalendarSyncInfoService {
     private final CalendarSyncInfoRepository repository;
 
     public Optional<CalendarSyncInfo> getInfo(String username, CalendarSyncInfo.SyncType type) {
-        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, type));
+        return repository.findByUsernameAndSyncType(username, type);
     }
 
     public CalendarSyncInfo save(CalendarSyncInfo info) {
@@ -27,7 +27,7 @@ public class CalendarSyncInfoService {
 
 
     public void disconnect(String username, CalendarSyncInfo.SyncType syncType) {
-        repository.deleteById(new CalendarSyncInfo.CalendarInfoId(username, syncType));
+        repository.findByUsernameAndSyncType(username, syncType).ifPresent(repository::delete);
         log.info("{} disconnected", syncType);
     }
 }

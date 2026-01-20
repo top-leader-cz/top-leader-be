@@ -7,7 +7,7 @@ import com.topleader.topleader.feedback.api.FeedbackSubmitRequest;
 import com.topleader.topleader.feedback.api.NewUser;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;
 
 import java.time.LocalDateTime;
@@ -32,14 +32,12 @@ public class PublicFeedbackController {
 
     private final EmailService emailService;
 
-    @Transactional
     @GetMapping("/options")
     public FeedbackFormOptions getOptions() {
         return FeedbackFormOptions.of(feedbackService.fetchOptions());
     }
 
 
-    @Transactional
     @GetMapping("/{formId}/{username}/{token}")
     public FeedbackFormDto getForm(@PathVariable long formId, @PathVariable String username, @PathVariable String token) {
         feedbackService.validateRecipientIfValid(formId, username, token);
@@ -48,7 +46,7 @@ public class PublicFeedbackController {
                     if (skipUpdate(u)) return;
                     userDetailService.save(u.setStatus(User.Status.VIEWED));
                 });
-        return FeedbackFormDto.of(feedbackService.fetchForm(formId));
+        return feedbackService.toFeedbackFormDto(feedbackService.fetchForm(formId));
     }
 
     @PostMapping("/{formId}/{username}/{token}")
@@ -56,7 +54,7 @@ public class PublicFeedbackController {
                            @RequestBody @Valid FeedbackSubmitRequest request) {
         log.info("submition answers for respondent: [{}] ", username);
         var recipient = feedbackService.validateRecipientIfValid(formId, username, token);
-        feedbackService.submitForm(FeedbackSubmitRequest.toAnswers(request, formId, recipient), username);
+        feedbackService.submitForm(FeedbackSubmitRequest.toAnswers(request, formId, recipient), username, recipient);
         feedbackService.generateSummary(formId);
     }
 

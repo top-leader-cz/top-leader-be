@@ -2,8 +2,8 @@ package com.topleader.topleader.user.token;
 
 import com.topleader.topleader.common.email.EmailService;
 import com.topleader.topleader.common.email.TemplateService;
+import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.user.UserRepository;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
@@ -54,10 +54,10 @@ public class TokenController {
         log.info("User set-password start. token: {}", token);
 
         var savedToken = tokenService.findByTokenAndType(token, Token.Type.SET_PASSWORD)
-                .orElseThrow(() -> new EntityNotFoundException("Token not found. Token: " + token));
+                .orElseThrow(NotFoundException::new);
 
-        var user = userRepository.findById(savedToken.getUsername())
-                .orElseThrow(() -> new EntityNotFoundException("User not found. User: " + savedToken.getUsername()));
+        var user = userRepository.findByUsername(savedToken.getUsername())
+                .orElseThrow(NotFoundException::new);
 
         log.info("Token found for user {}", user.getUsername());
         user.setPassword(passwordEncoder.encode(request.password));

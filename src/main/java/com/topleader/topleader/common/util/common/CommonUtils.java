@@ -1,7 +1,7 @@
 package com.topleader.topleader.common.util.common;
 
 
-import jakarta.persistence.EntityNotFoundException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,8 +33,8 @@ public class CommonUtils {
         }
     }
 
-    public Supplier<EntityNotFoundException> entityNotFound(String message) {
-        return () -> new EntityNotFoundException(message);
+    public Supplier<NotFoundException> entityNotFound(String message) {
+        return NotFoundException::new;
     }
 
     /**
@@ -48,9 +48,6 @@ public class CommonUtils {
         }
     }
 
-    public <T> T tryGet(Callable<T> supplier) {
-        return tryGet(supplier, RuntimeException::new);
-    }
 
     /**
      * Try.of(() -> ...).onFailure(log::error).getOrElse(defaultValue)
@@ -64,13 +61,6 @@ public class CommonUtils {
         }
     }
 
-    public <T> T tryGetOrElse(Callable<T> supplier, T defaultValue) {
-        try {
-            return supplier.call();
-        } catch (Exception e) {
-            return defaultValue;
-        }
-    }
 
     /**
      * Try.of(() -> ...).map(mapper).onFailure(errorHandler).getOrElse(defaultValue)

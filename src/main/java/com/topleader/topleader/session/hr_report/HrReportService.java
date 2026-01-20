@@ -26,7 +26,6 @@ public class HrReportService {
     private final UserAllocationRepository userAllocationRepository;
     private final ScheduledSessionRepository scheduledSessionRepository;
 
-    @Transactional(readOnly = true)
     public HrReportResponse generateReport(Long packageId, LocalDate from, LocalDate to) {
         log.debug("Generating HR report for package {} (from={}, to={})", packageId, from, to);
 
@@ -49,7 +48,7 @@ public class HrReportService {
         var allocatedUnits = userAllocationRepository.sumAllocatedUnitsByPackageId(packageId);
 
         var userIds = userAllocationRepository.findByPackageId(packageId).stream()
-                .map(UserAllocation::getUserId)
+                .map(UserAllocation::getUsername)
                 .toList();
 
         var plannedSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countUpcomingByUsernamesAndTimeRange(userIds, from, to);
@@ -64,7 +63,7 @@ public class HrReportService {
 
         return allocations.stream()
                 .map(allocation -> {
-                    var userId = allocation.getUserId();
+                    var userId = allocation.getUsername();
                     var allocatedUnits = allocation.getAllocatedUnits();
                     var plannedSessions = scheduledSessionRepository.countUpcomingByUsernameAndTimeRange(userId, from, to);
                     var completedSessions = scheduledSessionRepository.countCompletedByUsernameAndTimeRange(userId, from, to);

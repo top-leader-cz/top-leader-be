@@ -1,8 +1,8 @@
 package com.topleader.topleader.coach.favorite;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,18 +14,18 @@ public class FavoriteCoachService {
 
     private final FavoriteCoachRepository favoriteCoachRepository;
 
-    @Transactional
     public void saveFavoriteCoaches(String username, List<String> coachUsername) {
-        coachUsername.forEach(coach -> favoriteCoachRepository.save(new FavoriteCoach().setId(new FavoriteCoach.FavoriteCoachId(username, coach))));
+        coachUsername.forEach(coach -> favoriteCoachRepository.save(
+                new FavoriteCoach().setUsername(username).setCoachUsername(coach)));
     }
 
     public List<String> getFavoriteCoaches(String username) {
         return favoriteCoachRepository.findByUsername(username).stream()
-                .map(favoriteCoach -> favoriteCoach.getId().getCoachUsername())
+                .map(FavoriteCoach::getCoachUsername)
                 .collect(Collectors.toList());
     }
 
     public void removeCoach(String username, String coachUsername) {
-        favoriteCoachRepository.deleteById(new FavoriteCoach.FavoriteCoachId(username, coachUsername));
+        favoriteCoachRepository.deleteByUsernameAndCoachUsername(username, coachUsername);
     }
 }

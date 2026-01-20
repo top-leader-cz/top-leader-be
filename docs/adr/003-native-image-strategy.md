@@ -37,6 +37,25 @@ We are **preparing for GraalVM Native Image** compilation through incremental ch
 - Validate each change works in both modes
 - Maintain JVM as fallback
 
+### Why Spring Data JDBC over Hibernate?
+
+Spring Data JDBC is significantly better for native images:
+
+| Aspect              | Hibernate/JPA              | Spring Data JDBC        |
+|---------------------|----------------------------|-------------------------|
+| Reflection usage    | Heavy (proxies, lazy load) | Minimal (simple mapping)|
+| Runtime bytecode    | Yes (proxy generation)     | No                      |
+| Native hints needed | Many                       | Few                     |
+| Startup time        | Slower (entity scanning)   | Fast (direct mapping)   |
+| Native image size   | Larger                     | Smaller                 |
+| Query control       | JPQL/HQL abstraction       | Native SQL              |
+
+**Key benefits:**
+- No lazy loading proxies → no reflection issues
+- Direct row-to-object mapping → simpler model
+- Full SQL control with `@Query` → better optimization
+- Smaller native image footprint → lower cloud costs
+
 ## Current Preparations
 
 ### Completed
@@ -47,6 +66,7 @@ We are **preparing for GraalVM Native Image** compilation through incremental ch
 - [x] **Pre-generated OpenAPI** - no runtime reflection for API docs
 - [x] **Failsafe** for resilience - no reflection
 - [x] **Virtual Threads** - simplifies concurrency model
+- [x] **Spring Data JDBC** - migrated from Hibernate/JPA for minimal reflection, simpler model, full SQL control
 
 ### Removed Heavy Reflection Libraries
 - [x] **Apache Velocity** (`velocity-engine-core`, `velocity-tools-generic`) - template engine with heavy reflection, replaced with simple string templates
@@ -55,16 +75,17 @@ We are **preparing for GraalVM Native Image** compilation through incremental ch
 - [x] **springdoc-openapi runtime** - dynamic OpenAPI generation, replaced with pre-generated `openapi.yaml`
 - [x] **google-http-client-jackson2** - legacy Google HTTP client, using modern alternatives
 - [x] **spring-cloud-gcp-starter-logging** - removed GCP-specific logging, using standard Log4j2
+- [x] **iCal4j** - heavy reflection iCalendar library, replaced with template-based `ICalService` using `TemplateService` and `.ics` templates
+- [x] **Hibernate/JPA** - heavy reflection ORM framework, replaced with **Spring Data JDBC** for minimal reflection and native image compatibility
 
 ### In Progress
-- [ ] Remove **iCal4j** - heavy reflection, replace with simple implementation
-- [ ] Evaluate **Hibernate** alternatives - consider jOOQ or plain JDBC
 - [ ] Add GraalVM reachability metadata where needed
 - [ ] Test native compilation in CI pipeline
+- [ ] Validate Spring AI components for native support
 
-### Blocked
-- **Hibernate 7** - still requires reflection hints, but improving
-- **Some Spring AI components** - waiting for native support
+### Blockers Removed
+- ~~**Hibernate 7**~~ - ✅ Migrated to Spring Data JDBC (minimal reflection)
+- **Some Spring AI components** - waiting for native support (non-critical)
 
 ## Consequences
 

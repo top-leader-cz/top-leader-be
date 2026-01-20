@@ -2,10 +2,15 @@ springdoc:
   api-docs:
     enabled: true
 
+logging:
+  level:
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: ERROR
+    org.springframework.jdbc.core: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.mvc.method.annotation.ExceptionHandlerExceptionResolver: DEBUG
+    com.topleader.topleader: DEBUG
+
 spring:
-  docker:
-    compose:
-      enabled: false
   main:
     allow-bean-definition-overriding: true
 

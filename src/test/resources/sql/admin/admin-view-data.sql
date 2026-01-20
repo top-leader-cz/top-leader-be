@@ -26,14 +26,11 @@ VALUES ('coach1', '$'),
 insert into user_info(username, strengths, values, area_of_development, notes, long_term_goal, motivation, last_reflection)
 values ('user1', '["s1","s2"]', '["v1","v2"]', '["a1","a2"]', 'cool note', 'some cool goal', 'I wanna be cool', 'I am cool');
 
-insert into coach (username, bio,  experience_since, web_link, public_profile, rate, internal_rate, certificate, primary_roles)
-values ('user1', 'some bio', '2023-08-06', 'http://some_video1', true, '$$$', 300, '["MCC", "CUSTOM"]', '["COACH","TRAINER"]');
+insert into coach (username, bio,  experience_since, web_link, public_profile, rate, internal_rate, certificate, primary_roles, fields, languages)
+values ('user1', 'some bio', '2023-08-06', 'http://some_video1', true, '$$$', 300, '["MCC", "CUSTOM"]', '["COACH","TRAINER"]', '["field1"]', '["cz"]');
 
 insert into coach_availability (id, username, recurring, day_from, time_from, day_to, time_to)
 values (nextval('coach_availability_seq'), 'user1', true, 'MONDAY', '13:00:00', 'MONDAY', '14:00:00');
-
-insert into coach_fields (coach_username, fields) values ('user1', 'field1');
-insert into coach_languages (coach_username, languages) values ('user1', 'cz');
 
 insert into coach_image (username, type, image_data) values ('user1', 'image1', null);
 

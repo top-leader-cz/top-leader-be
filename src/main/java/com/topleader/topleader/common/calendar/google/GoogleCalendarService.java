@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -43,18 +43,16 @@ public class GoogleCalendarService {
 
     private final CalendarToErrorHandler errorHandler;
 
-    @Transactional
     public void storeTokenInfo(String username, TokenResponse tokenResponse) {
         log.info("caStoring token info for user {} token info: {}", username, tokenResponse);
 
-        var id = new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.GOOGLE);
         transactionService.execute(() -> {
             calendarSyncInfoRepository.deleteByUsername(username);
             availabilitySettingRepository.deleteByCoach(username);
-            calendarSyncInfoRepository.flush();
 
             var info = new CalendarSyncInfo()
-                    .setId(id)
+                    .setUsername(username)
+                    .setSyncType(CalendarSyncInfo.SyncType.GOOGLE)
                     .setStatus(CalendarSyncInfo.Status.OK)
                     .setRefreshToken(tokenResponse.getRefreshToken())
                     .setAccessToken(tokenResponse.getAccessToken())
@@ -68,7 +66,7 @@ public class GoogleCalendarService {
     public List<SyncEvent> getUserEvents(String username, LocalDateTime startDate, LocalDateTime endDate, Boolean testFreeBusy) {
 
         if (Boolean.TRUE.equals(testFreeBusy)) {
-            return calendarSyncInfoRepository.findById(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.GOOGLE))
+            return calendarSyncInfoRepository.findByUsernameAndSyncType(username, CalendarSyncInfo.SyncType.GOOGLE)
                     .map(info -> {
                         try {
                             return clientFactory.prepareCalendarClient(info.getRefreshToken())

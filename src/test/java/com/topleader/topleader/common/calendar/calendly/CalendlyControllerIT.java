@@ -57,7 +57,7 @@ class CalendlyControllerIT extends IntegrationTest {
                 .andExpect(status().is3xxRedirection());
 
         Assertions.assertThat(repository.findAll()).extracting(CalendarSyncInfo::getAccessToken, CalendarSyncInfo::getRefreshToken,
-                        c -> c.getId().getUsername(), CalendarSyncInfo::getOwnerUrl, CalendarSyncInfo::getSyncType, CalendarSyncInfo::getStatus)
+                        CalendarSyncInfo::getUsername, CalendarSyncInfo::getOwnerUrl, CalendarSyncInfo::getSyncType, CalendarSyncInfo::getStatus)
                 .containsExactly(Assertions.tuple("accessToken", "refreshToken", "coach1",
                         "http://localhost:8080/ownerId", CalendarSyncInfo.SyncType.CALENDLY, CalendarSyncInfo.Status.OK));
     }

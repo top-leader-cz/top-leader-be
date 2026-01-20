@@ -75,7 +75,7 @@ public class EmailTemplateService {
 
         log.info("Sending reservation alert for: [{}]", session);
 
-        final var user = userRepository.findById(session.getUsername())
+        final var user = userRepository.findByUsername(session.getUsername())
             .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
 
         final var eventId = "session-" + sessionId;
@@ -111,9 +111,9 @@ public class EmailTemplateService {
 
         log.info("Sending reservation alert for: [{}]", session);
 
-        final var user = userRepository.findById(session.getUsername())
+        final var user = userRepository.findByUsername(session.getUsername())
             .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
-        final var coach = userRepository.findById(session.getCoachUsername())
+        final var coach = userRepository.findByUsername(session.getCoachUsername())
             .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "Coach not found " + session.getCoachUsername()));
 
         final var eventId = "session-" + sessionId;
@@ -177,9 +177,9 @@ public class EmailTemplateService {
 
         log.info("Sending cancel alert for: [{}]", session);
 
-        final var user = userRepository.findById(session.getUsername())
+        final var user = userRepository.findByUsername(session.getUsername())
             .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
-        final var coach = userRepository.findById(session.getCoachUsername())
+        final var coach = userRepository.findByUsername(session.getCoachUsername())
             .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "Coach not found " + session.getCoachUsername()));
 
         final var eventId = "session-" + sessionId;
@@ -242,7 +242,7 @@ public class EmailTemplateService {
 
         log.info("Sending cancel alert for: [{}]", session);
 
-        final var user = userRepository.findById(session.getUsername())
+        final var user = userRepository.findByUsername(session.getUsername())
             .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
 
         final var eventId = "session-" + sessionId;
@@ -275,7 +275,7 @@ public class EmailTemplateService {
     public void sentPickedMessage(String coachUsername) {
         log.info("Sending coach picked email for coach: [{}]", coachUsername);
 
-        final var user = userRepository.findById(coachUsername)
+        final var user = userRepository.findByUsername(coachUsername)
                 .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", coachUsername, "User not found " + coachUsername ));
 
         emailService.sendEmail(

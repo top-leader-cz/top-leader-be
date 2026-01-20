@@ -14,36 +14,32 @@ import io.micrometer.core.instrument.Counter;
 import com.topleader.topleader.common.email.EmailTemplateService;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
-import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.image.ImageUtil;
 import com.topleader.topleader.common.util.page.PageDto;
-import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -52,17 +48,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasExperienceFrom;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasExperienceTo;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasFieldsInList;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasLanguagesInList;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.hasRateInSet;
-import static com.topleader.topleader.coach.CoachJpaSpecificationUtils.nameStartsWith;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
 import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
-import static org.springframework.data.jpa.domain.Specification.allOf;
 import static org.springframework.util.StringUtils.hasText;
 
 
@@ -92,14 +81,13 @@ public class CoachListController {
     private final Counter sessionScheduledCounter;
 
 
-    @Transactional
     @PostMapping("/{username}/schedule")
     public void scheduleSession(
         @AuthenticationPrincipal UserDetails user,
         @PathVariable String username,
         @RequestBody ScheduleSessionRequest request
     ) {
-        final var userInDb = userRepository.findById(user.getUsername()).orElseThrow();
+        final var userInDb = userRepository.findByUsername(user.getUsername()).orElseThrow();
 
         if (hasText(userInDb.getCoach()) && !userInDb.getCoach().equals(username)) {
             throw new ApiValidationException(DIFFERENT_COACH_NOT_PERMITTED, "username", username, "Cannot schedule a session with a different coach then already picked");
@@ -112,14 +100,13 @@ public class CoachListController {
         scheduleSession(user.getUsername(), username, request.time(), true);
     }
 
-    @Transactional
     @PostMapping("/schedule")
     public void scheduleSession(
         @AuthenticationPrincipal UserDetails user,
         @RequestBody ScheduleSessionRequest request
     ) {
 
-        final var coachName = userRepository.findById(user.getUsername()).orElseThrow().getCoach();
+        final var coachName = userRepository.findByUsername(user.getUsername()).orElseThrow().getCoach();
 
         scheduleSession(user.getUsername(), coachName, request.time(), true);
     }
@@ -147,7 +134,7 @@ public class CoachListController {
             throw new ApiValidationException(NOT_ENOUGH_CREDITS, "user", clientName, "User does not have enough credit");
         }
 
-        final var user = userRepository.findById(clientName).orElseThrow();
+        final var user = userRepository.findByUsername(clientName).orElseThrow();
 
         final var session = scheduledSessionService.scheduleSession(
             new ScheduledSession()
@@ -171,7 +158,7 @@ public class CoachListController {
         @AuthenticationPrincipal UserDetails loggedUser
         ) {
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findById(loggedUser.getUsername()));
+        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(loggedUser.getUsername()));
 
         final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
                 .map(ScheduledSession::getTime)
@@ -186,7 +173,7 @@ public class CoachListController {
     @GetMapping("/{username}/photo")
     public ResponseEntity<byte[]> getCoachPhoto(@PathVariable String username) {
 
-        return coachImageRepository.findById(username)
+        return coachImageRepository.findByUsername(username)
             .map(i -> ResponseEntity.status(HttpStatus.OK)
                 .contentType(MediaType.valueOf(i.getType()))
                 .body(ImageUtil.decompressImage(i.getImageData()))
@@ -207,50 +194,39 @@ public class CoachListController {
         @AuthenticationPrincipal UserDetails user,
         @RequestBody @Valid FilterRequest request
     ) {
+        final var dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow();
+        final var allowedRates = getAllowedRates(dbUser);
 
-        final var dbUser = userRepository.findById(user.getUsername()).orElseThrow();
+        var allCoaches = coachListViewRepository.findAllPublic();
 
-        return findCoaches(
-            Stream.concat(maxRateFilter(dbUser).stream(), request.toSpecification().stream()).toList(),
-            request.page().toPageable()
-        )
-            .map(CoachListDto::from);
+        var filtered = allCoaches.stream()
+                .filter(c -> allowedRates == null || allowedRates.isEmpty() || allowedRates.contains(c.getRate()))
+                .filter(request.toFilter())
+                .sorted(Comparator.comparing(CoachListView::getPriority).reversed()
+                        .thenComparing(CoachListView::getUsername))
+                .toList();
+
+        var pageable = request.page().toPageable();
+        int start = (int) Math.min(pageable.getOffset(), filtered.size());
+        int end = (int) Math.min(start + pageable.getPageSize(), filtered.size());
+
+        var content = filtered.subList(start, end).stream()
+                .map(CoachListDto::from)
+                .toList();
+
+        return new PageImpl<>(content, pageable, filtered.size());
     }
 
-    private Page<CoachListView> findCoaches(List<Specification<CoachListView>> filter, Pageable page) {
-       var p = PageRequest.of(page.getPageNumber(), page.getPageSize(),
-               page.getSortOr(Sort.sort(CoachListView.class).by(CoachListView::getPriority).descending()));
-
-
-        return coachListViewRepository.findAll(
-            Optional.ofNullable(filter)
-                .filter(not(List::isEmpty))
-                .map(f -> allOf(f).and(isProfilePublic()))
-                .orElse(isProfilePublic()),
-            p
-        );
-
-    }
-
-    private Optional<Specification<CoachListView>> maxRateFilter(User user) {
-        return Optional.ofNullable(user.getAllowedCoachRates())
+    private Set<String> getAllowedRates(User user) {
+        var userRates = userRepository.findAllowedCoachRates(user.getUsername());
+        return Optional.ofNullable(userRates)
             .filter(not(Set::isEmpty))
             .or(() -> Optional.ofNullable(user.getCompanyId())
                 .flatMap(companyRepository::findById)
                 .map(Company::getAllowedCoachRates)
             )
             .filter(not(Set::isEmpty))
-            .map(CoachListController::rateIn);
-    }
-
-    public static Specification<CoachListView> isProfilePublic() {
-        return (root, query, criteriaBuilder) ->
-            criteriaBuilder.isTrue(root.get("publicProfile"));
-    }
-
-    private static Specification<CoachListView> rateIn(Set<String> allowed) {
-        return (root, query, criteriaBuilder) ->
-            root.get("rate").in(allowed);
+            .orElse(null);
     }
 
     public record ScheduleSessionRequest(ZonedDateTime time) {
@@ -291,15 +267,15 @@ public class CoachListController {
                     c.getLastName(),
                     c.getEmail(),
                     c.getBio(),
-                    c.getLanguages(),
-                    c.getFields(),
+                    c.getLanguagesSet(),
+                    c.getFieldsSet(),
                     toExperience(c.getExperienceSince()),
                     c.getRate(),
-                    c.getCertificate(),
+                    c.getCertificateSet(),
                     c.getTimeZone(),
                     c.getWebLink(),
                     c.getLinkedinProfile(),
-                    c.getPrimaryRoles()
+                    c.getPrimaryRolesSet()
             );
         }
 
@@ -322,29 +298,46 @@ public class CoachListController {
         String name
     ) {
 
-        public List<Specification<CoachListView>> toSpecification() {
+        public Predicate<CoachListView> toFilter() {
+            Predicate<CoachListView> filter = c -> true;
 
-            final var result = new ArrayList<Specification<CoachListView>>();
+            if (languages != null && !languages.isEmpty()) {
+                filter = filter.and(c -> {
+                    var coachLangs = c.getLanguagesSet();
+                    return coachLangs != null && languages.stream().anyMatch(coachLangs::contains);
+                });
+            }
 
-            Optional.ofNullable(languages())
-                .ifPresent(languages -> result.add(hasLanguagesInList(languages)));
+            if (fields != null && !fields.isEmpty()) {
+                filter = filter.and(c -> {
+                    var coachFields = c.getFieldsSet();
+                    return coachFields != null && fields.stream().anyMatch(coachFields::contains);
+                });
+            }
 
-            Optional.ofNullable(fields())
-                .ifPresent(fields -> result.add(hasFieldsInList(fields)));
+            if (experienceFrom != null) {
+                var fromDate = toDate(experienceFrom);
+                filter = filter.and(c -> c.getExperienceSince() != null && !c.getExperienceSince().isAfter(fromDate));
+            }
 
-            Optional.ofNullable(experienceFrom())
-                .ifPresent(from -> result.add(hasExperienceFrom(toDate(experienceFrom()))));
+            if (experienceTo != null) {
+                var toDate = toDate(experienceTo);
+                filter = filter.and(c -> c.getExperienceSince() != null && !c.getExperienceSince().isBefore(toDate));
+            }
 
-            Optional.ofNullable(experienceTo())
-                .ifPresent(to -> result.add(hasExperienceTo(toDate(experienceTo()))));
+            if (prices != null && !prices.isEmpty()) {
+                filter = filter.and(c -> prices.contains(c.getRate()));
+            }
 
-            Optional.ofNullable(prices())
-                .ifPresent(prices -> result.add(hasRateInSet(prices)));
+            if (hasText(name)) {
+                var nameLower = name.toLowerCase();
+                filter = filter.and(c ->
+                        (c.getFirstName() != null && c.getFirstName().toLowerCase().startsWith(nameLower)) ||
+                        (c.getLastName() != null && c.getLastName().toLowerCase().startsWith(nameLower))
+                );
+            }
 
-            Optional.ofNullable(name())
-                .ifPresent(name -> result.add(nameStartsWith(name)));
-
-            return result;
+            return filter;
         }
 
         private static LocalDate toDate(Integer i) {

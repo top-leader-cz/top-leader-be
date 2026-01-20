@@ -3,18 +3,19 @@
  */
 package com.topleader.topleader.coach.list;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.topleader.topleader.coach.Coach;
-import jakarta.persistence.*;
-
-import java.time.LocalDate;
-import java.util.Set;
+import com.topleader.topleader.common.util.common.JsonUtils;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
+import java.time.LocalDate;
+import java.util.Set;
 
 
 /**
@@ -23,7 +24,7 @@ import org.hibernate.type.SqlTypes;
 @Getter
 @Setter
 @ToString
-@Entity
+@Table("coach_list_view")
 @Accessors(chain = true)
 @NoArgsConstructor
 public class CoachListView {
@@ -39,21 +40,15 @@ public class CoachListView {
 
     private String email;
 
-    @Column(length = 1000)
     private String webLink;
 
-    @Column(length = 1000)
     private String bio;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "coach_languages", joinColumns = @JoinColumn(name = "coach_username"))
-    private Set<String> languages;
+    private String languages;
 
     private String timeZone;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "coach_fields", joinColumns = @JoinColumn(name = "coach_username"))
-    private Set<String> fields;
+    private String fields;
 
     private LocalDate experienceSince;
 
@@ -61,18 +56,51 @@ public class CoachListView {
 
     private Integer rateOrder;
 
-    @Column(length = 1000)
     private String linkedinProfile;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<Coach.PrimaryRole> primaryRoles;
+    private String primaryRoles;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(columnDefinition = "jsonb")
-    private Set<String> certificate;
+    private String certificate;
 
     private int priority;
 
+    public Set<String> getLanguagesSet() {
+        if (languages == null || languages.isBlank()) return Set.of();
+        return JsonUtils.fromJsonString(languages, new TypeReference<>() {});
+    }
 
+    public CoachListView setLanguagesSet(Set<String> v) {
+        this.languages = JsonUtils.toJsonString(v);
+        return this;
+    }
+
+    public Set<String> getFieldsSet() {
+        if (fields == null || fields.isBlank()) return Set.of();
+        return JsonUtils.fromJsonString(fields, new TypeReference<>() {});
+    }
+
+    public CoachListView setFieldsSet(Set<String> v) {
+        this.fields = JsonUtils.toJsonString(v);
+        return this;
+    }
+
+    public Set<Coach.PrimaryRole> getPrimaryRolesSet() {
+        if (primaryRoles == null || primaryRoles.isBlank()) return Set.of();
+        return JsonUtils.fromJsonString(primaryRoles, new TypeReference<>() {});
+    }
+
+    public CoachListView setPrimaryRolesSet(Set<Coach.PrimaryRole> v) {
+        this.primaryRoles = JsonUtils.toJsonString(v);
+        return this;
+    }
+
+    public Set<String> getCertificateSet() {
+        if (certificate == null || certificate.isBlank()) return Set.of();
+        return JsonUtils.fromJsonString(certificate, new TypeReference<>() {});
+    }
+
+    public CoachListView setCertificateSet(Set<String> v) {
+        this.certificate = JsonUtils.toJsonString(v);
+        return this;
+    }
 }

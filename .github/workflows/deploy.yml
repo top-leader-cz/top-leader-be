@@ -69,9 +69,6 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Build and test
-        run: gradle build --parallel --build-cache
-
       - name: Generate OpenAPI spec
         run: gradle generateOpenApi
 

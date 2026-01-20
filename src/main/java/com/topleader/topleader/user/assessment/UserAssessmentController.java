@@ -4,7 +4,6 @@
 package com.topleader.topleader.user.assessment;
 
 import com.topleader.topleader.common.exception.NotFoundException;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -34,7 +33,6 @@ public class UserAssessmentController {
     }
 
     @DeleteMapping
-    @Transactional
     public void deleteUserAssessments(@AuthenticationPrincipal UserDetails user) {
         userAssessmentRepository.deleteAllByUsername(user.getUsername());
     }
@@ -45,10 +43,7 @@ public class UserAssessmentController {
         @PathVariable Long assessmentId
     ) {
 
-        return userAssessmentRepository.findById(new UserAssessmentId()
-                .setUsername(user.getUsername())
-                .setQuestionId(assessmentId)
-            )
+        return userAssessmentRepository.findByUsernameAndQuestionId(user.getUsername(), assessmentId)
             .map(AnsweredQuestionDto::from)
             .orElseThrow(NotFoundException::new);
     }
@@ -60,13 +55,15 @@ public class UserAssessmentController {
         @RequestBody SetAssessmentRequest request
     ) {
 
-        return AnsweredQuestionDto.from(
-            userAssessmentRepository.save(new UserAssessment()
+        var assessment = userAssessmentRepository.findByUsernameAndQuestionId(user.getUsername(), assessmentId)
+            .orElse(new UserAssessment()
                 .setUsername(user.getUsername())
                 .setQuestionId(assessmentId)
-                .setAnswer(request.answer())
-            )
-        );
+            );
+
+        assessment.setAnswer(request.answer());
+
+        return AnsweredQuestionDto.from(userAssessmentRepository.save(assessment));
     }
 
     public record SetAssessmentRequest(Integer answer) {

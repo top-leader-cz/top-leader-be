@@ -6,7 +6,6 @@ import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import com.topleader.topleader.common.util.common.user.UserUtils;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -38,8 +37,8 @@ public class UserInsightService {
         var values = userInfo.getValues();
         var username = userInfo.getUsername();
 
-        var user = userRepository.findById(username).orElseThrow();
-        var userInsight = userInsightRepository.findById(username).orElse(new UserInsight().setUsername(username));
+        var user = userRepository.findByUsername(username).orElseThrow();
+        var userInsight = userInsightRepository.findByUsername(username).orElse(new UserInsight().setUsername(username));
         userInsight.setLeadershipPending(true).setAnimalSpiritPending(true);
         var savedUserInsight = userInsightRepository.save(userInsight);
         var leaderShip = CompletableFuture.supplyAsync(() -> aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
@@ -58,28 +57,27 @@ public class UserInsightService {
     }
 
     public UserInsight getInsight(String username) {
-        return userInsightRepository.findById(username).orElse(new UserInsight().setUsername(username));
+        return userInsightRepository.findByUsername(username).orElse(new UserInsight().setUsername(username));
     }
 
     public UserInsight save(UserInsight userInsight) {
-        return userInsightRepository.saveAndFlush(userInsight);
+        return userInsightRepository.save(userInsight);
     }
 
     @Async
-    @Transactional
     public void generateTipsAsync(String username) {
         generateTips(username);
     }
 
     public void generateTips(String username) {
         log.info("Generating tips for user: {}", username);
-        var userInfo = userInfoRepository.findById(username).orElse(new UserInfo().setUsername(username));
-        var userInsight = userInsightRepository.findById(username).orElse(new UserInsight().setUsername(username));
+        var userInfo = userInfoRepository.findByUsername(username).orElse(new UserInfo().setUsername(username));
+        var userInsight = userInsightRepository.findByUsername(username).orElse(new UserInsight().setUsername(username));
 
         if (hasFilledOutStrengthsAndValues(userInfo) && shouldGenerateTips(userInsight)) {
             userInsight.setDailyTipsPending(true);
             var savedUserInsight = userInsightRepository.save(userInsight);
-            var user = userRepository.findById(username).orElseThrow();
+            var user = userRepository.findByUsername(username).orElseThrow();
             var strengths = userInfo.getTopStrengths();
             var values = userInfo.getValues();
             var locale = user.getLocale();

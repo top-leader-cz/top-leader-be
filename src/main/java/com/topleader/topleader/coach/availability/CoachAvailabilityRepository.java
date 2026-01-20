@@ -5,17 +5,18 @@ package com.topleader.topleader.coach.availability;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jdbc.repository.query.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 
 /**
  * @author Daniel Slavik
  */
-public interface CoachAvailabilityRepository extends JpaRepository<CoachAvailability, Long> {
+public interface CoachAvailabilityRepository extends CrudRepository<CoachAvailability, Long>, PagingAndSortingRepository<CoachAvailability, Long> {
 
     List<CoachAvailability> findAllByUsernameAndRecurringIsTrue(String username);
 
-    @Query("SELECT c FROM CoachAvailability c WHERE c.username = :username AND c.dateTimeFrom <= :to AND c.dateTimeTo >= :from")
+    @Query("SELECT * FROM coach_availability WHERE username = :username AND date_time_from <= :to AND date_time_to >= :from")
     List<CoachAvailability> findAllByUsernameAndDateTimeFromAfterAndDateTimeToBefore(String username, LocalDateTime from, LocalDateTime to);
 }

@@ -214,7 +214,7 @@ class UserInsightControllerIT extends IntegrationTest {
         await().atMost(10, TimeUnit.SECONDS)
                 .pollInterval(1, TimeUnit.SECONDS)
                 .untilAsserted(() -> {
-                    var userInsight = userInsightRepository.findById("user").orElseThrow();
+                    var userInsight = userInsightRepository.findByUsername("user").orElseThrow();
 
                     // Check suggestion first (should be synchronous)
                     assertThat(userInsight.isSuggestionPending()).isFalse();

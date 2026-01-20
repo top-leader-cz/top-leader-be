@@ -222,11 +222,11 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
         ;
 
-        final var userInfoData = userInfoRepository.findById("user").orElseThrow();
+        final var userInfoData = userInfoRepository.findByUsername("user").orElseThrow();
 
         assertIterableEquals(List.of("v1", "v2"), userInfoData.getStrengths());
 
-        final var data = dataHistoryRepository.findAllByUsernameAndType("user", DataHistory.Type.STRENGTHS);
+        final var data = dataHistoryRepository.findByUsernameAndType("user", DataHistory.Type.STRENGTHS.name());
 
         assertEquals(1, data.size());
         final var storedHistoryData = data.get(0);
@@ -257,11 +257,11 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
         ;
 
-        final var userInfoData = userInfoRepository.findById("user").orElseThrow();
+        final var userInfoData = userInfoRepository.findByUsername("user").orElseThrow();
 
         assertIterableEquals(List.of("v1", "v2"), userInfoData.getValues());
 
-        final var data = dataHistoryRepository.findAllByUsernameAndType("user", DataHistory.Type.VALUES);
+        final var data = dataHistoryRepository.findByUsernameAndType("user", DataHistory.Type.VALUES.name());
 
         assertEquals(1, data.size());
         final var storedHistoryData = data.get(0);
@@ -305,7 +305,7 @@ class UserInfoControllerIT extends IntegrationTest {
 
         assertEquals(2, sessions.size());
 
-        final var user = userRepository.findById("user_with_coach").orElseThrow();
+        final var user = userRepository.findByUsername("user_with_coach").orElseThrow();
 
         assertEquals(180, user.getScheduledCredit());
         assertEquals(400, user.getCredit());
@@ -527,7 +527,7 @@ class UserInfoControllerIT extends IntegrationTest {
         assertThat(session.getUsername(), is("user_with_coach"));
         assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findById("user_with_coach").orElseThrow();
+        final var user = userRepository.findByUsername("user_with_coach").orElseThrow();
 
         assertThat(user.getScheduledCredit(), is(400));
         assertThat(user.getCredit(), is(400));

@@ -9,26 +9,20 @@ import com.topleader.topleader.common.calendar.domain.SyncEvent;
 import com.topleader.topleader.common.calendar.calendly.domain.TokenResponse;
 
 import com.topleader.topleader.coach.availability.AvailabilityUtils;
-import com.topleader.topleader.coach.availability.CoachAvailabilityRepository;
 import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
-import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
 import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
-import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
 import java.nio.charset.Charset;
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +50,9 @@ public class CalendlyService {
 
     @Transactional
     public void saveInfo(CalendarSyncInfo info) {
-        log.info("Saving Calendly info: {}", info.getId().getUsername());
-        repository.deleteByUsername(info.getId().getUsername());
-        availabilitySettingRepository.deleteByCoach(info.getId().getUsername());
+        log.info("Saving Calendly info: {}", info.getUsername());
+        repository.deleteByUsername(info.getUsername());
+        availabilitySettingRepository.deleteByCoach(info.getUsername());
         repository.save(info);
     }
 
@@ -94,7 +88,7 @@ public class CalendlyService {
 
     public List<SyncEvent> getUserEvents(String username, LocalDateTime startDate, LocalDateTime endDate) {
         log.info("Looking for Calendly info");
-        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CalendarSyncInfo.SyncType.CALENDLY))
+        return repository.findByUsernameAndSyncType(username, CalendarSyncInfo.SyncType.CALENDLY)
                 .map(info -> {
                     log.info("Fetching Calendly user events");
                     try {
@@ -122,7 +116,7 @@ public class CalendlyService {
 
     public List<EventType> getEventTypes(String username) {
         log.info("Fetching Calendly events types");
-        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CALENDLY))
+        return repository.findByUsernameAndSyncType(username, CALENDLY)
                 .map(info -> {
                     try {
                         var response = restClient.get().uri(properties.getBaseApiUrl().concat("/event_types?user={user}"),
@@ -153,7 +147,7 @@ public class CalendlyService {
 
     public List<ReoccurringEventDto> getEventAvailability(String username, String uuid) {
         log.info("Fetching Calendly scheduled availability");
-        return repository.findById(new CalendarSyncInfo.CalendarInfoId(username, CALENDLY))
+        return repository.findByUsernameAndSyncType(username, CALENDLY)
                 .map(info -> {
                     try {
                         var from = LocalDate.now().plusDays(1).atStartOfDay();
