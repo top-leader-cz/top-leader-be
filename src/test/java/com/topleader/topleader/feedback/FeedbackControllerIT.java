@@ -3,10 +3,12 @@ package com.topleader.topleader.feedback;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
+import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.feedback.feedback_notification.FeedbackNotificationRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormQuestionRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.QuestionRepository;
+import com.topleader.topleader.feedback.repository.RecipientRepository;
 import com.topleader.topleader.user.UserRepository;
 
 import java.time.LocalDateTime;
@@ -45,6 +47,9 @@ class FeedbackControllerIT extends IntegrationTest {
 
     @Autowired
     FeedbackNotificationRepository feedbackNotificationRepository;
+
+    @Autowired
+    RecipientRepository recipientRepository;
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/feedback-answers.sql"})
@@ -292,6 +297,28 @@ class FeedbackControllerIT extends IntegrationTest {
         var expected = TestUtils.readFileAsString("feedback/json/update-form-removed-recipient-response.json");
 
         TestUtils.assertJsonEquals(result, expected);
+
+        Assertions.assertThat(greenMail.getReceivedMessages()).isEmpty();
+    }
+
+    @Test
+    @Sql(scripts = {"/feedback/sql/feedback.sql"})
+    @WithUserDetails("jakub.svezi@dummy.com")
+    void updateFormWithDuplicateRecipient() throws Exception {
+        var recipientsBefore = recipientRepository.findByFormId(1L);
+        Assertions.assertThat(recipientsBefore).hasSize(2);
+
+        mvc.perform(put("/api/latest/feedback/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(TestUtils.readFileAsString("feedback/json/update-form-duplicate-recipient-request.json")))
+                .andExpect(status().isOk());
+
+        var recipientsAfter = recipientRepository.findByFormId(1L);
+        Assertions.assertThat(recipientsAfter).hasSize(2);
+        Assertions.assertThat(recipientsAfter.stream()
+                .map(Recipient::getRecipient)
+                .distinct()
+                .count()).isEqualTo(2);
 
         Assertions.assertThat(greenMail.getReceivedMessages()).isEmpty();
     }

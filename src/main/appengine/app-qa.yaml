@@ -8,6 +8,7 @@ network:
   session_affinity: true
 env_variables:
   SPRING_PROFILES_ACTIVE: "qa"
+  GCP_JSON_LOGS: "CONSOLE_JSON"
   SPRING_DATASOURCE_URL: "jdbc:postgresql:///top_leader"
   SPRING_DATASOURCE_PASSWORD: "${SPRING_DATASOURCE_PASSWORD}"
   SPRING_MAIL_PASSWORD:  "${SPRING_MAIL_PASSWORD}"

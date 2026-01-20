@@ -71,6 +71,7 @@ public class FeedbackController {
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     @Transactional
     public FeedbackFormDto createForm(@RequestBody @Valid FeedbackFormRequest request) {
+       log.info("Create Feedback Form Request: {}", request);
        var form = saveForm(request);
         if(!request.isDraft()) {
             feedbackService.sendFeedbacks(getFeedbackData(request, form));
@@ -88,10 +89,16 @@ public class FeedbackController {
         var formQuestions = FeedbackFormRequest.toQuestions(request.getQuestions(), form.getId());
         feedbackFormQuestionRepository.saveAll(formQuestions);
 
-        // Only save new recipients (those without IDs)
+        // Get existing recipient emails to check for duplicates
+        var existingRecipientEmails = recipientRepository.findByFormId(form.getId()).stream()
+                .map(Recipient::getRecipient)
+                .collect(Collectors.toSet());
+
+        // Only save new recipients that don't already exist in the database
         var newRecipients = FeedbackFormRequest.toRecipients(
                 request.getRecipients().stream()
                         .filter(r -> r.id() == null)
+                        .filter(r -> !existingRecipientEmails.contains(r.username()))
                         .toList(),
                 form.getId());
         recipientRepository.saveAll(newRecipients);
@@ -110,6 +117,7 @@ public class FeedbackController {
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     @Transactional
     public FeedbackFormDto updateForm(@PathVariable long id, @RequestBody @Valid FeedbackFormRequest request) {
+        log.info("update form id {}", id);
         var savedForm = feedbackService.fetchForm(id);
         validate(savedForm.getUsername());
         var defaultKeys = feedbackService.fetchOptions().stream().map(Question::getKey)
@@ -135,10 +143,17 @@ public class FeedbackController {
         } else {
             recipientRepository.deleteByFormIdAndIdNotIn(id, keepIds);
         }
-        // Only save new recipients (those without IDs)
+
+        // Get existing recipient emails to check for duplicates
+        var existingRecipientEmails = recipientRepository.findByFormId(id).stream()
+                .map(Recipient::getRecipient)
+                .collect(Collectors.toSet());
+
+        // Only save new recipients that don't already exist in the database
         var newRecipients = FeedbackFormRequest.toRecipients(
                 request.getRecipients().stream()
                         .filter(r -> r.id() == null)
+                        .filter(r -> !existingRecipientEmails.contains(r.username()))
                         .toList(),
                 id);
         log.info("recipient to save: {}", newRecipients);
@@ -153,6 +168,7 @@ public class FeedbackController {
     @DeleteMapping("/{id}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public void deleteForm( @PathVariable long id) {
+        log.info("delete form id {}", id);
         var savedForm = feedbackService.fetchForm(id);
         validate(savedForm.getUsername());
         feedbackService.deleteForm(id);

@@ -7,6 +7,7 @@ server:
         same-site: lax
         secure: true
         http-only: true
+
 spring:
   cloud:
     gcp:
@@ -21,6 +22,10 @@ spring:
   datasource:
     username: top-leader
     hikari:
+      # Optimized for virtual threads (QA)
+      minimum-idle: 30
+      maximum-pool-size: 100
+      connection-timeout: 5000
       data-source-properties:
         socketFactory: com.google.cloud.sql.postgres.SocketFactory
         cloudSqlInstance: topleader-394306:europe-west3:top-leader-db

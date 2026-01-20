@@ -3,6 +3,7 @@ plugins {
     id("org.springframework.boot") version "4.0.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.freefair.lombok") version "9.2.0"
+    id("org.graalvm.buildtools.native") version "0.10.6"
 }
 
 group = "com.topleader"
@@ -68,9 +69,12 @@ dependencies {
     implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
 
-    // Logging
+    // H2 for AOT processing only - excluded from native image via nativeImageClasspath
+    runtimeOnly("com.h2database:h2")
+
+
+    // Logging (JSON formatting handled by Spring Boot structured logging, not Log4j2 JsonTemplateLayout)
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
-    implementation("org.apache.logging.log4j:log4j-layout-template-json:2.24.3")
 
     // Utilities
     implementation("dev.failsafe:failsafe:3.3.2")
@@ -105,3 +109,94 @@ val generateOpenApi by tasks.registering(Test::class) {
     include("**/OpenApiGeneratorTest.class")
     shouldRunAfter(tasks.test)
 }
+
+// GraalVM Native Image configuration
+graalvmNative {
+    binaries {
+        named("main") {
+            imageName.set("top-leader")
+            mainClass.set("com.topleader.topleader.TopLeaderApplication")
+
+            val baseArgs = mutableListOf(
+                "-H:+ReportExceptionStackTraces",
+                "-Ob",  // Quick build - faster compilation, slower runtime
+                "-J-Xmx10g",  // More heap for faster build
+                listOf(
+                    "org.slf4j",
+                    "org.apache.logging.slf4j",
+                    "org.apache.logging.log4j",
+                    "org.apache.commons.logging",
+                    "org.springframework.boot.logging",
+                    "org.springframework.boot.ansi",
+                    "com.fasterxml.jackson",
+                    "org.yaml.snakeyaml",
+                    "org.codehaus.stax2",
+                    "com.ctc.wstx"
+                ).joinToString(",", prefix = "--initialize-at-build-time=")
+            )
+
+            // Add CPU optimizations if specified (e.g., -Pnative.march=x86-64-v3)
+            val march = project.findProperty("native.march") as String?
+            if (march != null) {
+                baseArgs.add("-march=$march")
+            }
+
+            buildArgs.addAll(baseArgs)
+            // Exclude H2 from native image - only needed for AOT processing
+            classpath = classpath.filter { !it.name.startsWith("h2-") }
+        }
+
+        named("test") {
+            imageName.set("top-leader-tests")
+
+            val testArgs = mutableListOf(
+                "-H:+ReportExceptionStackTraces",
+                "-Ob",  // Quick build - faster compilation, slower runtime
+                "-J-Xmx10g",  // More heap for faster build
+                listOf(
+                    "org.slf4j",
+                    "org.apache.logging.slf4j",
+                    "org.apache.logging.log4j",
+                    "org.apache.commons.logging",
+                    "org.springframework.boot.logging",
+                    "org.springframework.boot.ansi",
+                    "com.fasterxml.jackson",
+                    "org.yaml.snakeyaml",
+                    "org.codehaus.stax2",
+                    "com.ctc.wstx",
+                    // JUnit Platform classes need build-time initialization
+                    "org.junit.platform.launcher.core"
+                ).joinToString(",", prefix = "--initialize-at-build-time=")
+            )
+
+            buildArgs.addAll(testArgs)
+        }
+    }
+    toolchainDetection.set(false)
+}
+
+// Configure AOT processing to use H2 (only for AOT hint generation, not baked into runtime)
+tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") {
+    args(
+        "--spring.datasource.url=jdbc:h2:mem:aot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "--spring.datasource.username=sa",
+        "--spring.datasource.password=",
+        "--spring.datasource.driver-class-name=org.h2.Driver",
+        "--spring.flyway.enabled=false",
+        "--spring.ai.openai.api-key=dummy-key"
+    )
+}
+
+// Test AOT needs H2 for AOT processing (TestContainers dynamic properties don't work during AOT)
+tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
+    jvmArgs(
+        "-Dspring.datasource.url=jdbc:h2:mem:testaot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "-Dspring.datasource.username=sa",
+        "-Dspring.datasource.password=",
+        "-Dspring.datasource.driver-class-name=org.h2.Driver",
+        "-Dspring.flyway.enabled=false",
+        "-Dspring.ai.openai.api-key=dummy-key",
+        "-Dspring.test.database.replace=NONE"
+    )
+}
+

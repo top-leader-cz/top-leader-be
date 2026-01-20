@@ -22,6 +22,10 @@ spring:
   datasource:
     username: top-leader-prod
     hikari:
+      # Optimized for virtual threads (production)
+      minimum-idle: 30
+      maximum-pool-size: 100
+      connection-timeout: 5000
       data-source-properties:
         socketFactory: com.google.cloud.sql.postgres.SocketFactory
         cloudSqlInstance: topleader-394306:europe-west3:top-leader-db
