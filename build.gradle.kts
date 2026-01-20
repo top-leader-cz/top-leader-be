@@ -36,10 +36,6 @@ dependencyManagement {
 dependencies {
     // Google Cloud
     implementation("com.google.apis:google-api-services-calendar:v3-rev20250404-2.0.0")
-    implementation("com.google.apis:google-api-services-oauth2:v2-rev20200213-2.0.0")
-    implementation("com.google.api-client:google-api-client:2.6.0") {
-        exclude(group = "commons-logging", module = "commons-logging")
-    }
     implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
     implementation("com.google.cloud.sql:postgres-socket-factory:1.28.0")
 
@@ -73,7 +69,7 @@ dependencies {
     runtimeOnly("com.h2database:h2")
 
 
-    // Logging (JSON formatting handled by Spring Boot structured logging, not Log4j2 JsonTemplateLayout)
+    // Logging (JSON formatting handled by Spring Boot structured logging)
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
 
     // Utilities

@@ -178,7 +178,11 @@ public class FeedbackController {
     public FeedbackData getFeedbackData(FeedbackFormRequest request, FeedbackForm form) {
         var user = userRepository.findByUsername(form.getUsername()).orElseThrow();
         var byUsername = request.getRecipients().stream()
-                .collect(Collectors.toMap(RecipientDto::username, Function.identity()));
+                .collect(Collectors.toMap(
+                        RecipientDto::username,
+                        Function.identity(),
+                        (existing, duplicate) -> existing.id() != null ? existing : duplicate
+                ));
         var formRecipients = recipientRepository.findByFormId(form.getId());
         return new FeedbackData().setLocale(request.getLocale())
                 .setValidTo(request.getValidTo())

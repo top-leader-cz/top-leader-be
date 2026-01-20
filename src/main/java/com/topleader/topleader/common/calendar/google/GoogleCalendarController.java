@@ -5,7 +5,6 @@ package com.topleader.topleader.common.calendar.google;
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
 import com.google.api.services.calendar.CalendarScopes;
-import com.google.api.services.oauth2.Oauth2Scopes;
 import java.io.IOException;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -86,8 +85,8 @@ public class GoogleCalendarController {
             .setApprovalPrompt("force")
             .setAccessType("offline")
             .setScopes(Set.of(
-                Oauth2Scopes.OPENID,
-                Oauth2Scopes.USERINFO_EMAIL,
+                "openid",
+                "https://www.googleapis.com/auth/userinfo.email",
                 CalendarScopes.CALENDAR_READONLY
             ))
             .setState(Base64.encodeBase64String(username.getBytes()))
