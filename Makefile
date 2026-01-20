@@ -30,6 +30,10 @@ build:
 native:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25.0.1-graalce $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache
 
+# Build native image optimized for Linux x86-64 (for deployment)
+native-linux:
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25.0.1-graalce $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache -Pnative.march=x86-64-v3
+
 # Deploy to QA (local build + GitHub Actions verification)
 deploy-qa: build
 	git tag -d qa-deploy 2>/dev/null || true

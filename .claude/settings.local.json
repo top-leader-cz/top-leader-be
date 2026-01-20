@@ -55,7 +55,8 @@
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle test:*)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle compileJava:*)",
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25 ~/.sdkman/candidates/gradle/current/bin/gradle:*)",
-      "Bash(make:*)"
+      "Bash(make:*)",
+      "Bash(~/.sdkman/candidates/gradle/current/bin/gradle:*)"
     ]
   }
 }

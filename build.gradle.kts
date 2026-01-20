@@ -116,7 +116,8 @@ graalvmNative {
         named("main") {
             imageName.set("top-leader")
             mainClass.set("com.topleader.topleader.TopLeaderApplication")
-            buildArgs.addAll(
+
+            val baseArgs = mutableListOf(
                 "-H:+ReportExceptionStackTraces",
                 "-Ob",  // Quick build - faster compilation, slower runtime
                 "-J-Xmx10g",  // More heap for faster build
@@ -133,6 +134,14 @@ graalvmNative {
                     "com.ctc.wstx"
                 ).joinToString(",", prefix = "--initialize-at-build-time=")
             )
+
+            // Add CPU optimizations if specified (e.g., -Pnative.march=x86-64-v3)
+            val march = project.findProperty("native.march") as String?
+            if (march != null) {
+                baseArgs.add("-march=$march")
+            }
+
+            buildArgs.addAll(baseArgs)
             // Exclude H2 from native image - only needed for AOT processing
             classpath = classpath.filter { !it.name.startsWith("h2-") }
         }
