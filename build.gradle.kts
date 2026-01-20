@@ -145,6 +145,32 @@ graalvmNative {
             // Exclude H2 from native image - only needed for AOT processing
             classpath = classpath.filter { !it.name.startsWith("h2-") }
         }
+
+        named("test") {
+            imageName.set("top-leader-tests")
+
+            val testArgs = mutableListOf(
+                "-H:+ReportExceptionStackTraces",
+                "-Ob",  // Quick build - faster compilation, slower runtime
+                "-J-Xmx10g",  // More heap for faster build
+                listOf(
+                    "org.slf4j",
+                    "org.apache.logging.slf4j",
+                    "org.apache.logging.log4j",
+                    "org.apache.commons.logging",
+                    "org.springframework.boot.logging",
+                    "org.springframework.boot.ansi",
+                    "com.fasterxml.jackson",
+                    "org.yaml.snakeyaml",
+                    "org.codehaus.stax2",
+                    "com.ctc.wstx",
+                    // JUnit Platform classes need build-time initialization
+                    "org.junit.platform.launcher.core"
+                ).joinToString(",", prefix = "--initialize-at-build-time=")
+            )
+
+            buildArgs.addAll(testArgs)
+        }
     }
     toolchainDetection.set(false)
 }
