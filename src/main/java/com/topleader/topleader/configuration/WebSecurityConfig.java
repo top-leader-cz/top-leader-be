@@ -3,8 +3,8 @@
  */
 package com.topleader.topleader.configuration;
 
+import com.topleader.topleader.common.metrics.MetricsService;
 import com.topleader.topleader.common.util.user.UserDetailUtils;
-import io.micrometer.core.instrument.Counter;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -66,7 +66,7 @@ public class WebSecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain filterChain(HttpSecurity http, Counter loginCounter) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, MetricsService metrics) throws Exception {
         http.addFilterAfter((request, response, filterChain) -> {
             try {
                 var username = UserDetailUtils.getLoggedUsername();
@@ -91,7 +91,7 @@ public class WebSecurityConfig {
             )
             .formLogin(f -> f
                 .successHandler((req, res, auth) -> {
-                    loginCounter.increment();
+                    metrics.incrementLogin();
                     res.setStatus(HttpStatus.NO_CONTENT.value());
                 })
                 .failureHandler(new SimpleUrlAuthenticationFailureHandler())

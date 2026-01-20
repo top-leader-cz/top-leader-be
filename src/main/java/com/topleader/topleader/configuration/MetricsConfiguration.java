@@ -6,7 +6,6 @@ package com.topleader.topleader.configuration;
 
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
-import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.context.annotation.Bean;
@@ -14,37 +13,24 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.repository.CrudRepository;
 
 /**
- * Custom business metrics for monitoring.
+ * Gauge metrics configuration for monitoring live repository state.
+ * For counters and timers, use MetricsService instead.
  */
 @Configuration
 public class MetricsConfiguration {
-
-    @Bean
-    public Counter loginCounter(MeterRegistry registry) {
-        return Counter.builder("topleader.logins.total")
-                .description("Total number of successful user logins")
-                .register(registry);
-    }
-
-    @Bean
-    public Counter sessionScheduledCounter(MeterRegistry registry) {
-        return Counter.builder("topleader.sessions.scheduled.total")
-                .description("Total number of scheduled coaching sessions")
-                .register(registry);
-    }
 
     @Bean
     public ScheduledSessionMetrics scheduledSessionMetrics(
             MeterRegistry registry,
             ScheduledSessionRepository repository) {
 
-        // Gauge for upcoming sessions
+        // Gauge for total scheduled sessions (live count)
         Gauge.builder("topleader.sessions.scheduled", repository,
                         CrudRepository::count)
                 .description("Total number of scheduled sessions")
                 .register(registry);
 
-        // Gauge for sessions by status
+        // Gauge for sessions by status (with tags)
         for (ScheduledSession.Status status : ScheduledSession.Status.values()) {
             Gauge.builder("topleader.sessions.by_status", repository,
                             repo -> repo.countByStatus(status))
