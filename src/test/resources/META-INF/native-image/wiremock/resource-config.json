@@ -1,0 +1,21 @@
+{
+  "resources": {
+    "includes": [
+      {
+        "pattern": "keystore"
+      },
+      {
+        "pattern": ".*\\.hbs"
+      },
+      {
+        "pattern": ".*\\.mustache"
+      },
+      {
+        "pattern": "handlebars/.*"
+      },
+      {
+        "pattern": "templates/.*"
+      }
+    ]
+  }
+}

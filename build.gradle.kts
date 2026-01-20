@@ -85,6 +85,7 @@ dependencies {
     testImplementation("com.icegreen:greenmail:2.1.8")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
     testImplementation("org.wiremock:wiremock-standalone:3.10.0")
+    testImplementation("org.wiremock.integrations.testcontainers:wiremock-testcontainers-module:1.0-alpha-13")
 }
 
 tasks.withType<Test> {
@@ -161,7 +162,8 @@ graalvmNative {
                     "org.codehaus.stax2",
                     "com.ctc.wstx",
                     // JUnit Platform classes need build-time initialization
-                    "org.junit.platform.launcher.core"
+                    "org.junit.platform.launcher.core",
+                    "org.junit.jupiter.engine.descriptor"
                 ).joinToString(",", prefix = "--initialize-at-build-time=")
             )
 
