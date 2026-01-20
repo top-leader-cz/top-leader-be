@@ -22,14 +22,8 @@ import com.topleader.topleader.common.util.common.JsonUtils;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -65,18 +59,14 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     BadgeRepository badgeRepository;
 
     @Autowired
-    ChatModel chatModel;
-
-    @Autowired
-    ChatClient chatClient;
-
-    @Autowired
     ArticleRepository articleRepository;
 
 
     @Test
     @WithMockUser("user2")
     void setUserSessionReflectionData() throws Exception {
+        var wireMockUrl = getWireMockBaseUrl();
+
         // Mock AI client response for user articles generation
         var expectedArticlesJson = """
                 [
@@ -84,7 +74,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                         "title": "Effective Leadership Communication",
                         "author": "John Doe",
                         "source": "Leadership Journal",
-                        "url": "http://localhost:8060/article1",
+                        "url": "%s/article1",
                         "readTime": "5 min",
                         "language": "en",
                         "perex": "Learn how to communicate effectively as a leader",
@@ -97,7 +87,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                         "title": "Building Team Motivation",
                         "author": "Jane Smith",
                         "source": "Management Today",
-                        "url": "http://localhost:8060/article2",
+                        "url": "%s/article2",
                         "readTime": "3 min",
                         "language": "en",
                         "perex": "Discover ways to keep your team motivated",
@@ -107,22 +97,22 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                         "date": "2023-10-02"
                     }
                 ]
-                """;
+                """.formatted(wireMockUrl, wireMockUrl);
 
-        // Configure the mock to return "action-goal-response" for all chatModel.call() invocations
-        Mockito.when(chatModel.call(Mockito.anyString())).thenReturn("action-goal-response");
-        Mockito.when(chatModel.call(Mockito.eq("test preview prompt [do not lose]"))).thenReturn("""
+        // Configure stubs for ChatModel responses
+        aiStubRegistry.setDefaultChatModelResponse("action-goal-response");
+        aiStubRegistry.stubChatModelResponse("test preview prompt [do not lose]", """
                                [
                   {
                     "title": "Test Preview",
                     "url": "https://youtube.com/watch?v=test",
-                    "thumbnail": "http://localhost:8060/hqdefault"
+                    "thumbnail": "%s/hqdefault"
                   }
                 ]
-                """);
+                """.formatted(wireMockUrl));
 
-        mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
-        mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200)
+        WireMock.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
+        WireMock.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200)
                 .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 .withBody("""
                         {
@@ -130,29 +120,27 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                             "data": [
                                 {
                                     "revised_prompt": "Paint a tranquil environment",
-                                    "url": "http://localhost:8060/test-image.png"
+                                    "url": "%s/test-image.png"
                                 }
                             ]
                         }
-                                """)));
-        mockServer.stubFor(WireMock.get(urlEqualTo("/test-image.png")).willReturn(aResponse().withStatus(200)
+                                """.formatted(wireMockUrl))));
+        WireMock.stubFor(WireMock.get(urlEqualTo("/test-image.png")).willReturn(aResponse().withStatus(200)
                 .withHeader("Content-Type", "image/png")
                 .withBody(java.util.Base64.getDecoder().decode(
                         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
                 ))));
 
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().entity(new ParameterizedTypeReference<List<UserArticle>>() {
-                }))
-                .thenReturn(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<>() {
-                }));
+        aiStubRegistry.stubChatClientEntity(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<List<UserArticle>>() {
+        }));
 
-        mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article1"))
+        WireMock.stubFor(WireMock.get(WireMock.urlEqualTo("/article1"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "text/html")
                         .withBody("<html><body>Valid article content</body></html>")));
 
-        mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article2"))
+        WireMock.stubFor(WireMock.get(WireMock.urlEqualTo("/article2"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withHeader("Content-Type", "text/html")
@@ -175,7 +163,7 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
         ;
 
         Awaitility.await()
-                .atMost(Duration.ofSeconds(1))
+                .atMost(Duration.ofSeconds(10))
                 .pollInterval(Duration.ofMillis(500))
                 .untilAsserted(() -> {
                     final var historyData = dataHistoryRepository.findByUsernameAndType("user2", DataHistory.Type.USER_SESSION.name());

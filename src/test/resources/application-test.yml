@@ -26,6 +26,10 @@ spring:
   flyway:
     enabled: true
 
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
+
   jackson:
     deserialization:
       fail-on-null-for-primitives: false

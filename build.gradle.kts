@@ -96,6 +96,7 @@ dependencies {
     testImplementation("com.icegreen:greenmail:2.1.8")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
     testImplementation("org.wiremock:wiremock-standalone:3.10.0")
+    testImplementation("org.wiremock.integrations.testcontainers:wiremock-testcontainers-module:1.0-alpha-13")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
 }
 
@@ -190,6 +191,10 @@ graalvmNative {
                 "-H:+ReportExceptionStackTraces",
                 "-Ob",  // Quick build - faster compilation, slower runtime
                 "-J-Xmx10g",  // More heap for faster build
+                "-J-XX:+UseParallelGC",  // Parallel GC for faster build
+                "-J-XX:ActiveProcessorCount=8",  // Use 8 cores for build
+                "-H:+UnlockExperimentalVMOptions",
+                "-H:+UseG1GC",
                 listOf(
                     "org.slf4j",
                     "org.apache.logging.slf4j",
@@ -200,7 +205,13 @@ graalvmNative {
                     "com.fasterxml.jackson",
                     "org.yaml.snakeyaml",
                     "org.codehaus.stax2",
-                    "com.ctc.wstx"
+                    "com.ctc.wstx",
+                    "org.springframework.util",
+                    "org.springframework.core",
+                    "org.springframework.beans",
+                    "org.springframework.context",
+                    "org.springframework.web",
+                    "org.postgresql"
                 ).joinToString(",", prefix = "--initialize-at-build-time=")
             )
 
@@ -213,6 +224,33 @@ graalvmNative {
             buildArgs.addAll(baseArgs)
             // Exclude H2 from native image - only needed for AOT processing
             classpath = classpath.filter { !it.name.startsWith("h2-") }
+        }
+
+        named("test") {
+            imageName.set("top-leader-tests")
+
+            val testArgs = mutableListOf(
+                "-H:+ReportExceptionStackTraces",
+                "-Ob",  // Quick build - faster compilation, slower runtime
+                "-J-Xmx10g",  // More heap for faster build
+                listOf(
+                    "org.slf4j",
+                    "org.apache.logging.slf4j",
+                    "org.apache.logging.log4j",
+                    "org.apache.commons.logging",
+                    "org.springframework.boot.logging",
+                    "org.springframework.boot.ansi",
+                    "com.fasterxml.jackson",
+                    "org.yaml.snakeyaml",
+                    "org.codehaus.stax2",
+                    "com.ctc.wstx",
+                    // JUnit Platform classes need build-time initialization
+                    "org.junit.platform.launcher.core",
+                    "org.junit.jupiter.engine.descriptor"
+                ).joinToString(",", prefix = "--initialize-at-build-time=")
+            )
+
+            buildArgs.addAll(testArgs)
         }
     }
     toolchainDetection.set(false)

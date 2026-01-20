@@ -31,7 +31,7 @@ class CalendlyControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(authorities = "JOB")
     void calendlyLogin() throws Exception {
-        mockServer.stubFor(WireMock.post(urlEqualTo("/oauth/token"))
+        WireMock.stubFor(WireMock.post(urlEqualTo("/oauth/token"))
                 .withHeader(AUTHORIZATION, equalTo("Basic Ti1LWEROQTQ3Q19hRnYtdWxIZjRCRnNyaDd0T0F6RFNBY1J0S3VNRERYSToyUVJEVGkyME5XV0FCTlpMczQxYmk4cFBGMVI3NEJCTnFPbUxDUzRDRnJz"))
 //                .withRequestBody(equalTo("grant_type%3Dauthorization_code%26code%3Dcode%26redirect_uri%3Dhttp%3A%2F%2Flocalhost%3A8080%2Flogin%2Fcalendly%3Fusername%3Dcoach1"))
                 .willReturn(aResponse()
@@ -40,7 +40,7 @@ class CalendlyControllerIT extends IntegrationTest {
                         .withBody(TestUtils.readFileAsString("json/coach/calendly-token-response.json"))));
 
 
-        mockServer.stubFor(WireMock.get(urlEqualTo("/users/ownerId"))
+        WireMock.stubFor(WireMock.get(urlEqualTo("/users/ownerId"))
                 .withHeader(AUTHORIZATION, equalTo("Bearer accessToken"))
                 .willReturn(aResponse()
                         .withStatus(200)

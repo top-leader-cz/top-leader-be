@@ -4,41 +4,41 @@ import com.topleader.topleader.feedback.api.FeedbackData;
 import com.topleader.topleader.feedback.api.FeedbackFormRequest;
 import com.topleader.topleader.feedback.api.RecipientDto;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
+import com.topleader.topleader.feedback.entity.FeedbackFormQuestion;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.feedback.repository.FeedbackFormQuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
 class FeedbackControllerTest {
 
-    @Mock
-    private FeedbackService feedbackService;
-
-    @Mock
-    private FeedbackFormQuestionRepository feedbackFormQuestionRepository;
-
-    @Mock
-    private RecipientRepository recipientRepository;
-
-    @Mock
-    private UserRepository userRepository;
-
-    @InjectMocks
+    private StubUserRepository userRepository;
+    private StubRecipientRepository recipientRepository;
     private FeedbackController feedbackController;
+
+    @BeforeEach
+    void setUp() {
+        userRepository = new StubUserRepository();
+        recipientRepository = new StubRecipientRepository();
+        var feedbackFormQuestionRepository = new StubFeedbackFormQuestionRepository();
+        feedbackController = new FeedbackController(
+                null, // feedbackService - not used in tested method
+                feedbackFormQuestionRepository,
+                recipientRepository,
+                userRepository
+        );
+    }
 
     @Test
     void getFeedbackData_shouldHandleDuplicateRecipients() {
@@ -79,8 +79,8 @@ class FeedbackControllerTest {
                 .setToken("token123")
                 .setSubmitted(false);
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
-        when(recipientRepository.findByFormId(formId)).thenReturn(List.of(existingRecipient));
+        userRepository.setUser(user);
+        recipientRepository.setRecipients(List.of(existingRecipient));
 
         // When
         var result = feedbackController.getFeedbackData(request, form);
@@ -131,8 +131,8 @@ class FeedbackControllerTest {
                 .setToken("token123")
                 .setSubmitted(false);
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
-        when(recipientRepository.findByFormId(formId)).thenReturn(List.of(existingRecipient));
+        userRepository.setUser(user);
+        recipientRepository.setRecipients(List.of(existingRecipient));
 
         // When
         var result = feedbackController.getFeedbackData(request, form);
@@ -189,8 +189,8 @@ class FeedbackControllerTest {
                 .setToken("token2")
                 .setSubmitted(false);
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(user));
-        when(recipientRepository.findByFormId(formId)).thenReturn(List.of(recipient1, recipient2));
+        userRepository.setUser(user);
+        recipientRepository.setRecipients(List.of(recipient1, recipient2));
 
         // When
         var result = feedbackController.getFeedbackData(request, form);
@@ -201,5 +201,86 @@ class FeedbackControllerTest {
         assertThat(result.getRecipients())
                 .extracting(FeedbackData.Recipient::recipient)
                 .containsExactlyInAnyOrder("recipient1@example.com", "recipient2@example.com");
+    }
+
+    // Stub implementations for testing
+
+    private static class StubUserRepository implements UserRepository {
+        private User user;
+
+        void setUser(User user) {
+            this.user = user;
+        }
+
+        @Override
+        public Optional<User> findByUsername(String username) {
+            return Optional.ofNullable(user);
+        }
+
+        @Override public Optional<User> findByEmail(String email) { return Optional.empty(); }
+        @Override public List<User> findAllByUsernameIn(Collection<String> usernames) { return List.of(); }
+        @Override public Set<String> findAllowedCoachRates(String username) { return Set.of(); }
+        @Override public void deleteAllowedCoachRates(String username) { }
+        @Override public void insertAllowedCoachRate(String username, String rateName) { }
+        @Override public Optional<User> findByUsernameOrEmail(String username) { return Optional.empty(); }
+        @Override public <S extends User> S save(S entity) { return entity; }
+        @Override public <S extends User> List<S> saveAll(Iterable<S> entities) { return new ArrayList<>(); }
+        @Override public Optional<User> findById(Long id) { return Optional.empty(); }
+        @Override public boolean existsById(Long id) { return false; }
+        @Override public List<User> findAll() { return List.of(); }
+        @Override public List<User> findAllById(Iterable<Long> ids) { return List.of(); }
+        @Override public long count() { return 0; }
+        @Override public void deleteById(Long id) { }
+        @Override public void delete(User entity) { }
+        @Override public void deleteAllById(Iterable<? extends Long> ids) { }
+        @Override public void deleteAll(Iterable<? extends User> entities) { }
+        @Override public void deleteAll() { }
+    }
+
+    private static class StubRecipientRepository implements RecipientRepository {
+        private List<Recipient> recipients = new ArrayList<>();
+
+        void setRecipients(List<Recipient> recipients) {
+            this.recipients = recipients;
+        }
+
+        @Override
+        public List<Recipient> findByFormId(long formId) {
+            return recipients;
+        }
+
+        @Override public Optional<Recipient> findByFormIdAndRecipientAndToken(long formId, String recipient, String token) { return Optional.empty(); }
+        @Override public void deleteByFormId(long formId) { }
+        @Override public void deleteByFormIdAndIdNotIn(long formId, List<Long> keepIds) { }
+        @Override public <S extends Recipient> S save(S entity) { return entity; }
+        @Override public <S extends Recipient> Iterable<S> saveAll(Iterable<S> entities) { return new ArrayList<>(); }
+        @Override public Optional<Recipient> findById(Long id) { return Optional.empty(); }
+        @Override public boolean existsById(Long id) { return false; }
+        @Override public Iterable<Recipient> findAll() { return recipients; }
+        @Override public Iterable<Recipient> findAllById(Iterable<Long> ids) { return List.of(); }
+        @Override public long count() { return recipients.size(); }
+        @Override public void deleteById(Long id) { }
+        @Override public void delete(Recipient entity) { }
+        @Override public void deleteAllById(Iterable<? extends Long> ids) { }
+        @Override public void deleteAll(Iterable<? extends Recipient> entities) { }
+        @Override public void deleteAll() { }
+    }
+
+    private static class StubFeedbackFormQuestionRepository implements FeedbackFormQuestionRepository {
+        @Override public List<FeedbackFormQuestion> findByFeedbackFormId(long feedbackFormId) { return List.of(); }
+        @Override public Optional<FeedbackFormQuestion> findByFeedbackFormIdAndQuestionKey(long feedbackFormId, String questionKey) { return Optional.empty(); }
+        @Override public void deleteByFeedbackFormId(long feedbackFormId) { }
+        @Override public <S extends FeedbackFormQuestion> S save(S entity) { return entity; }
+        @Override public <S extends FeedbackFormQuestion> Iterable<S> saveAll(Iterable<S> entities) { return new ArrayList<>(); }
+        @Override public Optional<FeedbackFormQuestion> findById(Long id) { return Optional.empty(); }
+        @Override public boolean existsById(Long id) { return false; }
+        @Override public Iterable<FeedbackFormQuestion> findAll() { return List.of(); }
+        @Override public Iterable<FeedbackFormQuestion> findAllById(Iterable<Long> ids) { return List.of(); }
+        @Override public long count() { return 0; }
+        @Override public void deleteById(Long id) { }
+        @Override public void delete(FeedbackFormQuestion entity) { }
+        @Override public void deleteAllById(Iterable<? extends Long> ids) { }
+        @Override public void deleteAll(Iterable<? extends FeedbackFormQuestion> entities) { }
+        @Override public void deleteAll() { }
     }
 }

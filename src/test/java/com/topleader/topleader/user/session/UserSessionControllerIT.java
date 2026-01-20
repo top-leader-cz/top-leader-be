@@ -20,13 +20,7 @@ import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -55,12 +49,6 @@ class UserSessionControllerIT extends IntegrationTest {
 
     @Autowired
     private UserActionStepRepository userActionStepRepository;
-
-    @Autowired
-    ChatModel chatModel;
-
-    @Autowired
-    ChatClient chatClient;
 
     @Autowired
     AiPromptService aiPromptService;
@@ -200,7 +188,7 @@ class UserSessionControllerIT extends IntegrationTest {
     void generateLongTermGoal() throws Exception {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LONG_TERM_GOALS),
                 List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "English");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("1. generated-long-term-goal-a. 2. generated-long-term-goal-b.");
+        aiStubRegistry.stubChatModelResponse(leaderShipQuery, "1. generated-long-term-goal-a. 2. generated-long-term-goal-b.");
         mvc.perform(post("/api/latest/user-sessions/generate-long-term-goal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -221,7 +209,7 @@ class UserSessionControllerIT extends IntegrationTest {
     void generateActionsSteps() throws Exception {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ACTIONS_STEPS),
                 List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "generated-long-term-goal", "English");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("1. generated-actions-steps-a. 2. generated-actions-steps-b.");
+        aiStubRegistry.stubChatModelResponse(leaderShipQuery, "1. generated-actions-steps-a. 2. generated-actions-steps-b.");
         mvc.perform(post("/api/latest/user-sessions/generate-action-steps")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -250,8 +238,7 @@ class UserSessionControllerIT extends IntegrationTest {
                         "Learn project management methodologies like Agile or Scrum to take on leadership roles in projects, which often come with increased salary potential.")
         );
 
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().entity(new ParameterizedTypeReference<List<RecommendedGrowth>>() {}))
-                .thenReturn(expectedGrowths);
+        aiStubRegistry.stubChatClientEntity(expectedGrowths);
 
         var result = mvc.perform(get("/api/latest/user-sessions/generate-recommended-growth"))
                 .andDo(print())

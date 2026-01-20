@@ -13,11 +13,6 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -37,12 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 class UserInsightControllerIT extends IntegrationTest {
-
-    @Autowired
-    ChatModel chatModel;
-
-    @Autowired
-    ChatClient chatClient;
 
     @Autowired
     UserInfoRepository userInfoRepository;
@@ -107,7 +96,7 @@ class UserInsightControllerIT extends IntegrationTest {
     @Sql(scripts = {"/user_insight/user-insight.sql", "/user_insight/ai-prompt.sql"})
     void generateTips() throws Exception {
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadershipTip-response");
+        aiStubRegistry.stubChatModelResponse(leaderShipQuery, "leadershipTip-response");
 
         mvc.perform(get("/api/latest/user-insight/generate-tips")).andDo(print()).andExpect(status().isOk());
 
@@ -121,7 +110,7 @@ class UserInsightControllerIT extends IntegrationTest {
     void generateTipsNoStrengthsAndValues() throws Exception {
         userInfoRepository.deleteAll();
         var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadershipTip-response");
+        aiStubRegistry.stubChatModelResponse(leaderShipQuery, "leadershipTip-response");
 
         mvc.perform(get("/api/latest/user-insight/generate-tips")).andExpect(status().isOk());
 
@@ -160,18 +149,26 @@ class UserInsightControllerIT extends IntegrationTest {
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/dashboard-data.sql"})
     void dashboard() throws Exception {
-        mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
-        mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200).withBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}")));
+        var wireMockUrl = getWireMockBaseUrl();
 
-        Mockito.when(chatModel.call("video [query]")).thenReturn("""
+        // Set up WireMock stubs
+        WireMock.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
+        WireMock.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200).withBody("{\"data\":[{\"url\":\"%s/test-image.png\"}]}".formatted(wireMockUrl))));
+        WireMock.stubFor(WireMock.get(urlEqualTo("/test-image.png")).willReturn(aResponse().withStatus(200)
+                .withHeader("Content-Type", "image/png")
+                .withBody(java.util.Base64.getDecoder().decode(
+                        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+                ))));
+
+        aiStubRegistry.stubChatModelResponse("video [query]", """
                                [
                   {
                     "title": "Test Preview",
                     "url": "https://youtube.com/watch?v=test",
-                    "thumbnail": "http://localhost:8060/hqdefault"
+                    "thumbnail": "%s/hqdefault"
                   }
                 ]
-                """);
+                """.formatted(wireMockUrl));
 
 
         var articlesJson = """
@@ -195,13 +192,10 @@ class UserInsightControllerIT extends IntegrationTest {
                   ]
                 """;
 
-        // Mock the intermediate response spec so both content() and entity() work
-        var mockResponseSpec = Mockito.mock(ChatClient.CallResponseSpec.class);
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call()).thenReturn(mockResponseSpec);
-        Mockito.when(mockResponseSpec.content()).thenReturn("suggestion response");
-        Mockito.when(mockResponseSpec.entity(ArgumentMatchers.any(ParameterizedTypeReference.class)))
-                .thenReturn(JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {
-                }));
+        // Configure stubs for ChatClient - both content() and entity() calls
+        aiStubRegistry.stubChatClientContent("suggestion response");
+        aiStubRegistry.stubChatClientEntity(JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {
+        }));
 
 
         mvc.perform(post("/api/latest/user-insight/dashboard").contentType(MediaType.APPLICATION_JSON).content("""
@@ -232,9 +226,9 @@ class UserInsightControllerIT extends IntegrationTest {
                                                         [ {
                               "title" : "Test Preview",
                               "url" : "https://youtube.com/watch?v=test",
-                              "thumbnail" : "http://localhost:8060/hqdefault"
+                              "thumbnail" : "%s/hqdefault"
                             } ]
-                            """);
+                            """.formatted(wireMockUrl));
                     assertThat(userInsight.isActionGoalsPending()).isFalse();
                 });
     }

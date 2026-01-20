@@ -78,7 +78,7 @@ class CoachListControllerIT extends IntegrationTest {
     public void setUp() {
         super.setUp();
 
-        mockServer.stubFor(WireMock.get(urlMatching("/scheduled_events\\?user=.*"))
+        WireMock.stubFor(WireMock.get(urlMatching("/scheduled_events\\?user=.*"))
                 .withHeader(AUTHORIZATION, equalTo("Bearer accessToken"))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -101,7 +101,7 @@ class CoachListControllerIT extends IntegrationTest {
                                 """, startTime, endTime))));
 
 
-        mockServer.stubFor(WireMock.post(urlEqualTo("/oauth/token"))
+        WireMock.stubFor(WireMock.post(urlEqualTo("/oauth/token"))
                 .withHeader(AUTHORIZATION, equalTo("Basic Ti1LWEROQTQ3Q19hRnYtdWxIZjRCRnNyaDd0T0F6RFNBY1J0S3VNRERYSToyUVJEVGkyME5XV0FCTlpMczQxYmk4cFBGMVI3NEJCTnFPbUxDUzRDRnJz"))
                 .withRequestBody(equalTo("grant_type=refresh_token&refresh_token=token&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Flogin%2Fcalendly"))
                 .willReturn(aResponse()

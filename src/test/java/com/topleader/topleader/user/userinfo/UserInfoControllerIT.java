@@ -28,8 +28,6 @@ import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -69,9 +67,6 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Autowired
     private CreditHistoryRepository creditHistoryRepository;
-
-    @Autowired
-    ChatModel chatModel;
 
     @Autowired
     UserInsightRepository userInsightRepository;
@@ -545,13 +540,13 @@ class UserInfoControllerIT extends IntegrationTest {
     void setUserValues() throws Exception {
 
         var leaderShipQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_STYLE), List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadership-response");
+        aiStubRegistry.stubChatModelResponse(leaderShipQuery, "leadership-response");
 
         var animalQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ANIMAL_SPIRIT), List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatModel.call(animalQuery)).thenReturn("animal-response");
+        aiStubRegistry.stubChatModelResponse(animalQuery, "animal-response");
 
         var worldLeaderPersona  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.WORLD_LEADER_PERSONA), List.of("solver","ideamaker","flexible","responsible","selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatModel.call(worldLeaderPersona)).thenReturn("world-leader-response");
+        aiStubRegistry.stubChatModelResponse(worldLeaderPersona, "world-leader-response");
 
         mvc.perform(post("/api/latest/user-info/values")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -576,13 +571,13 @@ class UserInfoControllerIT extends IntegrationTest {
     void setUserStrength() throws Exception {
 
         var leaderShipQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_STYLE), List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadership-response");
+        aiStubRegistry.stubChatModelResponse(leaderShipQuery, "leadership-response");
 
         var animalQuery  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ANIMAL_SPIRIT), List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
-        Mockito.when(chatModel.call(animalQuery)).thenReturn("animal-response");
+        aiStubRegistry.stubChatModelResponse(animalQuery, "animal-response");
 
         var worldLeaderPersona  = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.WORLD_LEADER_PERSONA), List.of("selfBeliever"), List.of("creativity", "environment", "passion"), "English");
-        Mockito.when(chatModel.call(worldLeaderPersona)).thenReturn("world-leader-response");
+        aiStubRegistry.stubChatModelResponse(worldLeaderPersona, "world-leader-response");
 
         mvc.perform(post("/api/latest/user-info/strengths")
                         .contentType(MediaType.APPLICATION_JSON)

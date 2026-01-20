@@ -29,7 +29,7 @@ class CalendlyRefreshAccessTokenJobIT extends IntegrationTest {
     @Test
     @WithMockUser(authorities = "JOB")
     void calendlyRefreshToken() throws Exception {
-        mockServer.stubFor(WireMock.post(urlEqualTo("/oauth/token"))
+        WireMock.stubFor(WireMock.post(urlEqualTo("/oauth/token"))
                 .withHeader(AUTHORIZATION, equalTo("Basic Ti1LWEROQTQ3Q19hRnYtdWxIZjRCRnNyaDd0T0F6RFNBY1J0S3VNRERYSToyUVJEVGkyME5XV0FCTlpMczQxYmk4cFBGMVI3NEJCTnFPbUxDUzRDRnJz"))
                 .withRequestBody(equalTo("grant_type=refresh_token&refresh_token=token&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Flogin%2Fcalendly"))
                 .willReturn(aResponse()

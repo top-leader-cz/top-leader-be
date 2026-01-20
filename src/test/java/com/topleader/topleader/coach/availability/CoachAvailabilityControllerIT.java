@@ -239,7 +239,7 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach1", authorities = {"COACH"})
     @Sql("/sql/coach/coach-list-test.sql")
     void getCalendlyEvents() throws Exception {
-        mockServer.stubFor(WireMock.get(urlMatching("/event_types?\\?user=.*"))
+        WireMock.stubFor(WireMock.get(urlMatching("/event_types.*"))
                 .withHeader(AUTHORIZATION, equalTo("Bearer accessToken"))
                 .willReturn(aResponse()
                         .withStatus(200)

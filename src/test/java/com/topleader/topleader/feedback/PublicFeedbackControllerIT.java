@@ -9,8 +9,6 @@ import com.topleader.topleader.user.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
@@ -37,9 +35,6 @@ class PublicFeedbackControllerIT extends IntegrationTest {
 
     @Autowired
     FeedbackFormRepository feedbackFormRepository;
-
-    @Autowired
-    ChatModel chatModel;
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
@@ -77,7 +72,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/submit-feedback.sql", "/user_insight/ai-prompt.sql"})
     void submitForm() throws Exception {
-        Mockito.when(chatModel.call(PROMPT_QUERY)).thenReturn("""
+        aiStubRegistry.stubChatModelResponse(PROMPT_QUERY, """
                  {
                        "strongAreas" : "strong areas",
                         "areasOfImprovement": "areas of improvement"
