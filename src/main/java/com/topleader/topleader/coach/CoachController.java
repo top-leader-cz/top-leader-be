@@ -5,6 +5,7 @@ package com.topleader.topleader.coach;
 
 import com.topleader.topleader.common.email.EmailTemplateService;
 import com.topleader.topleader.common.exception.NotFoundException;
+import com.topleader.topleader.common.util.image.ImageValidation;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
@@ -43,6 +44,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import static java.util.stream.Collectors.toMap;
+import static org.springframework.util.MimeTypeUtils.IMAGE_JPEG_VALUE;
 
 
 /**
@@ -62,6 +64,8 @@ public class CoachController {
     private final UserRepository userRepository;
 
     private final EmailTemplateService emailTemplateService;
+
+    private final ImageValidation imageValidationUtils;
 
     @GetMapping
     @Secured("COACH")
@@ -90,11 +94,12 @@ public class CoachController {
     @Secured("COACH")
     @PostMapping("/photo")
     public void setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestParam("image") MultipartFile file) throws IOException {
-
+        imageValidationUtils.validateImageUpload(file);
+        var reEncodedImage = reencodeImage(file.getBytes());
         var image = coachImageRepository.findByUsername(user.getUsername())
                 .orElse(new CoachImage().setUsername(user.getUsername()));
-        image.setType(file.getContentType())
-            .setImageData(ImageUtil.compressImage(file.getBytes()));
+        image.setType(IMAGE_JPEG_VALUE)
+            .setImageData(ImageUtil.compressImage(reEncodedImage));
         coachImageRepository.save(image);
     }
 
@@ -104,7 +109,7 @@ public class CoachController {
 
         return coachImageRepository.findByUsername(user.getUsername())
             .map(i -> ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.valueOf(i.getType()))
+                .contentType(MediaType.IMAGE_JPEG)
                 .body(ImageUtil.decompressImage(i.getImageData()))
             )
             .orElseThrow(NotFoundException::new);
@@ -143,6 +148,19 @@ public class CoachController {
 
         emailTemplateService.sendCancelAlertEmail(sessionId);
         sessionService.cancelSessionByCoach(sessionId, user.getUsername());
+    }
+
+    private byte[] reencodeImage(byte[] data) throws IOException {
+        var inputStream = new java.io.ByteArrayInputStream(data);
+        var image = javax.imageio.ImageIO.read(inputStream);
+
+        if (image == null) {
+            throw new IllegalArgumentException("Failed to read image");
+        }
+
+        var outputStream = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(image, "JPEG", outputStream);
+        return outputStream.toByteArray();
     }
 
     public record UpcomingSessionDto(

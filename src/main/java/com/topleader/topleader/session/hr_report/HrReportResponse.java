@@ -39,24 +39,19 @@ public record HrReportResponse(
             int allocatedUnits,
             int plannedSessions,
             int completedSessions,
-            int noShowClientSessions,
-            int reservedUnits,
             int consumedUnits,
             int remainingUnits,
             int unallocatedUnits
     ) {
         public static Summary of(int totalUnits, int allocatedUnits, int plannedSessions, int completedSessions, int noShowClientSessions) {
-            var reservedUnits = plannedSessions;
             var consumedUnits = completedSessions + noShowClientSessions;
-            var remainingUnits = totalUnits - reservedUnits - consumedUnits;
-            var unallocatedUnits = totalUnits - allocatedUnits - reservedUnits - consumedUnits;
+            var remainingUnits = totalUnits - plannedSessions - consumedUnits;
+            var unallocatedUnits = totalUnits - allocatedUnits;
             return new Summary(
                     totalUnits,
                     allocatedUnits,
                     plannedSessions,
                     completedSessions,
-                    noShowClientSessions,
-                    reservedUnits,
                     consumedUnits,
                     Math.max(0, remainingUnits),
                     Math.max(0, unallocatedUnits)
@@ -70,15 +65,13 @@ public record HrReportResponse(
             int plannedSessions,
             int completedSessions,
             int noShowClientSessions,
-            int reservedUnits,
             int consumedUnits,
             int remainingUnits,
             boolean dataIssue
     ) {
         public static UserRow of(String userId, int allocatedUnits, int plannedSessions, int completedSessions, int noShowClientSessions) {
-            var reservedUnits = plannedSessions;
             var consumedUnits = completedSessions + noShowClientSessions;
-            var remainingUnits = allocatedUnits - reservedUnits - consumedUnits;
+            var remainingUnits = allocatedUnits - plannedSessions - consumedUnits;
             var dataIssue = remainingUnits < 0;
             return new UserRow(
                     userId,
@@ -86,7 +79,6 @@ public record HrReportResponse(
                     plannedSessions,
                     completedSessions,
                     noShowClientSessions,
-                    reservedUnits,
                     consumedUnits,
                     Math.max(0, remainingUnits),
                     dataIssue

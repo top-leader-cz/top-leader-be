@@ -28,15 +28,15 @@ build:
 
 # Build native image with GraalVM (quick mode ~2-3 min)
 native:
-	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25.0.1-graalce $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache
 
 # Run native tests (compiles and runs tests in native image)
 native-test:
-	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25.0.1-graalce $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeTest --no-configuration-cache --build-cache
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeTest --no-configuration-cache --build-cache
 
 # Build native image optimized for Linux x86-64 (for deployment)
 native-linux:
-	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25.0.1-graalce $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache -Pnative.march=x86-64-v3
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache -Pnative.march=x86-64-v3
 
 # Deploy to QA (local build + GitHub Actions verification)
 deploy-qa: build

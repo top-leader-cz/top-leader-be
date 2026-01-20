@@ -43,6 +43,12 @@ google:
   client:
     redirectUri: https://topleaderplatform.io/login/google
 
+springdoc:
+  api-docs:
+    enabled: false  # Disable OpenAPI docs on production
+  swagger-ui:
+    enabled: false  # Disable Swagger UI on production
+
 management:
   opentelemetry:
     resource-attributes:

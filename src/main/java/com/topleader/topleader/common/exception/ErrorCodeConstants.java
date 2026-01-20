@@ -41,6 +41,7 @@ public final class ErrorCodeConstants {
     public static final String ALLOCATED_BELOW_CONSUMED = "allocation.below.consumed";
     public static final String NO_UNITS_AVAILABLE = "no.units.available";
     public static final String SESSION_CANCEL_TOO_LATE = "session.cancel.too.late";
+    public static final String INVALID_PARAMETER = "invalid.parameter";
 
 
 

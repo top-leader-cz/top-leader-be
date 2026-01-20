@@ -3,6 +3,7 @@ package com.topleader.topleader.configuration;
 import com.topleader.topleader.common.ai.AiPrompt;
 import com.topleader.topleader.common.calendar.calendly.CalendlyProperties;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
+import com.topleader.topleader.common.upload.UploadProperties;
 import com.topleader.topleader.common.notification.Notification;
 import com.topleader.topleader.common.notification.context.CoachLinkedNotificationContext;
 import com.topleader.topleader.common.notification.context.CoachUnlinkedNotificationContext;
@@ -76,6 +77,7 @@ public class NativeImageConfiguration {
 
             // Configuration properties
             registerForJsonSerialization(hints, CalendlyProperties.class);
+            registerForJsonSerialization(hints, UploadProperties.class);
 
             // Enums used in JDBC converters
             registerEnum(hints, User.Authority.class);
