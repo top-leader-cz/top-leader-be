@@ -173,6 +173,7 @@ public class FeedbackService {
                     var subject = String.format(subjects.getOrDefault(data.getLocale(), defaultLocale), data.getFirstName(), data.getLastName());
 
                     var existingUser = userRepository.findByUsernameOrEmail(r.recipient());
+
                     if (existingUser.isEmpty()) {
                         var newUser = UserUtils.fromEmail(r.recipient())
                                 .setAuthorities(Set.of(User.Authority.RESPONDENT))

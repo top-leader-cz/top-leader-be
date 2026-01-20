@@ -68,7 +68,9 @@
       "Bash(JAVA_HOME=~/.sdkman/candidates/java/25.0.1-graalce ~/.sdkman/candidates/gradle/current/bin/gradle nativeTest:*)",
       "Bash($GRADLE_HOME/bin/gradle compileJava --console=plain)",
       "Bash(export JAVA_HOME=$HOME/.sdkman/candidates/java/25:*)",
-      "Bash(GCP_JSON_LOGS=CONSOLE_JSON JAVA_HOME=$HOME/.sdkman/candidates/java/25 $HOME/.sdkman/candidates/gradle/current/bin/gradle bootRun:*)"
+      "Bash(GCP_JSON_LOGS=CONSOLE_JSON JAVA_HOME=$HOME/.sdkman/candidates/java/25 $HOME/.sdkman/candidates/gradle/current/bin/gradle bootRun:*)",
+      "Bash($GRADLE_HOME/bin/gradle test:*)",
+      "Bash(GRADLE_HOME=~/.sdkman/candidates/gradle/current ~/.sdkman/candidates/gradle/current/bin/gradle test:*)"
     ]
   }
 }
