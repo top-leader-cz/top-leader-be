@@ -215,32 +215,6 @@ graalvmNative {
             // Exclude H2 from native image - only needed for AOT processing
             classpath = classpath.filter { !it.name.startsWith("h2-") }
         }
-
-        named("test") {
-            imageName.set("top-leader-tests")
-
-            val testArgs = mutableListOf(
-                "-H:+ReportExceptionStackTraces",
-                "-Ob",  // Quick build - faster compilation, slower runtime
-                "-J-Xmx10g",  // More heap for faster build
-                listOf(
-                    "org.slf4j",
-                    "org.apache.logging.slf4j",
-                    "org.apache.logging.log4j",
-                    "org.apache.commons.logging",
-                    "org.springframework.boot.logging",
-                    "org.springframework.boot.ansi",
-                    "com.fasterxml.jackson",
-                    "org.yaml.snakeyaml",
-                    "org.codehaus.stax2",
-                    "com.ctc.wstx",
-                    // JUnit Platform classes need build-time initialization
-                    "org.junit.platform.launcher.core"
-                ).joinToString(",", prefix = "--initialize-at-build-time=")
-            )
-
-            buildArgs.addAll(testArgs)
-        }
     }
     toolchainDetection.set(false)
 }
@@ -256,17 +230,3 @@ tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") 
         "--spring.ai.openai.api-key=dummy-key"
     )
 }
-
-// Test AOT needs H2 for AOT processing (TestContainers dynamic properties don't work during AOT)
-tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
-    jvmArgs(
-        "-Dspring.datasource.url=jdbc:h2:mem:testaot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
-        "-Dspring.datasource.username=sa",
-        "-Dspring.datasource.password=",
-        "-Dspring.datasource.driver-class-name=org.h2.Driver",
-        "-Dspring.flyway.enabled=false",
-        "-Dspring.ai.openai.api-key=dummy-key",
-        "-Dspring.test.database.replace=NONE"
-    )
-}
-

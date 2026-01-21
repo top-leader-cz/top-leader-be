@@ -22,9 +22,9 @@ spring:
   datasource:
     username: top-leader
     hikari:
-      # Optimized for virtual threads (QA)
-      minimum-idle: 30
-      maximum-pool-size: 100
+      # Optimized for Cloud Run with 512Mi memory
+      minimum-idle: 2
+      maximum-pool-size: 10
       connection-timeout: 5000
       data-source-properties:
         socketFactory: com.google.cloud.sql.postgres.SocketFactory
@@ -53,6 +53,8 @@ management:
     metrics:
       export:
         enabled: true
+        headers:
+          Authorization: "Basic ${GRAFANA_OTLP_TOKEN}"
   metrics:
     tags:
       environment: qa

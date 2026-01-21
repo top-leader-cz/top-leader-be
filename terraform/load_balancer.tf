@@ -2,7 +2,7 @@
 # QA ENVIRONMENT LOAD BALANCER
 # =============================================================================
 
-# Backend Service for QA App Engine
+# Backend Service for QA Cloud Run
 resource "google_compute_backend_service" "qa_backend" {
   name                            = "top-be"
   project                         = var.project_id
@@ -15,7 +15,7 @@ resource "google_compute_backend_service" "qa_backend" {
   enable_cdn                      = false
 
   backend {
-    group           = google_compute_region_network_endpoint_group.appengine_qa.id
+    group           = google_compute_region_network_endpoint_group.cloudrun_qa.id
     balancing_mode  = "UTILIZATION"
     capacity_scaler = 1
   }
@@ -41,7 +41,7 @@ resource "google_compute_url_map" "qa" {
     default_service = google_compute_backend_bucket.frontend_qa.id
 
     path_rule {
-      paths   = ["/api/*", "/login", "/swagger-ui/*", "/v3/api-docs/*", "/v3/*", "/login/google", "/login/calendly"]
+      paths   = ["/api/*", "/login", "/swagger-ui/*", "/v3/api-docs/*", "/v3/*", "/login/google", "/login/calendly", "/actuator/*"]
       service = google_compute_backend_service.qa_backend.id
     }
   }

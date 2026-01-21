@@ -1,18 +1,26 @@
+# Configuration variables
+REGION := europe-west3
+PROJECT_ID := topleader-394306
+SERVICE_NAME := top-leader-qa
+IMAGE_NAME := top-leader-be
+ARTIFACT_REPO := cloud-run
+GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
+
 # Google Cloud commands
-.PHONY: login logs-qa logs-prod openapi build native native-test native-linux deploy-qa deploy-prod run local-login local-whoami local-google-auth local-api local-health local-create-user test test-coverage test-with-coverage coverage-verify
+.PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux deploy-qa deploy-prod
+.PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa
 
 # Login to Google Cloud and set project
 login:
 	gcloud auth login topleaderplatform@gmail.com
 	gcloud config set project topleader-394306
 
-# Fetch QA logs (last 1 hour, errors only)
+# Fetch QA logs (Cloud Run, errors only)
 logs-qa:
-	gcloud logging read 'resource.type="gae_app" AND resource.labels.module_id="qa" AND severity>=ERROR' --limit=50 --format="table(timestamp,severity,textPayload)"
-
-# Fetch QA logs with AI/OpenAI filter
-logs-qa-ai:
-	gcloud logging read 'resource.type="gae_app" AND resource.labels.module_id="qa" AND (textPayload=~"openai|OpenAI|ChatModel|AiClient" OR textPayload=~"Exception|Error")' --limit=100 --format="json"
+	gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="$(SERVICE_NAME)" AND severity>=ERROR' \
+		--limit=50 \
+		--format="table(timestamp,severity,textPayload)" \
+		--project=$(PROJECT_ID)
 
 # Fetch prod logs
 logs-prod:
@@ -24,7 +32,7 @@ openapi:
 
 # Build application locally
 build:
-	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle build --parallel --build-cache
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle build -x processTestAot --parallel --build-cache
 
 # Testing commands
 # Run all tests
@@ -49,10 +57,6 @@ coverage-verify:
 # Build native image with GraalVM (quick mode ~2-3 min)
 native:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache
-
-# Run native tests (compiles and runs tests in native image)
-native-test:
-	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeTest --no-configuration-cache --build-cache
 
 # Build native image optimized for Linux x86-64 (for deployment)
 native-linux:
@@ -80,4 +84,49 @@ deploy-prod: build
 	echo "Creating tag: $$NEW_TAG"; \
 	git tag "$$NEW_TAG"; \
 	git push origin "$$NEW_TAG"
+
+# --- Cloud Run Commands ---
+
+# Setup Cloud Run infrastructure (Artifact Registry, Service Account, IAM)
+setup-cloud-run-qa:
+	./scripts/setup-cloud-run-qa.sh
+
+# Show QA Cloud Run service information
+info-qa:
+	gcloud run services describe $(SERVICE_NAME) \
+		--region=$(REGION) \
+		--project=$(PROJECT_ID)
+
+# List Cloud Run revisions
+revisions-qa:
+	gcloud run revisions list \
+		--service=$(SERVICE_NAME) \
+		--region=$(REGION) \
+		--platform=managed \
+		--sort-by=~metadata.creationTimestamp \
+		--project=$(PROJECT_ID)
+
+# Redeploy QA Cloud Run (force new revision to pick up secret changes)
+redeploy-qa:
+	gcloud run services update $(SERVICE_NAME) \
+		--region=$(REGION) \
+		--project=$(PROJECT_ID) \
+		--update-env-vars="FORCE_REDEPLOY=$$(date +%s)"
+
+# Rollback to previous Cloud Run revision
+rollback-qa:
+	@echo "Available revisions for $(SERVICE_NAME):"
+	@gcloud run revisions list \
+		--service=$(SERVICE_NAME) \
+		--region=$(REGION) \
+		--platform=managed \
+		--format="table(metadata.name,status.traffic,status.conditions[0].status)" \
+		--project=$(PROJECT_ID)
+	@echo ""
+	@read -p "Enter revision name to rollback to: " REVISION; \
+	gcloud run services update-traffic $(SERVICE_NAME) \
+		--to-revisions=$$REVISION=100 \
+		--region=$(REGION) \
+		--platform=managed \
+		--project=$(PROJECT_ID)
 

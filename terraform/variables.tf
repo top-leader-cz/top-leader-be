@@ -36,3 +36,9 @@ variable "job_trigger_password" {
   type        = string
   sensitive   = true
 }
+
+variable "cloud_run_url_qa" {
+  description = "Cloud Run service URL for QA environment"
+  type        = string
+  default     = "https://qa.topleaderplatform.io"
+}

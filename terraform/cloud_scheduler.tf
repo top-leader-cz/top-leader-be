@@ -3,23 +3,33 @@ locals {
   job_auth_header = "Basic ${base64encode("job-trigger:${var.job_trigger_password}")}"
 }
 
-# Service Account for Cloud Scheduler
-# Note: Not currently used with app_engine_http_target
-# resource "google_service_account" "scheduler" {
-#   account_id   = "cloud-scheduler-jobs"
-#   display_name = "Cloud Scheduler Jobs Service Account"
-#   description  = "Service account for Cloud Scheduler to invoke App Engine job endpoints"
-#   project      = var.project_id
+# Service Account for Cloud Scheduler to invoke Cloud Run
+resource "google_service_account" "scheduler" {
+  account_id   = "cloud-scheduler-jobs"
+  display_name = "Cloud Scheduler Jobs Service Account"
+  description  = "Service account for Cloud Scheduler to invoke Cloud Run job endpoints"
+  project      = var.project_id
+}
+
+# Grant Cloud Run Invoker role to scheduler service account
+# NOTE: Uncomment after Cloud Run service is deployed via GitHub Actions
+# resource "google_cloud_run_service_iam_member" "scheduler_invoker_qa" {
+#   location = var.region
+#   project  = var.project_id
+#   service  = "top-leader-qa"
+#   role     = "roles/run.invoker"
+#   member   = "serviceAccount:${google_service_account.scheduler.email}"
+#
+#   depends_on = [google_project_service.run, google_project_service.scheduler]
 # }
 
 # ============================================================================
-# QA Environment Jobs
+# QA Environment Jobs (Cloud Run)
 # ============================================================================
 
-# Job 1: Process not displayed messages
 resource "google_cloud_scheduler_job" "message_undisplayed_qa" {
   name             = "message-undisplayed-qa"
-  description      = "Send user notification that message wan not displayed for period of time"
+  description      = "Send user notification that message was not displayed for period of time"
   schedule         = "0 0 1 1 *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
@@ -34,21 +44,23 @@ resource "google_cloud_scheduler_job" "message_undisplayed_qa" {
     max_doublings        = 5
   }
 
-  app_engine_http_target {
+  http_target {
     http_method = "POST"
-    relative_uri = "/api/protected/jobs/displayedMessages"
-
-    app_engine_routing {
-      service = "qa"
-    }
+    uri         = "${var.cloud_run_url_qa}/api/protected/jobs/displayedMessages"
 
     headers = {
       "Authorization" = local.job_auth_header
     }
+
+    oidc_token {
+      service_account_email = google_service_account.scheduler.email
+      audience              = var.cloud_run_url_qa
+    }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-# Job 2: Trigger feedback notifications
 resource "google_cloud_scheduler_job" "feedback_notifications_qa" {
   name             = "feedback-notifications-qa"
   description      = "Trigger feedback notification process QA"
@@ -66,24 +78,26 @@ resource "google_cloud_scheduler_job" "feedback_notifications_qa" {
     max_doublings        = 5
   }
 
-  app_engine_http_target {
+  http_target {
     http_method = "POST"
-    relative_uri = "/api/protected/jobs/feedback-notification"
-
-    app_engine_routing {
-      service = "qa"
-    }
+    uri         = "${var.cloud_run_url_qa}/api/protected/jobs/feedback-notification"
 
     headers = {
       "Authorization" = local.job_auth_header
     }
+
+    oidc_token {
+      service_account_email = google_service_account.scheduler.email
+      audience              = var.cloud_run_url_qa
+    }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-# Job 3: Mark pending sessions as no-show
 resource "google_cloud_scheduler_job" "complete_session_qa" {
-  name             = "comple-session-qa"
-  description      = "complte seession afeter 24 hour"
+  name             = "complete-session-qa"
+  description      = "Complete session after 24 hours"
   schedule         = "0 0 1 1 *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
@@ -98,24 +112,26 @@ resource "google_cloud_scheduler_job" "complete_session_qa" {
     max_doublings        = 5
   }
 
-  app_engine_http_target {
+  http_target {
     http_method = "POST"
-    relative_uri = "/api/protected/jobs/mark-session-completed"
-
-    app_engine_routing {
-      service = "qa"
-    }
+    uri         = "${var.cloud_run_url_qa}/api/protected/jobs/mark-session-completed"
 
     headers = {
       "Authorization" = local.job_auth_header
     }
+
+    oidc_token {
+      service_account_email = google_service_account.scheduler.email
+      audience              = var.cloud_run_url_qa
+    }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-# Job 4: Remind users to schedule sessions
 resource "google_cloud_scheduler_job" "unscheduled_session_reminder_qa" {
-  name             = "unscheduled_session_reminder"
-  description      = "unscheduled _session_reminder_qa"
+  name             = "unscheduled-session-reminder-qa"
+  description      = "Remind users to schedule sessions QA"
   schedule         = "0 0 1 1 *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
@@ -130,24 +146,26 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_qa" {
     max_doublings        = 5
   }
 
-  app_engine_http_target {
+  http_target {
     http_method = "POST"
-    relative_uri = "/api/protected/jobs/remind-sessions"
-
-    app_engine_routing {
-      service = "qa"
-    }
+    uri         = "${var.cloud_run_url_qa}/api/protected/jobs/remind-sessions"
 
     headers = {
       "Authorization" = local.job_auth_header
     }
+
+    oidc_token {
+      service_account_email = google_service_account.scheduler.email
+      audience              = var.cloud_run_url_qa
+    }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-# Job 5: Process payments
 resource "google_cloud_scheduler_job" "payment_process_job_qa" {
-  name             = "payment_process_job"
-  description      = "Trigger payment processing"
+  name             = "payment-process-qa"
+  description      = "Trigger payment processing QA"
   schedule         = "0 0 1 1 *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
@@ -162,28 +180,30 @@ resource "google_cloud_scheduler_job" "payment_process_job_qa" {
     max_doublings        = 5
   }
 
-  app_engine_http_target {
+  http_target {
     http_method = "POST"
-    relative_uri = "/api/protected/jobs/payments"
-
-    app_engine_routing {
-      service = "qa"
-    }
+    uri         = "${var.cloud_run_url_qa}/api/protected/jobs/payments"
 
     headers = {
       "Authorization" = local.job_auth_header
     }
+
+    oidc_token {
+      service_account_email = google_service_account.scheduler.email
+      audience              = var.cloud_run_url_qa
+    }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
 # ============================================================================
-# PROD Environment Jobs
+# PROD Environment Jobs (App Engine)
 # ============================================================================
 
-# Job 1: Process not displayed messages
 resource "google_cloud_scheduler_job" "message_undisplayed_prod" {
   name             = "message-undisplayed-prod"
-  description      = "Send user notification that message wan not displayed for period of time"
+  description      = "Send user notification that message was not displayed for period of time"
   schedule         = "0 */4 * * *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
@@ -199,7 +219,7 @@ resource "google_cloud_scheduler_job" "message_undisplayed_prod" {
   }
 
   app_engine_http_target {
-    http_method = "POST"
+    http_method  = "POST"
     relative_uri = "/api/protected/jobs/displayedMessages"
 
     app_engine_routing {
@@ -210,9 +230,10 @@ resource "google_cloud_scheduler_job" "message_undisplayed_prod" {
       "Authorization" = local.job_auth_header
     }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-# Job 2: Trigger feedback notifications
 resource "google_cloud_scheduler_job" "feedback_notifications_prod" {
   name             = "feedback-notifications-prod"
   description      = "Trigger feedback notification process PROD"
@@ -231,7 +252,7 @@ resource "google_cloud_scheduler_job" "feedback_notifications_prod" {
   }
 
   app_engine_http_target {
-    http_method = "POST"
+    http_method  = "POST"
     relative_uri = "/api/protected/jobs/feedback-notification"
 
     app_engine_routing {
@@ -242,9 +263,10 @@ resource "google_cloud_scheduler_job" "feedback_notifications_prod" {
       "Authorization" = local.job_auth_header
     }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-# Job 3: Mark pending sessions as no-show (PROD needs to be created)
 resource "google_cloud_scheduler_job" "complete_session_prod" {
   name             = "complete-session-prod"
   description      = "Mark pending sessions older than 48h as completed/no-show (PROD)"
@@ -263,7 +285,7 @@ resource "google_cloud_scheduler_job" "complete_session_prod" {
   }
 
   app_engine_http_target {
-    http_method = "POST"
+    http_method  = "POST"
     relative_uri = "/api/protected/jobs/mark-session-completed"
 
     app_engine_routing {
@@ -274,11 +296,12 @@ resource "google_cloud_scheduler_job" "complete_session_prod" {
       "Authorization" = local.job_auth_header
     }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-# Job 4: Remind users to schedule sessions
 resource "google_cloud_scheduler_job" "unscheduled_session_reminder_prod" {
-  name             = "unscheduled_session_reminder_prod"
+  name             = "unscheduled-session-reminder-prod"
   description      = "Send reminders to users with no scheduled sessions (PROD)"
   schedule         = "0 7 * * *"
   time_zone        = "Etc/UTC"
@@ -295,7 +318,7 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_prod" {
   }
 
   app_engine_http_target {
-    http_method = "POST"
+    http_method  = "POST"
     relative_uri = "/api/protected/jobs/remind-sessions"
 
     app_engine_routing {
@@ -306,12 +329,13 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_prod" {
       "Authorization" = local.job_auth_header
     }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-# Job 5: Process payments
 resource "google_cloud_scheduler_job" "payment_process_job_prod" {
-  name             = "payment_process_job_prod"
-  description      = "prod process payment job"
+  name             = "payment-process-prod"
+  description      = "Process payments PROD"
   schedule         = "0 */2 * * *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
@@ -327,7 +351,7 @@ resource "google_cloud_scheduler_job" "payment_process_job_prod" {
   }
 
   app_engine_http_target {
-    http_method = "POST"
+    http_method  = "POST"
     relative_uri = "/api/protected/jobs/payments"
 
     app_engine_routing {
@@ -338,4 +362,6 @@ resource "google_cloud_scheduler_job" "payment_process_job_prod" {
       "Authorization" = local.job_auth_header
     }
   }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
 }

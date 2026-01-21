@@ -141,12 +141,13 @@ We use **Terraform** for infrastructure as code (IaC):
 - **Plan & Apply** - preview changes before applying them
 - **State management** - tracks resource state for safe updates and rollbacks
 
-### Why GCP App Engine + Cloud SQL?
+### Why GCP Cloud Run + Cloud SQL?
 
 We deploy on **Google Cloud Platform** with the following architecture:
 
 **Backend:**
-- **App Engine** (Standard Environment) - managed Java runtime, auto-scaling, zero server management
+- **Cloud Run** (QA) - containerized deployment with Distroless images, auto-scaling to zero, pay-per-request
+- **App Engine** (Production) - managed Java runtime, auto-scaling, zero server management
 - **Cloud SQL** (PostgreSQL 15) - managed database with automatic backups, high availability
 
 **Frontend:**
@@ -155,16 +156,24 @@ We deploy on **Google Cloud Platform** with the following architecture:
 - **Cloud CDN** - global edge caching for fast delivery
 - **Global Load Balancer** - HTTPS termination, routing, DDoS protection
 
+**Infrastructure as Code:**
+- **Terraform** - manages all GCP resources (Load Balancer, DNS, Cloud SQL, IAM, etc.)
+- **Secret Manager** - secure storage for API keys and credentials
+- **Cloud Scheduler** - cron jobs for background tasks
+
 **CI/CD:**
 - **GitHub Actions** - automated builds and deployments for both frontend and backend
 - PRs to `develop`/`main` trigger build + tests only (no deploy)
-- Tag-based deployments (`qa-deploy` tag triggers QA, `release-v*.*.*` triggers production)
+- Tag-based deployments:
+  - `qa-deploy` → builds Docker image → deploys to Cloud Run QA
+  - `release-v*.*.*` → builds JAR → deploys to App Engine Production
 
 **Why this setup:**
-- **Cost-effective** - pay only for what you use, scale to zero possible
+- **Cost-effective** - Cloud Run scales to zero, pay only for actual requests
 - **Managed infrastructure** - no servers to patch or maintain
 - **Global performance** - CDN for frontend, regional backend
 - **Automated deployments** - push tag → GitHub Actions → deployed
+- **Secure secrets** - Secret Manager instead of environment variables
 
 ### Future Tech Plans
 
@@ -175,10 +184,9 @@ We deploy on **Google Cloud Platform** with the following architecture:
 - Ideal for cloud deployment and cost optimization
 - Current codebase is native-image ready (minimal reflection, no heavy ORM)
 
-**Migration to Cloud Run:**
-- Move from App Engine to **Google Cloud Run** for container-based deployment
-- Pay-per-request pricing model for cost optimization
-- Automatic scaling to zero when idle
+**Production Migration to Cloud Run:**
+- QA already runs on Cloud Run (completed)
+- Production will migrate from App Engine to Cloud Run
 - Native image + Cloud Run = instant cold starts and minimal costs
 
 ## Tech Stack
