@@ -4,6 +4,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
     id("io.freefair.lombok") version "9.2.0"
     id("org.graalvm.buildtools.native") version "0.10.6"
+    id("com.google.cloud.tools.jib") version "3.5.1"
 }
 
 group = "com.topleader"
@@ -194,5 +195,61 @@ tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTe
         "-Dspring.ai.openai.api-key=dummy-key",
         "-Dspring.test.database.replace=NONE"
     )
+}
+
+// Jib configuration for Cloud Run container images
+jib {
+    from {
+        image = "eclipse-temurin:25-jre-alpine"
+        platforms {
+            platform {
+                architecture = "amd64"
+                os = "linux"
+            }
+        }
+    }
+
+    to {
+        image = "europe-west3-docker.pkg.dev/topleader-394306/cloud-run/top-leader-be"
+        tags = setOf("latest", System.getenv("IMAGE_TAG") ?: "dev")
+    }
+
+    container {
+        mainClass = "com.topleader.topleader.TopLeaderApplication"
+
+        jvmFlags = listOf(
+            "-XX:MaxRAMPercentage=90.0",
+            "-XX:+UseCompactObjectHeaders",
+            "-XX:+UseStringDeduplication",
+            "-XX:+DisableExplicitGC",
+            "-XX:+TieredCompilation",
+            "-XX:TieredStopAtLevel=1",
+            "-Djava.security.egd=file:/dev/./urandom"
+        )
+
+        ports = listOf("8080")
+
+        user = "1001:1001"
+
+        creationTime.set("USE_CURRENT_TIMESTAMP")
+
+        labels.set(mapOf(
+            "maintainer" to "topleader",
+            "app" to "top-leader-be",
+            "version" to version.toString()
+        ))
+
+        environment = mapOf(
+            "SPRING_OUTPUT_ANSI_ENABLED" to "NEVER"
+        )
+    }
+
+    containerizingMode = "packaged"
+
+    extraDirectories {
+        permissions.set(mapOf(
+            "/app" to "755"
+        ))
+    }
 }
 

@@ -1,5 +1,14 @@
+# Configuration variables
+REGION := europe-west3
+PROJECT_ID := topleader-394306
+SERVICE_NAME := top-leader-qa
+IMAGE_NAME := top-leader-be
+ARTIFACT_REPO := cloud-run
+GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
+
 # Google Cloud commands
-.PHONY: login logs-qa logs-prod openapi build native native-test native-linux deploy-qa deploy-prod run local-login local-whoami local-google-auth local-api local-health local-create-user
+.PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-test native-linux deploy-qa deploy-prod
+.PHONY: logs-qa-cloudrun logs-qa-cloudrun-ai info-qa-cloudrun revisions-qa rollback-qa jib-local setup-cloud-run-qa
 
 # Login to Google Cloud and set project
 login:
@@ -60,4 +69,65 @@ deploy-prod: build
 	echo "Creating tag: $$NEW_TAG"; \
 	git tag "$$NEW_TAG"; \
 	git push origin "$$NEW_TAG"
+
+# --- Cloud Run Commands ---
+
+# Setup Cloud Run infrastructure (Artifact Registry, Service Account, IAM)
+setup-cloud-run-qa:
+	./scripts/setup-cloud-run-qa.sh
+
+# Build and push Docker image locally using Jib
+jib-local: build
+	@echo "Building and pushing Docker image using Jib..."
+	$(GRADLE_HOME)/bin/gradle jib \
+		-Djib.to.tags=latest,local \
+		-Djib.console=plain \
+		--no-configuration-cache
+
+# Fetch Cloud Run QA error logs
+logs-qa-cloudrun:
+	gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="$(SERVICE_NAME)" AND severity>=ERROR' \
+		--limit=50 \
+		--format="table(timestamp,severity,textPayload)" \
+		--project=$(PROJECT_ID)
+
+# Fetch Cloud Run QA AI-related logs
+logs-qa-cloudrun-ai:
+	gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="$(SERVICE_NAME)" AND (textPayload=~"openai|OpenAI|ChatModel|AiClient" OR textPayload=~"Exception|Error")' \
+		--limit=100 \
+		--format=json \
+		--project=$(PROJECT_ID)
+
+# Show Cloud Run service information
+info-qa-cloudrun:
+	gcloud run services describe $(SERVICE_NAME) \
+		--region=$(REGION) \
+		--platform=managed \
+		--project=$(PROJECT_ID)
+
+# List Cloud Run revisions
+revisions-qa:
+	gcloud run revisions list \
+		--service=$(SERVICE_NAME) \
+		--region=$(REGION) \
+		--platform=managed \
+		--sort-by=~metadata.creationTimestamp \
+		--project=$(PROJECT_ID)
+
+# Rollback to previous Cloud Run revision
+rollback-qa:
+	@echo "Available revisions for $(SERVICE_NAME):"
+	@gcloud run revisions list \
+		--service=$(SERVICE_NAME) \
+		--region=$(REGION) \
+		--platform=managed \
+		--format="table(metadata.name,status.traffic,status.conditions[0].status)" \
+		--project=$(PROJECT_ID)
+	@echo ""
+	@read -p "Enter revision name to rollback to: " REVISION; \
+	gcloud run services update-traffic $(SERVICE_NAME) \
+		--to-revisions=$$REVISION=100 \
+		--region=$(REGION) \
+		--platform=managed \
+		--project=$(PROJECT_ID)
 

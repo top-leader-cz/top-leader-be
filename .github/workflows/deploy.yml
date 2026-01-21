@@ -37,20 +37,13 @@ jobs:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-deploy')
     runs-on: ubuntu-latest
     env:
-      SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD_QA }}
-      SPRING_MAIL_PASSWORD: ${{ secrets.SPRING_MAIL_PASSWORD }}
-      TOP_LEADER_CALENDLY_CLIENT_SECRETS: ${{ secrets.TOP_LEADER_CALENDLY_CLIENT_SECRETS }}
-      GOOGLE_CLIENT_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_CLIENT_SECRET }}
-      SPRING_AI_OPENAI_APIKEY: ${{ secrets.SPRING_AI_OPENAI_APIKEY }}
-      GRAFANA_OTLP_TOKEN: ${{ secrets.GRAFANA_OTLP_TOKEN }}
-      JOB_TRIGGER_PASSWORD: ${{ secrets.JOB_TRIGGER_PASSWORD }}
+      REGION: europe-west3
+      SERVICE_NAME: top-leader-qa
+      PROJECT_ID: topleader-394306
+      IMAGE_NAME: top-leader-be
+      CLOUD_SQL_INSTANCE: topleader-394306:europe-west3:top-leader-db
     steps:
       - uses: actions/checkout@v4
-
-      - name: Replace repository-secrets in app-qa.yaml
-        run: |
-          envsubst < src/main/appengine/app-qa.yaml > src/main/appengine/app-qa.yaml.tmp
-          mv src/main/appengine/app-qa.yaml.tmp src/main/appengine/app-qa.yaml
 
       - name: Set up JDK 25
         uses: actions/setup-java@v4
@@ -69,36 +62,67 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev
+
       - name: Generate OpenAPI spec
         run: gradle generateOpenApi
 
-      - name: Build JAR
-        run: gradle bootJar --parallel --build-cache
-
-      - name: Copy JAR to appengine directory
-        run: cp build/libs/top-leader.jar src/main/appengine/
-
-      - name: Deploy to App Engine QA
-        run: gcloud app deploy src/main/appengine/app-qa.yaml --project=topleader-394306 --version=$(git rev-parse --short "$GITHUB_SHA") --promote --verbosity=debug
-
-      - name: Cleanup old QA versions (keep last 2)
+      - name: Build and push Docker image with Jib
         run: |
-          echo "Fetching QA versions..."
-          VERSIONS=$(gcloud app versions list \
-            --service=qa \
-            --project=topleader-394306 \
-            --sort-by=~version.createTime \
-            --format="value(version.id)" | tail -n +3)
+          SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")
+          gradle jib \
+            -Djib.to.image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/cloud-run/${{ env.IMAGE_NAME }} \
+            -Djib.to.tags=latest,$SHORT_SHA \
+            --no-configuration-cache
 
-          if [ -z "$VERSIONS" ]; then
-            echo "No old versions to delete"
+      - name: Deploy to Cloud Run QA
+        run: |
+          SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/cloud-run/${{ env.IMAGE_NAME }}:$SHORT_SHA \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --service-account=cloud-run-sa@${{ env.PROJECT_ID }}.iam.gserviceaccount.com \
+            --add-cloudsql-instances=${{ env.CLOUD_SQL_INSTANCE }} \
+            --cpu=2 \
+            --memory=1Gi \
+            --min-instances=0 \
+            --max-instances=2 \
+            --timeout=300s \
+            --concurrency=80 \
+            --session-affinity \
+            --port=8080 \
+            --set-env-vars="SPRING_PROFILES_ACTIVE=qa,GCP_JSON_LOGS=CONSOLE_JSON,SPRING_MAIL_USERNAME=topleaderplatform@topleader.io,SPRING_MAIL_HOST=smtp.gmail.com,SPRING_MAIL_PORT=587,TOP_LEADER_CALENDLY_CLIENT_ID=PJ2FbDI-YAyzEJya2H4RqHv_Sv0F-Hl0d-i93FkAuH8,GOOGLE_CLIENT_CLIENT_ID=572595541175-n58eajajt5iqc5rsn25rv2mt8iejojsi.apps.googleusercontent.com" \
+            --set-secrets="SPRING_DATASOURCE_PASSWORD=SPRING_DATASOURCE_PASSWORD_QA:latest,SPRING_MAIL_PASSWORD=SPRING_MAIL_PASSWORD:latest,TOP_LEADER_CALENDLY_CLIENT_SECRETS=TOP_LEADER_CALENDLY_CLIENT_SECRETS:latest,GOOGLE_CLIENT_CLIENT_SECRET=GOOGLE_CLIENT_CLIENT_SECRET:latest,SPRING_AI_OPENAI_APIKEY=SPRING_AI_OPENAI_APIKEY:latest,GRAFANA_OTLP_TOKEN=GRAFANA_OTLP_TOKEN:latest,JOB_TRIGGER_PASSWORD=JOB_TRIGGER_PASSWORD:latest" \
+            --revision-suffix=$SHORT_SHA \
+            --labels=environment=qa,team=backend,managed-by=github-actions
+
+      - name: Cleanup old revisions (keep last 3)
+        run: |
+          echo "Fetching QA revisions..."
+          REVISIONS=$(gcloud run revisions list \
+            --service=${{ env.SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --sort-by=~metadata.creationTimestamp \
+            --format="value(metadata.name)" \
+            --project=${{ env.PROJECT_ID }} | tail -n +4)
+
+          if [ -z "$REVISIONS" ]; then
+            echo "No old revisions to delete"
           else
-            echo "Deleting old versions: $VERSIONS"
-            for VERSION in $VERSIONS; do
-              gcloud app versions delete $VERSION \
-                --service=qa \
-                --project=topleader-394306 \
-                --quiet || echo "Failed to delete $VERSION"
+            echo "Deleting old revisions: $REVISIONS"
+            for REVISION in $REVISIONS; do
+              gcloud run revisions delete $REVISION \
+                --region=${{ env.REGION }} \
+                --platform=managed \
+                --project=${{ env.PROJECT_ID }} \
+                --quiet || echo "Failed to delete $REVISION"
             done
           fi
 
