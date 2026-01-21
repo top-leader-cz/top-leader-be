@@ -19,6 +19,7 @@ configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
     }
+
     all {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-logging")
         exclude(group = "ch.qos.logback", module = "logback-classic")
@@ -35,7 +36,7 @@ dependencyManagement {
 
 dependencies {
     // Google Cloud
-    implementation("com.google.apis:google-api-services-calendar:v3-rev20250404-2.0.0")
+    implementation("com.google.apis:google-api-services-calendar:v3-rev20251207-2.0.0")
     implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
     implementation("com.google.cloud.sql:postgres-socket-factory:1.28.0")
 
@@ -65,7 +66,8 @@ dependencies {
     implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
 
-    // H2 for AOT processing only - excluded from native image via nativeImageClasspath
+    // H2 for AOT processing and tests only
+    // Excluded from production JAR via bootJar configuration below
     runtimeOnly("com.h2database:h2")
 
 
@@ -74,7 +76,15 @@ dependencies {
 
     // Utilities
     implementation("dev.failsafe:failsafe:3.3.2")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+
+    // Conditional SpringDoc dependency: UI for dev/qa, API-only for production
+    val includeSwaggerUI = project.findProperty("swagger.ui") != "false"
+    if (includeSwaggerUI) {
+        implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1")
+    } else {
+        implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.1")
+    }
+    println("SpringDoc mode: ${if (includeSwaggerUI) "UI included" else "API-only (production)"}")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -96,13 +106,25 @@ tasks.withType<Test> {
 
 tasks.bootJar {
     archiveFileName.set("top-leader.jar")
+    // Exclude H2 from production JAR (only needed for AOT processing and tests)
+    // H2 is filtered from classpath dependencies
+    val h2Excluded = configurations.runtimeClasspath.get().filter {
+        !it.name.contains("h2-")
+    }
+    classpath(h2Excluded)
 }
 
 // OpenAPI spec generation
 val generateOpenApi by tasks.registering(Test::class) {
     description = "Generates OpenAPI spec."
     group = "documentation"
-    include("**/OpenApiGeneratorTest.class")
+    testClassesDirs = sourceSets.test.get().output.classesDirs
+    classpath = sourceSets.test.get().runtimeClasspath
+    // Remove the exclude rule from parent Test configuration
+    setExcludes(emptySet())
+    filter {
+        includeTestsMatching("com.topleader.topleader.OpenApiGeneratorTest")
+    }
     shouldRunAfter(tasks.test)
 }
 

@@ -38,10 +38,12 @@ public class NativeImageConfiguration {
             registerLog4j2Classes(hints, classLoader);
 
             // Swagger UI / SpringDoc for native image
+            // Note: Swagger UI resources only included when building with -Pswagger.ui=true (dev/qa)
             hints.resources().registerPattern("META-INF/resources/webjars/swagger-ui/**");
             hints.resources().registerPattern("org/springdoc/**");
 
-            // SpringDoc classes
+            // SpringDoc classes (UI classes only registered if present on classpath)
+            // API-only build (-Pswagger.ui=false) excludes UI classes automatically
             hints.reflection().registerTypeIfPresent(classLoader,
                     "org.springdoc.webmvc.api.OpenApiWebMvcResource",
                     MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,

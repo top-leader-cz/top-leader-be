@@ -66,31 +66,26 @@ We chose a monolithic architecture primarily for **cost savings**. A monolith is
 
 We use **Jetty** instead of Tomcat because it's **lightweight** and doesn't carry the overhead of Tomcat. Jetty has a smaller memory footprint and faster startup time, which aligns with our goal of keeping the application lean and efficient.
 
-### Why Spring Data JDBC over Hibernate?
+### Why Spring Data JDBC?
 
-We migrated from **Hibernate/JPA to Spring Data JDBC** for GraalVM native image compatibility:
+We use **Spring Data JDBC** as our data access layer:
 
 **Native Image Friendly:**
-- Minimal reflection required - Spring Data JDBC uses simple JDBC operations
-- No runtime bytecode generation or proxies like Hibernate
+- Minimal reflection - uses simple JDBC operations
+- No runtime bytecode generation or proxies
 - Smaller native image size and faster startup
 
 **Simpler Model:**
-- No lazy loading, proxy objects, or detached entities
 - Direct mapping between database rows and Java objects
+- No lazy loading or detached entity complexity
 - Easier to reason about and debug
 
 **Full SQL Control:**
-- Write native SQL with `@Query` - no JPQL/HQL learning curve
-- No hidden queries or N+1 problems
+- Write native SQL with `@Query` annotations
+- No N+1 problems or hidden queries
 - Better query optimization and performance tuning
 
-**Less Reflection:**
-- Aligns with our goal of avoiding reflection-heavy libraries
-- Better tooling support (IDE autocomplete, refactoring)
-- Compile-time safety with strong typing
-
-For a monolithic application targeting native images, Spring Data JDBC provides the right balance of simplicity and performance.
+Spring Data JDBC provides the right balance of simplicity, performance, and native image compatibility.
 
 ### Why Avoid Reflection-based Libraries?
 
@@ -176,13 +171,12 @@ We deploy on **Google Cloud Platform** with the following architecture:
 > See [ADR-003: Native Image Strategy](docs/adr/003-native-image-strategy.md) for full decision record.
 
 **GraalVM Native Images:**
-- ~~Remove **iCal4j** library~~ ✅ Replaced with template-based implementation (see `templates/ical/`)
-- ~~Remove **Hibernate**~~ ✅ Migrated to **Spring Data JDBC** for native image compatibility
-
-Native images provide instant startup and reduced memory footprint, which is ideal for cloud deployment and cost optimization.
+- Build production native images for instant startup and reduced memory footprint
+- Ideal for cloud deployment and cost optimization
+- Current codebase is native-image ready (minimal reflection, no heavy ORM)
 
 **Migration to Cloud Run:**
-- Move from GKE to **Google Cloud Run** for simplified container orchestration
+- Move from App Engine to **Google Cloud Run** for container-based deployment
 - Pay-per-request pricing model for cost optimization
 - Automatic scaling to zero when idle
 - Native image + Cloud Run = instant cold starts and minimal costs
@@ -294,6 +288,55 @@ src/main/resources/
 ├── application.yml         # Main configuration file
 └── templates/              # Email templates
 ```
+
+## Security
+
+See [docs/SECURITY.md](docs/SECURITY.md) for complete security audit report.
+
+### Security Architecture
+
+**Spring Security Configuration** (`WebSecurityConfig.java`):
+- **Two Security Filter Chains:**
+  1. Protected Chain (Order 1) - `/api/protected/**` with HTTP Basic Auth for internal job triggers
+  2. Main Application Chain (Order 2) - Form login with session-based authentication
+
+**Authentication & Authorization:**
+- Session-based authentication with Spring Session JDBC (15min timeout)
+- Role-based access control (RBAC): `RESPONDENT`, `USER`, `MANAGER`, `COACH`, `HR`, `ADMIN`
+- `@Secured` annotations on controller methods
+- Default deny policy - all endpoints require authentication except public paths
+
+**Session Management:**
+- JDBC-backed sessions (survives restarts)
+- Session cookies with `SameSite=lax`, `HttpOnly=true`, `Secure=true` (in prod/qa)
+- 15-minute timeout with automatic renewal on activity
+
+**Security Headers:**
+- **Content Security Policy (CSP)** - Restricts script/style/image sources
+- **X-XSS-Protection** - Browser-level XSS filter in block mode
+- **X-Content-Type-Options** - Prevents MIME sniffing
+- **X-Frame-Options** - Prevents clickjacking (SAMEORIGIN)
+
+**CORS Configuration:**
+- **CORS is DISABLED** in the application (`.cors(AbstractHttpConfigurer::disable)`)
+- **Handled by Google Cloud Load Balancer** at infrastructure level
+- Frontend and API served from same domain (`topleaderplatform.io`) → same-origin requests
+- Load balancer routes by path:
+  - `/api/*` → Backend (Cloud Run)
+  - `/` → Frontend (Cloud Storage + CDN)
+
+**CSRF Protection:**
+- CSRF tokens disabled (REST API design)
+- Partial protection via `SameSite=lax` cookie policy
+- Trade-off: Simplifies API consumption, relies on SameSite for CSRF defense
+
+**Input Validation:**
+- Jakarta validation (`@NotNull`, `@Valid`, `@NotBlank`)
+- File upload validation (magic bytes, size limits, content type whitelist)
+- Image re-encoding to strip metadata and malicious payloads
+
+**See also:**
+- [ADR-002: Session-based Auth](docs/adr/002-session-based-auth.md) - Why sessions over JWT
 
 ## Key Features
 

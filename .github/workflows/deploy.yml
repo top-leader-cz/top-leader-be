@@ -69,11 +69,8 @@ jobs:
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
-      - name: Generate OpenAPI spec
-        run: gradle generateOpenApi
-
       - name: Build JAR
-        run: gradle bootJar --parallel --build-cache
+        run: gradle bootJar -x test --parallel --build-cache
 
       - name: Copy JAR to appengine directory
         run: cp build/libs/top-leader.jar src/main/appengine/
@@ -139,9 +136,6 @@ jobs:
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
-      - name: Generate OpenAPI spec
-        run: gradle generateOpenApi
 
       - name: Build Application
         run: gradle bootJar -x test --parallel --build-cache

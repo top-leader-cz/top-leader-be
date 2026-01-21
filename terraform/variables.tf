@@ -30,3 +30,10 @@ variable "sql_authorized_networks" {
   }))
   default = []
 }
+
+# Temporarily commented out - will be configured later
+# variable "job_trigger_password" {
+#   description = "Password for Cloud Scheduler jobs to authenticate with /api/protected/jobs endpoints"
+#   type        = string
+#   sensitive   = true
+# }

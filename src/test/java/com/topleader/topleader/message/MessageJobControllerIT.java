@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -26,7 +27,7 @@ public class MessageJobControllerIT extends IntegrationTest {
     @WithMockUser(authorities = "JOB")
     void processNotDisplayedMessages() throws Exception {
 
-        mvc.perform(get("/api/protected/jobs/displayedMessages"))
+        mvc.perform(post("/api/protected/jobs/displayedMessages"))
                 .andExpect(status().isOk());
 
         var receivedMessage = greenMail.getReceivedMessages()[0];

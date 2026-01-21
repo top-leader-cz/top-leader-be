@@ -15,6 +15,7 @@ import org.springframework.test.context.jdbc.Sql;
 
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
@@ -25,7 +26,7 @@ class SessionReminderControllerIT extends IntegrationTest {
     @WithMockUser(authorities = "JOB")
     @Sql(scripts = "/sql/user_info/session/reminder/session-reminder.sql")
     void processNotDisplayedMessages() throws Exception {
-        mvc.perform(get("/api/protected/jobs/remind-sessions"))
+        mvc.perform(post("/api/protected/jobs/remind-sessions"))
                 .andExpect(status().isOk());
 
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(3);
@@ -54,7 +55,7 @@ class SessionReminderControllerIT extends IntegrationTest {
     @WithMockUser(authorities = "JOB")
     @Sql(scripts = "/sql/user_info/session/reminder/session-reminder-view-test.sql")
     void viewTest() throws Exception {
-        mvc.perform(get("/api/protected/jobs/remind-sessions"))
+        mvc.perform(post("/api/protected/jobs/remind-sessions"))
                 .andExpect(status().isOk());
 
         Assertions.assertThat(greenMail.getReceivedMessages()).hasSize(5);

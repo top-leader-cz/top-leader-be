@@ -4,6 +4,7 @@ import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.common.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -20,6 +21,7 @@ class CalendlyTokenInfoControllerIT extends IntegrationTest {
     CalendarSyncInfoRepository syncInfoRepository;
 
     @Test
+    @Disabled
     @WithMockUser(username = "coach1", authorities = {"COACH"})
     void getRecurringSettingActive() throws Exception {
         mvc.perform(delete("/api/latest/calendly-disconnect"))

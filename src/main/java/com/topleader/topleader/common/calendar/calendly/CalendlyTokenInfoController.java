@@ -27,27 +27,27 @@ public class CalendlyTokenInfoController {
     private final CalendlyService calendlyService;
     private final CalendarToErrorHandler errorHandler;
 
-    @GetMapping("calendly-info")
-    public CalendarTokenInfo getGoogleTokenInfo(@AuthenticationPrincipal UserDetails user) {
-        return calendarService.getInfo(user.getUsername(), CalendarSyncInfo.SyncType.CALENDLY)
-                .map(info -> CommonUtils.tryMapOrElse(
-                        () -> calendlyService.refreshTokens(info),
-                        tokens -> calendarService.save(info.setRefreshToken(tokens.getRefreshToken())
-                                .setAccessToken(tokens.getAccessToken())
-                                .setLastSync(LocalDateTime.now())),
-                        info,
-                        e -> errorHandler.handleError(info, e)))
-                .map(tokenInfo -> new CalendarTokenInfo(
-                        true,
-                        tokenInfo.getStatus(),
-                        tokenInfo.getLastSync().atZone(ZoneId.systemDefault())
-                ))
-                .orElse(CalendarTokenInfo.EMPTY);
-    }
+//    @GetMapping("calendly-info")
+//    public CalendarTokenInfo getGoogleTokenInfo(@AuthenticationPrincipal UserDetails user) {
+//        return calendarService.getInfo(user.getUsername(), CalendarSyncInfo.SyncType.CALENDLY)
+//                .map(info -> CommonUtils.tryMapOrElse(
+//                        () -> calendlyService.refreshTokens(info),
+//                        tokens -> calendarService.save(info.setRefreshToken(tokens.getRefreshToken())
+//                                .setAccessToken(tokens.getAccessToken())
+//                                .setLastSync(LocalDateTime.now())),
+//                        info,
+//                        e -> errorHandler.handleError(info, e)))
+//                .map(tokenInfo -> new CalendarTokenInfo(
+//                        true,
+//                        tokenInfo.getStatus(),
+//                        tokenInfo.getLastSync().atZone(ZoneId.systemDefault())
+//                ))
+//                .orElse(CalendarTokenInfo.EMPTY);
+//    }
 
-    @DeleteMapping("calendly-disconnect")
-    public void disconnect(@AuthenticationPrincipal UserDetails user) {
-        calendarService.disconnect(user.getUsername(), CalendarSyncInfo.SyncType.CALENDLY);
-    }
+//    @DeleteMapping("calendly-disconnect")
+//    public void disconnect(@AuthenticationPrincipal UserDetails user) {
+//        calendarService.disconnect(user.getUsername(), CalendarSyncInfo.SyncType.CALENDLY);
+//    }
 
 }

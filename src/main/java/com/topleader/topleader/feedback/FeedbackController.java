@@ -55,7 +55,7 @@ public class FeedbackController {
                 .setLastName(user.getLastName());
     }
 
-    @Transactional
+
     @GetMapping("/user/{username}")
     @Secured({"ADMIN", "HR", "COACH", "USER"})
     public List<FeedbackForms> getForms(@PathVariable String username) {

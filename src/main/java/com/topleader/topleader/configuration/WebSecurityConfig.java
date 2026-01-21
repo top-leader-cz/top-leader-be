@@ -82,7 +82,7 @@ public class WebSecurityConfig {
         http
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**",
-                        "/v3/api-docs/**", "/_ah/start","/_ah/warmup", "/actuator/health",
+                        "/v3/api-docs/**", "/_ah/start", "/actuator/health",
                         "/login/google", "/login/calendly").permitAll()
                 .anyRequest().authenticated()
             )
@@ -105,11 +105,13 @@ public class WebSecurityConfig {
                 .contentSecurityPolicy(csp -> csp
                     .policyDirectives(
                         "default-src 'self'; " +
-                        "script-src 'self'; " +
+                        "script-src 'self' 'unsafe-inline' https://accounts.google.com; " +
                         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
                         "font-src 'self' https://fonts.gstatic.com; " +
                         "img-src 'self' data: https:; " +
-                        "connect-src 'self'"
+                        "connect-src 'self' https://accounts.google.com https://www.googleapis.com; " +
+                        "frame-src 'self' https://accounts.google.com; " +
+                        "form-action 'self' https://accounts.google.com"
                     )
                 )
                 .xssProtection(xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))

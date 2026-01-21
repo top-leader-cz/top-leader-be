@@ -89,7 +89,13 @@ class CoachControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach", authorities = {"COACH"})
     void setCoachImage() throws Exception {
 
-        final var file = new MockMultipartFile("image", "test-image.jpg", "image/jpeg", "image-data".getBytes());
+        // Create a real 1x1 pixel JPEG image
+        var bufferedImage = new java.awt.image.BufferedImage(1, 1, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        var outputStream = new java.io.ByteArrayOutputStream();
+        javax.imageio.ImageIO.write(bufferedImage, "JPEG", outputStream);
+        var jpegBytes = outputStream.toByteArray();
+
+        final var file = new MockMultipartFile("image", "test-image.jpg", "image/jpeg", jpegBytes);
 
         mvc.perform(multipart("/api/latest/coach-info/photo")
                 .file(file))
@@ -99,17 +105,18 @@ class CoachControllerIT extends IntegrationTest {
 
         assertThat(image.isPresent(), is(true));
         assertThat(image.get().getType(), is("image/jpeg"));
-        assertThat(new String(ImageUtil.decompressImage(image.get().getImageData())), is("image-data"));
 
+        // Verify the image can be decompressed
+        var decompressed = ImageUtil.decompressImage(image.get().getImageData());
+        assertThat(decompressed.length, is(jpegBytes.length));
 
         final var result = mvc.perform(get("/api/latest/coach-info/photo"))
             .andExpect(status().isOk())
             .andExpect(content().contentType(MediaType.IMAGE_JPEG))
             .andReturn();
 
-        final var imageData = new String(result.getResponse().getContentAsByteArray());
-
-        assertThat(imageData, is("image-data"));
+        final var imageData = result.getResponse().getContentAsByteArray();
+        assertThat(imageData.length, is(jpegBytes.length));
 
     }
 

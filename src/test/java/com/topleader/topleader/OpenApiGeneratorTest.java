@@ -1,6 +1,7 @@
 package com.topleader.topleader;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.security.test.context.support.WithMockUser;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -12,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class OpenApiGeneratorTest extends IntegrationTest {
 
     @Test
+    @WithMockUser
     void generateOpenApiSpec() throws Exception {
         var result = mvc.perform(get("/v3/api-docs.yaml"))
                 .andExpect(status().isOk())

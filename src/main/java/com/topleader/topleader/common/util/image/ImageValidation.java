@@ -20,7 +20,7 @@ public class ImageValidation {
                 INVALID_PARAMETER,
                 "file",
                 file.getContentType(),
-                "Invalid image type. Allowed: JPEG, PNG, GIF, WEBP"
+                "Invalid image type. Allowed: JPEG, PNG, GIF, WEBP, SVG"
             );
         }
 
@@ -84,6 +84,16 @@ public class ImageValidation {
             data[8] == (byte)0x57 && data[9] == (byte)0x45 &&
             data[10] == (byte)0x42 && data[11] == (byte)0x50) {
             return true;
+        }
+
+        // SVG: starts with < and contains "svg" in first 1000 bytes
+        // Common patterns: <svg or <?xml
+        if (data[0] == (byte)0x3C) {
+            var limit = Math.min(data.length, 1000);
+            var prefix = new String(data, 0, limit);
+            if (prefix.toLowerCase().contains("svg")) {
+                return true;
+            }
         }
 
         return false;

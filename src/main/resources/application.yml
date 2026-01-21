@@ -83,6 +83,7 @@ top-leader:
       - image/png
       - image/gif
       - image/webp
+      - image/svg+xml
     max-image-size-bytes: 10485760
   calendly:
     client-id: client-id
@@ -120,8 +121,9 @@ thumbmail: http://i3.ytimg.com/vi/%s/hqdefault.jpg
 springdoc:
   api-docs:
     enabled: true
+    path: /v3/api-docs
   swagger-ui:
-    url: /openapi.yaml
+    enabled: true
     path: /swagger-ui.html
 
 management:
