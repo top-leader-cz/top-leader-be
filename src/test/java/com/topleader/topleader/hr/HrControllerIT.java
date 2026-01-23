@@ -277,7 +277,7 @@ class HrControllerIT extends IntegrationTest {
                         "firstName":"manager",
                         "lastName":"two"
                         }
-                        ]                       
+                        ]
                                 """));
     }
 

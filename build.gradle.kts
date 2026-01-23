@@ -1,5 +1,6 @@
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "4.0.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.freefair.lombok") version "9.2.0"
@@ -102,6 +103,54 @@ tasks.withType<Test> {
     jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
     maxHeapSize = "1024m"
     exclude("**/OpenApiGeneratorTest.class")
+    finalizedBy(tasks.jacocoTestReport) // Generate coverage report after tests
+}
+
+// JaCoCo configuration
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+    // Exclude DTOs, domain models, configs, and Lombok-generated code
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/domain/**",
+                    "**/*\$*Dto.class",
+                    "**/*\$*Request*.class",
+                    "**/*\$*Response*.class",
+                    "**/*Dto.class",
+                    "**/*Request.class",
+                    "**/*Response.class",
+                    "**/configuration/**",
+                    "**/*Configuration.class",
+                    "**/*Config.class",
+                    "**/exception/**",
+                    "**/*Exception.class",
+                    "**/TopLeaderApplication.class",
+                    "**/*\$*Builder.class"
+                )
+            }
+        })
+    )
+}
+
+// Verify minimum coverage threshold
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.70".toBigDecimal() // 70% minimum coverage
+            }
+        }
+    }
+    // Use same exclusions as jacocoTestReport
+    classDirectories.setFrom(tasks.jacocoTestReport.get().classDirectories)
 }
 
 tasks.bootJar {
