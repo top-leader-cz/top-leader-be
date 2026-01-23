@@ -1,0 +1,67 @@
+name: Native Tests
+
+on:
+  pull_request:
+    branches: [ "develop", "main" ]
+  push:
+    branches: [ "develop", "main" ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  native-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: testdb
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up GraalVM 25
+      uses: graalvm/setup-graalvm@v1
+      with:
+        java-version: '25'
+        distribution: 'graalvm-community'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        cache: 'gradle'
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v4
+
+    - name: Build native test image
+      run: gradle nativeTestCompile -x test --no-configuration-cache --build-cache
+
+    - name: Run native tests
+      run: gradle nativeTest -x test --no-configuration-cache
+      env:
+        # Tests will use TestContainers which will start its own PostgreSQL
+        # The postgres service above is kept for potential future use
+        CI: true
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-test-results
+        path: build/test-results/nativeTest/
+        retention-days: 7
+
+    - name: Upload test reports
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: native-test-reports
+        path: build/reports/tests/nativeTest/
+        retention-days: 7

@@ -42,7 +42,6 @@ TopLeader is a Spring Boot backend application for a coaching/mentoring platform
 - "analyzuj XYZ, mám další otázku"
 - "najdi všechny XYZ agent"
 - "prozkoumej XYZ na pozadí"
-
 ### Agent Keywords (Czech/English)
 
 | Czech Keywords | English Keywords | Agent Type |

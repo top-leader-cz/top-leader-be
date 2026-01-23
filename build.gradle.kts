@@ -140,6 +140,10 @@ graalvmNative {
                 "-H:+ReportExceptionStackTraces",
                 "-Ob",  // Quick build - faster compilation, slower runtime
                 "-J-Xmx10g",  // More heap for faster build
+                "-J-XX:+UseParallelGC",  // Parallel GC for faster build
+                "-J-XX:ActiveProcessorCount=8",  // Use 8 cores for build
+                "-H:+UnlockExperimentalVMOptions",
+                "-H:+UseG1GC",
                 listOf(
                     "org.slf4j",
                     "org.apache.logging.slf4j",
@@ -150,7 +154,13 @@ graalvmNative {
                     "com.fasterxml.jackson",
                     "org.yaml.snakeyaml",
                     "org.codehaus.stax2",
-                    "com.ctc.wstx"
+                    "com.ctc.wstx",
+                    "org.springframework.util",
+                    "org.springframework.core",
+                    "org.springframework.beans",
+                    "org.springframework.context",
+                    "org.springframework.web",
+                    "org.postgresql"
                 ).joinToString(",", prefix = "--initialize-at-build-time=")
             )
 
