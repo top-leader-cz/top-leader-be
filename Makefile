@@ -1,5 +1,5 @@
 # Google Cloud commands
-.PHONY: login logs-qa logs-prod openapi build native native-test native-linux deploy-qa deploy-prod run local-login local-whoami local-google-auth local-api local-health local-create-user
+.PHONY: login logs-qa logs-prod openapi build native native-test native-linux deploy-qa deploy-prod run local-login local-whoami local-google-auth local-api local-health local-create-user test test-coverage test-report coverage-verify postman
 
 # Login to Google Cloud and set project
 login:
@@ -25,6 +25,30 @@ openapi:
 # Build application locally
 build:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle build --parallel --build-cache
+
+# Testing commands
+# Run all tests
+test:
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test
+
+# Run tests with coverage report
+test-coverage:
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test jacocoTestReport
+
+# Open coverage report in browser
+test-report: test-coverage
+	@echo "Opening coverage report..."
+	open build/reports/jacoco/test/html/index.html || xdg-open build/reports/jacoco/test/html/index.html
+
+# Verify coverage meets minimum threshold (70%)
+coverage-verify:
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle jacocoTestCoverageVerification
+
+# Generate Postman collection from OpenAPI spec
+postman: openapi
+	@echo "Converting OpenAPI spec to Postman collection..."
+	python3 scripts/openapi_to_postman.py src/main/resources/static/openapi.yaml postman/top-leader.postman_collection.json
+	@echo "✅ Postman collection created at: postman/top-leader.postman_collection.json"
 
 # Build native image with GraalVM (quick mode ~2-3 min)
 native:
