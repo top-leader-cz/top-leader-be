@@ -29,8 +29,8 @@ jobs:
       with:
         cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
-    - name: Build with Gradle
-      run: gradle build --parallel --build-cache
+    - name: Build and verify coverage (min 80%)
+      run: gradle build jacocoTestReport jacocoTestCoverageVerification --parallel --build-cache
 
 
   deploy-qa:

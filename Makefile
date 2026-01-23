@@ -1,5 +1,5 @@
 # Google Cloud commands
-.PHONY: login logs-qa logs-prod openapi build native native-test native-linux deploy-qa deploy-prod run local-login local-whoami local-google-auth local-api local-health local-create-user
+.PHONY: login logs-qa logs-prod openapi build native native-test native-linux deploy-qa deploy-prod run local-login local-whoami local-google-auth local-api local-health local-create-user test test-coverage test-with-coverage coverage-verify
 
 # Login to Google Cloud and set project
 login:
@@ -25,6 +25,26 @@ openapi:
 # Build application locally
 build:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle build --parallel --build-cache
+
+# Testing commands
+# Run all tests
+test:
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test
+
+# Run tests and generate coverage report
+test-coverage:
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test jacocoTestReport
+	@echo "Coverage report generated at: build/reports/jacoco/test/html/index.html"
+
+# Run tests with coverage and open report in browser
+test-with-coverage: test-coverage
+	@echo "Opening coverage report..."
+	@open build/reports/jacoco/test/html/index.html || xdg-open build/reports/jacoco/test/html/index.html 2>/dev/null || echo "Please open build/reports/jacoco/test/html/index.html manually"
+
+# Verify coverage meets minimum threshold (80%) - FAILS if below threshold
+coverage-verify:
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test jacocoTestReport jacocoTestCoverageVerification
+	@echo "✅ Coverage verification passed - minimum 80% instruction coverage achieved"
 
 # Build native image with GraalVM (quick mode ~2-3 min)
 native:
