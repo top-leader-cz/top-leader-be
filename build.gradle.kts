@@ -1,6 +1,7 @@
 plugins {
     java
-    id("org.springframework.boot") version "4.0.1"
+    jacoco
+    id("org.springframework.boot") version "4.0.2"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.freefair.lombok") version "9.2.0"
     id("org.graalvm.buildtools.native") version "0.10.6"
@@ -29,8 +30,9 @@ configurations {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.ai:spring-ai-bom:2.0.0-M1")
+        mavenBom("org.springframework.ai:spring-ai-bom:2.0.0-M2")
         mavenBom("org.testcontainers:testcontainers-bom:1.21.4")
+        mavenBom("org.springframework.modulith:spring-modulith-bom:2.0.2")
     }
 }
 
@@ -95,6 +97,7 @@ dependencies {
     testImplementation("com.icegreen:greenmail:2.1.8")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
     testImplementation("org.wiremock:wiremock-standalone:3.10.0")
+    testImplementation("org.springframework.modulith:spring-modulith-starter-test")
 }
 
 tasks.withType<Test> {
@@ -102,6 +105,55 @@ tasks.withType<Test> {
     jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
     maxHeapSize = "1024m"
     exclude("**/OpenApiGeneratorTest.class")
+    exclude("**/ModularityTests.class")
+    finalizedBy(tasks.jacocoTestReport) // Generate coverage report after tests
+}
+
+// JaCoCo configuration
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+
+    // Exclude DTOs, domain models, configs, and Lombok-generated code
+    classDirectories.setFrom(
+        files(classDirectories.files.map {
+            fileTree(it) {
+                exclude(
+                    "**/domain/**",
+                    "**/*\$*Dto.class",
+                    "**/*\$*Request*.class",
+                    "**/*\$*Response*.class",
+                    "**/*Dto.class",
+                    "**/*Request.class",
+                    "**/*Response.class",
+                    "**/configuration/**",
+                    "**/*Configuration.class",
+                    "**/*Config.class",
+                    "**/exception/**",
+                    "**/*Exception.class",
+                    "**/TopLeaderApplication.class",
+                    "**/*\$*Builder.class"
+                )
+            }
+        })
+    )
+}
+
+// Verify minimum coverage threshold
+tasks.jacocoTestCoverageVerification {
+    dependsOn(tasks.jacocoTestReport)
+    violationRules {
+        rule {
+            limit {
+                minimum = "0.80".toBigDecimal() // 80% minimum coverage
+            }
+        }
+    }
+    // Use same exclusions as jacocoTestReport
+    classDirectories.setFrom(tasks.jacocoTestReport.get().classDirectories)
 }
 
 tasks.bootJar {

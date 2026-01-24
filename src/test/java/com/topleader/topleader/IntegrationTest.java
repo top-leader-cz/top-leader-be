@@ -6,7 +6,7 @@ package com.topleader.topleader;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.icegreen.greenmail.store.FolderException;
 import com.icegreen.greenmail.util.GreenMail;
-import com.topleader.topleader.config.TestBeanConfiguration;
+import com.topleader.topleader.configuration.TestBeanConfiguration;
 import com.topleader.topleader.configuration.EnablePostgresTestContainerContextCustomizerFactory;
 import org.jetbrains.annotations.NotNull;
 

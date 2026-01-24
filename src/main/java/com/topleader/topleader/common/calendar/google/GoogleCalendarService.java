@@ -8,7 +8,7 @@ import com.topleader.topleader.common.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.common.calendar.CalendarToErrorHandler;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.common.calendar.domain.SyncEvent;
-import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.common.calendar.settings.AvailabilitySettingRepository;
 import com.topleader.topleader.common.util.transaction.TransactionService;
 
 import java.io.IOException;

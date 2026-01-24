@@ -1,4 +1,4 @@
-package com.topleader.topleader.coach.availability.settings;
+package com.topleader.topleader.common.calendar.settings;
 
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import org.springframework.data.jdbc.repository.query.Modifying;

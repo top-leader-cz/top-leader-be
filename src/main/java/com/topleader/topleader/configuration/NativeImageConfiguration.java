@@ -37,6 +37,9 @@ public class NativeImageConfiguration {
             // Log4j2 TypeConverters - needed for native image
             registerLog4j2Classes(hints, classLoader);
 
+            // Agroal connection pool for native image
+            registerAgroalClasses(hints, classLoader);
+
             // Swagger UI / SpringDoc for native image
             // Note: Swagger UI resources only included when building with -Pswagger.ui=true (dev/qa)
             hints.resources().registerPattern("META-INF/resources/webjars/swagger-ui/**");
@@ -104,6 +107,35 @@ public class NativeImageConfiguration {
         private void registerEnum(RuntimeHints hints, Class<?> enumClass) {
             hints.reflection().registerType(enumClass,
                     MemberCategory.INVOKE_PUBLIC_METHODS);
+        }
+
+        private void registerAgroalClasses(RuntimeHints hints, ClassLoader classLoader) {
+            // Agroal core classes
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "io.agroal.api.AgroalDataSource",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS);
+
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "io.agroal.pool.DataSource",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS);
+
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "io.agroal.pool.ConnectionHandler",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS);
+
+            // Agroal narayana integration (for transactions)
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "io.agroal.narayana.NarayanaTransactionIntegration",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS);
+
+            // PostgreSQL driver for reflection
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.postgresql.Driver",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
         }
 
         private void registerLog4j2Classes(RuntimeHints hints, ClassLoader classLoader) {

@@ -9,8 +9,8 @@ import java.time.LocalTime;
 import java.util.Comparator;
 
 import com.topleader.topleader.TestUtils;
-import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
-import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
+import com.topleader.topleader.common.calendar.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.common.calendar.settings.CoachAvailabilitySettings;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

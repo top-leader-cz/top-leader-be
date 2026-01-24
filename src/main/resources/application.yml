@@ -9,10 +9,7 @@ server:
         http-only: true
 
 spring:
-  cloud:
-    gcp:
-      sql:
-       enabled: false
+
   threads:
     virtual:
       enabled: true

@@ -1,4 +1,4 @@
-package com.topleader.topleader.company;
+package com.topleader.topleader.hr.company;
 
 import com.topleader.topleader.IntegrationTest;
 import org.junit.jupiter.api.Test;

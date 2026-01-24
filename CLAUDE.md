@@ -1,410 +1,205 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/claude-code) when working with code in this repository.
+This file provides guidance to Claude Code when working with code in this repository.
 
 ## Project Overview
 
-TopLeader is a Spring Boot backend application for a coaching/mentoring platform. It connects coaches with users (coachees), manages scheduling, feedback, and credits.
-
-## Agent Usage Preferences
-
-**IMPORTANT:** Always use specialized agents for tasks that match their capabilities. Default to running agents in background when possible.
-
-### Automatic Agent Selection Rules
-
-- **Code Exploration** - ALWAYS use **Explore agent** for:
-  - Questions starting with: "find", "where is", "how does", "show me", "search for"
-  - Analyzing codebase structure or patterns
-  - Understanding how features work
-  - Example: "find all REST endpoints", "how does authentication work?"
-
-- **Implementation Tasks** - ALWAYS use **Plan agent first**, then implement:
-  - Adding new features or functionality
-  - Refactoring existing code
-  - Architectural changes
-  - Example: "implement user logout", "add new API endpoint"
-
-- **Complex Analysis** - Use **general-purpose agent** for:
-  - Multi-step research and analysis tasks
-  - Native image readiness analysis
-  - Dependency analysis
-  - Performance optimization analysis
-
-### Agent Keywords (Czech/English)
-
-| Czech Keywords | English Keywords | Agent Type |
-|----------------|------------------|------------|
-| najdi, kde je, jak funguje | find, where is, how does | Explore |
-| implementuj, přidej, refaktoruj | implement, add, refactor | Plan |
-| analyzuj, prozkoumej, vyhodnoť | analyze, explore, evaluate | General-purpose |
-| na pozadí, agent | in background, agent | run_in_background=true |
-
-## Agent Usage Rules
-
-**Core principles:**
-- ALWAYS run agents with `run_in_background: true` parameter
-- Be extremely proactive with agent usage - prefer agents over direct tool calls
-- Use agents for ANY task that involves exploration, analysis, or multi-step operations
-
-### When to use specific agents:
-- **Explore agent**: Any codebase questions, structure exploration, finding patterns
-- **General-purpose agent**: Complex analysis, research, multi-step investigations
-- **Plan agent**: Feature implementation planning, architectural decisions
-- **Bash agent**: Git operations, complex shell commands
-- **claude-code-guide agent**: Questions about Claude Code features and settings
-
-### Background Execution Guidelines
-
-**Run agents in background (`run_in_background: true`) when:**
-- User indicates they have another question ("mám další otázku", "meanwhile", "in the background")
-- User explicitly mentions "agent" or "na pozadí" at end of request
-- Task is exploratory/analytical and doesn't block user's next question
-- Analysis will take multiple steps but user doesn't need immediate results
-
-**Example triggers for background execution:**
-- "analyzuj XYZ, mám další otázku"
-- "najdi všechny XYZ agent"
-- "prozkoumej XYZ na pozadí"
-
-### Agent Execution Best Practices:
-- Run agents in parallel when possible for better performance
-- Always use background execution to keep conversation flowing
-- Proactively suggest agent usage when it would be beneficial
+TopLeader is a Spring Boot backend application for a coaching/mentoring platform.
 
 ## Tech Stack
 
-- **Java 25** with Spring Boot 4.0.1
+- **Java 25** with Spring Boot 4.0.2
 - **PostgreSQL** with Flyway migrations
-- **Spring Data JDBC** (fully migrated from Hibernate/JPA for native image compatibility)
+- **Spring Data JDBC** (fully migrated from JPA for native image compatibility)
 - **Spring Security** (form login + session-based auth)
+- **Spring Modulith 2.0.2** (modular monolith architecture)
 - **Lombok** for boilerplate reduction
-- **Maven** build system
-
-## Build & Run Commands
-
-```bash
-# Compile (requires Java 25)
-JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean compile
-
-# Run tests
-JAVA_HOME=~/.sdkman/candidates/java/25 mvn test
-
-# Run specific test class
-JAVA_HOME=~/.sdkman/candidates/java/25 mvn test -Dtest=ClassName
-
-# Build without tests
-JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean package -DskipTests
-```
-
-### Native Image Build (GraalVM)
-
-```bash
-# Install GraalVM 25 via SDKMAN
-sdk install java 25.0.1-graalce
-export JAVA_HOME=~/.sdkman/candidates/java/25.0.1-graalce
-
-# Build native image (quick mode for development ~2-3 min)
-$GRADLE_HOME/bin/gradle nativeCompile --no-configuration-cache --build-cache
-
-# Build native image (production - slower build, faster runtime)
-# Remove "-Ob" flag from build.gradle.kts graalvmNative section
-
-# Run native executable
-./build/native/nativeCompile/top-leader
-
-# Native image location
-# build/native/nativeCompile/top-leader (253 MB)
-```
-
-**Native Build Configuration:**
-- `build.gradle.kts` - GraalVM plugin and build args
-- `NativeImageConfiguration.java` - Reflection hints for runtime
-- `application-nativeaot.yml` - AOT processing profile (uses H2)
+- **Gradle** build system
 
 ## Project Structure
 
 ```
 src/main/java/com/topleader/topleader/
-├── admin/                  # Admin views and management
-├── coach/                  # Coach profiles, availability
-├── common/                 # Shared utilities and cross-cutting concerns
-│   ├── ai/                 # AI integrations (AiClient, AiPromptService)
+├── common/                 # Shared kernel - used by all modules
 │   ├── calendar/           # Calendar integrations (Google, Calendly)
-│   ├── email/              # Email sending (EmailService, templates)
-│   ├── exception/          # Custom exceptions and error handling
-│   │   ├── NotFoundException.java
-│   │   ├── ApiValidationException.java
-│   │   ├── ErrorCodeConstants.java
-│   │   ├── ErrorController.java
-│   │   └── JsonConversionException.java
-│   ├── notification/       # Notification system
-│   ├── password/           # Password management
-│   └── util/               # Utilities, converters, common helpers
-├── company/                # Company entity
-├── configuration/          # Security, async configs
-├── credit/                 # Credit management
-├── feedback/               # Feedback forms
-├── feedback_notification/  # Feedback notification handling
-├── history/                # History tracking
-├── hr/                     # HR user management
-├── ical/                   # iCal format handling
-├── message/                # User messaging
-├── myteam/                 # Team management
-├── report/                 # Reports
-├── scheduled_session/      # Scheduled sessions
+│   ├── email/              # Email sending and templates
+│   ├── exception/          # Custom exceptions
+│   └── util/               # Utilities, converters
+├── coach/                  # Coach profiles, availability
 ├── session/                # Session management
-└── user/                   # Core user entity and features
+├── user/                   # User management
+├── hr/                     # HR functionalities
+└── ...                     # Other business modules
 ```
 
-## Key Patterns
+## Spring Modulith - Module Rules
+
+1. **No cyclic dependencies** between modules
+2. **`common` is a shared kernel** - all modules can use it
+3. **`common` must NOT depend on business modules** (coach, user, session, etc.)
+4. **Use DTOs to avoid cross-module dependencies** - when common needs data from other modules, create DTOs in common
+
+Example: `SessionEmailData` DTO in `common/email/` instead of using `ScheduledSession` from session module.
+
+## Key Patterns for Code Generation
 
 ### Entity Pattern (JDBC)
-- Use `@Table(name = "table_name")` with Lombok (`@Data`, `@Accessors(chain = true)`)
-- Use Spring Data annotations: `@Id`, `@Transient`
-- For entities with manual ID control, implement `Persistable<ID>`
-- Store enums as VARCHAR strings, JSON data as JSONB
-- Use custom converters in `JdbcConfiguration` for complex types
+```java
+@Data
+@Table("table_name")
+@Accessors(chain = true)
+public class MyEntity {
+    @Id
+    private Long id;
+    private String name;
+    // No @Column, @GeneratedValue, or JPA annotations
+}
+```
 
 ### Repository Pattern (JDBC)
-- Extend `ListCrudRepository<T, ID>` for basic CRUD only
-- Add `PagingAndSortingRepository<T, ID>` only when pagination is actually needed
-- **Prefer `@Query` over derived query methods** - avoids need for converters and gives full SQL control
-- Use `@Modifying` for INSERT/UPDATE/DELETE operations
-- **Pass enums as strings** using `.name()` to avoid converter complexity:
-  ```java
-  // Repository
-  @Query("SELECT * FROM table WHERE type = :type")
-  List<Entity> findByType(String type);
+```java
+public interface MyRepository extends ListCrudRepository<MyEntity, Long> {
 
-  // Usage
-  repository.findByType(MyEnum.VALUE.name());
-  ```
+    // Prefer @Query with native SQL
+    @Query("SELECT * FROM table WHERE type = :type")
+    List<MyEntity> findByType(String type);
 
-### Nullable Parameters in @Query (JDBC)
-Spring Data JDBC does **NOT** support `:param IS NULL` syntax like JPA. Use these PostgreSQL techniques instead:
+    // Pass enums as strings
+    default List<MyEntity> findByType(MyEnum type) {
+        return findByType(type.name());
+    }
 
-**For String parameters** - use COALESCE:
-```sql
+    // Modifying queries
+    @Modifying
+    @Query("DELETE FROM table WHERE id = :id")
+    void deleteById(Long id);
+}
+```
+
+### Nullable Parameters in @Query
+```java
+// String parameters - use COALESCE
 @Query("""
-    SELECT * FROM my_table
+    SELECT * FROM table
     WHERE (COALESCE(:name, '') = '' OR name = :name)
     """)
 List<MyEntity> findFiltered(String name);
-```
 
-**For DateTime parameters** - use CAST:
-```sql
+// DateTime parameters - use CAST
 @Query("""
-    SELECT * FROM my_table
+    SELECT * FROM table
     WHERE (CAST(:fromDate AS timestamp) IS NULL OR date >= :fromDate)
-    AND (CAST(:toDate AS timestamp) IS NULL OR date <= :toDate)
     """)
-List<MyEntity> findFiltered(LocalDateTime fromDate, LocalDateTime toDate);
+List<MyEntity> findFiltered(LocalDateTime fromDate);
+
+// DO NOT use (:param IS NULL OR column = :param) - doesn't work in JDBC!
 ```
 
-**For nullable columns with LEFT JOIN** - handle NULL in column:
-```sql
-WHERE (CAST(:fromDate AS timestamp) IS NULL OR date IS NULL OR date >= :fromDate)
-```
-
-**DO NOT use** (doesn't work in JDBC):
-```sql
-WHERE (:param IS NULL OR column = :param)  -- This fails!
-```
-
-### Pagination with @Query (JDBC)
-Spring Data JDBC @Query does **NOT** support `countQuery` attribute like JPA. Use separate methods:
-
+### Pagination with @Query
 ```java
-@Query("""
-    SELECT * FROM my_table
-    WHERE (COALESCE(:name, '') = '' OR name = :name)
-    """)
-List<MyEntity> findFiltered(String name, Pageable pageable);  // Adds LIMIT/OFFSET automatically
+// Query method with Pageable
+@Query("SELECT * FROM table WHERE active = true")
+List<MyEntity> findActive(Pageable pageable);
 
-@Query("""
-    SELECT COUNT(*) FROM my_table
-    WHERE (COALESCE(:name, '') = '' OR name = :name)
-    """)
-long countFiltered(String name);
-```
+// Separate count method
+@Query("SELECT COUNT(*) FROM table WHERE active = true")
+long countActive();
 
-In controller, combine both to create Page:
-```java
-var content = repository.findFiltered(name, pageable).stream().map(Entity::toDto).toList();
-var total = repository.countFiltered(name);
+// In controller
+var content = repository.findActive(pageable);
+var total = repository.countActive();
 return new PageImpl<>(content, pageable, total);
 ```
 
 ### Transaction Management
-- **AVOID `@Transactional` in most cases** - Spring Data JDBC handles transactions automatically per operation
-- **Only use `@Transactional` when something fails** and you need:
-  - Multiple write operations to be atomic (all succeed or all fail)
-  - Explicit rollback behavior on exceptions
-- **DO NOT** use `@Transactional` for:
-  - Simple repository reads (findById, findAll, etc.)
-  - Single repository write operations (save, delete)
-  - Methods that only call one repository method
-  - @Modifying @Query methods (they handle their own transaction)
-- When migrating from JPA, **remove** `@Transactional` unless tests fail without it
-- Spring Data JDBC repositories handle transactions per operation automatically
+- **AVOID `@Transactional` in most cases** - JDBC handles it automatically
+- **Only use `@Transactional` for multi-operation atomicity**
+- Never for single repository calls or read-only methods
 
 ### Controller Pattern
-- Use `@RestController` with `/api/latest/...` paths
-- RBAC via `@Secured({"HR", "ADMIN"})` annotations
-- Get current user via `@AuthenticationPrincipal UserDetails user`
+```java
+@RestController
+@RequestMapping("/api/latest/my-resource")
+@Secured({"ROLE_USER"})
+public class MyController {
 
-### RBAC Roles
-- `RESPONDENT`, `USER`, `MANAGER`, `COACH`, `HR`, `ADMIN`
-
-### JDBC Custom Converters
-All converters are in `configuration/JdbcConfiguration`:
-- Use `@ReadingConverter` for database → Java conversions
-- Use `@WritingConverter` for Java → database conversions
-- **Always use Optional for null-safe conversions**:
-  ```java
-  @ReadingConverter
-  static class MyConverter implements Converter<String, MyType> {
-      public MyType convert(String source) {
-          return Optional.ofNullable(source)
-                  .filter(StringUtils::isNotBlank)
-                  .map(MyType::valueOf)
-                  .orElse(null);
-      }
-  }
-  ```
-- Register converters in `jdbcCustomConversions()` method
-- Converters handle: Enums, JSONB types, custom objects
-
-### Exception Handling
-All exception classes are in `common/exception/`:
-- `NotFoundException` - no-arg constructor, returns 404
-- `ApiValidationException` - for validation errors with error codes and field-level details
-- `ErrorCodeConstants` - centralized error code constants
-- `ErrorController` - global exception handler (@ControllerAdvice)
-- `JsonConversionException` - JSON parsing/serialization errors
-
-## JDBC Migration - Completed ✅
-
-### Why Spring Data JDBC?
-This project has **fully migrated from Hibernate/JPA to Spring Data JDBC** for native image compatibility.
-
-**Reasons for choosing Spring Data JDBC over jOOQ:**
-- Simpler than jOOQ - no DSL complexity
-- No code generation overhead
-- Fewer dependencies and build steps
-- Better Spring Boot integration
-
-**Benefits over Hibernate/JPA:**
-- Minimal reflection usage (native image ready)
-- No lazy loading proxies or runtime bytecode generation
-- Direct row-to-object mapping
-- Full SQL control with `@Query`
-- Smaller native image footprint
-
-### Migration Status
-**ALL modules fully migrated** to Spring Data JDBC:
-- **message** - User messaging system (Message, UserChat, LastMessage)
-- **myteam** - Team management views (MyTeamView)
-- **session** - All session-related entities:
-  - CoachSessionView - View for coach sessions
-  - CoachingPackage - Coaching package management
-  - ReportSessionView - Session reporting view
-  - ScheduledSession - Scheduled coaching sessions
-  - UserAllocation - User credit allocation
-
-### Migration Steps
-When migrating an entity from JPA to JDBC:
-
-1. **Update Entity Annotations**:
-   - Remove: `@Entity`, `@GeneratedValue`, `@SequenceGenerator`, `@Column`
-   - Add: `@Table(name = "table_name")` from `org.springframework.data.relational.core.mapping`
-   - Change: `@Id` to `org.springframework.data.annotation.Id`
-
-2. **Update Repository**:
-   - Change from: `JpaRepository<T, ID>`
-   - To: `ListCrudRepository<T, ID>, PagingAndSortingRepository<T, ID>`
-   - **IMPORTANT**: Always use `ListCrudRepository` instead of `CrudRepository` to return `List` instead of `Iterable`
-   - All repository methods should return `List<T>` for consistency and ease of use in tests
-   - Use `@Query` from `org.springframework.data.jdbc.repository.query` where enum are query to avoid converters else use named query
-   - Convert JPQL to native SQL
-
-3. **Update Service Layer**:
-   - Change: `jakarta.transaction.Transactional` → `org.springframework.transaction.annotation.Transactional`
-   - Remove JPA `Example` API usage
-   - **@PrePersist/@PreUpdate replacement**: Manually set `createdAt`, `updatedAt` timestamps in service methods using `LocalDateTime.now()`
-   - **NEVER use fully qualified class names** - always import classes and use simple names (e.g., `LocalDateTime.now()`, not `java.time.LocalDateTime.now()`)
-
-4. **Handle Complex Types**:
-   - JSON arrays/objects: Store as String (JSONB), add getter methods for deserialization
-   - Enums: Convert via custom converters in `JdbcConfiguration`
-   - Custom types: Add `@ReadingConverter` and `@WritingConverter`
-
-5. **Update Tests**:
-   - Replace JPA `Example` API with stream filtering
-   - Add `@Transactional` to tests accessing lazy-loaded data
-
-## Database Migrations
-
-Flyway migrations in `src/main/resources/db/migration/`
-
-Current directories:
-- `0.0.1/` - Initial migrations (legacy)
-- `1.0.0/` - JPA to JDBC migration scripts
-
-Naming: `V{version}.{number}__{description}.sql`
-
-Example: `V1.0.0.2__jpa_remove.sql`
-
-## Testing
-
-- Uses Spring Boot Test with `@SpringBootTest`
-- TestContainers for PostgreSQL
-- Test data via SQL scripts in `src/test/resources/sql/`
-
-## Deployment
-
-### CI/CD Triggers
-
-| Event | Action |
-|-------|--------|
-| PR to `develop`/`main` | Build + tests only |
-| Tag `qa-deploy` | Deploy to QA environment |
-| Tag `release-v*.*.*` | Deploy to PROD environment |
-
-### Deploy Commands (Makefile)
-
-```bash
-# Deploy to QA (recreates qa-deploy tag)
-make deploy-qa
-
-# Deploy to PROD (auto-increments version, creates release-v*.*.* tag)
-make deploy-prod
+    @GetMapping
+    public List<MyDto> getAll(@AuthenticationPrincipal UserDetails user) {
+        return service.findAll(user.getUsername());
+    }
+}
 ```
 
-### Version Tagging
+### Exception Handling
+```java
+// Use existing exceptions from common/exception/
+throw new NotFoundException();
+throw new ApiValidationException(ERROR_CODE, "field", "value", "message");
+```
 
-- QA: Uses movable `qa-deploy` tag (deleted and recreated each time)
-- PROD: Uses semantic versioning `release-v{major}.{minor}.{patch}` (same pattern as frontend)
-- `make deploy-prod` automatically increments patch version from latest tag
+### JDBC Custom Converters
+```java
+// In JdbcConfiguration.java
+@ReadingConverter
+static class MyConverter implements Converter<String, MyType> {
+    public MyType convert(String source) {
+        return Optional.ofNullable(source)
+                .filter(StringUtils::isNotBlank)
+                .map(MyType::valueOf)
+                .orElse(null);
+    }
+}
+```
 
 ## Code Style
 
 - Use `var` for local variables
 - Records for DTOs
 - Chain setters with `@Accessors(chain = true)`
-- Validation with Jakarta `@NotNull`, `@Valid`, `@Min`
-- **No JavaDoc comments above methods** - keep code clean without method documentation
-- **Prefer streams over for/while loops** - use functional style with `stream()`, `map()`, `filter()`, `collect()`, etc.
-- **Use Optional for null-safe operations** - avoid ternary operators and if-null checks:
+- **No JavaDoc comments above methods**
+- **Prefer streams over for/while loops**
+- **Use Optional for null-safe operations**:
   ```java
-  // Good - using Optional
+  // Good
   return Optional.ofNullable(source)
           .filter(StringUtils::isNotBlank)
           .map(MyType::valueOf)
           .orElse(defaultValue);
 
-  // Bad - ternary operator
+  // Bad
   var value = source != null ? source.getValue() : null;
   if (StringUtils.isBlank(value)) return defaultValue;
   ```
+- **NEVER use fully qualified class names** - always import and use simple names
+
+## Database Migrations
+
+- Flyway migrations in `src/main/resources/db/migration/`
+- Naming: `V{version}.{number}__{description}.sql`
+- Example: `V1.0.0.2__add_user_table.sql`
+
+## Development Environment
+
+### Build System
+- **Gradle** and **Java** are managed via **SDKMAN**
+- Gradle location: `~/.sdkman/candidates/gradle/current/bin/gradle`
+- Java location: `~/.sdkman/candidates/java/25`
+- Use `make` commands for common tasks (see `Makefile` for available commands)
+
+### Common Commands
+```bash
+make build          # Build the application
+make test           # Run tests
+make test-coverage  # Run tests with coverage report
+make native         # Build GraalVM native image
+```
+
+### Connection Pooling
+- **Agroal** connection pool (optimized for virtual threads)
+- HikariCP has been excluded from dependencies
+- Configuration in `application.yml` under `spring.datasource.agroal`
+
+### Testing
+- Tests use **PostgreSQL TestContainers** (not H2)
+- TestContainers configuration in `EnablePostgresTestContainerContextCustomizerFactory`
+- Test-specific datasource configuration in `application-test.yml` ensures Agroal works with TestContainers

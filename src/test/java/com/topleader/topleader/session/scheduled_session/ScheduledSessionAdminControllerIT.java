@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.scheduled_session;
+package com.topleader.topleader.session.scheduled_session;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;

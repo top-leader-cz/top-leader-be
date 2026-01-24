@@ -9,10 +9,10 @@ import com.topleader.topleader.common.calendar.domain.SyncEvent;
 import com.topleader.topleader.common.calendar.calendly.CalendlyService;
 import com.topleader.topleader.common.calendar.google.GoogleCalendarService;
 import com.topleader.topleader.coach.availability.domain.NonReoccurringEventDto;
-import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
-import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
-import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
-import com.topleader.topleader.coach.availability.settings.CoachAvailabilitySettings;
+import com.topleader.topleader.common.calendar.domain.ReoccurringEventDto;
+import com.topleader.topleader.common.calendar.domain.ReoccurringEventTimeDto;
+import com.topleader.topleader.common.calendar.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.common.calendar.settings.CoachAvailabilitySettings;
 import com.topleader.topleader.user.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 

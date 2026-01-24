@@ -2,8 +2,9 @@ package com.topleader.topleader.coach.availability;
 
 import com.topleader.topleader.TestUtils;
 
-import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
-import com.topleader.topleader.coach.availability.domain.ReoccurringEventTimeDto;
+import com.topleader.topleader.common.calendar.domain.AvailabilityUtils;
+import com.topleader.topleader.common.calendar.domain.ReoccurringEventDto;
+import com.topleader.topleader.common.calendar.domain.ReoccurringEventTimeDto;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

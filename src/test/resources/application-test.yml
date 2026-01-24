@@ -14,6 +14,18 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
+  # Datasource config - will be overridden by TestContainers customizer
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    agroal:
+      min-size: 1
+      max-size: 5
+      initial-size: 1
+
+  # Flyway should run with test data
+  flyway:
+    enabled: true
+
   jackson:
     deserialization:
       fail-on-null-for-primitives: false

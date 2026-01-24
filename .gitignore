@@ -50,3 +50,7 @@ src/main/resources/application-dev.yml
 
 ### Security audit ###
 docs/SECURITY.md
+
+### Modularity analysis (temporary files) ###
+MODULARITY_ANALYSIS.md
+COMMON_MODULE_ISSUE.md

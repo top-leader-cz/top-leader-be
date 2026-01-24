@@ -1,4 +1,4 @@
-package com.topleader.topleader.session.report;
+package com.topleader.topleader.hr.session_report;
 
 
 import com.topleader.topleader.common.exception.ApiValidationException;

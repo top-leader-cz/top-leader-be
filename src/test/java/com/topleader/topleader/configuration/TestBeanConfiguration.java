@@ -1,4 +1,4 @@
-package com.topleader.topleader.config;
+package com.topleader.topleader.configuration;
 
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
@@ -11,7 +11,6 @@ import org.mockito.Mockito;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.model.ChatModel;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
