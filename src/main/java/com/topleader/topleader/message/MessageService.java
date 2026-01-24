@@ -159,6 +159,7 @@ public class MessageService {
     public void processNotDisplayedMessages() {
         var usersToNotify = messageRepository.findUndisplayed();
         log.info("User to receive message display notifications: {}", usersToNotify);
+
         usersToNotify.forEach(user ->
                 userRepository.findByUsername(user).ifPresent(userToNotify -> {
                     var params = Map.of("firstName", userToNotify.getFirstName(), "lastName", userToNotify.getLastName(), "link", appUrl);
@@ -166,7 +167,10 @@ public class MessageService {
                     emailService.sendEmail(userToNotify.getEmail(), subjects.getOrDefault(userToNotify.getLocale(), defaultLocale), emailBody);
                 })
         );
-        messageRepository.setNotified(usersToNotify);
+
+        if (!usersToNotify.isEmpty()) {
+            messageRepository.setNotified(usersToNotify);
+        }
     }
 
     public String parseTemplateName(String locale) {

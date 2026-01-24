@@ -84,7 +84,7 @@ resource "google_cloud_scheduler_job" "feedback_notifications_qa" {
 resource "google_cloud_scheduler_job" "complete_session_qa" {
   name             = "comple-session-qa"
   description      = "complte seession afeter 24 hour"
-  schedule         = "0 */6 * * *"
+  schedule         = "0 0 1 1 *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
@@ -184,7 +184,7 @@ resource "google_cloud_scheduler_job" "payment_process_job_qa" {
 resource "google_cloud_scheduler_job" "message_undisplayed_prod" {
   name             = "message-undisplayed-prod"
   description      = "Send user notification that message wan not displayed for period of time"
-  schedule         = "0 * * * *"
+  schedule         = "0 */4 * * *"
   time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
