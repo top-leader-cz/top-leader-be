@@ -6,7 +6,6 @@ package com.topleader.topleader.common.email;
 import com.topleader.topleader.common.calendar.ical.ICalService;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;
-import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.UserRepository;
 import java.util.HashMap;
 import java.util.List;
@@ -65,20 +64,15 @@ public class EmailTemplateService {
 
     private final ICalService iCalService;
 
-    private final ScheduledSessionService sessionService;
 
 
-
-    public void sendBookingAlertPrivateSessionEmail(Long sessionId) {
-        final var session = sessionService.getSessionData(sessionId)
-            .orElseThrow(NotFoundException::new);
-
+    public void sendBookingAlertPrivateSessionEmail(SessionEmailData session) {
         log.info("Sending reservation alert for: [{}]", session);
 
-        final var user = userRepository.findByUsername(session.getUsername())
-            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
+        final var user = userRepository.findByUsername(session.username())
+            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.time().toString(), "User not found " + session.username()));
 
-        final var eventId = "session-" + sessionId;
+        final var eventId = "session-" + session.id();
 
         emailService.sendEmail(
             user.getEmail(),
@@ -89,14 +83,14 @@ public class EmailTemplateService {
                     Map.of(
                         "firstName", user.getFirstName(),
                         "lastName", user.getLastName(),
-                        "time", session.getTime().toString(),
+                        "time", session.time().toString(),
                         "link", appUrl)
                 ),
                 parseUserTemplateName(user.getLocale())
             ),
             iCalService.createCalendarPrivateEvent(
-                session.getTime(),
-                session.getTime().plusHours(1),
+                session.time(),
+                session.time().plusHours(1),
                 user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 PRIVATE_SESSION_EVENT_NAME,
@@ -105,18 +99,15 @@ public class EmailTemplateService {
         );
     }
 
-    public void sendBookingAlertEmail(Long sessionId) {
-        final var session = sessionService.getSessionData(sessionId)
-            .orElseThrow(NotFoundException::new);
-
+    public void sendBookingAlertEmail(SessionEmailData session) {
         log.info("Sending reservation alert for: [{}]", session);
 
-        final var user = userRepository.findByUsername(session.getUsername())
-            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
-        final var coach = userRepository.findByUsername(session.getCoachUsername())
-            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "Coach not found " + session.getCoachUsername()));
+        final var user = userRepository.findByUsername(session.username())
+            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.time().toString(), "User not found " + session.username()));
+        final var coach = userRepository.findByUsername(session.coachUsername())
+            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.time().toString(), "Coach not found " + session.coachUsername()));
 
-        final var eventId = "session-" + sessionId;
+        final var eventId = "session-" + session.id();
 
         emailService.sendEmail(
                 coach.getEmail(),
@@ -131,8 +122,8 @@ public class EmailTemplateService {
                 ),
                 parseCoachTemplateName(coach.getLocale())),
             iCalService.createCalendarEvent(
-                session.getTime(),
-                session.getTime().plusHours(1),
+                session.time(),
+                session.time().plusHours(1),
                 coach.getEmail(),
                 coach.getFirstName() + " " + coach.getLastName(),
                 user.getEmail(),
@@ -151,14 +142,14 @@ public class EmailTemplateService {
                     Map.of(
                         "firstName", user.getFirstName(),
                         "lastName", user.getLastName(),
-                        "time", session.getTime().toString(),
+                        "time", session.time().toString(),
                         "link", appUrl)
                 ),
                 parseUserTemplateName(user.getLocale())
             ),
             iCalService.createCalendarEvent(
-                session.getTime(),
-                session.getTime().plusHours(1),
+                session.time(),
+                session.time().plusHours(1),
                 coach.getEmail(),
                 coach.getFirstName() + " " + coach.getLastName(),
                 user.getEmail(),
@@ -170,19 +161,15 @@ public class EmailTemplateService {
     }
 
 
-    public void sendCancelAlertEmail(Long sessionId) {
-
-        final var session = sessionService.getSessionData(sessionId)
-            .orElseThrow(NotFoundException::new);
-
+    public void sendCancelAlertEmail(SessionEmailData session) {
         log.info("Sending cancel alert for: [{}]", session);
 
-        final var user = userRepository.findByUsername(session.getUsername())
-            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
-        final var coach = userRepository.findByUsername(session.getCoachUsername())
-            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "Coach not found " + session.getCoachUsername()));
+        final var user = userRepository.findByUsername(session.username())
+            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.time().toString(), "User not found " + session.username()));
+        final var coach = userRepository.findByUsername(session.coachUsername())
+            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.time().toString(), "Coach not found " + session.coachUsername()));
 
-        final var eventId = "session-" + sessionId;
+        final var eventId = "session-" + session.id();
 
         emailService.sendEmail(
             coach.getEmail(),
@@ -197,8 +184,8 @@ public class EmailTemplateService {
                 ),
                 "templates/reservation/coach-cancel.html"),
             iCalService.cancelCalendarEvent(
-                session.getTime(),
-                session.getTime().plusHours(1),
+                session.time(),
+                session.time().plusHours(1),
                 coach.getEmail(),
                 coach.getFirstName() + " " + coach.getLastName(),
                 user.getEmail(),
@@ -217,14 +204,14 @@ public class EmailTemplateService {
                     Map.of(
                         "firstName", user.getFirstName(),
                         "lastName", user.getLastName(),
-                        "time", session.getTime().toString(),
+                        "time", session.time().toString(),
                         "link", appUrl)
                 ),
                 "templates/reservation/user-cancel.html"
             ),
             iCalService.cancelCalendarEvent(
-                session.getTime(),
-                session.getTime().plusHours(1),
+                session.time(),
+                session.time().plusHours(1),
                 coach.getEmail(),
                 coach.getFirstName() + " " + coach.getLastName(),
                 user.getEmail(),
@@ -235,17 +222,13 @@ public class EmailTemplateService {
         );
     }
 
-    public void sendCancelAlertPrivateSessionEmail(Long sessionId) {
-
-        final var session = sessionService.getSessionData(sessionId)
-            .orElseThrow(NotFoundException::new);
-
+    public void sendCancelAlertPrivateSessionEmail(SessionEmailData session) {
         log.info("Sending cancel alert for: [{}]", session);
 
-        final var user = userRepository.findByUsername(session.getUsername())
-            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.getTime().toString(), "User not found " + session.getUsername()));
+        final var user = userRepository.findByUsername(session.username())
+            .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.time().toString(), "User not found " + session.username()));
 
-        final var eventId = "session-" + sessionId;
+        final var eventId = "session-" + session.id();
 
         emailService.sendEmail(
             user.getEmail(),
@@ -256,14 +239,14 @@ public class EmailTemplateService {
                     Map.of(
                         "firstName", user.getFirstName(),
                         "lastName", user.getLastName(),
-                        "time", session.getTime().toString(),
+                        "time", session.time().toString(),
                         "link", appUrl)
                 ),
                 "templates/reservation/user-cancel.html"
             ),
             iCalService.cancelCalendarPrivateEvent(
-                session.getTime(),
-                session.getTime().plusHours(1),
+                session.time(),
+                session.time().plusHours(1),
                 user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 PRIVATE_SESSION_EVENT_NAME,

@@ -4,6 +4,7 @@
 package com.topleader.topleader.user.userinfo;
 
 import com.topleader.topleader.common.email.EmailTemplateService;
+import com.topleader.topleader.common.email.SessionEmailData;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.hr.company.Company;
@@ -253,7 +254,14 @@ public class UserInfoController {
             user.getUsername()
         );
 
-        emailTemplateService.sendBookingAlertPrivateSessionEmail(session.getId());
+        emailTemplateService.sendBookingAlertPrivateSessionEmail(
+            new SessionEmailData(
+                session.getId(),
+                session.getUsername(),
+                session.getCoachUsername(),
+                session.getTime()
+            )
+        );
 
         return UpcomingSessionDto.from(
             session,
@@ -274,10 +282,16 @@ public class UserInfoController {
                 "Cannot cancel session less than 24 hours before start time");
         }
 
+        final var sessionData = new SessionEmailData(
+            session.getId(),
+            session.getUsername(),
+            session.getCoachUsername(),
+            session.getTime()
+        );
         if (session.isPrivate()) {
-            emailTemplateService.sendCancelAlertPrivateSessionEmail(sessionId);
+            emailTemplateService.sendCancelAlertPrivateSessionEmail(sessionData);
         } else {
-            emailTemplateService.sendCancelAlertEmail(sessionId);
+            emailTemplateService.sendCancelAlertEmail(sessionData);
         }
         scheduledSessionService.cancelSession(sessionId, user.getUsername());
     }

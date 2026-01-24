@@ -31,6 +31,7 @@ dependencyManagement {
     imports {
         mavenBom("org.springframework.ai:spring-ai-bom:2.0.0-M1")
         mavenBom("org.testcontainers:testcontainers-bom:1.21.4")
+        mavenBom("org.springframework.modulith:spring-modulith-bom:2.0.2")
     }
 }
 
@@ -95,6 +96,7 @@ dependencies {
     testImplementation("com.icegreen:greenmail:2.1.8")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
     testImplementation("org.wiremock:wiremock-standalone:3.10.0")
+    testImplementation("org.springframework.modulith:spring-modulith-starter-test")
 }
 
 tasks.withType<Test> {

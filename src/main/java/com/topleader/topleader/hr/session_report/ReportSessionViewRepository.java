@@ -1,4 +1,4 @@
-package com.topleader.topleader.session.report;
+package com.topleader.topleader.hr.session_report;
 
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;

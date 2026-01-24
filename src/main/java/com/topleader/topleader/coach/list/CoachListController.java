@@ -6,6 +6,7 @@ package com.topleader.topleader.coach.list;
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
+import com.topleader.topleader.common.email.SessionEmailData;
 import com.topleader.topleader.common.metrics.MetricsService;
 import com.topleader.topleader.hr.company.Company;
 import com.topleader.topleader.hr.company.CompanyRepository;
@@ -147,7 +148,14 @@ public class CoachListController {
         );
 
         metrics.incrementSessionScheduled();
-        emailTemplateService.sendBookingAlertEmail(session.getId());
+        emailTemplateService.sendBookingAlertEmail(
+            new SessionEmailData(
+                session.getId(),
+                session.getUsername(),
+                session.getCoachUsername(),
+                session.getTime()
+            )
+        );
     }
 
     @GetMapping("/{username}/availability")

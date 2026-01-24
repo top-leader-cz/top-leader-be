@@ -140,13 +140,20 @@ public class CoachController {
     @DeleteMapping("/upcoming-sessions/{sessionId}")
     public void cancelSession(@PathVariable Long sessionId, @AuthenticationPrincipal UserDetails user) {
 
-        if (sessionService.listCoachesFutureSessions(user.getUsername())
-            .stream().noneMatch(s -> s.getId().equals(sessionId))
-        ) {
-            throw new NotFoundException();
-        }
+        final var session = sessionService.listCoachesFutureSessions(user.getUsername())
+            .stream()
+            .filter(s -> s.getId().equals(sessionId))
+            .findFirst()
+            .orElseThrow(NotFoundException::new);
 
-        emailTemplateService.sendCancelAlertEmail(sessionId);
+        emailTemplateService.sendCancelAlertEmail(
+            new com.topleader.topleader.common.email.SessionEmailData(
+                session.getId(),
+                session.getUsername(),
+                session.getCoachUsername(),
+                session.getTime()
+            )
+        );
         sessionService.cancelSessionByCoach(sessionId, user.getUsername());
     }
 

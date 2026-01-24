@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2023 Price f(x), s.r.o.
  */
-package com.topleader.topleader.session.hr_report;
+package com.topleader.topleader.hr.hr_report;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.session.coaching_package.CoachingPackageRepository;

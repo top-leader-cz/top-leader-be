@@ -1,4 +1,4 @@
-package com.topleader.topleader.feedback_notification;
+package com.topleader.topleader.feedback.feedback_notification;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;

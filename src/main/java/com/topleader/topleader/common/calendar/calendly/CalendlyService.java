@@ -8,9 +8,9 @@ import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.common.calendar.domain.SyncEvent;
 import com.topleader.topleader.common.calendar.calendly.domain.TokenResponse;
 
-import com.topleader.topleader.coach.availability.AvailabilityUtils;
-import com.topleader.topleader.coach.availability.domain.ReoccurringEventDto;
-import com.topleader.topleader.coach.availability.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.common.calendar.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.common.calendar.domain.AvailabilityUtils;
+import com.topleader.topleader.common.calendar.domain.ReoccurringEventDto;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

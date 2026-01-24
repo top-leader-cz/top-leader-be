@@ -77,23 +77,27 @@ TopLeader is a Spring Boot backend application for a coaching/mentoring platform
 - **PostgreSQL** with Flyway migrations
 - **Spring Data JDBC** (fully migrated from Hibernate/JPA for native image compatibility)
 - **Spring Security** (form login + session-based auth)
+- **Spring Modulith 2.0.2** (modular monolith architecture with module validation)
 - **Lombok** for boilerplate reduction
-- **Maven** build system
+- **Gradle** build system
 
 ## Build & Run Commands
 
 ```bash
 # Compile (requires Java 25)
-JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean compile
+JAVA_HOME=~/.sdkman/candidates/java/25 $GRADLE_HOME/bin/gradle clean compileJava
 
 # Run tests
-JAVA_HOME=~/.sdkman/candidates/java/25 mvn test
+JAVA_HOME=~/.sdkman/candidates/java/25 $GRADLE_HOME/bin/gradle test
 
 # Run specific test class
-JAVA_HOME=~/.sdkman/candidates/java/25 mvn test -Dtest=ClassName
+JAVA_HOME=~/.sdkman/candidates/java/25 $GRADLE_HOME/bin/gradle test --tests ClassName
 
 # Build without tests
-JAVA_HOME=~/.sdkman/candidates/java/25 mvn clean package -DskipTests
+JAVA_HOME=~/.sdkman/candidates/java/25 $GRADLE_HOME/bin/gradle clean build -x test
+
+# Validate module structure (Spring Modulith)
+JAVA_HOME=~/.sdkman/candidates/java/25 $GRADLE_HOME/bin/gradle test --tests ModularityTests
 ```
 
 ### Native Image Build (GraalVM)
@@ -155,6 +159,59 @@ src/main/java/com/topleader/topleader/
 ├── session/                # Session management
 └── user/                   # Core user entity and features
 ```
+
+## Spring Modulith - Modular Architecture
+
+This project uses **Spring Modulith** to enforce modular architecture and prevent architectural degradation.
+
+### What is Spring Modulith?
+
+Spring Modulith validates and documents the modular structure of the application. Each top-level package under `com.topleader.topleader` is considered a **module**.
+
+### Modules in TopLeader
+
+Current modules:
+- `admin` - Administration functionality
+- `coach` - Coach management and profiles
+- `common` - **Shared kernel** (can be used by all modules)
+- `configuration` - Application configuration
+- `credit` - Credit management
+- `feedback` - Feedback system
+- `history` - Change history tracking
+- `hr` - HR functionalities (company management, reporting)
+- `message` - User messaging
+- `myteam` - Team management
+- `session` - Session management (coaching packages, scheduled sessions)
+- `user` - User management and authentication
+
+### Module Rules
+
+1. **No cyclic dependencies** - Modules cannot depend on each other in a circular way
+2. **Internal packages** - Use `internal/` subpackages to hide implementation details
+3. **Public API** - Only classes in the module root are public API
+4. **Shared kernel** - `common` module can be used by all modules
+
+### Validating Module Structure
+
+Run the modularity test to ensure architecture compliance:
+
+```bash
+JAVA_HOME=~/.sdkman/candidates/java/25 $GRADLE_HOME/bin/gradle test --tests ModularityTests
+```
+
+This test will:
+- ✅ Verify no cyclic dependencies
+- ✅ Ensure modules only access public APIs
+- ✅ Generate module documentation and diagrams
+
+### Documentation
+
+Module documentation is auto-generated in `target/spring-modulith-docs/` including:
+- Module dependency diagrams (PlantUML)
+- Module canvas documentation
+- API boundaries
+
+**See [MODULITH.md](MODULITH.md) for detailed guide on event-driven architecture, best practices, and migration strategy.**
 
 ## Key Patterns
 
