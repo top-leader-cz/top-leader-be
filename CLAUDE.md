@@ -30,7 +30,30 @@ TopLeader is a Spring Boot backend application for a coaching/mentoring platform
   - Dependency analysis
   - Performance optimization analysis
 
-### Background Execution
+### Agent Keywords (Czech/English)
+
+| Czech Keywords | English Keywords | Agent Type |
+|----------------|------------------|------------|
+| najdi, kde je, jak funguje | find, where is, how does | Explore |
+| implementuj, přidej, refaktoruj | implement, add, refactor | Plan |
+| analyzuj, prozkoumej, vyhodnoť | analyze, explore, evaluate | General-purpose |
+| na pozadí, agent | in background, agent | run_in_background=true |
+
+## Agent Usage Rules
+
+**Core principles:**
+- ALWAYS run agents with `run_in_background: true` parameter
+- Be extremely proactive with agent usage - prefer agents over direct tool calls
+- Use agents for ANY task that involves exploration, analysis, or multi-step operations
+
+### When to use specific agents:
+- **Explore agent**: Any codebase questions, structure exploration, finding patterns
+- **General-purpose agent**: Complex analysis, research, multi-step investigations
+- **Plan agent**: Feature implementation planning, architectural decisions
+- **Bash agent**: Git operations, complex shell commands
+- **claude-code-guide agent**: Questions about Claude Code features and settings
+
+### Background Execution Guidelines
 
 **Run agents in background (`run_in_background: true`) when:**
 - User indicates they have another question ("mám další otázku", "meanwhile", "in the background")
@@ -43,14 +66,10 @@ TopLeader is a Spring Boot backend application for a coaching/mentoring platform
 - "najdi všechny XYZ agent"
 - "prozkoumej XYZ na pozadí"
 
-### Agent Keywords (Czech/English)
-
-| Czech Keywords | English Keywords | Agent Type |
-|----------------|------------------|------------|
-| najdi, kde je, jak funguje | find, where is, how does | Explore |
-| implementuj, přidej, refaktoruj | implement, add, refactor | Plan |
-| analyzuj, prozkoumej, vyhodnoť | analyze, explore, evaluate | General-purpose |
-| na pozadí, agent | in background, agent | run_in_background=true |
+### Agent Execution Best Practices:
+- Run agents in parallel when possible for better performance
+- Always use background execution to keep conversation flowing
+- Proactively suggest agent usage when it would be beneficial
 
 ## Tech Stack
 
