@@ -1,8 +1,7 @@
 # Local variable for HTTP Basic Auth header
-# Temporarily commented out - will be configured later
-# locals {
-#   job_auth_header = "Basic ${base64encode("job-trigger:${var.job_trigger_password}")}"
-# }
+locals {
+  job_auth_header = "Basic ${base64encode("job-trigger:${var.job_trigger_password}")}"
+}
 
 # Service Account for Cloud Scheduler
 # Note: Not currently used with app_engine_http_target
@@ -20,15 +19,15 @@
 # Job 1: Process not displayed messages
 resource "google_cloud_scheduler_job" "message_undisplayed_qa" {
   name             = "message-undisplayed-qa"
-  description      = "Process and send email notifications for not displayed messages (QA)"
-  schedule         = "*/30 * * * *"
-  time_zone        = "Europe/Prague"
+  description      = "Send user notification that message wan not displayed for period of time"
+  schedule         = "0 0 1 1 *"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 0
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -43,25 +42,24 @@ resource "google_cloud_scheduler_job" "message_undisplayed_qa" {
       service = "qa"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
 
 # Job 2: Trigger feedback notifications
 resource "google_cloud_scheduler_job" "feedback_notifications_qa" {
   name             = "feedback-notifications-qa"
-  description      = "Process and send feedback notifications (QA)"
-  schedule         = "0 9 * * *"
-  time_zone        = "Europe/Prague"
+  description      = "Trigger feedback notification process QA"
+  schedule         = "0 0 1 1 *"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 0
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -76,25 +74,24 @@ resource "google_cloud_scheduler_job" "feedback_notifications_qa" {
       service = "qa"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
 
 # Job 3: Mark pending sessions as no-show
 resource "google_cloud_scheduler_job" "complete_session_qa" {
-  name             = "complete-session-qa"
-  description      = "Mark pending sessions older than 48h as completed/no-show (QA)"
-  schedule         = "0 2 * * *"
-  time_zone        = "Europe/Prague"
+  name             = "comple-session-qa"
+  description      = "complte seession afeter 24 hour"
+  schedule         = "0 */6 * * *"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 1
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -109,25 +106,24 @@ resource "google_cloud_scheduler_job" "complete_session_qa" {
       service = "qa"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
 
 # Job 4: Remind users to schedule sessions
 resource "google_cloud_scheduler_job" "unscheduled_session_reminder_qa" {
   name             = "unscheduled_session_reminder"
-  description      = "Send reminders to users with no scheduled sessions (QA)"
-  schedule         = "0 10 * * 1"
-  time_zone        = "Europe/Prague"
+  description      = "unscheduled _session_reminder_qa"
+  schedule         = "0 0 1 1 *"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 0
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -142,25 +138,24 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_qa" {
       service = "qa"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
 
 # Job 5: Process payments
 resource "google_cloud_scheduler_job" "payment_process_job_qa" {
   name             = "payment_process_job"
-  description      = "Process scheduled session payments (QA)"
-  schedule         = "0 3 * * *"
-  time_zone        = "Europe/Prague"
+  description      = "Trigger payment processing"
+  schedule         = "0 0 1 1 *"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 0
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -175,10 +170,9 @@ resource "google_cloud_scheduler_job" "payment_process_job_qa" {
       service = "qa"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
 
@@ -189,15 +183,15 @@ resource "google_cloud_scheduler_job" "payment_process_job_qa" {
 # Job 1: Process not displayed messages
 resource "google_cloud_scheduler_job" "message_undisplayed_prod" {
   name             = "message-undisplayed-prod"
-  description      = "Process and send email notifications for not displayed messages (PROD)"
-  schedule         = "*/30 * * * *"
-  time_zone        = "Europe/Prague"
+  description      = "Send user notification that message wan not displayed for period of time"
+  schedule         = "0 * * * *"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 0
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -212,25 +206,24 @@ resource "google_cloud_scheduler_job" "message_undisplayed_prod" {
       service = "prod"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
 
 # Job 2: Trigger feedback notifications
 resource "google_cloud_scheduler_job" "feedback_notifications_prod" {
   name             = "feedback-notifications-prod"
-  description      = "Process and send feedback notifications (PROD)"
-  schedule         = "0 9 * * *"
-  time_zone        = "Europe/Prague"
+  description      = "Trigger feedback notification process PROD"
+  schedule         = "0 0 * * *"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 0
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -245,10 +238,9 @@ resource "google_cloud_scheduler_job" "feedback_notifications_prod" {
       service = "prod"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
 
@@ -257,13 +249,13 @@ resource "google_cloud_scheduler_job" "complete_session_prod" {
   name             = "complete-session-prod"
   description      = "Mark pending sessions older than 48h as completed/no-show (PROD)"
   schedule         = "0 2 * * *"
-  time_zone        = "Europe/Prague"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 1
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -278,10 +270,9 @@ resource "google_cloud_scheduler_job" "complete_session_prod" {
       service = "prod"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
 
@@ -289,14 +280,14 @@ resource "google_cloud_scheduler_job" "complete_session_prod" {
 resource "google_cloud_scheduler_job" "unscheduled_session_reminder_prod" {
   name             = "unscheduled_session_reminder_prod"
   description      = "Send reminders to users with no scheduled sessions (PROD)"
-  schedule         = "0 10 * * 1"
-  time_zone        = "Europe/Prague"
+  schedule         = "0 7 * * *"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 0
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -311,25 +302,24 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_prod" {
       service = "prod"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
 
 # Job 5: Process payments
 resource "google_cloud_scheduler_job" "payment_process_job_prod" {
   name             = "payment_process_job_prod"
-  description      = "Process scheduled session payments (PROD)"
-  schedule         = "0 3 * * *"
-  time_zone        = "Europe/Prague"
+  description      = "prod process payment job"
+  schedule         = "0 */2 * * *"
+  time_zone        = "Etc/UTC"
   attempt_deadline = "320s"
   region           = var.region
   project          = var.project_id
 
   retry_config {
-    retry_count          = 3
+    retry_count          = 0
     max_retry_duration   = "0s"
     min_backoff_duration = "5s"
     max_backoff_duration = "3600s"
@@ -344,9 +334,8 @@ resource "google_cloud_scheduler_job" "payment_process_job_prod" {
       service = "prod"
     }
 
-    # Authorization header will be configured later
-    # headers = {
-    #   "Authorization" = local.job_auth_header
-    # }
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
   }
 }
