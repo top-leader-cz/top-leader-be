@@ -87,6 +87,16 @@ public class WebSecurityConfig {
                 .anyRequest().authenticated()
             )
             .exceptionHandling(e -> e
+                .authenticationEntryPoint((request, response, authException) -> {
+                    var requestUri = request.getRequestURI();
+                    if (requestUri != null && requestUri.startsWith("/api/")) {
+                        response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Authentication required\"}");
+                    } else {
+                        response.sendRedirect("/login");
+                    }
+                })
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
                     response.setStatus(HttpStatus.FORBIDDEN.value());
                 })
