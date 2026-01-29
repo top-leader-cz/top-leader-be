@@ -361,7 +361,8 @@ public class UserInfoController {
         List<String> areaOfDevelopment,
         String coach,
         String locale,
-        Set<String> allowedCoachRates
+        Set<String> allowedCoachRates,
+        Long companyId
     ) {
         public static UserInfoDto from(UserInfo info, User user, Optional<Company> company) {
             return new UserInfoDto(
@@ -377,7 +378,8 @@ public class UserInfoController {
                 user.getLocale(),
                 Optional.ofNullable(user.getAllowedCoachRates())
                     .filter(not(CollectionUtils::isEmpty))
-                    .orElse(company.map(Company::getAllowedCoachRates).orElse(null))
+                    .orElse(company.map(Company::getAllowedCoachRates).orElse(null)),
+                user.getCompanyId()
             );
         }
     }

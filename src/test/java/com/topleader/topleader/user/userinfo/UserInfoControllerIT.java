@@ -111,6 +111,7 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.values", hasSize(2)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
             .andExpect(jsonPath("$.locale",is("en")))
+            .andExpect(jsonPath("$.companyId", is(100)))
         ;
     }
 
@@ -129,6 +130,7 @@ class UserInfoControllerIT extends IntegrationTest {
             .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
             .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
             .andExpect(jsonPath("$.locale", is("en")))
+            .andExpect(jsonPath("$.companyId", nullValue()))
         ;
     }
 
