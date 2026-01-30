@@ -14,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
@@ -42,8 +43,8 @@ public class HrReportController {
 
         validateAccess(userDetails, packageId);
 
-        var fromDate = Optional.ofNullable(from).map(ZonedDateTime::toLocalDate).orElse(null);
-        var toDate = Optional.ofNullable(to).map(ZonedDateTime::toLocalDate).orElse(null);
+        var fromDate = Optional.ofNullable(from).map(z -> z.withZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDate()).orElse(null);
+        var toDate = Optional.ofNullable(to).map(z -> z.withZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDate()).orElse(null);
 
         return hrReportService.generateReport(packageId, fromDate, toDate);
     }
