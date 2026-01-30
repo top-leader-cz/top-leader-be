@@ -43,8 +43,8 @@ public class HrReportController {
 
         validateAccess(userDetails, packageId);
 
-        var fromDate = Optional.ofNullable(from).map(z -> z.withZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDate()).orElse(null);
-        var toDate = Optional.ofNullable(to).map(z -> z.withZoneSameInstant(java.time.ZoneOffset.UTC).toLocalDate()).orElse(null);
+        var fromDate = Optional.ofNullable(from).map(z -> z.withZoneSameInstant(ZoneOffset.UTC).toLocalDate()).orElse(null);
+        var toDate = Optional.ofNullable(to).map(z -> z.withZoneSameInstant(ZoneOffset.UTC).toLocalDate()).orElse(null);
 
         return hrReportService.generateReport(packageId, fromDate, toDate);
     }
