@@ -110,10 +110,9 @@ class HrReportControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
     void getHrReport_withDateParams() throws Exception {
-        // Date params are accepted but currently ignored (for future use)
         mvc.perform(get("/api/latest/coaching-packages/1/hr-report")
-                        .param("from", "2024-01-01")
-                        .param("to", "2024-12-31"))
+                        .param("from", "2024-01-01T00:00:00.000Z")
+                        .param("to", "2024-12-31T23:59:59.000Z"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.packageInfo.id").value(1));
     }
