@@ -9,13 +9,13 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Optional;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.USER_NO_AUTHORIZED;
 
@@ -33,8 +33,8 @@ public class HrReportController {
     @Secured({"HR", "ADMIN"})
     public HrReportResponse getHrReport(
             @PathVariable Long packageId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
+            @RequestParam(required = false) ZonedDateTime from,
+            @RequestParam(required = false) ZonedDateTime to,
             @AuthenticationPrincipal UserDetails userDetails
     ) {
         log.info("User {} requesting HR report for package {} (from={}, to={})",
@@ -42,7 +42,10 @@ public class HrReportController {
 
         validateAccess(userDetails, packageId);
 
-        return hrReportService.generateReport(packageId, from, to);
+        var fromDate = Optional.ofNullable(from).map(ZonedDateTime::toLocalDate).orElse(null);
+        var toDate = Optional.ofNullable(to).map(ZonedDateTime::toLocalDate).orElse(null);
+
+        return hrReportService.generateReport(packageId, fromDate, toDate);
     }
 
     private void validateAccess(UserDetails userDetails, Long packageId) {
