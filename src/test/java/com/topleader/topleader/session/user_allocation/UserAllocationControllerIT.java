@@ -43,7 +43,7 @@ class UserAllocationControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void createAllocation_success() throws Exception {
+    void saveAllocation_createNew_success() throws Exception {
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user3")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -66,24 +66,9 @@ class UserAllocationControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void createAllocation_alreadyExists_fails() throws Exception {
-        // user1 already has an allocation
+    void saveAllocation_updateExisting_success() throws Exception {
+        // user1 already has an allocation with 10 units
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user1")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "allocatedUnits": 15
-                                }
-                                """))
-                .andExpect(status().isBadRequest())
-                .andDo(print())
-                .andExpect(jsonPath("$[0].errorCode").value("allocation.already.exists"));
-    }
-
-    @Test
-    @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void updateAllocation_success() throws Exception {
-        mvc.perform(put("/api/latest/coaching-packages/1/allocations/user1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -100,7 +85,7 @@ class UserAllocationControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void createAllocation_exceedsCapacity_fails() throws Exception {
+    void saveAllocation_exceedsCapacity_fails() throws Exception {
         // Package has 100 total, 30 already allocated (10+20), trying to add 80 more
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user3")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -115,7 +100,7 @@ class UserAllocationControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void createAllocation_inactivePackage_fails() throws Exception {
+    void saveAllocation_inactivePackage_fails() throws Exception {
         // Package 2 is INACTIVE
         mvc.perform(post("/api/latest/coaching-packages/2/allocations/user1")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -201,10 +186,10 @@ class UserAllocationControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void updateAllocation_belowConsumed_fails() throws Exception {
+    void saveAllocation_belowConsumed_fails() throws Exception {
         // user2 has allocatedUnits=20 and consumedUnits=5
         // Trying to set allocatedUnits to 3 (below consumed) should fail
-        mvc.perform(put("/api/latest/coaching-packages/1/allocations/user2")
+        mvc.perform(post("/api/latest/coaching-packages/1/allocations/user2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -218,9 +203,9 @@ class UserAllocationControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void updateAllocation_exactlyAtConsumed_success() throws Exception {
+    void saveAllocation_exactlyAtConsumed_success() throws Exception {
         // user2 has consumedUnits=5, setting allocatedUnits=5 should succeed
-        mvc.perform(put("/api/latest/coaching-packages/1/allocations/user2")
+        mvc.perform(post("/api/latest/coaching-packages/1/allocations/user2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -299,7 +284,7 @@ class UserAllocationControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void createAllocation_inactiveAllocationConsumedUnitsCountTowardsCapacity() throws Exception {
+    void saveAllocation_inactiveAllocationConsumedUnitsCountTowardsCapacity() throws Exception {
         // Package has 100 total, 30 allocated (10+20)
         // Deactivate user1's allocation (10 allocated, 0 consumed) - this sets allocatedUnits to consumedUnits (0)
         userAllocationRepository.findByPackageIdAndUsername(1L, "user1").ifPresent(a -> {
@@ -323,7 +308,7 @@ class UserAllocationControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void createAllocation_inactiveAllocationWithConsumedUnitsBlocksCapacity() throws Exception {
+    void saveAllocation_inactiveAllocationWithConsumedUnitsBlocksCapacity() throws Exception {
         // Package has 100 total, 30 allocated (10+20), user2 has 5 consumed
         // Deactivate user2's allocation - this sets allocatedUnits to consumedUnits (5)
         userAllocationRepository.findByPackageIdAndUsername(1L, "user2").ifPresent(a -> {

@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
+import com.topleader.topleader.common.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -71,6 +73,19 @@ public class ErrorController {
                 "ACCESS_DENIED",
                 List.of(),
                 "You do not have permission to access this resource"
+            )
+        );
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(value = {NoResourceFoundException.class})
+    public List<ErrorDto> handleNotFoundException(Exception ex) {
+        log.debug("Resource not found: {}", ex.getMessage());
+        return List.of(
+            new ErrorDto(
+                "NOT_FOUND",
+                List.of(),
+                    ex.getMessage() != null ? ex.getMessage() : "Resource not found"
             )
         );
     }

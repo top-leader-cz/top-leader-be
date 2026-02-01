@@ -32,26 +32,14 @@ public class UserAllocationController {
 
     @PostMapping("/api/latest/coaching-packages/{packageId}/allocations/{userId}")
     @Secured({"HR", "ADMIN"})
-    public UserAllocationDto createAllocation(
+    public UserAllocationDto saveAllocation(
             @AuthenticationPrincipal UserDetails user,
             @PathVariable Long packageId,
             @PathVariable String userId,
             @RequestBody @Valid AllocationRequest request
     ) {
         validatePackageAccess(user, packageId);
-        return userAllocationService.createAllocation(packageId, userId, request, user.getUsername());
-    }
-
-    @PutMapping("/api/latest/coaching-packages/{packageId}/allocations/{userId}")
-    @Secured({"HR", "ADMIN"})
-    public UserAllocationDto updateAllocation(
-            @AuthenticationPrincipal UserDetails user,
-            @PathVariable Long packageId,
-            @PathVariable String userId,
-            @RequestBody @Valid AllocationRequest request
-    ) {
-        validatePackageAccess(user, packageId);
-        return userAllocationService.updateAllocation(packageId, userId, request, user.getUsername());
+        return userAllocationService.saveAllocation(packageId, userId, request, user.getUsername());
     }
 
     @PostMapping("/api/latest/coaching-packages/{packageId}/allocations:bulk")

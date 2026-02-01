@@ -27,22 +27,47 @@ public class UserAllocationService {
     private final UserAllocationRepository userAllocationRepository;
     private final CoachingPackageRepository coachingPackageRepository;
 
-    public UserAllocationDto createAllocation(Long packageId, String userId, AllocationRequest request, String createdBy) {
-        log.info("Creating allocation for package {} user {} by {}", packageId, userId, createdBy);
+    public UserAllocationDto saveAllocation(Long packageId, String userId, AllocationRequest request, String savedBy) {
+        log.info("Saving allocation for package {} user {} by {}", packageId, userId, savedBy);
 
         var pkg = getActivePackage(packageId);
-        var existingAllocation = userAllocationRepository.findByPackageIdAndUsername(packageId, userId);
+        var now = LocalDateTime.now();
 
-        if (existingAllocation.isPresent()) {
-            throw new ApiValidationException(ALLOCATION_ALREADY_EXISTS, "userId", userId,
-                    "Allocation already exists for user " + userId + " in package " + packageId);
+        return userAllocationRepository.findByPackageIdAndUsernameForUpdate(packageId, userId)
+                .map(allocation -> updateAllocation(allocation, pkg, request, savedBy, now))
+                .orElseGet(() -> createAllocation(pkg, userId, request, savedBy, now));
+    }
+
+    private UserAllocationDto updateAllocation(UserAllocation allocation, CoachingPackage pkg,
+                                               AllocationRequest request, String updatedBy, LocalDateTime now) {
+        int delta = request.allocatedUnits() - allocation.getAllocatedUnits();
+
+        if (request.allocatedUnits() < allocation.getConsumedUnits()) {
+            throw new ApiValidationException(ALLOCATED_BELOW_CONSUMED, "allocatedUnits",
+                    String.valueOf(request.allocatedUnits()),
+                    "Allocated units cannot be less than consumed units (" + allocation.getConsumedUnits() + ")");
         }
 
+        validateCapacity(pkg, delta);
+
+        allocation.setAllocatedUnits(request.allocatedUnits())
+                .setStatus(request.status() != null ? request.status() : allocation.getStatus())
+                .setContextRef(request.contextRef())
+                .setUpdatedAt(now)
+                .setUpdatedBy(updatedBy);
+
+        var saved = userAllocationRepository.save(allocation);
+        log.info("Updated allocation {} for package {} user {}", saved.getId(), pkg.getId(), allocation.getUsername());
+
+        return UserAllocationDto.from(saved);
+    }
+
+    private UserAllocationDto createAllocation(CoachingPackage pkg, String userId,
+                                               AllocationRequest request, String createdBy, LocalDateTime now) {
         validateCapacity(pkg, request.allocatedUnits());
 
-        var now = LocalDateTime.now();
         var allocation = new UserAllocation()
-                .setPackageId(packageId)
+                .setPackageId(pkg.getId())
                 .setCompanyId(pkg.getCompanyId())
                 .setUsername(userId)
                 .setAllocatedUnits(request.allocatedUnits())
@@ -54,39 +79,7 @@ public class UserAllocationService {
                 .setUpdatedBy(createdBy);
 
         var saved = userAllocationRepository.save(allocation);
-        log.info("Created allocation {} for package {} user {}", saved.getId(), packageId, userId);
-
-        return UserAllocationDto.from(saved);
-    }
-
-    public UserAllocationDto updateAllocation(Long packageId, String userId, AllocationRequest request, String updatedBy) {
-        log.info("Updating allocation for package {} user {} by {}", packageId, userId, updatedBy);
-
-        var pkg = getActivePackage(packageId);
-        var allocation = userAllocationRepository.findByPackageIdAndUsernameForUpdate(packageId, userId)
-                .orElseThrow(NotFoundException::new);
-
-        int currentAllocated = allocation.getAllocatedUnits();
-        int currentConsumed = allocation.getConsumedUnits();
-        int delta = request.allocatedUnits() - currentAllocated;
-
-        // Validate: allocatedUnits >= consumedUnits
-        if (request.allocatedUnits() < currentConsumed) {
-            throw new ApiValidationException(ALLOCATED_BELOW_CONSUMED, "allocatedUnits",
-                    String.valueOf(request.allocatedUnits()),
-                    "Allocated units cannot be less than consumed units (" + currentConsumed + ")");
-        }
-
-        validateCapacity(pkg, delta);
-
-        allocation.setAllocatedUnits(request.allocatedUnits())
-                .setStatus(request.status() != null ? request.status() : allocation.getStatus())
-                .setContextRef(request.contextRef())
-                .setUpdatedAt(LocalDateTime.now())
-                .setUpdatedBy(updatedBy);
-
-        var saved = userAllocationRepository.save(allocation);
-        log.info("Updated allocation {} for package {} user {}", saved.getId(), packageId, userId);
+        log.info("Created allocation {} for package {} user {}", saved.getId(), pkg.getId(), userId);
 
         return UserAllocationDto.from(saved);
     }
