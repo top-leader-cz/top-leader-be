@@ -38,6 +38,8 @@ build/
 **/.terraform/*
 *.tfstate
 *.tfstate.*
+*.tfvars
+!*.tfvars.example
 
 ### Claude Code ###
 .claude

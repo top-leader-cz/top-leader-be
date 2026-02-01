@@ -10,46 +10,26 @@ This directory contains Terraform configuration for the TopLeader GCP infrastruc
 
 ## Setup
 
-1. Initialize Terraform (one-time):
+1. Copy and configure variables:
+   ```bash
+   cp terraform.tfvars.example terraform.tfvars
+   # Edit terraform.tfvars with your values
+   ```
+
+2. Initialize Terraform (one-time):
    ```bash
    terraform init
    ```
 
-2. Review changes:
+3. Review changes:
    ```bash
-   terraform plan -var="job_trigger_password=YOUR_SECURE_PASSWORD"
+   terraform plan
    ```
 
-3. Apply infrastructure:
+4. Apply infrastructure:
    ```bash
-   terraform apply -var="job_trigger_password=YOUR_SECURE_PASSWORD"
+   terraform apply
    ```
-
-   **Note:** The `job_trigger_password` must match the `JOB_TRIGGER_PASSWORD` environment variable set in your App Engine services (QA and PROD).
-
-### First-time Cloud Run Setup
-
-For initial Cloud Run deployment, apply infrastructure in order:
-
-```bash
-# 1. Create Artifact Registry + Service Account + IAM permissions
-terraform apply \
-  -target=google_artifact_registry_repository.cloud_run \
-  -target=google_service_account.cloud_run_qa \
-  -target=google_project_iam_member.cloud_run_sql_client \
-  -target=google_secret_manager_secret_iam_member.cloud_run_secrets
-
-# 2. Deploy Cloud Run service via GitHub Actions
-make deploy-qa
-
-# 3. Create domain mapping + DNS
-terraform apply \
-  -target=google_cloud_run_domain_mapping.qa \
-  -target=google_dns_record_set.qa_cloudrun
-
-# 4. Verify everything
-terraform apply  # Apply any remaining resources
-```
 
 ## Local Database Access
 
@@ -62,14 +42,14 @@ To connect to Cloud SQL from your local machine (e.g., IntelliJ Database View):
 
 2. Start the proxy before connecting:
    ```bash
-   cloud-sql-proxy topleader-394306:europe-west3:top-leader-db --port=5432
+   cloud-sql-proxy <PROJECT_ID>:<REGION>:<INSTANCE_NAME> --port=5432
    ```
 
 3. Connect using:
    - Host: `localhost`
    - Port: `5432`
-   - Database: `top_leader_prod`
-   - User: `top-leader-prod`
+   - Database: (see terraform output)
+   - User: (see terraform output)
 
 ## Infrastructure Components
 
@@ -78,118 +58,146 @@ To connect to Cloud SQL from your local machine (e.g., IntelliJ Database View):
 - **Cloud SQL** - PostgreSQL 15 database
 - **Cloud Storage** - Frontend static files with CDN
 - **Load Balancer** - HTTPS routing for frontend + API
-- **Cloud DNS** - DNS zones for topleaderplatform.io
+- **Cloud DNS** - DNS zones
 - **Cloud Scheduler** - Scheduled jobs for both QA and PROD environments
+- **Cloud Monitoring** - Alerting for failed scheduler jobs
+
+## Architecture
+
+### QA Environment - Load Balancer Routing
+
+The QA environment uses a Load Balancer to route traffic between frontend (static files) and backend (API):
+
+```
+                         ┌──────────────────────────┐
+                         │      Load Balancer       │
+                         │      qa.<domain>         │
+                         └────────────┬─────────────┘
+                                      │
+                    ┌─────────────────┴─────────────────┐
+                    │                                   │
+                    ▼                                   ▼
+          ┌─────────────────┐                 ┌─────────────────┐
+          │  Cloud Storage  │                 │   Cloud Run     │
+          │    (Frontend)   │                 │    (Backend)    │
+          │                 │                 │                 │
+          │  /index.html    │                 │  /api/*         │
+          │  /assets/*      │                 │                 │
+          │  /*.js, /*.css  │                 │                 │
+          └─────────────────┘                 └─────────────────┘
+```
+
+**Why Load Balancer?**
+- Single domain for both FE and BE
+- SSL termination at LB level
+- Path-based routing (`/api/*` -> Cloud Run, everything else -> Storage)
+
+**Note:** Cloud Scheduler jobs use Basic Auth (not OIDC) because OIDC tokens don't work through Load Balancer.
+
+### PROD Environment
+
+PROD uses App Engine which handles routing internally:
+
+```
+          ┌──────────────────────────┐
+          │       App Engine         │
+          │        <domain>          │
+          └────────────┬─────────────┘
+                       │
+         ┌─────────────┴─────────────┐
+         │                           │
+         ▼                           ▼
+   ┌───────────┐              ┌───────────┐
+   │  default  │              │   prod    │
+   │ (Frontend)│              │ (Backend) │
+   └───────────┘              └───────────┘
+```
 
 ## Cloud Scheduler Jobs
 
 The infrastructure includes 5 scheduled jobs for each environment (QA and PROD):
 
-### QA Environment
-
-1. **qa-displayed-messages** - Process and send email notifications for not displayed messages
-   - Schedule: Every 30 minutes
-   - Endpoint: `/api/protected/jobs/displayedMessages`
-
-2. **qa-feedback-notification** - Process and send feedback notifications
-   - Schedule: Daily at 9:00 AM (Europe/Prague)
-   - Endpoint: `/api/protected/jobs/feedback-notification`
-
-3. **qa-mark-session-completed** - Mark pending sessions older than 48h as completed/no-show
-   - Schedule: Daily at 2:00 AM (Europe/Prague)
-   - Endpoint: `/api/protected/jobs/mark-session-completed`
-
-4. **qa-remind-sessions** - Send reminders to users with no scheduled sessions
-   - Schedule: Weekly on Monday at 10:00 AM (Europe/Prague)
-   - Endpoint: `/api/protected/jobs/remind-sessions`
-
-5. **qa-process-payments** - Process scheduled session payments
-   - Schedule: Daily at 3:00 AM (Europe/Prague)
-   - Endpoint: `/api/protected/jobs/payments`
-
-### PROD Environment
-
-Same 5 jobs with `prod-` prefix, identical schedules and endpoints but targeting the PROD App Engine service.
+| Job | Description | Endpoint |
+|-----|-------------|----------|
+| displayed-messages | Notify about not displayed messages | `/api/protected/jobs/displayedMessages` |
+| feedback-notification | Send feedback notifications | `/api/protected/jobs/feedback-notification` |
+| mark-session-completed | Mark old pending sessions as completed | `/api/protected/jobs/mark-session-completed` |
+| remind-sessions | Remind users to schedule sessions | `/api/protected/jobs/remind-sessions` |
+| process-payments | Process scheduled payments | `/api/protected/jobs/payments` |
 
 ### Authentication
 
 All jobs use HTTP Basic Authentication:
 - Username: `job-trigger`
-- Password: Configured via `job_trigger_password` Terraform variable
+- Password: Configured via `job_trigger_password` in `terraform.tfvars`
 
-The password must match the `JOB_TRIGGER_PASSWORD` environment variable in your App Engine configuration.
+The password must match the `JOB_TRIGGER_PASSWORD` secret in Secret Manager.
 
-## Cloud Run Domain Mapping
-
-The QA environment uses Cloud Run with custom domain mapping:
-
-- **Service**: `top-leader-qa`
-- **Domain**: `qa.topleaderplatform.io`
-- **Region**: `europe-west3`
-
-### Prerequisites for Domain Mapping
-
-Before applying Terraform for domain mapping, ensure:
-
-1. Cloud Run service exists:
-   ```bash
-   gcloud run services describe top-leader-qa \
-     --region=europe-west3 \
-     --project=topleader-394306
-   ```
-
-2. If service doesn't exist, deploy it first:
-   ```bash
-   make deploy-qa
-   ```
-
-### Applying Domain Mapping
+### Testing Jobs
 
 ```bash
-# Initialize Terraform (if not done)
-terraform init
+# Run a job manually
+gcloud scheduler jobs run <JOB_NAME> --location=<REGION>
 
-# Review changes
-terraform plan
+# Check job status
+gcloud scheduler jobs describe <JOB_NAME> --location=<REGION>
 
-# Apply domain mapping
-terraform apply -target=google_cloud_run_domain_mapping.qa -target=google_dns_record_set.qa_cloudrun
-
-# Or apply all changes
-terraform apply
+# View job logs
+gcloud logging read 'resource.type="cloud_scheduler_job"' --limit=10
 ```
 
-### Verifying Domain Mapping
+## Alerting
 
-After applying, verify the mapping:
+Cloud Monitoring alerts are configured for application errors and Cloud Scheduler job failures.
+
+### Configuration
+
+Alert recipients are configured via `terraform.tfvars` (not committed to repo):
+
+```hcl
+# terraform.tfvars
+alert_emails = [
+  "alerts@example.com",
+  "developer@example.com"
+]
+
+# Optional: SMS alerts
+# alert_sms_number = "+1234567890"
+```
+
+### Alert Policies
+
+| Policy | Trigger | Severity |
+|--------|---------|----------|
+| **Prod error** | Errors in application logs (log-based metric) | ERROR |
+| **Cloud Scheduler Job Failed** | ERROR logs from scheduler jobs | ERROR |
+
+### Viewing Alerts
 
 ```bash
-# Check domain mapping status
-gcloud run domain-mappings describe \
-  --domain=qa.topleaderplatform.io \
-  --region=europe-west3 \
-  --project=topleader-394306
+# List alert policies
+gcloud alpha monitoring policies list
 
-# Test DNS resolution
-dig qa.topleaderplatform.io
-
-# Test HTTPS endpoint
-curl -I https://qa.topleaderplatform.io/actuator/health
+# View incidents (requires alpha component)
+gcloud alpha monitoring incidents list
 ```
 
-### Troubleshooting Domain Mapping
+## Terraform State
 
-If domain mapping fails:
+Terraform state is stored remotely in a GCS bucket. The bucket name is configured in `versions.tf`.
 
-1. **Service not found**: Deploy Cloud Run service first via `make deploy-qa`
-2. **DNS propagation**: Wait 5-10 minutes for DNS changes to propagate
-3. **Certificate provisioning**: SSL certificate can take 15-60 minutes to provision
+## Useful Commands
 
-Check status:
 ```bash
-terraform output cloudrun_qa_domain_mapping_status
+# Show all outputs
+terraform output
+
+# Show specific output
+terraform output sql_connection_name
+
+# Import existing resource
+terraform import <RESOURCE_TYPE>.<NAME> <RESOURCE_ID>
+
+# Destroy specific resource (use with caution!)
+terraform destroy -target=<RESOURCE_TYPE>.<NAME>
 ```
-
-## State
-
-Terraform state is stored in GCS bucket: `gs://topleader-terraform-state/`

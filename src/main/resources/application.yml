@@ -124,16 +124,6 @@ springdoc:
     path: /swagger-ui.html
 
 management:
-  health:
-    mail:
-      enabled: false
-  endpoints:
-    web:
-      exposure:
-        include: health, prometheus, metrics
-  endpoint:
-    health:
-      show-details: when_authorized
   opentelemetry:
     resource-attributes:
       "service.name": top-leader

@@ -175,6 +175,36 @@ We deploy on **Google Cloud Platform** with the following architecture:
 - **Automated deployments** - push tag → GitHub Actions → deployed
 - **Secure secrets** - Secret Manager instead of environment variables
 
+### Infrastructure Diagram
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        Global Load Balancer                         │
+│                     (SSL termination, routing)                       │
+└─────────────────────────────────┬───────────────────────────────────┘
+                                  │
+                ┌─────────────────┴─────────────────┐
+                │                                   │
+                ▼                                   ▼
+      ┌─────────────────┐                 ┌─────────────────┐
+      │  Cloud Storage  │                 │   Cloud Run     │
+      │    + CDN        │                 │   (Backend)     │
+      │   (Frontend)    │                 │                 │
+      │                 │                 │  /api/*         │
+      │  /*.html, *.js  │                 │                 │
+      └─────────────────┘                 └────────┬────────┘
+                                                   │
+                                                   ▼
+                                          ┌───────────────┐
+                                          │   Cloud SQL   │
+                                          │ (PostgreSQL)  │
+                                          └───────────────┘
+```
+
+Path-based routing:
+- `/api/*` → Cloud Run (Backend API)
+- `/*` → Cloud Storage + CDN (Frontend SPA)
+
 ### Future Tech Plans
 
 > See [ADR-003: Native Image Strategy](docs/adr/003-native-image-strategy.md) for full decision record.
@@ -328,7 +358,7 @@ See [docs/SECURITY.md](docs/SECURITY.md) for complete security audit report.
 **CORS Configuration:**
 - **CORS is DISABLED** in the application (`.cors(AbstractHttpConfigurer::disable)`)
 - **Handled by Google Cloud Load Balancer** at infrastructure level
-- Frontend and API served from same domain (`topleaderplatform.io`) → same-origin requests
+- Frontend and API served from same domain → same-origin requests
 - Load balancer routes by path:
   - `/api/*` → Backend (Cloud Run)
   - `/` → Frontend (Cloud Storage + CDN)
@@ -452,7 +482,6 @@ Key configuration properties in `application.yml`:
 
 ## Monitoring & Observability
 
-- **Spring Boot Actuator** endpoints: `/actuator/health`,
 - **OpenTelemetry** integration for traces and metrics
 - **Grafana Cloud** support (configured via environment)
 

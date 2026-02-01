@@ -42,3 +42,14 @@ variable "cloud_run_url_qa" {
   type        = string
   default     = "https://qa.topleaderplatform.io"
 }
+
+variable "alert_emails" {
+  description = "List of email addresses for alert notifications"
+  type        = list(string)
+}
+
+variable "alert_sms_number" {
+  description = "Phone number for SMS alerts (E.164 format, e.g. +420123456789).."
+  type        = string
+  default     = null
+}

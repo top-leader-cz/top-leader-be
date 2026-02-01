@@ -82,7 +82,7 @@ public class WebSecurityConfig {
         http
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**",
-                        "/v3/api-docs/**", "/_ah/start", "/actuator/health",
+                        "/v3/api-docs/**", "/_ah/start",
                         "/login/google", "/login/calendly").permitAll()
                 .anyRequest().authenticated()
             )

@@ -10,18 +10,6 @@ resource "google_app_engine_application" "app" {
   }
 }
 
-# Serverless NEG for QA App Engine service
-resource "google_compute_region_network_endpoint_group" "appengine_qa" {
-  name                  = "top-be-qa"
-  network_endpoint_type = "SERVERLESS"
-  region                = var.region
-  project               = var.project_id
-
-  app_engine {
-    service = "qa"
-  }
-}
-
 # Serverless NEG for PROD App Engine service
 resource "google_compute_region_network_endpoint_group" "appengine_prod" {
   name                  = "top-be-prod"

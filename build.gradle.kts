@@ -52,7 +52,6 @@ dependencies {
         exclude(group = "org.eclipse.jetty.ee11", module = "jetty-ee11-plus")
         exclude(group = "org.apache.tomcat.embed", module = "tomcat-embed-el")
     }
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-security")

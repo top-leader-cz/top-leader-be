@@ -11,7 +11,7 @@ spec:
     metadata:
       annotations:
         autoscaling.knative.dev/minScale: "0"
-        autoscaling.knative.dev/maxScale: "2"
+        autoscaling.knative.dev/maxScale: "1"
         run.googleapis.com/cpu-throttling: "true"
         run.googleapis.com/startup-cpu-boost: "true"
         run.googleapis.com/cloudsql-instances: topleader-394306:europe-west3:top-leader-db
@@ -31,6 +31,8 @@ spec:
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "qa"
+            - name: GCP_JSON_LOGS
+              value: "CONSOLE_JSON"
             # Secrets from Secret Manager
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
@@ -51,6 +53,11 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: TOP_LEADER_CALENDLY_CLIENT_SECRETS
+                  key: latest
+            - name: GOOGLE_CLIENT_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: GOOGLE_CLIENT_CLIENT_ID
                   key: latest
             - name: GOOGLE_CLIENT_CLIENT_SECRET
               valueFrom:

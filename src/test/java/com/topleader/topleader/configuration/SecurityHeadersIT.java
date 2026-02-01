@@ -64,13 +64,4 @@ class SecurityHeadersIT extends IntegrationTest {
             .andExpect(header().exists("X-Frame-Options"));
     }
 
-    @Test
-    void shouldReturnSecurityHeadersEvenOnPublicEndpoints() throws Exception {
-        mvc.perform(get("/actuator/health"))
-            .andExpect(status().isOk())
-            .andExpect(header().exists("Content-Security-Policy"))
-            .andExpect(header().exists("X-XSS-Protection"))
-            .andExpect(header().exists("X-Content-Type-Options"))
-            .andExpect(header().exists("X-Frame-Options"));
-    }
 }

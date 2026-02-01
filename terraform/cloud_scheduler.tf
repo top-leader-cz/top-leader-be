@@ -51,11 +51,6 @@ resource "google_cloud_scheduler_job" "message_undisplayed_qa" {
     headers = {
       "Authorization" = local.job_auth_header
     }
-
-    oidc_token {
-      service_account_email = google_service_account.scheduler.email
-      audience              = var.cloud_run_url_qa
-    }
   }
 
   depends_on = [google_project_service.scheduler, google_project_service.run]
@@ -84,11 +79,6 @@ resource "google_cloud_scheduler_job" "feedback_notifications_qa" {
 
     headers = {
       "Authorization" = local.job_auth_header
-    }
-
-    oidc_token {
-      service_account_email = google_service_account.scheduler.email
-      audience              = var.cloud_run_url_qa
     }
   }
 
@@ -119,11 +109,6 @@ resource "google_cloud_scheduler_job" "complete_session_qa" {
     headers = {
       "Authorization" = local.job_auth_header
     }
-
-    oidc_token {
-      service_account_email = google_service_account.scheduler.email
-      audience              = var.cloud_run_url_qa
-    }
   }
 
   depends_on = [google_project_service.scheduler, google_project_service.run]
@@ -153,11 +138,6 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_qa" {
     headers = {
       "Authorization" = local.job_auth_header
     }
-
-    oidc_token {
-      service_account_email = google_service_account.scheduler.email
-      audience              = var.cloud_run_url_qa
-    }
   }
 
   depends_on = [google_project_service.scheduler, google_project_service.run]
@@ -186,11 +166,6 @@ resource "google_cloud_scheduler_job" "payment_process_job_qa" {
 
     headers = {
       "Authorization" = local.job_auth_header
-    }
-
-    oidc_token {
-      service_account_email = google_service_account.scheduler.email
-      audience              = var.cloud_run_url_qa
     }
   }
 
