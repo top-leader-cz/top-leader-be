@@ -49,6 +49,7 @@ build/
 
 ### Local config ###
 src/main/resources/application-dev.yml
+Makefile.local
 
 ### Security audit ###
 docs/SECURITY.md

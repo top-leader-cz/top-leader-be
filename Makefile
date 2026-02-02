@@ -1,7 +1,11 @@
-# Configuration variables
-REGION := europe-west3
-PROJECT_ID := topleader-394306
-SERVICE_NAME := top-leader-qa
+# Load local configuration (gitignored)
+-include Makefile.local
+
+# Configuration variables (defaults - override in Makefile.local)
+REGION ?= your-region
+PROJECT_ID ?= your-project-id
+SERVICE_NAME ?= your-service-name
+GCLOUD_ACCOUNT ?= your-email@example.com
 IMAGE_NAME := top-leader-be
 ARTIFACT_REPO := cloud-run
 GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
@@ -12,8 +16,8 @@ GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 
 # Login to Google Cloud and set project
 login:
-	gcloud auth login topleaderplatform@gmail.com
-	gcloud config set project topleader-394306
+	gcloud auth login $(GCLOUD_ACCOUNT)
+	gcloud config set project $(PROJECT_ID)
 
 # Fetch QA logs (Cloud Run, errors only)
 logs-qa:

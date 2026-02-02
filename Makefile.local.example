@@ -1,0 +1,7 @@
+# Local Makefile configuration
+# Copy this file to Makefile.local and fill in your values
+
+REGION := your-region
+PROJECT_ID := your-project-id
+SERVICE_NAME := your-service-name
+GCLOUD_ACCOUNT := your-email@example.com
