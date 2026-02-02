@@ -18,6 +18,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
+import org.springframework.test.context.aot.DisabledInAotMode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -43,6 +44,7 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
     listeners = {ResetDatabaseAfterTestMethodListener.class}
 )
 @EnablePostgresTestContainerContextCustomizerFactory.EnabledPostgresTestContainer
+@DisabledInAotMode
 public abstract class IntegrationTest implements ApplicationContextAware {
 
     protected MockMvc mvc;

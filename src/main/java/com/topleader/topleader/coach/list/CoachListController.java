@@ -7,7 +7,6 @@ import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
 import com.topleader.topleader.common.email.SessionEmailData;
-import com.topleader.topleader.common.metrics.MetricsService;
 import com.topleader.topleader.hr.company.Company;
 import com.topleader.topleader.hr.company.CompanyRepository;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
@@ -40,7 +39,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -78,9 +76,6 @@ public class CoachListController {
     private final EmailTemplateService emailTemplateService;
 
     private final CompanyRepository companyRepository;
-
-    private final MetricsService metrics;
-
 
     @PostMapping("/{username}/schedule")
     public void scheduleSession(
@@ -131,9 +126,6 @@ public class CoachListController {
         if (scheduledSessionService.isAlreadyScheduled(coachName, shiftedTime)) {
             throw new ApiValidationException(TIME_NOT_AVAILABLE, "time", time.toString(), "Time " + time + " is not available");
         }
-        if (!scheduledSessionService.isPossibleToSchedule(clientName, coachName)) {
-            throw new ApiValidationException(NOT_ENOUGH_CREDITS, "user", clientName, "User does not have enough credit");
-        }
 
         final var user = userRepository.findByUsername(clientName).orElseThrow();
 
@@ -147,7 +139,6 @@ public class CoachListController {
             clientName
         );
 
-        metrics.incrementSessionScheduled();
         emailTemplateService.sendBookingAlertEmail(
             new SessionEmailData(
                 session.getId(),

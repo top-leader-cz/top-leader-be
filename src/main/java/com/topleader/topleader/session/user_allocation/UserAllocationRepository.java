@@ -21,4 +21,13 @@ public interface UserAllocationRepository extends ListCrudRepository<UserAllocat
     @Query("SELECT COALESCE(SUM(allocated_units), 0) FROM user_allocation WHERE package_id = :packageId")
     int sumUsedUnitsByPackageId(Long packageId);
 
+    @Query("""
+        SELECT ua.* FROM user_allocation ua
+        JOIN coaching_package cp ON ua.package_id = cp.id
+        WHERE ua.username = :username
+          AND ua.status = 'ACTIVE'
+          AND cp.status = 'ACTIVE'
+        """)
+    List<UserAllocation> findActiveByUsername(String username);
+
 }

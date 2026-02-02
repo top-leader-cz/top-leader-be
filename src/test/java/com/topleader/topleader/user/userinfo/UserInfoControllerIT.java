@@ -4,8 +4,7 @@ import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.common.ai.AiPrompt;
 import com.topleader.topleader.common.ai.AiPromptService;
-import com.topleader.topleader.credit.history.CreditHistory;
-import com.topleader.topleader.credit.history.CreditHistoryRepository;
+import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.StrengthStoredData;
@@ -68,7 +67,7 @@ class UserInfoControllerIT extends IntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
-    private CreditHistoryRepository creditHistoryRepository;
+    private UserAllocationRepository userAllocationRepository;
 
     @Autowired
     ChatModel chatModel;
@@ -306,20 +305,6 @@ class UserInfoControllerIT extends IntegrationTest {
         final var sessions = scheduledSessionRepository.findAll();
 
         assertEquals(2, sessions.size());
-
-        final var user = userRepository.findByUsername("user_with_coach").orElseThrow();
-
-        assertEquals(180, user.getScheduledCredit());
-        assertEquals(400, user.getCredit());
-
-        final var history = creditHistoryRepository.findAll();
-
-        assertEquals(2, history.size());
-
-        assertEquals(CreditHistory.Type.CANCELED, history.get(0).getType());
-        assertEquals(CreditHistory.Type.CANCELED, history.get(1).getType());
-        assertEquals(110, history.get(0).getCredit());
-        assertEquals(110, history.get(1).getCredit());
     }
 
 
@@ -529,14 +514,8 @@ class UserInfoControllerIT extends IntegrationTest {
         assertThat(session.getUsername(), is("user_with_coach"));
         assertThat(session.getTime(), is(scheduleTime.atZone(ZoneId.of("UTC")).withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findByUsername("user_with_coach").orElseThrow();
-
-        assertThat(user.getScheduledCredit(), is(400));
-        assertThat(user.getCredit(), is(400));
-
-        final var creditHistory = creditHistoryRepository.findAll();
-
-        assertThat(creditHistory, hasSize(0));
+        var allocation = userAllocationRepository.findActiveByUsername("user_with_coach").get(0);
+        assertThat(allocation.getConsumedUnits(), is(1));
     }
 
     @Test

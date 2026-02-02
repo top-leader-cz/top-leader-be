@@ -3,14 +3,14 @@
  */
 package com.topleader.topleader.session.scheduled_session;
 
-import com.topleader.topleader.credit.CreditService;
+import com.topleader.topleader.common.metrics.MetricsService;
+import com.topleader.topleader.session.user_allocation.UserAllocationService;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import static java.util.function.Predicate.not;
@@ -26,23 +26,24 @@ public class ScheduledSessionService {
 
     private final ScheduledSessionRepository scheduledSessionRepository;
 
-    private final CreditService creditService;
+    private final UserAllocationService userAllocationService;
+
+    private final MetricsService metrics;
+
 
     public boolean isAlreadyScheduled(String coach, LocalDateTime date) {
         return scheduledSessionRepository.existsByCoachUsernameAndTime(coach, date);
     }
 
-    public boolean isPossibleToSchedule(String user, String coach) {
-        return creditService.canScheduleSession(user, coach);
-    }
-
+    @Transactional
     public ScheduledSession scheduleSession(ScheduledSession scheduledSession, String createdBy) {
         var now = LocalDateTime.now();
         scheduledSession.setCreatedAt(now);
         scheduledSession.setUpdatedAt(now);
         scheduledSession.setUpdatedBy(createdBy);
-        final var session = scheduledSessionRepository.save(scheduledSession);
-        creditService.scheduleSession(session.getId());
+        userAllocationService.consumeUnit(scheduledSession.getUsername());
+        var session = scheduledSessionRepository.save(scheduledSession);
+        metrics.incrementSessionScheduled();
         return session;
     }
 
@@ -64,7 +65,7 @@ public class ScheduledSessionService {
         Optional.of(scheduledSessionRepository.findAllByUsernameAndTimeIsAfterAndIsPrivateIsFalse(username, LocalDateTime.now()))
             .filter(not(List::isEmpty))
             .ifPresent(l -> l.forEach(s -> {
-                creditService.cancelSession(s.getId());
+                userAllocationService.releaseUnit(s.getUsername());
                 scheduledSessionRepository.delete(s);
             }));
     }
@@ -79,25 +80,12 @@ public class ScheduledSessionService {
 
     private void cancelSession(Long sessionId, ScheduledSession.Status status, String canceledBy) {
         scheduledSessionRepository.findById(sessionId).ifPresent(s -> {
-            creditService.cancelSession(s.getId());
+            userAllocationService.releaseUnit(s.getUsername());
             s.setStatus(status);
             s.setUpdatedAt(LocalDateTime.now());
             s.setUpdatedBy(canceledBy);
             scheduledSessionRepository.save(s);
         });
-    }
-
-    @Async
-    public void processPayments() {
-        final var paymentTime = LocalDateTime.now().plusDays(1);
-        scheduledSessionRepository.findAllByTimeBeforeAndPaidIsFalse(paymentTime)
-            .forEach(s -> {
-                try {
-                    creditService.paySession(s.getId());
-                } catch (Exception e) {
-                    log.error("Unable to process payment for session " + s.getId(), e);
-                }
-            });
     }
 
     public Optional<ScheduledSession> getSessionData(Long sessionId) {

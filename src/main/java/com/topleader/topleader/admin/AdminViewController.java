@@ -5,7 +5,6 @@ package com.topleader.topleader.admin;
 
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachRepository;
-import com.topleader.topleader.credit.CreditService;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.user.InvitationService;
 import com.topleader.topleader.user.User;
@@ -47,8 +46,6 @@ public class AdminViewController {
     private final AdminViewRepository repository;
 
     private final InvitationService invitationService;
-
-    private final CreditService creditService;
 
     private final UserDetailService userDetailService;
 
@@ -185,13 +182,6 @@ public class AdminViewController {
             .ifPresent(user -> invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, userRequest.locale())));
 
     }
-
-    @Secured("ADMIN")
-    @PostMapping("/users/{username}/confirm-requested-credits")
-    public void topUpCredits(@PathVariable String username) {
-        creditService.topUpCredit(username);
-    }
-
 
     @Secured("ADMIN")
     @DeleteMapping("/users/{username}")

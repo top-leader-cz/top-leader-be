@@ -32,4 +32,7 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
      @Query("SELECT * FROM users WHERE username = :username OR email = :username")
      Optional<User> findByUsernameOrEmail(String username);
 
+     @Query("SELECT * FROM users WHERE company_id = :companyId")
+     List<User> findByCompanyId(Long companyId);
+
 }

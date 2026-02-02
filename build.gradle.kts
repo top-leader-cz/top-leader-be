@@ -230,14 +230,14 @@ tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") 
     )
 }
 
-// Configure Test AOT processing to use H2 with Flyway disabled
+// Configure Test AOT processing with H2 and exclude TestContainers-based tests
 tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
-    jvmArgs(
-        "-Dspring.flyway.enabled=false",
-        "-Dspring.datasource.url=jdbc:h2:mem:testaot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
-        "-Dspring.datasource.username=sa",
-        "-Dspring.datasource.password=",
-        "-Dspring.datasource.driver-class-name=org.h2.Driver",
-        "-Dspring.ai.openai.api-key=dummy-key"
+    args(
+        "--spring.datasource.url=jdbc:h2:mem:aot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "--spring.datasource.username=sa",
+        "--spring.datasource.password=",
+        "--spring.datasource.driver-class-name=org.h2.Driver",
+        "--spring.flyway.enabled=false",
+        "--spring.ai.openai.api-key=dummy-key"
     )
 }
