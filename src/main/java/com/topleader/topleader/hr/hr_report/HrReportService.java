@@ -9,10 +9,11 @@ import com.topleader.topleader.session.coaching_package.CoachingPackageRepositor
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.session.user_allocation.UserAllocation;
 import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
+import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ public class HrReportService {
     private final CoachingPackageRepository coachingPackageRepository;
     private final UserAllocationRepository userAllocationRepository;
     private final ScheduledSessionRepository scheduledSessionRepository;
+    private final UserRepository userRepository;
 
     public HrReportResponse generateReport(Long packageId, LocalDate from, LocalDate to) {
         log.debug("Generating HR report for package {} (from={}, to={})", packageId, from, to);
@@ -44,11 +46,12 @@ public class HrReportService {
 
     private HrReportResponse.Summary computeSummary(CoachingPackage pkg, LocalDateTime from, LocalDateTime to) {
         var packageId = pkg.getId();
+        var companyId = pkg.getCompanyId();
         var totalUnits = pkg.getTotalUnits();
         var allocatedUnits = userAllocationRepository.sumAllocatedUnitsByPackageId(packageId);
 
-        var userIds = userAllocationRepository.findByPackageId(packageId).stream()
-                .map(UserAllocation::getUsername)
+        var userIds = userRepository.findByCompanyId(companyId).stream()
+                .map(User::getUsername)
                 .toList();
 
         var plannedSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countUpcomingByUsernamesAndTimeRange(userIds, from, to);
@@ -59,17 +62,21 @@ public class HrReportService {
     }
 
     private java.util.List<HrReportResponse.UserRow> computeUserRows(Long packageId, LocalDateTime from, LocalDateTime to) {
-        var allocations = userAllocationRepository.findByPackageId(packageId);
+        var pkg = coachingPackageRepository.findById(packageId).orElseThrow(NotFoundException::new);
+        var companyUsers = userRepository.findByCompanyId(pkg.getCompanyId());
+        var allocationsByUsername = userAllocationRepository.findByPackageId(packageId).stream()
+                .collect(java.util.stream.Collectors.toMap(UserAllocation::getUsername, a -> a));
 
-        return allocations.stream()
-                .map(allocation -> {
-                    var userId = allocation.getUsername();
-                    var allocatedUnits = allocation.getAllocatedUnits();
+        return companyUsers.stream()
+                .map(user -> {
+                    var userId = user.getUsername();
+                    var allocation = allocationsByUsername.get(userId);
+                    var allocatedUnits = allocation != null ? allocation.getAllocatedUnits() : 0;
                     var plannedSessions = scheduledSessionRepository.countUpcomingByUsernameAndTimeRange(userId, from, to);
                     var completedSessions = scheduledSessionRepository.countCompletedByUsernameAndTimeRange(userId, from, to);
                     var noShowClientSessions = scheduledSessionRepository.countNoShowClientByUsernameAndTimeRange(userId, from, to);
 
-                    return HrReportResponse.UserRow.of(userId, allocatedUnits, plannedSessions, completedSessions, noShowClientSessions);
+                    return HrReportResponse.UserRow.of(user, allocatedUnits, plannedSessions, completedSessions, noShowClientSessions);
                 })
                 .toList();
     }

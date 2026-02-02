@@ -46,3 +46,30 @@ VALUES ('user-with-filter', '$');
 
 INSERT INTO calendar_sync_info(username, status, sync_type, refresh_token, access_token, owner_url) VALUES ('coach1', 'OK', 'CALENDLY', 'token', 'accessToken', 'https://calendly.com/coach1');
 INSERT INTO calendar_sync_info(username, status, sync_type, refresh_token, access_token, owner_url) VALUES ('coach1', 'OK', 'GOOGLE', 'token', 'accessToken', null);
+
+-- Company and package for allocation tests
+INSERT INTO company (id, name) VALUES (1, 'Test Company');
+INSERT INTO coaching_package (id, company_id, pool_type, total_units, status, created_at, created_by, updated_at)
+VALUES (1, 1, 'CORE', 100, 'ACTIVE', now(), 'test', now());
+
+-- Allocations for existing test users
+INSERT INTO user_allocation (id, package_id, company_id, username, allocated_units, consumed_units, status, created_at, created_by, updated_at)
+VALUES (1, 1, 1, 'user', 10, 0, 'ACTIVE', now(), 'test', now()),
+       (2, 1, 1, 'no-credit-user', 5, 5, 'ACTIVE', now(), 'test', now()),
+       (3, 1, 1, 'no-credit-user-free-coach', 10, 0, 'ACTIVE', now(), 'test', now());
+
+-- User without allocation for testing no.units.available error
+INSERT INTO users (username, password, status, authorities, time_zone, coach, credit, scheduled_credit, company_id, locale)
+VALUES ('user-no-allocation', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER"]', 'UTC', null, 1000, 0, 1, 'cs');
+
+-- User with multiple allocations for testing fallback to second allocation
+INSERT INTO users (username, password, status, authorities, time_zone, coach, credit, scheduled_credit, company_id, locale)
+VALUES ('user-multi-alloc', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHghoQhIYihHys6OSO', 'AUTHORIZED', '["USER"]', 'UTC', 'coach1', 1000, 0, 1, 'cs');
+
+INSERT INTO coaching_package (id, company_id, pool_type, total_units, status, created_at, created_by, updated_at)
+VALUES (2, 1, 'ADDON', 50, 'ACTIVE', now(), 'test', now());
+
+-- First allocation is full (5/5), second has available units (2/5)
+INSERT INTO user_allocation (id, package_id, company_id, username, allocated_units, consumed_units, status, created_at, created_by, updated_at)
+VALUES (4, 1, 1, 'user-multi-alloc', 5, 5, 'ACTIVE', now(), 'test', now()),
+       (5, 2, 1, 'user-multi-alloc', 5, 2, 'ACTIVE', now(), 'test', now());

@@ -9,9 +9,9 @@ import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.coach.availability.CoachAvailability;
 import com.topleader.topleader.coach.availability.CoachAvailabilityRepository;
-import com.topleader.topleader.credit.history.CreditHistory;
-import com.topleader.topleader.credit.history.CreditHistoryRepository;
+import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
+import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.image.ImageUtil;
 
@@ -34,8 +34,10 @@ import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -63,7 +65,7 @@ class CoachListControllerIT extends IntegrationTest {
     private UserRepository userRepository;
 
     @Autowired
-    private CreditHistoryRepository creditHistoryRepository;
+    private UserAllocationRepository userAllocationRepository;
 
     private ZonedDateTime testedTime = ZonedDateTime.of(LocalDateTime.of(
             LocalDate.now().with(TemporalAdjusters.next(DayOfWeek.MONDAY)),
@@ -146,20 +148,8 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(session.getUsername(), is("user"));
         assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findByUsername("user").orElseThrow();
-
-        assertThat(user.getScheduledCredit(), is(110));
-        assertThat(user.getCredit(), is(400));
-
-        final var creditHistory = creditHistoryRepository.findAll();
-
-        assertThat(creditHistory, hasSize(1));
-
-        final var creditHistoryEvent = creditHistory.get(0);
-
-        assertThat(creditHistoryEvent.getCredit(), is(110));
-        assertThat(creditHistoryEvent.getUsername(), is("user"));
-        assertThat(creditHistoryEvent.getType(), is(CreditHistory.Type.SCHEDULED));
+        var allocation = userAllocationRepository.findActiveByUsername("user").get(0);
+        assertThat(allocation.getConsumedUnits(), is(1));
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
@@ -207,20 +197,8 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(session.getUsername(), is("user"));
         assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findByUsername("user").orElseThrow();
-
-        assertThat(user.getScheduledCredit(), is(110));
-        assertThat(user.getCredit(), is(400));
-
-        final var creditHistory = creditHistoryRepository.findAll();
-
-        assertThat(creditHistory, hasSize(1));
-
-        final var creditHistoryEvent = creditHistory.get(0);
-
-        assertThat(creditHistoryEvent.getCredit(), is(110));
-        assertThat(creditHistoryEvent.getUsername(), is("user"));
-        assertThat(creditHistoryEvent.getType(), is(CreditHistory.Type.SCHEDULED));
+        var allocation = userAllocationRepository.findActiveByUsername("user").get(0);
+        assertThat(allocation.getConsumedUnits(), is(1));
 
         var receivedMessage = greenMail.getReceivedMessages()[0];
         Assertions.assertThat(GreenMailUtil.getAddressList(receivedMessage.getFrom())).isEqualTo("TopLeaderPlatform@topleader.io");
@@ -234,7 +212,7 @@ class CoachListControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser("no-credit-user")
-    void scheduleEventNoCreditTest() throws Exception {
+    void scheduleEventNoUnitsTest() throws Exception {
         var scheduleTime  = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
                 .plusDays(1)
                 .plusHours(9)
@@ -261,14 +239,14 @@ class CoachListControllerIT extends IntegrationTest {
                 .andExpect(content().json("""
                         [
                           {
-                            "errorCode": "not.enough.credits",
+                            "errorCode": "no.units.available",
                             "fields": [
                               {
-                                "name": "user",
+                                "name": "username",
                                 "value": "no-credit-user"
                               }
                             ],
-                            "errorMessage": "User does not have enough credit"
+                            "errorMessage": "No available units to consume"
                           }
                         ]
                         """))
@@ -277,20 +255,11 @@ class CoachListControllerIT extends IntegrationTest {
         final var sessions = scheduledSessionRepository.findAll();
 
         assertThat(sessions, hasSize(0));
-
-        final var user = userRepository.findByUsername("no-credit-user").orElseThrow();
-
-        assertThat(user.getScheduledCredit(), is(400));
-        assertThat(user.getCredit(), is(400));
-
-        final var creditHistory = creditHistoryRepository.findAll();
-
-        assertThat(creditHistory, hasSize(0));
     }
 
     @Test
     @WithMockUser("no-credit-user-free-coach")
-    void scheduleEventNoCreditFreeCoachTest() throws Exception {
+    void scheduleEventFreeCoachTest() throws Exception {
         var scheduleTime  = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
                 .plusDays(1)
                 .plusHours(9)
@@ -326,14 +295,8 @@ class CoachListControllerIT extends IntegrationTest {
         assertThat(session.getUsername(), is("no-credit-user-free-coach"));
         assertThat(session.getTime(), is(scheduleTime.withZoneSameInstant(ZoneOffset.UTC).toLocalDateTime()));
 
-        final var user = userRepository.findByUsername("no-credit-user-free-coach").orElseThrow();
-
-        assertThat(user.getScheduledCredit(), is(400));
-        assertThat(user.getCredit(), is(400));
-
-        final var creditHistory = creditHistoryRepository.findAll();
-
-        assertThat(creditHistory, hasSize(0));
+        var allocation = userAllocationRepository.findActiveByUsername("no-credit-user-free-coach").get(0);
+        assertThat(allocation.getConsumedUnits(), is(1));
     }
 
     @Disabled("Flaky test - to be fixed")
@@ -634,5 +597,188 @@ class CoachListControllerIT extends IntegrationTest {
         ;
     }
 
+    @Test
+    @WithMockUser("user-no-allocation")
+    void scheduleSessionNoAllocationTest() throws Exception {
+        var scheduleTime = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
+                .plusDays(1)
+                .plusHours(9)
+                .atZone(ZoneId.of("UTC"));
+
+        coachAvailabilityRepository.save(
+                new CoachAvailability()
+                        .setUsername("coach1")
+                        .setDateTimeFrom(scheduleTime.toLocalDateTime())
+                        .setDateTimeTo(scheduleTime.toLocalDateTime().plusHours(2))
+                        .setRecurring(false)
+        );
+
+        mvc.perform(post("/api/latest/coaches/coach1/schedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                {
+                                    "time": "%s"
+                                }
+                                """, scheduleTime))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json("""
+                        [
+                          {
+                            "errorCode": "no.units.available",
+                            "fields": [
+                              {
+                                "name": "username",
+                                "value": "user-no-allocation"
+                              }
+                            ],
+                            "errorMessage": "No available units to consume"
+                          }
+                        ]
+                        """));
+
+        assertThat(scheduledSessionRepository.findAll(), hasSize(0));
+    }
+
+    @Test
+    @WithMockUser
+    void cancelSessionReleasesAllocationUnitTest() throws Exception {
+        var scheduleTime = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
+                .plusDays(2)
+                .plusHours(9)
+                .atZone(ZoneId.of("UTC"));
+
+        coachAvailabilityRepository.save(
+                new CoachAvailability()
+                        .setUsername("coach1")
+                        .setDateTimeFrom(scheduleTime.toLocalDateTime())
+                        .setDateTimeTo(scheduleTime.toLocalDateTime().plusHours(2))
+                        .setRecurring(false)
+        );
+
+        // Schedule session - consumes 1 unit
+        mvc.perform(post("/api/latest/coaches/coach1/schedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                {
+                                    "time": "%s"
+                                }
+                                """, scheduleTime))
+                )
+                .andExpect(status().isOk());
+
+        var allocationAfterSchedule = userAllocationRepository.findActiveByUsername("user").get(0);
+        assertThat(allocationAfterSchedule.getConsumedUnits(), is(1));
+
+        var sessions = scheduledSessionRepository.findAll();
+        assertThat(sessions, hasSize(1));
+        var sessionId = sessions.get(0).getId();
+
+        // Cancel session - should release 1 unit
+        mvc.perform(delete("/api/latest/user-info/upcoming-sessions/" + sessionId))
+                .andExpect(status().isOk());
+
+        var allocationAfterCancel = userAllocationRepository.findActiveByUsername("user").get(0);
+        assertThat(allocationAfterCancel.getConsumedUnits(), is(0));
+
+        var cancelledSession = scheduledSessionRepository.findById(sessionId);
+        assertTrue(cancelledSession.isPresent());
+        assertThat(cancelledSession.get().getStatus(), is(ScheduledSession.Status.CANCELED_BY_CLIENT));
+    }
+
+    @Test
+    @WithMockUser(username = "coach1", authorities = {"USER", "COACH"})
+    void cancelSessionByCoachReleasesAllocationUnitTest() throws Exception {
+        var scheduleTime = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
+                .plusDays(2)
+                .plusHours(9)
+                .atZone(ZoneId.of("UTC"));
+
+        coachAvailabilityRepository.save(
+                new CoachAvailability()
+                        .setUsername("coach1")
+                        .setDateTimeFrom(scheduleTime.toLocalDateTime())
+                        .setDateTimeTo(scheduleTime.toLocalDateTime().plusHours(2))
+                        .setRecurring(false)
+        );
+
+        // Create session directly (simulating it was scheduled)
+        var session = new ScheduledSession()
+                .setUsername("user")
+                .setCoachUsername("coach1")
+                .setTime(scheduleTime.toLocalDateTime())
+                .setPaid(false)
+                .setPrivate(false)
+                .setCreatedAt(LocalDateTime.now())
+                .setUpdatedAt(LocalDateTime.now());
+        var savedSession = scheduledSessionRepository.save(session);
+
+        // Manually consume a unit to simulate the scheduling
+        var allocation = userAllocationRepository.findActiveByUsername("user").get(0);
+        allocation.setConsumedUnits(1);
+        userAllocationRepository.save(allocation);
+
+        assertThat(userAllocationRepository.findActiveByUsername("user").get(0).getConsumedUnits(), is(1));
+
+        // Coach cancels session - should release 1 unit
+        mvc.perform(delete("/api/latest/coach-info/upcoming-sessions/" + savedSession.getId()))
+                .andExpect(status().isOk());
+
+        var allocationAfterCancel = userAllocationRepository.findActiveByUsername("user").get(0);
+        assertThat(allocationAfterCancel.getConsumedUnits(), is(0));
+
+        var cancelledSession = scheduledSessionRepository.findById(savedSession.getId());
+        assertTrue(cancelledSession.isPresent());
+        assertThat(cancelledSession.get().getStatus(), is(ScheduledSession.Status.CANCELED_BY_COACH));
+    }
+
+    @Test
+    @WithMockUser("user-multi-alloc")
+    void scheduleSessionUsesSecondAllocationWhenFirstIsFull() throws Exception {
+        var scheduleTime = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
+                .plusDays(1)
+                .plusHours(9)
+                .atZone(ZoneId.of("UTC"));
+
+        coachAvailabilityRepository.save(
+                new CoachAvailability()
+                        .setUsername("coach1")
+                        .setDateTimeFrom(scheduleTime.toLocalDateTime())
+                        .setDateTimeTo(scheduleTime.toLocalDateTime().plusHours(2))
+                        .setRecurring(false)
+        );
+
+        // User has 2 allocations: first is full (5/5), second has available (2/5)
+        var allocationsBefore = userAllocationRepository.findActiveByUsername("user-multi-alloc");
+        assertThat(allocationsBefore, hasSize(2));
+
+        var firstAlloc = allocationsBefore.stream().filter(a -> a.getPackageId() == 1L).findFirst().orElseThrow();
+        var secondAlloc = allocationsBefore.stream().filter(a -> a.getPackageId() == 2L).findFirst().orElseThrow();
+
+        assertThat(firstAlloc.getConsumedUnits(), is(5));
+        assertThat(firstAlloc.getAllocatedUnits(), is(5));
+        assertThat(secondAlloc.getConsumedUnits(), is(2));
+        assertThat(secondAlloc.getAllocatedUnits(), is(5));
+
+        // Schedule session - should consume from second allocation
+        mvc.perform(post("/api/latest/coaches/coach1/schedule")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(String.format("""
+                                {
+                                    "time": "%s"
+                                }
+                                """, scheduleTime))
+                )
+                .andExpect(status().isOk());
+
+        var allocationsAfter = userAllocationRepository.findActiveByUsername("user-multi-alloc");
+        var firstAllocAfter = allocationsAfter.stream().filter(a -> a.getPackageId() == 1L).findFirst().orElseThrow();
+        var secondAllocAfter = allocationsAfter.stream().filter(a -> a.getPackageId() == 2L).findFirst().orElseThrow();
+
+        // First allocation should remain unchanged (still full)
+        assertThat(firstAllocAfter.getConsumedUnits(), is(5));
+        // Second allocation should have one more consumed
+        assertThat(secondAllocAfter.getConsumedUnits(), is(3));
+    }
 
 }

@@ -164,11 +164,42 @@ public class UserAllocationService {
         return saved;
     }
 
-    public int getAvailableUnits(Long packageId, String userId) {
-        return userAllocationRepository.findByPackageIdAndUsername(packageId, userId)
-                .filter(a -> a.getStatus() == UserAllocation.AllocationStatus.ACTIVE)
-                .map(a -> a.getAllocatedUnits() - a.getConsumedUnits())
-                .orElse(0);
+    public void consumeUnit(String username) {
+        log.info("Consuming unit for user {}", username);
+
+        var allocation = userAllocationRepository.findActiveByUsername(username).stream()
+                .filter(a -> a.getAllocatedUnits() > a.getConsumedUnits())
+                .findFirst()
+                .orElseThrow(() -> new ApiValidationException(NO_UNITS_AVAILABLE, "username", username,
+                        "No available units to consume"));
+
+        allocation.setConsumedUnits(allocation.getConsumedUnits() + 1)
+                .setUpdatedAt(LocalDateTime.now());
+        var saved = userAllocationRepository.save(allocation);
+
+        log.info("Consumed unit for allocation {}. Consumed: {}/{}",
+                saved.getId(), saved.getConsumedUnits(), saved.getAllocatedUnits());
+    }
+
+    public void releaseUnit(String username) {
+        log.info("Releasing unit for user {}", username);
+
+        var allocation = userAllocationRepository.findActiveByUsername(username).stream()
+                .filter(a -> a.getConsumedUnits() > 0)
+                .findFirst()
+                .orElse(null);
+
+        if (allocation == null) {
+            log.warn("No allocation with consumed units found for user {}", username);
+            return;
+        }
+
+        allocation.setConsumedUnits(allocation.getConsumedUnits() - 1)
+                .setUpdatedAt(LocalDateTime.now());
+        var saved = userAllocationRepository.save(allocation);
+
+        log.info("Released unit for allocation {}. Consumed: {}/{}",
+                saved.getId(), saved.getConsumedUnits(), saved.getAllocatedUnits());
     }
 
     public List<UserAllocationDto> listAllocations(Long packageId) {

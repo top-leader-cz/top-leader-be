@@ -33,6 +33,13 @@ values ('user2', '["s1","s2"]', '["v1","v2"]', '["a1","a2"]', 'cool note');
 insert into scheduled_session (id, coach_username, username, time)
 values (nextval('scheduled_session_id_seq'), 'coach', 'user_with_coach', '2023-08-14 10:30:00');
 
+-- Allocations for users
+INSERT INTO coaching_package (id, company_id, pool_type, total_units, status, created_at, created_by, updated_at)
+VALUES (100, 100, 'CORE', 100, 'ACTIVE', now(), 'test', now());
+
+INSERT INTO user_allocation (id, package_id, company_id, username, allocated_units, consumed_units, status, created_at, created_by, updated_at)
+VALUES (100, 100, 100, 'user_with_coach', 10, 0, 'ACTIVE', now(), 'test', now());
+
 insert into ai_prompt (id, value) values ('LEADERSHIP_STYLE', 'Given a user''s top 5 strengths: %s, and key values: %s, provide a comprehensive yet concise leadership style analysis. Highlight how their unique strengths and values combine to shape their approach to leadership. The analysis should be straightforward and resonate with users of varying backgrounds. Aim for an output that is inspiring and provides clear direction on how they can apply their strengths and values in their leadership role. Keep the analysis under 1000 characters. The text is to be in %s language. Use second person when addressing the user.');
 insert into ai_prompt (id, value) values('ANIMAL_SPIRIT', 'Create a fun and engaging ''Animal Spirit Guide'' analysis for a user based on their top 5 strengths: %s, and key values: %s. The analysis should metaphorically link these attributes to an animal known for similar characteristics, providing a brief explanation of the connection. The content should be enlightening, fostering a deeper connection with their leadership style in an enjoyable manner. Ensure the description is succinct, clear, and does not exceed 600 characters. The text is to be in %s language. Use second person when addressing the user.');
 insert into ai_prompt (id, value) values('LEADERSHIP_TIP', 'Generate a daily leadership tip within 500 characters, tailored to a user whose top 5 strengths are: %s, and whose key values include: %s. The tip should provide actionable advice, encouraging the user to apply their strengths and values in daily leadership scenarios. Make it inspiring yet practical, suited for leaders looking to improve their skills and positively influence their team. The text is to be in %s language. Use second person when addressing the user.');

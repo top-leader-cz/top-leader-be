@@ -63,22 +63,6 @@ class AdminViewControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "admin", authorities = "ADMIN")
-    void testConfirmTopUp() throws Exception {
-
-        mvc.perform(post("/api/latest/admin/users/user1/confirm-requested-credits"))
-            .andExpect(status().isOk());
-
-        final var fetchedUser = userRepository.findByUsername("user1").orElseThrow();
-        assertThat(fetchedUser).isNotNull();
-        assertThat(fetchedUser.getCredit()).isEqualTo(150);
-        assertThat(fetchedUser.getPaidCredit()).isEqualTo(100);
-        assertThat(fetchedUser.getSumRequestedCredit()).isEqualTo(1050);
-        assertThat(fetchedUser.getRequestedCredit()).isZero();
-
-    }
-
-    @Test
-    @WithMockUser(username = "admin", authorities = "ADMIN")
     void testCreateUser() throws Exception {
         final var createUserRequestDto = new AdminViewController.CreateUserRequestDto(
             "NewUser@gmail.com", "John", "Doe", "UTC", 1L,

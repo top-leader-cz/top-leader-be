@@ -52,7 +52,7 @@ class HrReportControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.summary.allocatedUnits").value(30))
                 .andExpect(jsonPath("$.summary.plannedSessions").value(0))
                 .andExpect(jsonPath("$.summary.completedSessions").value(0))
-                .andExpect(jsonPath("$.rows.length()").value(2));
+                .andExpect(jsonPath("$.rows.length()").value(6)); // All users in company, not just those with allocations
     }
 
     @Test
