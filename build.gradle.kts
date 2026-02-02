@@ -229,3 +229,15 @@ tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") 
         "--spring.ai.openai.api-key=dummy-key"
     )
 }
+
+// Configure Test AOT processing to use H2 with Flyway disabled
+tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
+    jvmArgs(
+        "-Dspring.flyway.enabled=false",
+        "-Dspring.datasource.url=jdbc:h2:mem:testaot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "-Dspring.datasource.username=sa",
+        "-Dspring.datasource.password=",
+        "-Dspring.datasource.driver-class-name=org.h2.Driver",
+        "-Dspring.ai.openai.api-key=dummy-key"
+    )
+}

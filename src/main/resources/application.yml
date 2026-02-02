@@ -17,10 +17,10 @@ spring:
     enabled: false
   ai:
     openai:
-      api-key: dummy-api-keys
+      api-key: ${OPENAI_API_KEY:dummy-api-key}
       chat:
         options:
-          model: gpt-3.5-turbo
+          model: gpt-5.2
   datasource:
     url: jdbc:postgresql://localhost:5434/top_leader
     username: root

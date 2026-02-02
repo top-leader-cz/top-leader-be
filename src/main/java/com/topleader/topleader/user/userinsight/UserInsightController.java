@@ -1,6 +1,7 @@
 package com.topleader.topleader.user.userinsight;
 
 import com.topleader.topleader.common.ai.AiClient;
+import com.topleader.topleader.common.util.common.user.UserUtils;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.session.UserSessionService;
 import com.topleader.topleader.user.session.domain.UserArticle;
@@ -10,6 +11,7 @@ import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.util.image.ArticleImageService;
 import com.topleader.topleader.common.exception.NotFoundException;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -88,9 +90,12 @@ public class UserInsightController {
 
     @Secured({"USER", "COACH", "ADMIN", "HR"})
     @PostMapping("/dashboard")
-    public void dashboard(@AuthenticationPrincipal UserDetails authUser, @RequestBody DashboardRequest dashboardRequest) {
+    public void dashboard(
+            @AuthenticationPrincipal UserDetails authUser,
+            @RequestBody @Valid DashboardRequest dashboardRequest,
+            @RequestParam(defaultValue = "true") boolean useMcp) {
         var username = authUser.getUsername();
-        log.info("Initiating dashboard content generation: [{}] ", username);
+        log.info("Initiating dashboard content generation: [{}] useMcp: [{}]", username, useMcp);
         var query = List.of(dashboardRequest.query());
         var userInsight = userInsightService.getInsight(username);
         userInsight.setActionGoalsPending(true);
@@ -101,8 +106,15 @@ public class UserInsightController {
 
         Thread.ofVirtual().start(() -> {
             try {
-                var strengths = userInfo.getStrengths().stream().limit(5).toList();
-                var suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, strengths, userInfo.getValues(), user.getLocale());
+                String suggestion;
+                if (useMcp) {
+                    // MCP mode - AI autonomously fetches user profile and coach info
+                    suggestion = aiClient.generateSuggestionWithMcp(username, dashboardRequest.query, UserUtils.localeToLanguage(user.getLocale()));
+                } else {
+                    // Legacy mode - user profile passed explicitly
+                    var strengths = userInfo.getStrengths().stream().limit(5).toList();
+                    suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, strengths, userInfo.getValues(), UserUtils.localeToLanguage(user.getLocale()));
+                }
                 var insight = userInsightService.getInsight(username);
                 insight.setSuggestion(suggestion);
                 insight.setSuggestionPending(false);

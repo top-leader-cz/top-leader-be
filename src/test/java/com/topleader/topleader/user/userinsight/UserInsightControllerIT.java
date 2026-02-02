@@ -3,8 +3,10 @@ package com.topleader.topleader.user.userinsight;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.ai.AiPrompt;
 import com.topleader.topleader.common.ai.AiPromptService;
+import com.topleader.topleader.common.ai.McpToolsConfig;
 import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
@@ -13,6 +15,7 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.client.ChatClient;
@@ -45,6 +48,9 @@ class UserInsightControllerIT extends IntegrationTest {
     ChatClient chatClient;
 
     @Autowired
+    AiClient aiClient;
+
+    @Autowired
     UserInfoRepository userInfoRepository;
 
     @Autowired
@@ -55,6 +61,15 @@ class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
     ArticleRepository articleRepository;
+
+    @Autowired
+    java.util.function.Function<McpToolsConfig.UserProfileRequest, McpToolsConfig.UserProfileResponse> getUserProfile;
+
+    @Autowired
+    java.util.function.Function<McpToolsConfig.CoachSearchRequest, java.util.List<McpToolsConfig.CoachResponse>> searchCoaches;
+
+    @Autowired
+    java.util.function.Function<McpToolsConfig.CoachByNameRequest, java.util.Optional<McpToolsConfig.CoachResponse>> getCoachByName;
 
 
     @Test
@@ -195,16 +210,16 @@ class UserInsightControllerIT extends IntegrationTest {
                   ]
                 """;
 
-        // Mock the intermediate response spec so both content() and entity() work
-        var mockResponseSpec = Mockito.mock(ChatClient.CallResponseSpec.class);
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call()).thenReturn(mockResponseSpec);
-        Mockito.when(mockResponseSpec.content()).thenReturn("suggestion response");
-        Mockito.when(mockResponseSpec.entity(ArgumentMatchers.any(ParameterizedTypeReference.class)))
-                .thenReturn(JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {
-                }));
+        // Mock AiClient methods directly using spy
+        var mockArticles = JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {});
+        Mockito.doReturn("suggestion response").when(aiClient)
+                .generateSuggestion(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
+                        ArgumentMatchers.anyList(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
+        Mockito.doReturn(mockArticles).when(aiClient)
+                .generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
 
 
-        mvc.perform(post("/api/latest/user-insight/dashboard").contentType(MediaType.APPLICATION_JSON).content("""
+        mvc.perform(post("/api/latest/user-insight/dashboard?useMcp=false").contentType(MediaType.APPLICATION_JSON).content("""
                 {
                   "query": "query"
                 }
@@ -237,6 +252,164 @@ class UserInsightControllerIT extends IntegrationTest {
                             """);
                     assertThat(userInsight.isActionGoalsPending()).isFalse();
                 });
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/user_insight/dashboard-data.sql"})
+    void dashboardWithMcp() throws Exception {
+        mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
+        mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200).withBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}")));
+
+        Mockito.when(chatModel.call("video [query]")).thenReturn("""
+                               [
+                  {
+                    "title": "Test Preview",
+                    "url": "https://youtube.com/watch?v=test",
+                    "thumbnail": "http://localhost:8060/hqdefault"
+                  }
+                ]
+                """);
+
+        var articlesJson = """
+                  [
+                  {
+                    "url": "https://example.com/articles/leadership-principles",
+                    "perex": "Discover the fundamental principles.",
+                    "title": "5 Essential Leadership Principles",
+                    "author": "Jane Smith",
+                    "source": "Leadership Weekly",
+                    "language": "en",
+                    "readTime": "8 min",
+                    "imageData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==",
+                    "application": "Learn to implement these principles.",
+                    "imagePrompt": "A diverse team collaborating",
+                    "summaryText": "This article explores five core leadership principles.",
+                    "id": 12345,
+                    "imageUrl": "https://example.com/images/leadership-team.jpg",
+                    "date": "2025-11-01"
+                  }
+                  ]
+                """;
+
+        var mockArticles = JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {});
+        Mockito.doReturn("mcp suggestion response").when(aiClient)
+                .generateSuggestionWithMcp(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+        Mockito.doReturn(mockArticles).when(aiClient)
+                .generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
+
+        mvc.perform(post("/api/latest/user-insight/dashboard?useMcp=true").contentType(MediaType.APPLICATION_JSON).content("""
+                {
+                  "query": "recommend me a coach"
+                }
+                """)).andDo(print()).andExpect(status().isOk());
+
+        await().atMost(10, TimeUnit.SECONDS)
+                .pollInterval(1, TimeUnit.SECONDS)
+                .untilAsserted(() -> {
+                    var userInsight = userInsightRepository.findByUsername("user").orElseThrow();
+
+                    assertThat(userInsight.isSuggestionPending()).isFalse();
+                    assertThat(userInsight.getSuggestion()).isEqualTo("mcp suggestion response");
+
+                    Mockito.verify(aiClient).generateSuggestionWithMcp("user", "recommend me a coach", "English");
+
+                    var articles = articleRepository.findByUsername("user");
+                    assertThat(articles).hasSize(1);
+
+                    assertThat(userInsight.getUserPreviews()).isNotNull();
+                    assertThat(userInsight.isActionGoalsPending()).isFalse();
+                });
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/user_insight/mcp-tools-test.sql"})
+    void getUserProfileToolReturnsProfileWithSessionHistory() {
+        var result = getUserProfile.apply(new McpToolsConfig.UserProfileRequest("user"));
+
+        assertThat(result).isNotNull();
+        TestUtils.assertJsonEquals(JsonUtils.toJsonString(result), """
+                {
+                  "username": "user",
+                  "firstName": "John",
+                  "lastName": "Doe",
+                  "strengths": ["leadership", "communication"],
+                  "values": ["integrity", "growth"],
+                  "areaOfDevelopment": ["delegation", "time management"],
+                  "longTermGoal": "Become a CTO",
+                  "sessionHistory": [
+                    {
+                      "motivation": "Want to grow as a leader",
+                      "reflection": "Made progress on delegation skills",
+                      "areaOfDevelopment": ["delegation"],
+                      "longTermGoal": "Become a CTO",
+                      "actionSteps": [{"label": "Practice delegation daily", "checked": true}]
+                    },
+                    {
+                      "motivation": "Focus on time management",
+                      "reflection": "Delegation is improving, need to work on prioritization",
+                      "areaOfDevelopment": ["delegation", "time management"],
+                      "actionSteps": [{"label": "Use time blocking technique", "checked": false}]
+                    }
+                  ]
+                }
+                """);
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/user_insight/mcp-tools-test.sql"})
+    void getUserProfileToolReturnsNullForUnknownUser() {
+        var result = getUserProfile.apply(new McpToolsConfig.UserProfileRequest("nonexistent"));
+        assertThat(result).isNull();
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/user_insight/mcp-tools-test.sql"})
+    void searchCoachesToolReturnsCoachesWithAllFields() {
+        var results = searchCoaches.apply(new McpToolsConfig.CoachSearchRequest("en", 10));
+
+        assertThat(results).hasSize(1);
+        TestUtils.assertJsonEquals(JsonUtils.toJsonString(results), """
+                [{
+                  "firstName": "Anna",
+                  "lastName": "Coach",
+                  "bio": "Executive coach specializing in leadership development",
+                  "certificate": "[\\"PCC\\", \\"ACC\\"]",
+                  "primaryRoles": "[\\"COACH\\", \\"MENTOR\\"]",
+                  "fields": "[\\"leadership\\", \\"management\\"]",
+                  "languages": "[\\"en\\", \\"cs\\"]"
+                }]
+                """);
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/user_insight/mcp-tools-test.sql"})
+    void getCoachByNameToolReturnsCoachDetail() {
+        var result = getCoachByName.apply(new McpToolsConfig.CoachByNameRequest("Anna", "Coach"));
+
+        assertThat(result).isPresent();
+        TestUtils.assertJsonEquals(JsonUtils.toJsonString(result.get()), """
+                {
+                  "firstName": "Anna",
+                  "lastName": "Coach",
+                  "bio": "Executive coach specializing in leadership development",
+                  "certificate": "[\\"PCC\\", \\"ACC\\"]",
+                  "primaryRoles": "[\\"COACH\\", \\"MENTOR\\"]",
+                  "fields": "[\\"leadership\\", \\"management\\"]"
+                }
+                """);
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @Sql(scripts = {"/user_insight/mcp-tools-test.sql"})
+    void getCoachByNameToolReturnsEmptyForUnknownCoach() {
+        var result = getCoachByName.apply(new McpToolsConfig.CoachByNameRequest("Nonexistent", "Person"));
+        assertThat(result).isEmpty();
     }
 
 
