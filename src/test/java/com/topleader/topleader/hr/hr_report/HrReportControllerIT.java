@@ -51,35 +51,40 @@ class HrReportControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.summary.totalUnits").value(100))
                 .andExpect(jsonPath("$.summary.allocatedUnits").value(30))
                 .andExpect(jsonPath("$.summary.plannedSessions").value(0))
+                .andExpect(jsonPath("$.summary.pendingSessions").value(0))
                 .andExpect(jsonPath("$.summary.completedSessions").value(0))
-                .andExpect(jsonPath("$.rows.length()").value(2));
+                .andExpect(jsonPath("$.rows.length()").value(6)); // All users in company, not just those with allocations
     }
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
     void getHrReport_withSessions_calculatesMetrics() throws Exception {
-        createSession("user1", LocalDateTime.now().minusHours(1), ScheduledSession.Status.UPCOMING);
-        createSession("user1", LocalDateTime.now().minusDays(1), ScheduledSession.Status.COMPLETED);
-        createSession("user2", LocalDateTime.now().minusDays(2), ScheduledSession.Status.NO_SHOW_CLIENT);
+        createSession("user1", LocalDateTime.now().plusDays(1), ScheduledSession.Status.UPCOMING);  // planned
+        createSession("user1", LocalDateTime.now().minusDays(1), ScheduledSession.Status.UPCOMING); // pending
+        createSession("user1", LocalDateTime.now().minusDays(2), ScheduledSession.Status.COMPLETED);
+        createSession("user2", LocalDateTime.now().minusDays(3), ScheduledSession.Status.NO_SHOW_CLIENT);
 
         mvc.perform(get("/api/latest/coaching-packages/1/hr-report"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.summary.plannedSessions").value(1))
+                .andExpect(jsonPath("$.summary.pendingSessions").value(1))
                 .andExpect(jsonPath("$.summary.completedSessions").value(1))
-                .andExpect(jsonPath("$.summary.consumedUnits").value(2));
+                .andExpect(jsonPath("$.summary.consumedUnits").value(3)); // pending + completed + noShow
     }
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
     void getHrReport_perUserMetrics() throws Exception {
-        createSession("user1", LocalDateTime.now().minusHours(1), ScheduledSession.Status.UPCOMING);
-        createSession("user1", LocalDateTime.now().minusDays(1), ScheduledSession.Status.COMPLETED);
+        createSession("user1", LocalDateTime.now().plusDays(1), ScheduledSession.Status.UPCOMING);  // planned
+        createSession("user1", LocalDateTime.now().minusDays(1), ScheduledSession.Status.UPCOMING); // pending
+        createSession("user1", LocalDateTime.now().minusDays(2), ScheduledSession.Status.COMPLETED);
 
         mvc.perform(get("/api/latest/coaching-packages/1/hr-report"))
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(jsonPath("$.rows[?(@.userId == 'user1')].plannedSessions").value(1))
+                .andExpect(jsonPath("$.rows[?(@.userId == 'user1')].pendingSessions").value(1))
                 .andExpect(jsonPath("$.rows[?(@.userId == 'user1')].completedSessions").value(1))
                 .andExpect(jsonPath("$.rows[?(@.userId == 'user1')].allocatedUnits").value(10));
     }

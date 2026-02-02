@@ -1,0 +1,21 @@
+# Custom JRE image for TopLeader
+FROM eclipse-temurin:25-jdk AS builder
+
+# Modules required for Spring Boot app
+ENV MODULES="java.base,java.compiler,java.desktop,java.net.http,java.sql,java.naming,java.management,java.instrument,java.security.sasl,jdk.crypto.ec,jdk.unsupported"
+
+RUN jlink \
+    --add-modules $MODULES \
+    --strip-debug \
+    --no-man-pages \
+    --no-header-files \
+    --compress=zip-6 \
+    --output /custom-jre
+
+# Final minimal image
+FROM gcr.io/distroless/base-debian12
+
+COPY --from=builder /custom-jre /opt/java
+
+ENV JAVA_HOME=/opt/java
+ENV PATH="$JAVA_HOME/bin:$PATH"

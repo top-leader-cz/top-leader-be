@@ -29,13 +29,13 @@ public interface ScheduledSessionRepository extends ListCrudRepository<Scheduled
 
     List<ScheduledSession> findAllByUsername(String username);
 
-    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'UPCOMING' AND time < CURRENT_TIMESTAMP")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'UPCOMING' AND time >= CURRENT_TIMESTAMP")
     int countUpcomingByUsernames(List<String> usernames);
 
     @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status IN ('COMPLETED', 'NO_SHOW_CLIENT')")
     int countConsumedByUsernames(List<String> usernames);
 
-    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'UPCOMING' AND time < CURRENT_TIMESTAMP")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'UPCOMING' AND time > CURRENT_TIMESTAMP")
     int countUpcomingByUsername(String username);
 
     @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'COMPLETED'")
@@ -44,8 +44,11 @@ public interface ScheduledSessionRepository extends ListCrudRepository<Scheduled
     @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'NO_SHOW_CLIENT'")
     int countNoShowClientByUsername(String username);
 
-    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'UPCOMING' AND time >= :from AND time < :to AND time < CURRENT_TIMESTAMP")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'UPCOMING' AND time >= :from AND time < :to AND time > CURRENT_TIMESTAMP")
     int countUpcomingByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
+
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'UPCOMING' AND time >= :from AND time < :to AND time <= CURRENT_TIMESTAMP")
+    int countPendingByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
 
     @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'COMPLETED' AND time >= :from AND time < :to")
     int countCompletedByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
@@ -53,8 +56,11 @@ public interface ScheduledSessionRepository extends ListCrudRepository<Scheduled
     @Query("SELECT COUNT(*) FROM scheduled_session WHERE username IN (:usernames) AND status = 'NO_SHOW_CLIENT' AND time >= :from AND time < :to")
     int countNoShowClientByUsernamesAndTimeRange(List<String> usernames, LocalDateTime from, LocalDateTime to);
 
-    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'UPCOMING' AND time >= :from AND time < :to AND time < CURRENT_TIMESTAMP")
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'UPCOMING' AND time >= :from AND time < :to AND time > CURRENT_TIMESTAMP")
     int countUpcomingByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
+
+    @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'UPCOMING' AND time >= :from AND time < :to AND time <= CURRENT_TIMESTAMP")
+    int countPendingByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);
 
     @Query("SELECT COUNT(*) FROM scheduled_session WHERE username = :username AND status = 'COMPLETED' AND time >= :from AND time < :to")
     int countCompletedByUsernameAndTimeRange(String username, LocalDateTime from, LocalDateTime to);

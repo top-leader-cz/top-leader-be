@@ -20,6 +20,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/latest/coach-sessions")
 @RequiredArgsConstructor
+@lombok.extern.slf4j.Slf4j
 public class CoachSessionController {
 
     private final ScheduledSessionRepository scheduledSessionRepository;
@@ -43,10 +44,15 @@ public class CoachSessionController {
     @Secured({"COACH", "ADMIN"})
     @PatchMapping
     public SessionDto updateSession(@AuthenticationPrincipal UserDetails user, @RequestBody SessionDto session) {
-        return scheduledSessionRepository.findByCoachUsernameAndId(user.getUsername(), session.id())
+        log.info("Updating session: id={}, newStatus={}, coachUsername={}", session.id(), session.status(), user.getUsername());
+        var existingSession = scheduledSessionRepository.findByCoachUsernameAndId(user.getUsername(), session.id());
+        return existingSession
                 .map(s -> s.setStatus(session.status()).setUpdatedAt(LocalDateTime.now()))
                 .map(scheduledSessionRepository::save)
-                .map(SessionDto::toDto)
+                .map(saved -> {
+                    log.info("Saved session: id={}, status={}", saved.getId(), saved.getStatus());
+                    return SessionDto.toDto(saved);
+                })
                 .orElseThrow(NotFoundException::new);
     }
 

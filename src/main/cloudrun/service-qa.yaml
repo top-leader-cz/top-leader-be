@@ -39,6 +39,12 @@ spec:
                 secretKeyRef:
                   name: SPRING_DATASOURCE_PASSWORD_QA
                   key: latest
+            - name: SPRING_MAIL_HOST
+              value: "smtp.gmail.com"
+            - name: SPRING_MAIL_PORT
+              value: "587"
+            - name: SPRING_MAIL_USERNAME
+              value: "topleaderplatform@topleader.io"
             - name: SPRING_MAIL_PASSWORD
               valueFrom:
                 secretKeyRef:

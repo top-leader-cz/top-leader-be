@@ -229,3 +229,15 @@ tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") 
         "--spring.ai.openai.api-key=dummy-key"
     )
 }
+
+// Configure Test AOT processing with H2 and exclude TestContainers-based tests
+tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
+    args(
+        "--spring.datasource.url=jdbc:h2:mem:aot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "--spring.datasource.username=sa",
+        "--spring.datasource.password=",
+        "--spring.datasource.driver-class-name=org.h2.Driver",
+        "--spring.flyway.enabled=false",
+        "--spring.ai.openai.api-key=dummy-key"
+    )
+}
