@@ -139,7 +139,7 @@ resource "google_compute_url_map" "prod" {
     default_service = google_compute_backend_bucket.frontend_prod.id
 
     path_rule {
-      paths   = ["/api/*", "/login", "/swagger-ui/*", "/v3/*", "/login/google", "/login/calendly"]
+      paths   = ["/api/*", "/login", "/login/google", "/login/calendly"]
       service = google_compute_backend_service.prod_backend.id
     }
   }
