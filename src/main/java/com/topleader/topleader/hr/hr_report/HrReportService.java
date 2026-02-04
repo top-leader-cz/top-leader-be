@@ -55,10 +55,11 @@ public class HrReportService {
                 .toList();
 
         var plannedSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countUpcomingByUsernamesAndTimeRange(userIds, from, to);
+        var pendingSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countPendingByUsernamesAndTimeRange(userIds, from, to);
         var completedSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countCompletedByUsernamesAndTimeRange(userIds, from, to);
         var noShowClientSessions = userIds.isEmpty() ? 0 : scheduledSessionRepository.countNoShowClientByUsernamesAndTimeRange(userIds, from, to);
 
-        return HrReportResponse.Summary.of(totalUnits, allocatedUnits, plannedSessions, completedSessions, noShowClientSessions);
+        return HrReportResponse.Summary.of(totalUnits, allocatedUnits, plannedSessions, pendingSessions, completedSessions, noShowClientSessions);
     }
 
     private java.util.List<HrReportResponse.UserRow> computeUserRows(Long packageId, LocalDateTime from, LocalDateTime to) {
@@ -73,10 +74,11 @@ public class HrReportService {
                     var allocation = allocationsByUsername.get(userId);
                     var allocatedUnits = allocation != null ? allocation.getAllocatedUnits() : 0;
                     var plannedSessions = scheduledSessionRepository.countUpcomingByUsernameAndTimeRange(userId, from, to);
+                    var pendingSessions = scheduledSessionRepository.countPendingByUsernameAndTimeRange(userId, from, to);
                     var completedSessions = scheduledSessionRepository.countCompletedByUsernameAndTimeRange(userId, from, to);
                     var noShowClientSessions = scheduledSessionRepository.countNoShowClientByUsernameAndTimeRange(userId, from, to);
 
-                    return HrReportResponse.UserRow.of(user, allocatedUnits, plannedSessions, completedSessions, noShowClientSessions);
+                    return HrReportResponse.UserRow.of(user, allocatedUnits, plannedSessions, pendingSessions, completedSessions, noShowClientSessions);
                 })
                 .toList();
     }
