@@ -112,6 +112,7 @@ openai:
 
 gcp:
   storage:
+    enabled: false
     bucket-name: ai-images-top-leader
 
 thumbmail: http://i3.ytimg.com/vi/%s/hqdefault.jpg

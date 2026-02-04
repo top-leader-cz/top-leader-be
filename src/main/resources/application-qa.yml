@@ -38,6 +38,10 @@ top-leader:
   calendly:
     redirect-uri: https://qa.topleaderplatform.io/login/calendly
 
+gcp:
+  storage:
+    enabled: true
+
 google:
   application-name: "qa.topleaderplatform.io"
   client:

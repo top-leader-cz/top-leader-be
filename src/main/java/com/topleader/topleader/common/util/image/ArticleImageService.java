@@ -2,11 +2,10 @@ package com.topleader.topleader.common.util.image;
 
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -15,20 +14,28 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Base64;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-@Lazy
 public class ArticleImageService {
 
     private static final int MAX_PROMPT_LENGTH = 100;
 
     private final RestClient restClient;
 
-    private final GcsLightweightClient gcsClient;
+    private final Optional<GcsLightweightClient> gcsClient;
 
     private final RetryPolicy<Object> retryPolicy;
+
+    @Autowired
+    public ArticleImageService(RestClient restClient,
+                               Optional<GcsLightweightClient> gcsClient,
+                               RetryPolicy<Object> retryPolicy) {
+        this.restClient = restClient;
+        this.gcsClient = gcsClient;
+        this.retryPolicy = retryPolicy;
+    }
 
     @Value("${spring.ai.openai.api-key}")
     private String openaiApiKey;
@@ -121,6 +128,11 @@ public class ArticleImageService {
                 return null;
             }
 
+            if (gcsClient.isEmpty()) {
+                log.warn("GCS client not available, skipping image storage");
+                return null;
+            }
+
             var fileName = generateFileName(prompt);
             var metadata = Map.of(
                     "prompt", prompt,
@@ -130,7 +142,7 @@ public class ArticleImageService {
                     "searchable_keywords", extractKeywords(revisedPrompt)
             );
 
-            var gcpUrl = gcsClient.uploadImage(image, fileName, metadata);
+            var gcpUrl = gcsClient.get().uploadImage(image, fileName, metadata);
             log.info("Image stored in GCP bucket with URL: {}", gcpUrl);
             return gcpUrl;
         } catch (Exception e) {
@@ -166,7 +178,12 @@ public class ArticleImageService {
                 return null;
             }
 
-            var content = gcsClient.downloadImage(gcpUrl);
+            if (gcsClient.isEmpty()) {
+                log.warn("GCS client not available, cannot retrieve image");
+                return null;
+            }
+
+            var content = gcsClient.get().downloadImage(gcpUrl);
 
             if (content == null || content.length == 0) {
                 log.warn("No content found for GCP URL: {}", gcpUrl);
