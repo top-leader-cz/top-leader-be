@@ -92,7 +92,7 @@ public class ScheduledSessionService {
         return scheduledSessionRepository.findById(sessionId);
     }
 
-    public int markPendingSessionsAsNoShowClient() {
+    public int markPendingSessionsAsCompleted() {
         var now = LocalDateTime.now();
         var threshold = now.minusHours(48);
         var count = scheduledSessionRepository.markPendingSessionsAsCompleted(threshold, now, "JOB");
