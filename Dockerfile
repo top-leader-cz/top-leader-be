@@ -19,7 +19,7 @@ RUN ./gradlew bootJar -x test -Dspring.aot.enabled=true --no-daemon
 FROM eclipse-temurin:25-jdk AS jre-builder
 
 # Modules required for Spring Boot app
-ENV MODULES="java.base,java.compiler,java.desktop,java.net.http,java.sql,java.logging,java.naming,java.management,java.instrument,java.security.sasl,jdk.crypto.ec,jdk.unsupported"
+ENV MODULES="java.base,java.compiler,java.desktop,java.net.http,java.sql,java.naming,java.management,java.instrument,java.security.sasl,jdk.crypto.ec,jdk.unsupported"
 
 RUN jlink \
     --add-modules $MODULES \

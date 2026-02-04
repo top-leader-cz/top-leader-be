@@ -46,7 +46,6 @@ public class CoachSessionController {
     public SessionDto updateSession(@AuthenticationPrincipal UserDetails user, @RequestBody SessionDto session) {
         log.info("Updating session: id={}, newStatus={}, coachUsername={}", session.id(), session.status(), user.getUsername());
         var existingSession = scheduledSessionRepository.findByCoachUsernameAndId(user.getUsername(), session.id());
-        log.info("Found session: {}", existingSession.orElse(null));
         return existingSession
                 .map(s -> s.setStatus(session.status()).setUpdatedAt(LocalDateTime.now()))
                 .map(scheduledSessionRepository::save)
