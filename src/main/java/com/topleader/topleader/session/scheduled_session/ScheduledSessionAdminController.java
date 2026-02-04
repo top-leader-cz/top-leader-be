@@ -22,7 +22,7 @@ public class ScheduledSessionAdminController {
     @Secured({"JOB"})
     public MarkNoShowClientResponse markPendingSessionsAsNoShowClient() {
         log.info("Cron job: marking pending sessions older than 48h as COMPLETED");
-        var count = scheduledSessionService.markPendingSessionsAsNoShowClient();
+        var count = scheduledSessionService.markPendingSessionsAsCompleted();
         log.info("Cron job: marked {} sessions as COMPLETED", count);
         return new MarkNoShowClientResponse(count);
     }
