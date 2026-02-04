@@ -10,3 +10,22 @@ services:
       POSTGRES_DB: top_leader
     ports:
       - "5434:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U root -d top_leader"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: top-test:latest
+    container_name: top-leader-app
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/top_leader
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: postgres
+    ports:
+      - "8080:8080"
