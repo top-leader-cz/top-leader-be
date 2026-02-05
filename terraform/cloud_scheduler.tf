@@ -143,34 +143,6 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_qa" {
   depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-resource "google_cloud_scheduler_job" "payment_process_job_qa" {
-  name             = "payment-process-qa"
-  description      = "Trigger payment processing QA"
-  schedule         = "0 0 1 1 *"
-  time_zone        = "Etc/UTC"
-  attempt_deadline = "320s"
-  region           = var.region
-  project          = var.project_id
-
-  retry_config {
-    retry_count          = 0
-    max_retry_duration   = "0s"
-    min_backoff_duration = "5s"
-    max_backoff_duration = "3600s"
-    max_doublings        = 5
-  }
-
-  http_target {
-    http_method = "POST"
-    uri         = "${var.cloud_run_url_qa}/api/protected/jobs/payments"
-
-    headers = {
-      "Authorization" = local.job_auth_header
-    }
-  }
-
-  depends_on = [google_project_service.scheduler, google_project_service.run]
-}
 
 # ============================================================================
 # PROD Environment Jobs (App Engine)
@@ -308,35 +280,4 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_prod" {
   depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
-resource "google_cloud_scheduler_job" "payment_process_job_prod" {
-  name             = "payment-process-prod"
-  description      = "Process payments PROD"
-  schedule         = "0 */2 * * *"
-  time_zone        = "Etc/UTC"
-  attempt_deadline = "320s"
-  region           = var.region
-  project          = var.project_id
 
-  retry_config {
-    retry_count          = 0
-    max_retry_duration   = "0s"
-    min_backoff_duration = "5s"
-    max_backoff_duration = "3600s"
-    max_doublings        = 5
-  }
-
-  app_engine_http_target {
-    http_method  = "POST"
-    relative_uri = "/api/protected/jobs/payments"
-
-    app_engine_routing {
-      service = "prod"
-    }
-
-    headers = {
-      "Authorization" = local.job_auth_header
-    }
-  }
-
-  depends_on = [google_project_service.scheduler, google_project_service.run]
-}
