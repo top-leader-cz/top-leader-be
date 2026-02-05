@@ -10,14 +10,4 @@ resource "google_app_engine_application" "app" {
   }
 }
 
-# Serverless NEG for PROD App Engine service
-resource "google_compute_region_network_endpoint_group" "appengine_prod" {
-  name                  = "top-be-prod"
-  network_endpoint_type = "SERVERLESS"
-  region                = var.region
-  project               = var.project_id
-
-  app_engine {
-    service = "prod"
-  }
-}
+# Note: App Engine NEG removed - PROD now uses Cloud Run (see cloud_run.tf)

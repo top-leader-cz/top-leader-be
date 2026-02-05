@@ -33,14 +33,3 @@ resource "google_dns_managed_zone" "topleaderplatform" {
     }
   }
 }
-
-# Output nameservers
-output "toplead_nameservers" {
-  value       = google_dns_managed_zone.toplead.name_servers
-  description = "Nameservers for toplead.app"
-}
-
-output "topleaderplatform_nameservers" {
-  value       = google_dns_managed_zone.topleaderplatform.name_servers
-  description = "Nameservers for topleaderplatform.io"
-}

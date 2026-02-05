@@ -80,22 +80,3 @@ resource "google_project_iam_member" "deploy_service_account_user" {
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:deploy-service@${var.project_id}.iam.gserviceaccount.com"
 }
-
-# -----------------------------------------------------------------------------
-# Outputs
-# -----------------------------------------------------------------------------
-
-output "appengine_service_account" {
-  value       = data.google_app_engine_default_service_account.default.email
-  description = "App Engine default service account email"
-}
-
-output "cloudrun_compute_service_account" {
-  value       = data.google_compute_default_service_account.default.email
-  description = "Cloud Run compute service account email"
-}
-
-output "scheduler_service_account" {
-  value       = google_service_account.scheduler.email
-  description = "Cloud Scheduler service account email"
-}

@@ -1,0 +1,83 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: top-leader-prod
+  labels:
+    cloud.googleapis.com/location: europe-west3
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "4"
+        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/startup-cpu-boost: "true"
+        run.googleapis.com/cloudsql-instances: topleader-394306:europe-west3:top-leader-db
+        run.googleapis.com/sessionAffinity: "true"
+    spec:
+      containerConcurrency: 80
+      timeoutSeconds: 300
+      serviceAccountName: topleader-394306@appspot.gserviceaccount.com
+      containers:
+        - image: europe-west3-docker.pkg.dev/topleader-394306/top-leader/top-leader-be:latest
+          ports:
+            - containerPort: 8080
+          resources:
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "prod"
+            - name: GCP_JSON_LOGS
+              value: "CONSOLE_JSON"
+            # Calendly OAuth (not secret - public client ID)
+            - name: TOP_LEADER_CALENDLY_CLIENT_ID
+              value: "PJ2FbDI-YAyzEJya2H4RqHv_Sv0F-Hl0d-i93FkAuH8"
+            # Google OAuth (not secret - public client ID)
+            - name: GOOGLE_CLIENT_CLIENT_ID
+              value: "572595541175-n58eajajt5iqc5rsn25rv2mt8iejojsi.apps.googleusercontent.com"
+            # Secrets from Secret Manager
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: SPRING_DATASOURCE_PASSWORD
+                  key: latest
+            - name: SPRING_MAIL_HOST
+              value: "smtp.gmail.com"
+            - name: SPRING_MAIL_PORT
+              value: "587"
+            - name: SPRING_MAIL_USERNAME
+              value: "topleaderplatform@topleader.io"
+            - name: SPRING_MAIL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: SPRING_MAIL_PASSWORD
+                  key: latest
+            - name: SPRING_AI_OPENAI_APIKEY
+              valueFrom:
+                secretKeyRef:
+                  name: SPRING_AI_OPENAI_APIKEY
+                  key: latest
+            - name: TOP_LEADER_CALENDLY_CLIENT_SECRETS
+              valueFrom:
+                secretKeyRef:
+                  name: TOP_LEADER_CALENDLY_CLIENT_SECRETS
+                  key: latest
+            - name: GOOGLE_CLIENT_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: GOOGLE_CLIENT_CLIENT_SECRET
+                  key: latest
+            - name: GRAFANA_OTLP_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: GRAFANA_OTLP_TOKEN
+                  key: latest
+            - name: JOB_TRIGGER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: JOB_TRIGGER_PASSWORD
+                  key: latest

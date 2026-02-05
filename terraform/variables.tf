@@ -43,6 +43,12 @@ variable "cloud_run_url_qa" {
   default     = "https://qa.topleaderplatform.io"
 }
 
+variable "cloud_run_url_prod" {
+  description = "Cloud Run service URL for PROD environment"
+  type        = string
+  default     = "https://topleaderplatform.io"
+}
+
 variable "alert_emails" {
   description = "List of email addresses for alert notifications"
   type        = list(string)
