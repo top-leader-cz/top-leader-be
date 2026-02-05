@@ -12,12 +12,8 @@ VALUES ('hrUser', 'password', '["USER", "HR"]', 'AUTHORIZED', 'UTC', 'HR', 'User
        ('user1', 'password', '["USER"]', 'AUTHORIZED', 'UTC', 'User', 'One', 1),
        ('user2', 'password', '["USER"]', 'AUTHORIZED', 'UTC', 'User', 'Two', 1),
        ('coach', 'password', '["USER", "COACH"]', 'AUTHORIZED', 'UTC', 'Coach', 'User', 1),
-       ('canceledNoSession', 'password', '["USER"]', 'CANCELED', 'UTC', 'Canceled', 'NoSession', 1),
-       ('canceledWithSession', 'password', '["USER"]', 'CANCELED', 'UTC', 'Canceled', 'WithSession', 1);
-
--- canceledWithSession has an UPCOMING session -> should still be visible
-INSERT INTO scheduled_session (id, coach_username, username, time, status, created_at, updated_at)
-VALUES (100, 'coach', 'canceledWithSession', CURRENT_TIMESTAMP + INTERVAL '1 day', 'UPCOMING', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+       ('canceledNoAlloc', 'password', '["USER"]', 'CANCELED', 'UTC', 'Canceled', 'NoAlloc', 1),
+       ('canceledWithAlloc', 'password', '["USER"]', 'CANCELED', 'UTC', 'Canceled', 'WithAlloc', 1);
 
 INSERT INTO coaching_package (id, company_id, pool_type, total_units, valid_from, valid_to, status, context_ref, created_at, created_by, updated_at, updated_by)
 VALUES (nextval('coaching_package_id_seq'), 1, 'CORE', 100, CURRENT_TIMESTAMP - INTERVAL '1 year', CURRENT_TIMESTAMP + INTERVAL '1 year', 'ACTIVE', null, CURRENT_TIMESTAMP, 'hrUser', CURRENT_TIMESTAMP, 'hrUser'),
@@ -26,4 +22,5 @@ VALUES (nextval('coaching_package_id_seq'), 1, 'CORE', 100, CURRENT_TIMESTAMP - 
 
 INSERT INTO user_allocation (id, company_id, package_id, username, allocated_units, consumed_units, status, created_at, created_by, updated_at, updated_by)
 VALUES (nextval('user_allocation_id_seq'), 1, 1, 'user1', 10, 0, 'ACTIVE', CURRENT_TIMESTAMP, 'hrUser', CURRENT_TIMESTAMP, 'hrUser'),
-       (nextval('user_allocation_id_seq'), 1, 1, 'user2', 20, 5, 'ACTIVE', CURRENT_TIMESTAMP, 'hrUser', CURRENT_TIMESTAMP, 'hrUser');
+       (nextval('user_allocation_id_seq'), 1, 1, 'user2', 20, 5, 'ACTIVE', CURRENT_TIMESTAMP, 'hrUser', CURRENT_TIMESTAMP, 'hrUser'),
+       (nextval('user_allocation_id_seq'), 1, 1, 'canceledWithAlloc', 5, 0, 'ACTIVE', CURRENT_TIMESTAMP, 'hrUser', CURRENT_TIMESTAMP, 'hrUser');

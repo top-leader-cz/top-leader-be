@@ -49,11 +49,11 @@ class HrReportControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.packageInfo.poolType").value("CORE"))
                 .andExpect(jsonPath("$.packageInfo.status").value("ACTIVE"))
                 .andExpect(jsonPath("$.summary.totalUnits").value(100))
-                .andExpect(jsonPath("$.summary.allocatedUnits").value(30))
-                .andExpect(jsonPath("$.summary.plannedSessions").value(1)) // canceledWithSession has 1 UPCOMING future session
+                .andExpect(jsonPath("$.summary.allocatedUnits").value(35)) // user1=10 + user2=20 + canceledWithAlloc=5
+                .andExpect(jsonPath("$.summary.plannedSessions").value(0))
                 .andExpect(jsonPath("$.summary.pendingSessions").value(0))
                 .andExpect(jsonPath("$.summary.completedSessions").value(0))
-                .andExpect(jsonPath("$.rows.length()").value(7)); // All users in company except CANCELED without UPCOMING/COMPLETED sessions
+                .andExpect(jsonPath("$.rows.length()").value(7)); // All users in company except CANCELED without allocation
     }
 
     @Test
@@ -67,7 +67,7 @@ class HrReportControllerIT extends IntegrationTest {
         mvc.perform(get("/api/latest/coaching-packages/1/hr-report"))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(jsonPath("$.summary.plannedSessions").value(2)) // 1 from user1 + 1 from canceledWithSession
+                .andExpect(jsonPath("$.summary.plannedSessions").value(1))
                 .andExpect(jsonPath("$.summary.pendingSessions").value(1))
                 .andExpect(jsonPath("$.summary.completedSessions").value(1))
                 .andExpect(jsonPath("$.summary.consumedUnits").value(3)); // pending + completed + noShow
@@ -114,14 +114,14 @@ class HrReportControllerIT extends IntegrationTest {
 
     @Test
     @WithMockUser(username = "hrUser", authorities = {"HR"})
-    void getHrReport_excludesCanceledWithoutSessions_includesCanceledWithSessions() throws Exception {
+    void getHrReport_excludesCanceledWithoutAllocation_includesCanceledWithAllocation() throws Exception {
         mvc.perform(get("/api/latest/coaching-packages/1/hr-report"))
                 .andExpect(status().isOk())
                 .andDo(print())
-                // canceledWithSession has UPCOMING session -> visible
-                .andExpect(jsonPath("$.rows[?(@.userId == 'canceledWithSession')]").exists())
-                // canceledNoSession has no UPCOMING/COMPLETED sessions -> hidden
-                .andExpect(jsonPath("$.rows[?(@.userId == 'canceledNoSession')]").doesNotExist());
+                // canceledWithAlloc has allocated_units > 0 -> visible
+                .andExpect(jsonPath("$.rows[?(@.userId == 'canceledWithAlloc')]").exists())
+                // canceledNoAlloc has no allocation -> hidden
+                .andExpect(jsonPath("$.rows[?(@.userId == 'canceledNoAlloc')]").doesNotExist());
     }
 
     @Test

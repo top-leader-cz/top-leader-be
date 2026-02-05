@@ -85,8 +85,8 @@ class UserRepositoryIT extends IntegrationTest {
     }
 
     @Test
-    void shouldFindByCompanyIdExcludingOnlyCanceledWithoutSessions() {
-        // When finding users by company id
+    void shouldFindActiveByCompanyIdExcludingCanceledWithoutAllocation() {
+        // When finding active users by company id
         var users = userRepository.findActiveByCompanyId(100L);
 
         var usernames = users.stream().map(User::getUsername).toList();
@@ -95,16 +95,14 @@ class UserRepositoryIT extends IntegrationTest {
         assertThat("Should contain non-canceled users", usernames,
                 hasItems("test.user1@gmail.com", "test.user2@gmail.com", "test.user3@gmail.com"));
 
-        // And should include CANCELED users that have UPCOMING/COMPLETED sessions
-        assertThat("Should contain canceled user with UPCOMING session", usernames,
-                hasItem("canceled.with.upcoming@gmail.com"));
-        assertThat("Should contain canceled user with COMPLETED session", usernames,
-                hasItem("canceled.with.completed@gmail.com"));
+        // And should include CANCELED users that have allocated_units > 0
+        assertThat("Should contain canceled user with allocation", usernames,
+                hasItem("canceled.with.alloc@gmail.com"));
 
-        // But should exclude CANCELED users without any UPCOMING/COMPLETED sessions
-        assertThat("Should not contain canceled user without sessions", usernames,
-                not(hasItem("canceled.no.session@gmail.com")));
+        // But should exclude CANCELED users without any allocation
+        assertThat("Should not contain canceled user without allocation", usernames,
+                not(hasItem("canceled.no.alloc@gmail.com")));
 
-        assertThat("Should find 5 users total", users.size(), is(5));
+        assertThat("Should find 4 users total", users.size(), is(4));
     }
 }
