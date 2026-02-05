@@ -83,4 +83,28 @@ class UserRepositoryIT extends IntegrationTest {
         // Then should return empty
         assertThat("User should not be present", user.isEmpty(), is(true));
     }
+
+    @Test
+    void shouldFindByCompanyIdExcludingOnlyCanceledWithoutSessions() {
+        // When finding users by company id
+        var users = userRepository.findActiveByCompanyId(100L);
+
+        var usernames = users.stream().map(User::getUsername).toList();
+
+        // Then should include all non-canceled users
+        assertThat("Should contain non-canceled users", usernames,
+                hasItems("test.user1@gmail.com", "test.user2@gmail.com", "test.user3@gmail.com"));
+
+        // And should include CANCELED users that have UPCOMING/COMPLETED sessions
+        assertThat("Should contain canceled user with UPCOMING session", usernames,
+                hasItem("canceled.with.upcoming@gmail.com"));
+        assertThat("Should contain canceled user with COMPLETED session", usernames,
+                hasItem("canceled.with.completed@gmail.com"));
+
+        // But should exclude CANCELED users without any UPCOMING/COMPLETED sessions
+        assertThat("Should not contain canceled user without sessions", usernames,
+                not(hasItem("canceled.no.session@gmail.com")));
+
+        assertThat("Should find 5 users total", users.size(), is(5));
+    }
 }

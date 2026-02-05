@@ -32,7 +32,18 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
      @Query("SELECT * FROM users WHERE username = :username OR email = :username")
      Optional<User> findByUsernameOrEmail(String username);
 
-     @Query("SELECT * FROM users WHERE company_id = :companyId")
-     List<User> findByCompanyId(Long companyId);
+     @Query("""
+             SELECT * FROM users u
+             WHERE u.company_id = :companyId
+               AND (
+                   u.status != 'CANCELED'
+                   OR EXISTS (
+                       SELECT 1 FROM scheduled_session ss
+                       WHERE ss.username = u.username
+                         AND ss.status IN ('UPCOMING', 'COMPLETED')
+                   )
+               )
+             """)
+     List<User> findActiveByCompanyId(Long companyId);
 
 }

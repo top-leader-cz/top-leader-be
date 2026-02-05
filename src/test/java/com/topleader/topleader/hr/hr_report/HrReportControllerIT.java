@@ -50,10 +50,10 @@ class HrReportControllerIT extends IntegrationTest {
                 .andExpect(jsonPath("$.packageInfo.status").value("ACTIVE"))
                 .andExpect(jsonPath("$.summary.totalUnits").value(100))
                 .andExpect(jsonPath("$.summary.allocatedUnits").value(30))
-                .andExpect(jsonPath("$.summary.plannedSessions").value(0))
+                .andExpect(jsonPath("$.summary.plannedSessions").value(1)) // canceledWithSession has 1 UPCOMING future session
                 .andExpect(jsonPath("$.summary.pendingSessions").value(0))
                 .andExpect(jsonPath("$.summary.completedSessions").value(0))
-                .andExpect(jsonPath("$.rows.length()").value(6)); // All users in company, not just those with allocations
+                .andExpect(jsonPath("$.rows.length()").value(7)); // All users in company except CANCELED without UPCOMING/COMPLETED sessions
     }
 
     @Test
@@ -67,7 +67,7 @@ class HrReportControllerIT extends IntegrationTest {
         mvc.perform(get("/api/latest/coaching-packages/1/hr-report"))
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(jsonPath("$.summary.plannedSessions").value(1))
+                .andExpect(jsonPath("$.summary.plannedSessions").value(2)) // 1 from user1 + 1 from canceledWithSession
                 .andExpect(jsonPath("$.summary.pendingSessions").value(1))
                 .andExpect(jsonPath("$.summary.completedSessions").value(1))
                 .andExpect(jsonPath("$.summary.consumedUnits").value(3)); // pending + completed + noShow
@@ -110,6 +110,18 @@ class HrReportControllerIT extends IntegrationTest {
     void getHrReport_regularUserDenied() throws Exception {
         mvc.perform(get("/api/latest/coaching-packages/1/hr-report"))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    @WithMockUser(username = "hrUser", authorities = {"HR"})
+    void getHrReport_excludesCanceledWithoutSessions_includesCanceledWithSessions() throws Exception {
+        mvc.perform(get("/api/latest/coaching-packages/1/hr-report"))
+                .andExpect(status().isOk())
+                .andDo(print())
+                // canceledWithSession has UPCOMING session -> visible
+                .andExpect(jsonPath("$.rows[?(@.userId == 'canceledWithSession')]").exists())
+                // canceledNoSession has no UPCOMING/COMPLETED sessions -> hidden
+                .andExpect(jsonPath("$.rows[?(@.userId == 'canceledNoSession')]").doesNotExist());
     }
 
     @Test

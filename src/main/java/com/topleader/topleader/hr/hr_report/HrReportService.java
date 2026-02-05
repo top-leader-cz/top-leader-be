@@ -50,7 +50,7 @@ public class HrReportService {
         var totalUnits = pkg.getTotalUnits();
         var allocatedUnits = userAllocationRepository.sumAllocatedUnitsByPackageId(packageId);
 
-        var userIds = userRepository.findByCompanyId(companyId).stream()
+        var userIds = userRepository.findActiveByCompanyId(companyId).stream()
                 .map(User::getUsername)
                 .toList();
 
@@ -64,7 +64,7 @@ public class HrReportService {
 
     private java.util.List<HrReportResponse.UserRow> computeUserRows(Long packageId, LocalDateTime from, LocalDateTime to) {
         var pkg = coachingPackageRepository.findById(packageId).orElseThrow(NotFoundException::new);
-        var companyUsers = userRepository.findByCompanyId(pkg.getCompanyId());
+        var companyUsers = userRepository.findActiveByCompanyId(pkg.getCompanyId());
         var allocationsByUsername = userAllocationRepository.findByPackageId(packageId).stream()
                 .collect(java.util.stream.Collectors.toMap(UserAllocation::getUsername, a -> a));
 
