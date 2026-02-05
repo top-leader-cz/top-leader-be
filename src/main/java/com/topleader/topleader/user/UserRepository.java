@@ -38,9 +38,9 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
                AND (
                    u.status != 'CANCELED'
                    OR EXISTS (
-                       SELECT 1 FROM scheduled_session ss
-                       WHERE ss.username = u.username
-                         AND ss.status IN ('UPCOMING', 'COMPLETED')
+                       SELECT 1 FROM user_allocation ua
+                       WHERE ua.username = u.username
+                         AND ua.allocated_units > 0
                    )
                )
              """)
