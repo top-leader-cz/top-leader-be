@@ -43,6 +43,10 @@ google:
   client:
     redirectUri: https://qa.topleaderplatform.io/login/google
 
+gcp:
+  storage:
+    enabled: true
+
 management:
   opentelemetry:
     resource-attributes:

@@ -43,6 +43,10 @@ google:
   client:
     redirectUri: https://topleaderplatform.io/login/google
 
+gcp:
+  storage:
+    enabled: true
+
 springdoc:
   api-docs:
     enabled: false  # Disable OpenAPI docs on production
