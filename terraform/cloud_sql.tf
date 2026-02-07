@@ -60,10 +60,10 @@ resource "google_sql_database_instance" "main" {
   }
 }
 
-# Output the connection name for App Engine
+# Output the connection name for Cloud Run
 output "sql_connection_name" {
   value       = google_sql_database_instance.main.connection_name
-  description = "Cloud SQL connection name for App Engine"
+  description = "Cloud SQL connection name for Cloud Run"
 }
 
 output "sql_public_ip" {
