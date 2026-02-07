@@ -3,7 +3,6 @@
  */
 package com.topleader.topleader.common.calendar.google;
 
-import com.google.api.client.auth.oauth2.TokenResponse;
 import com.topleader.topleader.common.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.common.calendar.CalendarToErrorHandler;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
@@ -11,17 +10,15 @@ import com.topleader.topleader.common.calendar.domain.SyncEvent;
 import com.topleader.topleader.common.calendar.settings.AvailabilitySettingRepository;
 import com.topleader.topleader.common.util.transaction.TransactionService;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import static com.topleader.topleader.common.util.common.DateUtils.convertToDateTime;
 
 
 /**
@@ -36,15 +33,14 @@ public class GoogleCalendarService {
 
     private final CalendarSyncInfoRepository calendarSyncInfoRepository;
 
-
     private final AvailabilitySettingRepository availabilitySettingRepository;
 
     private final TransactionService transactionService;
 
     private final CalendarToErrorHandler errorHandler;
 
-    public void storeTokenInfo(String username, TokenResponse tokenResponse) {
-        log.info("caStoring token info for user {} token info: {}", username, tokenResponse);
+    public void storeTokenInfo(String username, GoogleCalendarApiClientFactory.TokenResponse tokenResponse) {
+        log.info("Storing token info for user {}", username);
 
         transactionService.execute(() -> {
             calendarSyncInfoRepository.deleteByUsername(username);
@@ -54,13 +50,13 @@ public class GoogleCalendarService {
                     .setUsername(username)
                     .setSyncType(CalendarSyncInfo.SyncType.GOOGLE)
                     .setStatus(CalendarSyncInfo.Status.OK)
-                    .setRefreshToken(tokenResponse.getRefreshToken())
-                    .setAccessToken(tokenResponse.getAccessToken())
+                    .setRefreshToken(tokenResponse.refreshToken())
+                    .setAccessToken(tokenResponse.accessToken())
                     .setLastSync(LocalDateTime.now());
             calendarSyncInfoRepository.save(info);
         });
 
-        log.info("Storing token info for user {}", username);
+        log.info("Token info stored for user {}", username);
     }
 
     public List<SyncEvent> getUserEvents(String username, LocalDateTime startDate, LocalDateTime endDate, Boolean testFreeBusy) {
@@ -69,34 +65,29 @@ public class GoogleCalendarService {
             return calendarSyncInfoRepository.findByUsernameAndSyncType(username, CalendarSyncInfo.SyncType.GOOGLE)
                     .map(info -> {
                         try {
-                            return clientFactory.prepareCalendarClient(info.getRefreshToken())
-                                    .freebusy()
-                                    .query(new com.google.api.services.calendar.model.FreeBusyRequest()
-                                            .setTimeZone("UTC")
-                                            .setTimeMin(convertToDateTime(startDate))
-                                            .setTimeMax(convertToDateTime(endDate))
-                                            .setItems(List.of(new com.google.api.services.calendar.model.FreeBusyRequestItem()
-                                                    .setId("primary")
-                                            ))
+                            var response = clientFactory.queryFreeBusy(info.getRefreshToken(), startDate, endDate);
+                            return Optional.ofNullable(response.calendars())
+                                    .map(calendars -> calendars.entrySet().stream()
+                                            .peek(e -> Optional.ofNullable(e.getValue().errors()).orElse(List.of())
+                                                    .forEach(err -> log.error("Error in free busy response for user {} and calendar {}: {}", username, e.getKey(), err)))
+                                            .flatMap(e -> Optional.ofNullable(e.getValue().busy()).orElse(List.of()).stream()
+                                                    .map(b -> new SyncEvent(username, parseDateTime(b.start()), parseDateTime(b.end())))
+                                            )
+                                            .toList()
                                     )
-                                    .execute()
-                                    .getCalendars()
-                                    .entrySet().stream()
-                                    .peek(e -> Optional.ofNullable(e.getValue().getErrors()).orElse(List.of())
-                                            .forEach(err -> log.error("Error in free busy response for user " + username + " and calendar " + e.getKey() + ": {}", err)))
-                                    .flatMap(e -> e.getValue().getBusy().stream()
-                                            .map(b -> new SyncEvent(username, convertToDateTime(b.getStart()), convertToDateTime(b.getEnd())))
-                                    )
-                                    .toList();
-                        } catch (IOException e) {
+                                    .orElse(List.of());
+                        } catch (Exception e) {
                             errorHandler.handleError(info, e);
                             return List.<SyncEvent>of();
                         }
-
                     })
                     .orElse(List.of());
         }
 
         return List.of();
+    }
+
+    private static LocalDateTime parseDateTime(String dateTime) {
+        return OffsetDateTime.parse(dateTime).withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime();
     }
 }

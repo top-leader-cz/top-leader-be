@@ -3,22 +3,21 @@
  */
 package com.topleader.topleader.common.calendar.google;
 
-import com.google.api.client.googleapis.auth.oauth2.GoogleAuthorizationCodeFlow;
-import com.google.api.services.calendar.CalendarScopes;
-import java.io.IOException;
-import java.util.Set;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.view.RedirectView;
 
 
@@ -31,13 +30,18 @@ import org.springframework.web.servlet.view.RedirectView;
 @RequiredArgsConstructor
 public class GoogleCalendarController {
 
+    private static final String AUTH_URL = "https://accounts.google.com/o/oauth2/auth";
+    private static final String SCOPES = "openid https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/calendar.readonly";
 
-    private final GoogleAuthorizationCodeFlow flow;
+    private final GoogleCalendarApiClientFactory clientFactory;
 
     private final GoogleCalendarService calendarService;
 
     @Value("${google.client.redirectUri}")
-    private String redirectURI;
+    private String redirectUri;
+
+    @Value("${google.client.client-id}")
+    private String clientId;
 
     @Value("${top-leader.app-url}")
     private String appUrl;
@@ -54,11 +58,10 @@ public class GoogleCalendarController {
     public ResponseEntity<String> oauth2Callback(
         @RequestParam(value = "code") String code,
         @RequestParam(value = "state") String state
-        ) throws IOException {
+    ) {
+        var response = clientFactory.exchangeCode(code, redirectUri);
 
-        final var response = flow.newTokenRequest(code).setRedirectUri(redirectURI).execute();
-
-        final var userEmail = new String(Base64.decodeBase64(state));
+        var userEmail = new String(Base64.getDecoder().decode(state));
 
         calendarService.storeTokenInfo(userEmail, response);
 
@@ -80,16 +83,14 @@ public class GoogleCalendarController {
     }
 
     private String authorize(String username) {
-        return flow.newAuthorizationUrl()
-            .setRedirectUri(redirectURI)
-            .setApprovalPrompt("force")
-            .setAccessType("offline")
-            .setScopes(Set.of(
-                "openid",
-                "https://www.googleapis.com/auth/userinfo.email",
-                CalendarScopes.CALENDAR_READONLY
-            ))
-            .setState(Base64.encodeBase64String(username.getBytes()))
-            .build();
+        var state = Base64.getEncoder().encodeToString(username.getBytes());
+        return AUTH_URL
+                + "?client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8)
+                + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)
+                + "&response_type=code"
+                + "&scope=" + URLEncoder.encode(SCOPES, StandardCharsets.UTF_8)
+                + "&access_type=offline"
+                + "&prompt=consent"
+                + "&state=" + URLEncoder.encode(state, StandardCharsets.UTF_8);
     }
 }

@@ -29,7 +29,6 @@ top-leader:
     redirect-uri: https://qa.topleaderplatform.io/login/calendly
 
 google:
-  application-name: "qa.topleaderplatform.io"
   client:
     redirectUri: https://qa.topleaderplatform.io/login/google
 

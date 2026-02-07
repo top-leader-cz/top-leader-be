@@ -3,8 +3,6 @@
  */
 package com.topleader.topleader.coach.availability;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
 import com.topleader.topleader.common.calendar.domain.SyncEvent;
 import com.topleader.topleader.common.calendar.calendly.CalendlyService;
 import com.topleader.topleader.common.calendar.google.GoogleCalendarService;
@@ -103,13 +101,13 @@ public class CoachAvailabilityService {
 
 
     public List<LocalDateTime> getAvailabilitySplitIntoHours(String username, LocalDateTime from, LocalDateTime to) {
-        Multimap<DayOfWeek, CoachAvailability> reoccurringMap = ArrayListMultimap.create();
-        getReoccurringEvents(username).forEach(e -> reoccurringMap.put(e.getDayFrom(), e));
+        var reoccurringMap = getReoccurringEvents(username).stream()
+                .collect(Collectors.groupingBy(CoachAvailability::getDayFrom));
         var nonReoccurring = getNonReoccurringByTimeFrame(username, from, to);
 
         return toIntervals(from, to).stream()
                 .filter(r -> {
-                    var availabilities = reoccurringMap.get(r.getDayOfWeek());
+                    var availabilities = reoccurringMap.getOrDefault(r.getDayOfWeek(), List.of());
                     return testNonReoccurring(r, nonReoccurring) || availabilities.stream()
                             .anyMatch(e -> {
                                 if (e != null && e.getTimeFrom() != null && e.getTimeTo() != null) {

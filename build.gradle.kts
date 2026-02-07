@@ -39,8 +39,7 @@ dependencyManagement {
 }
 
 dependencies {
-    // Google Cloud
-    implementation("com.google.apis:google-api-services-calendar:v3-rev20251207-2.0.0")
+    // Google Cloud (auth library needed for GCS)
     implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
 
     // Spring Boot
@@ -181,10 +180,10 @@ graalvmNative {
             imageName.set("top-leader")
             mainClass.set("com.topleader.topleader.TopLeaderApplication")
 
-            val baseArgs = mutableListOf(
+            buildArgs.addAll(listOf(
                 "-H:+ReportExceptionStackTraces",
-                "-Ob",  // Quick build - faster compilation, slower runtime
-                "-J-Xmx10g",  // More heap for faster build
+                "-J-Xmx10g",
+                "-march=native",
                 listOf(
                     "org.slf4j",
                     "org.apache.logging.slf4j",
@@ -197,15 +196,7 @@ graalvmNative {
                     "org.codehaus.stax2",
                     "com.ctc.wstx"
                 ).joinToString(",", prefix = "--initialize-at-build-time=")
-            )
-
-            // Add CPU optimizations if specified (e.g., -Pnative.march=x86-64-v3)
-            val march = project.findProperty("native.march") as String?
-            if (march != null) {
-                baseArgs.add("-march=$march")
-            }
-
-            buildArgs.addAll(baseArgs)
+            ))
         }
     }
     toolchainDetection.set(false)

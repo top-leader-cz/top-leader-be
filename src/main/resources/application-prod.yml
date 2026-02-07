@@ -30,7 +30,6 @@ top-leader:
     redirect-uri: https://topleaderplatform.io/login/calendly
 
 google:
-  application-name: "topleaderplatform.io"
   client:
     redirectUri: https://topleaderplatform.io/login/google
 

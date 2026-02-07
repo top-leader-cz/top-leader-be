@@ -92,17 +92,10 @@ top-leader:
     password: ${JOB_TRIGGER_PASSWORD:default-dev-password}
 
 google:
-  application-name: "qa.topleaderplatform.io"
   client:
     client-id: client-id
-    client-secret:  client-id
-    access-token-uri: https://www.googleapis.com/oauth2/v3/token
-    user-authorization-uri: https://accounts.google.com/o/oauth2/auth?access_type=offline&prompt=consent
-    client-authentication-scheme: query
+    client-secret: client-id
     redirectUri: http://localhost:8080/login/google
-  resource:
-    user-info-uri: https://www.googleapis.com/oauth2/v2/userinfo
-    prefer-token-info: true
 
 
 openai:

@@ -1,6 +1,5 @@
 package com.topleader.topleader.common.calendar.google;
 
-import com.google.api.client.auth.oauth2.TokenResponse;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.common.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
@@ -22,9 +21,8 @@ class GoogleCalendarServiceTest extends IntegrationTest {
     @Sql("/sql/calendar/calendar-sync-info.sql")
     void storeTokenInfo_shouldReplaceExistingRecord() {
         var username = "test@example.com";
-        var tokenResponse = new TokenResponse()
-                .setRefreshToken("new-refresh-token")
-                .setAccessToken("new-access-token");
+        var tokenResponse = new GoogleCalendarApiClientFactory.TokenResponse(
+                "new-access-token", "new-refresh-token", "Bearer", 3600);
 
         googleCalendarService.storeTokenInfo(username, tokenResponse);
 
@@ -40,9 +38,8 @@ class GoogleCalendarServiceTest extends IntegrationTest {
     @Sql("/sql/calendar/calendar-new-user.sql")
     void storeTokenInfo_shouldCreateNewRecord() {
         var username = "newuser@example.com";
-        var tokenResponse = new TokenResponse()
-                .setRefreshToken("refresh-token")
-                .setAccessToken("access-token");
+        var tokenResponse = new GoogleCalendarApiClientFactory.TokenResponse(
+                "access-token", "refresh-token", "Bearer", 3600);
 
         googleCalendarService.storeTokenInfo(username, tokenResponse);
 
