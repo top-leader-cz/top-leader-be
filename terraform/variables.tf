@@ -43,13 +43,19 @@ variable "cloud_run_url_qa" {
   default     = "https://qa.topleaderplatform.io"
 }
 
+variable "cloud_run_url_prod" {
+  description = "Cloud Run service URL for PROD environment"
+  type        = string
+  default     = "https://topleaderplatform.io"
+}
+
 variable "alert_emails" {
   description = "List of email addresses for alert notifications"
   type        = list(string)
 }
 
 variable "alert_sms_number" {
-  description = "Phone number for SMS alerts (E.164 format, e.g. +420123456789).."
+  description = "Phone number for SMS alerts (E.164 format, e.g. +4201234yes56789).."
   type        = string
   default     = null
 }

@@ -78,14 +78,3 @@ resource "google_dns_record_set" "qa_cloudrun" {
 
   rrdatas = ["34.160.238.170"]
 }
-
-# Outputs
-output "cloudrun_qa_url" {
-  value       = "https://qa.topleaderplatform.io"
-  description = "Cloud Run QA service URL"
-}
-
-output "cloudrun_prod_url" {
-  value       = "https://topleaderplatform.io"
-  description = "Cloud Run PROD service URL"
-}
