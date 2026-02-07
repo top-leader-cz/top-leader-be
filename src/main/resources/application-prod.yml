@@ -20,6 +20,7 @@ spring:
           model: gpt-4o
 
   datasource:
+    url: jdbc:postgresql:///top_leader_prod
     username: top-leader-prod
     hikari:
       # Optimized for virtual threads (production)
