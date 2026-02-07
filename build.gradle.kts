@@ -16,6 +16,8 @@ java {
     }
 }
 
+val aotOnly by configurations.creating
+
 configurations {
     compileOnly {
         extendsFrom(configurations.annotationProcessor.get())
@@ -61,16 +63,13 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
 
     // Spring AI
-    implementation("org.springframework.ai:spring-ai-starter-model-openai")
+    implementation("org.springframework.ai:spring-ai-starter-model-openai") {
+        exclude(group = "io.netty", module = "netty-codec-http3")
+    }
 
     // Database
     implementation("org.postgresql:postgresql")
     implementation("org.flywaydb:flyway-database-postgresql")
-
-    // H2 for AOT processing and tests only
-    // Excluded from production JAR via bootJar configuration below
-    runtimeOnly("com.h2database:h2")
-
 
     // Logging (JSON formatting handled by Spring Boot structured logging)
     implementation("org.springframework.boot:spring-boot-starter-log4j2")
@@ -86,6 +85,9 @@ dependencies {
         implementation("org.springdoc:springdoc-openapi-starter-webmvc-api:3.0.1")
     }
     println("SpringDoc mode: ${if (includeSwaggerUI) "UI included" else "API-only (production)"}")
+
+    // H2 - only for AOT hint generation (not included in runtime JAR)
+    aotOnly("com.h2database:h2")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -157,12 +159,6 @@ tasks.jacocoTestCoverageVerification {
 
 tasks.bootJar {
     archiveFileName.set("top-leader.jar")
-    // Exclude H2 from production JAR (only needed for AOT processing and tests)
-    // H2 is filtered from classpath dependencies
-    val h2Excluded = configurations.runtimeClasspath.get().filter {
-        !it.name.contains("h2-")
-    }
-    classpath(h2Excluded)
 }
 
 // OpenAPI spec generation
@@ -211,8 +207,6 @@ graalvmNative {
             }
 
             buildArgs.addAll(baseArgs)
-            // Exclude H2 from native image - only needed for AOT processing
-            classpath = classpath.filter { !it.name.startsWith("h2-") }
         }
     }
     toolchainDetection.set(false)
@@ -220,6 +214,20 @@ graalvmNative {
 
 // Configure AOT processing to use H2 (only for AOT hint generation, not baked into runtime)
 tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") {
+    classpath = classpath.plus(aotOnly)
+    args(
+        "--spring.datasource.url=jdbc:h2:mem:aot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
+        "--spring.datasource.username=sa",
+        "--spring.datasource.password=",
+        "--spring.datasource.driver-class-name=org.h2.Driver",
+        "--spring.flyway.enabled=false",
+        "--spring.ai.openai.api-key=dummy-key"
+    )
+}
+
+// Configure Test AOT processing with H2 and exclude TestContainers-based tests
+tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
+    classpath = classpath.plus(aotOnly)
     args(
         "--spring.datasource.url=jdbc:h2:mem:aot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
         "--spring.datasource.username=sa",

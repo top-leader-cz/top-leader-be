@@ -6,176 +6,99 @@ Backend application for the TopLeader platform - a coaching and mentoring platfo
 
 TopLeader is a platform that helps organizations develop their people through professional coaching. It connects employees with certified coaches, manages coaching sessions, tracks progress, and provides insights through feedback and AI-powered analysis.
 
+## Tech Stack
+
+- **Java 25** with Spring Boot 4.0.2
+- **PostgreSQL 15** database
+- **Spring Data JDBC** for lightweight data access
+- **Spring Security** (session-based authentication)
+- **Spring AI** with OpenAI integration (function calling for coaching tools)
+- **Spring Modulith** for modular monolith architecture
+- **Spring Session JDBC** for distributed sessions
+- **Flyway** for database migrations
+- **Jetty** (lightweight alternative to Tomcat)
+- **Log4j2** for structured logging
+- **Lombok** for boilerplate reduction
+- **Gradle** (Kotlin DSL) for build management
+- **Docker Compose** for local development
+- **Virtual Threads** enabled
+- **OpenTelemetry** for observability
+
 ## Architecture Decisions
 
 > **Key ADRs:** [Monolith Architecture](docs/adr/001-monolith-architecture.md) | [Session-based Auth](docs/adr/002-session-based-auth.md) | [Native Image Strategy](docs/adr/003-native-image-strategy.md)
 
 ### Why Java 25?
 
-We use **Java 25** for several key benefits:
-
-**Memory Optimization with Compact Object Headers (`-XX:+UseCompactObjectHeaders`):**
-- Reduces object header size from 12 bytes to 8 bytes (32-bit mode) or from 16 bytes to 12 bytes (64-bit)
-- **~10-15% memory reduction** for object-heavy applications
-- Especially beneficial for applications with many small objects (entities, DTOs)
-- Available as experimental feature in Java 24+, stable in Java 25
-
-**Virtual Threads (Project Loom):**
-- Lightweight threads for high-concurrency workloads
-- No thread pool tuning required
-- Perfect for I/O-bound operations (database, HTTP calls, email sending)
-
-**Enhanced Pattern Matching:**
-- Cleaner code with pattern matching for `switch` and `instanceof`
-- Reduces boilerplate in data processing
-
-**Better Native Image Support:**
-- Java 25 + Spring Boot 4 have significantly improved GraalVM native image compatibility
-- Reduced reflection requirements in the JDK itself
-- Faster ahead-of-time (AOT) compilation
+- **Compact Object Headers** (`-XX:+UseCompactObjectHeaders`) - ~10-15% memory reduction
+- **Virtual Threads** - lightweight threads for I/O-bound operations (database, HTTP, email)
+- **Enhanced Pattern Matching** - cleaner code with `switch` and `instanceof`
+- **Better Native Image Support** - improved GraalVM compatibility with Spring Boot 4
 
 ### Why Spring Boot 4?
 
-We upgraded to **Spring Boot 4.0** for native image readiness:
-
-**Improved Native Image Support:**
-- Spring Framework 7 has first-class GraalVM native image support
-- Most Spring components work out-of-the-box without reflection hints
-- AOT (Ahead-of-Time) processing is more mature and reliable
-
-**Reduced Reflection:**
-- Spring Boot 4 minimizes runtime reflection
-- Bean registration uses compile-time code generation
-- Dependency injection is optimized for native compilation
-
-**Jakarta EE 11:**
-- Updated to latest Jakarta EE specifications
-- Better alignment with modern Java ecosystem
-
-**Virtual Threads Integration:**
-- Native support for virtual threads in web layer
-- Automatic thread management without configuration
+- **First-class GraalVM native image support** - most components work without reflection hints
+- **Reduced reflection** - compile-time bean registration and DI optimization
+- **Jakarta EE 11** - latest specifications
+- **Native virtual threads integration** in the web layer
 
 ### Why Monolith?
 
-> See [ADR-001: Monolith Architecture](docs/adr/001-monolith-architecture.md) for full decision record.
+> See [ADR-001](docs/adr/001-monolith-architecture.md)
 
-We chose a monolithic architecture primarily for **cost savings**. A monolith is simpler to deploy, operate, and scale for our current needs. It avoids the operational complexity and infrastructure costs of microservices (multiple deployments, service mesh, distributed tracing complexity, etc.). For a coaching platform with predictable load patterns, a well-structured monolith provides the best balance of simplicity and performance.
-
-### Why Jetty?
-
-We use **Jetty** instead of Tomcat because it's **lightweight** and doesn't carry the overhead of Tomcat. Jetty has a smaller memory footprint and faster startup time, which aligns with our goal of keeping the application lean and efficient.
+Primarily for **cost savings**. Avoids the operational complexity of microservices while providing the best balance of simplicity and performance for a coaching platform with predictable load patterns.
 
 ### Why Spring Data JDBC?
 
-We use **Spring Data JDBC** as our data access layer:
+- **Native image friendly** - minimal reflection, no runtime proxies
+- **Simple model** - direct row-to-object mapping, no lazy loading
+- **Full SQL control** - native SQL with `@Query`, no N+1 problems
 
-**Native Image Friendly:**
-- Minimal reflection - uses simple JDBC operations
-- No runtime bytecode generation or proxies
-- Smaller native image size and faster startup
+### Why Jetty?
 
-**Simpler Model:**
-- Direct mapping between database rows and Java objects
-- No lazy loading or detached entity complexity
-- Easier to reason about and debug
+Smaller memory footprint and faster startup than Tomcat. Aligns with keeping the application lean.
 
-**Full SQL Control:**
-- Write native SQL with `@Query` annotations
-- No N+1 problems or hidden queries
-- Better query optimization and performance tuning
+### Why Log4j2?
 
-Spring Data JDBC provides the right balance of simplicity, performance, and native image compatibility.
+Better performance (async, garbage-free logging), more flexible configuration, and better GraalVM native image support than Logback.
 
-### Why Avoid Reflection-based Libraries?
+### Why Session-based Auth over JWT?
 
-We deliberately avoid libraries that rely heavily on reflection. For example, we use **Failsafe** for resilience patterns because it works without reflection. This approach:
-- Improves startup time
-- Reduces memory usage
-- Makes the codebase more predictable and easier to debug
-- Prepares the application for GraalVM native image compilation
+> See [ADR-002](docs/adr/002-session-based-auth.md)
 
-### Why Log4j2 over Logback?
-
-We use **Log4j2** instead of Spring Boot's default Logback for several reasons:
-- **Better performance** with async logging and garbage-free logging at steady state
-- **More flexible configuration** with support for multiple output formats
-- **Better suited for native images** - Log4j2 has better GraalVM native image support
+- No token management complexity (refresh, rotation, blacklisting)
+- Instant session invalidation on logout
+- Already have a database - no additional infrastructure needed
 
 ### Why Pre-generated OpenAPI?
 
-We disable dynamic OpenAPI generation at runtime (`springdoc.api-docs.enabled: false`) and pre-generate `openapi.yaml` during CI/CD:
-- **No runtime reflection** - dynamic spec generation uses reflection which impacts native image compatibility
-- **Faster startup** - no need to scan controllers and build spec at runtime
-
-The spec is generated by `OpenApiGeneratorTest` which runs during deployment and outputs to `src/main/resources/static/openapi.yaml`.
-
-### Why Spring Session JDBC over JWT?
-
-> See [ADR-002: Session-based Auth](docs/adr/002-session-based-auth.md) for full decision record.
-
-We use **Spring Session JDBC** (server-side sessions) instead of JWT tokens for **simplicity**:
-- **No token management complexity** - no refresh tokens, no token rotation, no blacklisting
-- **Instant invalidation** - logout works immediately, no waiting for token expiry
-- **Smaller payloads** - session ID is smaller than JWT with claims
-- **Server-side control** - easy to inspect, modify, or revoke sessions
-- **Already have a database** - no additional infrastructure needed (Redis, etc.)
-
-For a monolithic application with a single database, server-side sessions are simpler and more secure than JWT.
+Dynamic spec generation uses reflection. We pre-generate `openapi.yaml` during CI/CD via `OpenApiGeneratorTest` for faster startup and native image compatibility.
 
 ### Why Gradle over Maven?
 
-We migrated from Maven to **Gradle** (Kotlin DSL) for several reasons:
-- **Faster builds** - incremental builds, build cache, and parallel execution
-- **Better dependency management** - cleaner syntax, easier version catalogs
-- **Kotlin DSL** - type-safe configuration with IDE autocompletion
-- **Flexible** - easier to customize build logic without plugins
-- **Modern** - aligns with our goal of using modern, efficient tooling
+Faster builds (incremental, cached, parallel), Kotlin DSL with type-safe configuration and IDE support.
 
-### Why Terraform?
+## GCP Infrastructure
 
-We use **Terraform** for infrastructure as code (IaC):
-- **Declarative** - define desired state, Terraform handles the rest
-- **Multi-cloud** - works with GCP, AWS, Azure, and other providers
-- **Version control** - infrastructure changes are tracked in Git
-- **Plan & Apply** - preview changes before applying them
-- **State management** - tracks resource state for safe updates and rollbacks
-
-### Why GCP Cloud Run + Cloud SQL?
-
-We deploy on **Google Cloud Platform** with the following architecture:
+We deploy on **Google Cloud Platform**:
 
 **Backend:**
-- **Cloud Run** (QA) - containerized deployment with Distroless images, auto-scaling to zero, pay-per-request
-- **App Engine** (Production) - managed Java runtime, auto-scaling, zero server management
-- **Cloud SQL** (PostgreSQL 15) - managed database with automatic backups, high availability
+- **Cloud Run** (QA & Production) - containerized with Distroless images, auto-scaling to zero, pay-per-request
+- **Cloud SQL** (PostgreSQL 15) - managed database with automatic backups
 
 **Frontend:**
-- **React + MUI** (Material UI) - modern SPA with component library
-- **Cloud Storage Bucket** - static file hosting
-- **Cloud CDN** - global edge caching for fast delivery
-- **Global Load Balancer** - HTTPS termination, routing, DDoS protection
+- **React + MUI** SPA on **Cloud Storage** + **Cloud CDN** behind **Global Load Balancer**
 
-**Infrastructure as Code:**
-- **Terraform** - manages all GCP resources (Load Balancer, DNS, Cloud SQL, IAM, etc.)
+**Tooling:**
+- **Terraform** - infrastructure as code for all GCP resources
 - **Secret Manager** - secure storage for API keys and credentials
 - **Cloud Scheduler** - cron jobs for background tasks
+- **GitHub Actions** - CI/CD with tag-based deployments
 
-**CI/CD:**
-- **GitHub Actions** - automated builds and deployments for both frontend and backend
-- PRs to `develop`/`main` trigger build + tests only (no deploy)
-- Tag-based deployments:
-  - `qa-deploy` → builds Docker image → deploys to Cloud Run QA
-  - `release-v*.*.*` → builds JAR → deploys to App Engine Production
-
-**Why this setup:**
-- **Cost-effective** - Cloud Run scales to zero, pay only for actual requests
-- **Managed infrastructure** - no servers to patch or maintain
-- **Global performance** - CDN for frontend, regional backend
-- **Automated deployments** - push tag → GitHub Actions → deployed
-- **Secure secrets** - Secret Manager instead of environment variables
-
-### Infrastructure Diagram
+**CI/CD Flow:**
+- PRs to `develop`/`main` → build + tests only
+- `qa-deploy` tag → Docker image → Cloud Run QA
+- `release-v*.*.*` tag → Docker image → Cloud Run Production
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -201,99 +124,47 @@ We deploy on **Google Cloud Platform** with the following architecture:
                                           └───────────────┘
 ```
 
-Path-based routing:
-- `/api/*` → Cloud Run (Backend API)
-- `/*` → Cloud Storage + CDN (Frontend SPA)
+### Native Image Strategy
 
-### Future Tech Plans
+> See [ADR-003](docs/adr/003-native-image-strategy.md)
 
-> See [ADR-003: Native Image Strategy](docs/adr/003-native-image-strategy.md) for full decision record.
-
-**GraalVM Native Images:**
-- Build production native images for instant startup and reduced memory footprint
-- Ideal for cloud deployment and cost optimization
-- Current codebase is native-image ready (minimal reflection, no heavy ORM)
-
-**Production Migration to Cloud Run:**
-- QA already runs on Cloud Run (completed)
-- Production will migrate from App Engine to Cloud Run
-- Native image + Cloud Run = instant cold starts and minimal costs
-
-## Tech Stack
-
-- **Java 25** with Spring Boot 4.0.1
-- **PostgreSQL 15** database
-- **Spring Data JDBC** for lightweight data access
-- **Spring Security** (session-based authentication)
-- **Spring AI** with OpenAI integration
-- **Spring Session JDBC** for distributed sessions
-- **Flyway** for database migrations
-- **Lombok** 1.18.42 for boilerplate reduction
-- **Gradle 9.x** (Kotlin DSL) for build management
-- **Docker Compose** for local development
-- **Virtual Threads** enabled (Java 21+ feature)
-- **OpenTelemetry** for observability
-
-## Prerequisites
-
-- **Java 25** (managed via SDKMAN recommended)
-- **Gradle 9.x** (managed via SDKMAN recommended)
-- **Docker & Docker Compose** (for PostgreSQL)
-- **Git**
+The codebase is native-image ready (minimal reflection, no heavy ORM). Native image + Cloud Run = instant cold starts and minimal costs.
 
 ## Getting Started
 
-### 1. Clone the Repository
+### Prerequisites
+
+- **Java 25** (managed via SDKMAN recommended)
+- **Gradle** (managed via SDKMAN recommended)
+- **Docker & Docker Compose** (for PostgreSQL)
+
+### 1. Clone and Start Database
 
 ```bash
 git clone <repository-url>
 cd top-leader-be
-```
-
-### 2. Start PostgreSQL Database
-
-The project uses Docker Compose to run PostgreSQL locally:
-
-```bash
 docker-compose up -d
 ```
 
-This starts PostgreSQL 15 on port `5434` with:
-- Database: `top_leader`
-- Username: `root`
-- Password: `postgres`
+This starts PostgreSQL 15 on port `5434` (database: `top_leader`, user: `root`, password: `postgres`).
 
-### 3. Configure Environment
+### 2. Configure Environment
 
-The application uses `src/main/resources/application.yml` for configuration. For local development, the defaults work out of the box.
+The defaults in `application.yml` work for local development. For external services, configure:
+- **OpenAI API Key** (AI features)
+- **Google OAuth** credentials (calendar integration)
+- **Calendly** credentials (scheduling)
+- **GCP Storage** credentials (file storage)
 
-Required external service configurations (add to environment or application.yml):
-- **OpenAI API Key** (for AI features)
-- **Google OAuth** credentials (for calendar integration)
-- **Calendly** credentials (for scheduling integration)
-- **GCP Storage** credentials (for file storage)
-
-### 4. Build the Application
+### 3. Run
 
 ```bash
-./gradlew compileJava
+make build    # Build the application
+make test     # Run tests
+./gradlew bootRun  # Start on http://localhost:8080
 ```
 
-### 5. Run Database Migrations
-
-Flyway migrations run automatically on application startup.
-
-### 6. Run the Application
-
-```bash
-./gradlew bootRun
-```
-
-The application will start on `http://localhost:8080`
-
-## API Documentation
-
-Interactive API documentation is available via Swagger UI when the application is running:
+Flyway migrations run automatically on startup.
 
 **Swagger UI:** `http://localhost:8080/swagger-ui.html`
 
@@ -304,7 +175,7 @@ src/main/java/com/topleader/topleader/
 ├── admin/                  # Admin views and management
 ├── coach/                  # Coach profiles and availability
 ├── common/                 # Shared utilities and cross-cutting concerns
-│   ├── ai/                 # AI integrations (OpenAI)
+│   ├── ai/                 # AI integrations (OpenAI, function calling tools)
 │   ├── calendar/           # Calendar integrations (Google, Calendly)
 │   ├── email/              # Email sending (SMTP)
 │   ├── exception/          # Custom exceptions and error handling
@@ -320,182 +191,51 @@ src/main/java/com/topleader/topleader/
 ├── myteam/                 # Team management
 ├── session/                # Session management
 └── user/                   # Core user entity and features
-
-src/main/resources/
-├── db/migration/1.0.0/     # Flyway database migrations (consolidated)
-├── application.yml         # Main configuration file
-└── templates/              # Email templates
 ```
 
 ## Security
 
-See [docs/SECURITY.md](docs/SECURITY.md) for complete security audit report.
+See [docs/SECURITY.md](docs/SECURITY.md) for the complete security audit report.
 
-### Security Architecture
-
-**Spring Security Configuration** (`WebSecurityConfig.java`):
-- **Two Security Filter Chains:**
-  1. Protected Chain (Order 1) - `/api/protected/**` with HTTP Basic Auth for internal job triggers
-  2. Main Application Chain (Order 2) - Form login with session-based authentication
-
-**Authentication & Authorization:**
-- Session-based authentication with Spring Session JDBC (15min timeout)
-- Role-based access control (RBAC): `RESPONDENT`, `USER`, `MANAGER`, `COACH`, `HR`, `ADMIN`
-- `@Secured` annotations on controller methods
-- Default deny policy - all endpoints require authentication except public paths
-
-**Session Management:**
-- JDBC-backed sessions (survives restarts)
-- Session cookies with `SameSite=lax`, `HttpOnly=true`, `Secure=true` (in prod/qa)
-- 15-minute timeout with automatic renewal on activity
-
-**Security Headers:**
-- **Content Security Policy (CSP)** - Restricts script/style/image sources
-- **X-XSS-Protection** - Browser-level XSS filter in block mode
-- **X-Content-Type-Options** - Prevents MIME sniffing
-- **X-Frame-Options** - Prevents clickjacking (SAMEORIGIN)
-
-**CORS Configuration:**
-- **CORS is DISABLED** in the application (`.cors(AbstractHttpConfigurer::disable)`)
-- **Handled by Google Cloud Load Balancer** at infrastructure level
-- Frontend and API served from same domain → same-origin requests
-- Load balancer routes by path:
-  - `/api/*` → Backend (Cloud Run)
-  - `/` → Frontend (Cloud Storage + CDN)
-
-**CSRF Protection:**
-- CSRF tokens disabled (REST API design)
-- Partial protection via `SameSite=lax` cookie policy
-- Trade-off: Simplifies API consumption, relies on SameSite for CSRF defense
-
-**Input Validation:**
-- Jakarta validation (`@NotNull`, `@Valid`, `@NotBlank`)
-- File upload validation (magic bytes, size limits, content type whitelist)
-- Image re-encoding to strip metadata and malicious payloads
-
-**See also:**
-- [ADR-002: Session-based Auth](docs/adr/002-session-based-auth.md) - Why sessions over JWT
-
-## Key Features
-
-### Authentication & Authorization
-- Session-based authentication with Spring Security
-- Role-based access control (RBAC)
-- Roles: `RESPONDENT`, `USER`, `MANAGER`, `COACH`, `HR`, `ADMIN`
-
-### User Management
-- User profiles and preferences
-- Team management
-- HR admin capabilities
-- Coach-coachee relationships
-
-### Session Management
-- Scheduled coaching sessions
-- Calendar integrations (Google Calendar, Calendly)
-- iCal format support
-- Session history and tracking
-
-### Credit System
-- Credit allocation and management
-- Company package management
-- User allocation tracking
-
-### Feedback System
-- Feedback forms and responses
-- Feedback notifications
-- Summary generation
-
-### AI Integration
-- OpenAI integration via Spring AI
-- AI-powered features
-- Image generation support
-
-### External Integrations
-- Google OAuth and Calendar API
-- Calendly scheduling API
-- GCP Cloud Storage
-- SMTP email sending
+- **Two filter chains:** HTTP Basic for internal jobs (`/api/protected/**`), form login for the app
+- **Session-based auth** with Spring Session JDBC (15min timeout, `SameSite=lax`, `HttpOnly`, `Secure`)
+- **RBAC:** `RESPONDENT`, `USER`, `MANAGER`, `COACH`, `HR`, `ADMIN` via `@Secured`
+- **CORS disabled** in app - handled by Cloud Load Balancer (same-domain routing)
+- **Security headers:** CSP, X-XSS-Protection, X-Content-Type-Options, X-Frame-Options
+- **Input validation:** Jakarta validation, file upload magic byte checks, image re-encoding
 
 ## Testing
 
-### Run All Tests
-
 ```bash
-./gradlew test
-```
-
-### Run Specific Test Class
-
-```bash
-./gradlew test --tests "ClassName"
-```
-
-### Run Integration Tests
-
-```bash
-./gradlew check
+make test             # Run all tests
+make test-coverage    # Run tests with coverage report
+./gradlew test --tests "ClassName"  # Run specific test
 ```
 
 The test suite uses:
-- **Spring Boot Test** with `@SpringBootTest`
-- **Testcontainers** for PostgreSQL
+- **Testcontainers** for PostgreSQL (not H2)
 - **GreenMail** for email testing
 - **WireMock** for external API mocking
 - **JSON Unit** for JSON assertions
 
 Test data is loaded from `src/test/resources/sql/` scripts.
 
-## Build & Deployment
-
-### Build Without Tests
-
-```bash
-./gradlew build -x test
-```
-
-The build produces `build/libs/top-leader.jar`
-
-### Docker Image
-
-The project includes Spring Boot buildpack support for creating OCI images.
-
 ## Database Migrations
 
-Flyway migrations are located in `src/main/resources/db/migration/1.0.0/`
+Flyway migrations are in `src/main/resources/db/migration/1.0.0/`. We consolidated **80+ individual migrations** into a single `V1.0.0.1__init.sql` for faster startup.
 
-We consolidated **80+ individual migrations** into a single `V1.0.0.1__init.sql` script. This prevents long Flyway scan times and  speeds up application startup.
+## Monitoring
 
-Migrations run automatically on application startup.
-
-## Configuration
-
-Key configuration properties in `application.yml`:
-
-- **Database**: PostgreSQL on `localhost:5434`
-- **Server Port**: `8080`
-- **Virtual Threads**: Enabled
-- **Docker Compose**: Auto-enabled for local development
-- **Flyway**: Auto-migration enabled
-- **Spring Data JDBC**: Lightweight data access layer
-- **Session**: JDBC-backed sessions
-- **Actuator**: Health, metrics, and Prometheus endpoints exposed
-
-## Monitoring & Observability
-
-- **OpenTelemetry** integration for traces and metrics
+- **OpenTelemetry** for traces and metrics
 - **Grafana Cloud** support (configured via environment)
+- **Actuator** endpoints for health, metrics, and Prometheus
 
-## Code Style & Patterns
+## Code Style
 
 - Use `var` for local variables
 - Records for DTOs
-- Lombok annotations (`@Data`, `@Accessors(chain = true)`)
-- Jakarta validation (`@NotNull`, `@Valid`)
-- Entity pattern with `@Table` and Spring Data annotations
-- Repository pattern with `ListCrudRepository` (prefer `@Query` for complex operations)
-- Controller pattern with `@RestController` and `/api/latest/*` paths
-- Secured endpoints with `@Secured` annotations
-- Prefer streams over loops
-- Use Optional for null-safe operations
+- Lombok `@Data`, `@Accessors(chain = true)`
+- `@Query` with native SQL (prefer over derived queries)
+- `/api/latest/*` controller paths with `@Secured`
+- Streams over loops, `Optional` for null safety
 - No JavaDoc above methods
-

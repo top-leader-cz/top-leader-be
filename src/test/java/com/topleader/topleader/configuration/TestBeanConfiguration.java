@@ -7,7 +7,6 @@ import com.icegreen.greenmail.util.ServerSetup;
 import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.ai.AiPromptService;
 import com.topleader.topleader.common.util.image.GcsLightweightClient;
-import dev.failsafe.RetryPolicy;
 import org.mockito.Mockito;
 
 
@@ -47,7 +46,7 @@ public class TestBeanConfiguration {
             ChatModel chatModel,
             ChatClient chatClient,
             AiPromptService aiPromptService,
-            RetryPolicy<Object> retryPolicy) {
+            dev.failsafe.RetryPolicy<Object> retryPolicy) {
         return Mockito.spy(new AiClient(chatModel, chatClient, aiPromptService, retryPolicy));
     }
 

@@ -34,6 +34,7 @@ public class AiClient {
 
     private final RetryPolicy<Object> retryPolicy;
 
+
     public String findLeaderShipStyle(String locale, List<String> strengths, List<String> values) {
         log.info("Finding leadership style for strengths: {} and values: {} locale: {}", strengths, values, locale);
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_STYLE);
@@ -43,12 +44,6 @@ public class AiClient {
     public String findAnimalSpirit(String locale, List<String> strengths, List<String> values) {
         log.info("Finding animal spirit for strengths: {} and values: {} locale: {}", strengths, values, locale);
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.ANIMAL_SPIRIT);
-        return chatModel.call(String.format(prompt, strengths, values, locale));
-    }
-
-    public String findLeadershipTip(String locale, List<String> strengths, List<String> values) {
-        log.info("Finding leadership tip for strengths: {} and values: {} locale: {}", strengths, values, locale);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP);
         return chatModel.call(String.format(prompt, strengths, values, locale));
     }
 
@@ -156,6 +151,44 @@ public class AiClient {
                 .content());
         log.info("Suggestions response: {}  User:[{}]", res, username);
         return AiUtils.replaceNonJsonString(res);
+    }
+
+    public String generateSuggestionWithMcp(String username, String userQuery, String language) {
+        log.info("Generating MCP-powered suggestion for user: {} query: {}", username, userQuery);
+
+        var suggestionPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.SUGGESTION);
+
+        var toolInstructions = """
+
+            TOOL INSTRUCTIONS:
+            You have access to tools to enrich your response. Always use them before generating your answer.
+
+            1. ALWAYS call getUserProfile with the user's username to get their real strengths, values, development areas, long-term goal, and session history.
+               Use this data instead of the placeholders in the prompt above.
+            2. If the user's concern relates to coaching, mentoring, or personal development, call searchCoaches to find relevant coaches.
+            3. When recommending coaches, evaluate these attributes against the user's profile:
+               - bio: coach's description and coaching philosophy
+               - certificate: coaching certifications and qualifications
+               - primaryRoles: specialization (COACH, MENTOR, THERAPIST)
+               - fields: areas of expertise
+               Explain why each recommended coach is a good fit for this specific user.
+            4. NEVER include any usernames, email addresses, or internal identifiers in your response.
+               Always refer to coaches by their first and last name only.
+            """;
+
+        var systemPrompt = suggestionPrompt + toolInstructions;
+
+        var userMessage = "My username is: %s\nPreferred language: %s\n\n%s".formatted(username, language, userQuery);
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
+                .user(userMessage)
+                .toolNames("getUserProfile", "searchCoaches", "getCoachByName")
+                .call()
+                .content());
+
+        log.info("MCP Suggestion response for user {}: {}", username, res);
+        return res;
     }
 }
 

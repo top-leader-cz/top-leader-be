@@ -100,7 +100,7 @@ resource "google_compute_global_forwarding_rule" "qa_https" {
 # PROD ENVIRONMENT LOAD BALANCER
 # =============================================================================
 
-# Backend Service for PROD App Engine
+# Backend Service for PROD Cloud Run
 resource "google_compute_backend_service" "prod_backend" {
   name                            = "top-be-prod"
   project                         = var.project_id
