@@ -15,6 +15,17 @@ resource "google_app_engine_application" "app" {
   }
 }
 
+# VPC Access Connector for Cloud Run to reach private Cloud SQL
+resource "google_vpc_access_connector" "connector" {
+  name          = "top-leader-vpc-connector"
+  project       = var.project_id
+  region        = var.region
+  ip_cidr_range = "10.8.0.0/28"
+  network       = google_compute_network.main.name
+
+  depends_on = [google_project_service.vpcaccess]
+}
+
 # Serverless NEG for Cloud Run QA service
 resource "google_compute_region_network_endpoint_group" "cloudrun_qa" {
   name                  = "top-be-qa-cloudrun"

@@ -42,7 +42,6 @@ dependencies {
     // Google Cloud
     implementation("com.google.apis:google-api-services-calendar:v3-rev20251207-2.0.0")
     implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
-    implementation("com.google.cloud.sql:postgres-socket-factory:1.28.0")
 
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web") {
