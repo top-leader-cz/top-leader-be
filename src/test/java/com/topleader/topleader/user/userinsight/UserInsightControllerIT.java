@@ -4,23 +4,18 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.common.ai.AiClient;
-import com.topleader.topleader.common.ai.AiPrompt;
-import com.topleader.topleader.common.ai.AiPromptService;
 import com.topleader.topleader.common.ai.McpToolsConfig;
 import com.topleader.topleader.user.session.domain.UserArticle;
+import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.common.util.common.JsonUtils;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -42,9 +37,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
-    ChatModel chatModel;
-
-    @Autowired
     ChatClient chatClient;
 
     @Autowired
@@ -55,9 +47,6 @@ class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
     UserInsightRepository userInsightRepository;
-
-    @Autowired
-    AiPromptService aiPromptService;
 
     @Autowired
     ArticleRepository articleRepository;
@@ -117,32 +106,14 @@ class UserInsightControllerIT extends IntegrationTest {
     }
 
     @Test
-    @Disabled("we disabled this feature")
-    @WithMockUser(username = "user", authorities = "USER")
-    @Sql(scripts = {"/user_insight/user-insight.sql", "/user_insight/ai-prompt.sql"})
-    void generateTips() throws Exception {
-        var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "English");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadershipTip-response");
-
-        mvc.perform(get("/api/latest/user-insight/generate-tips")).andDo(print()).andExpect(status().isOk());
-
-        Assertions.assertThat(userInsightRepository.findAll()).extracting(UserInsight::getLeadershipTip, UserInsight::getPersonalGrowthTip).containsExactly(new Tuple("leadershipTip-response", null));
-
-    }
-
-    @Test
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/user-insight.sql", "/user_insight/ai-prompt.sql"})
     void generateTipsNoStrengthsAndValues() throws Exception {
         userInfoRepository.deleteAll();
-        var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP), List.of("solver", "ideamaker", "flexible", "responsible", "selfBeliever"), List.of("patriotism"), "en");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("leadershipTip-response");
 
         mvc.perform(get("/api/latest/user-insight/generate-tips")).andExpect(status().isOk());
 
-
         Assertions.assertThat(userInsightRepository.findAll()).extracting(UserInsight::getLeadershipTip, UserInsight::getPersonalGrowthTip).containsExactly(new Tuple(null, null));
-
     }
 
     @Test
@@ -178,7 +149,7 @@ class UserInsightControllerIT extends IntegrationTest {
         mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
         mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200).withBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}")));
 
-        Mockito.when(chatModel.call("video [query]")).thenReturn("""
+        var previewsJson = """
                                [
                   {
                     "title": "Test Preview",
@@ -186,8 +157,7 @@ class UserInsightControllerIT extends IntegrationTest {
                     "thumbnail": "http://localhost:8060/hqdefault"
                   }
                 ]
-                """);
-
+                """;
 
         var articlesJson = """
                   [
@@ -211,7 +181,10 @@ class UserInsightControllerIT extends IntegrationTest {
                 """;
 
         // Mock AiClient methods directly using spy
+        var mockPreviews = JsonUtils.fromJson(previewsJson, new ParameterizedTypeReference<List<UserPreview>>() {});
         var mockArticles = JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {});
+        Mockito.doReturn(mockPreviews).when(aiClient)
+                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList());
         Mockito.doReturn("suggestion response").when(aiClient)
                 .generateSuggestion(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                         ArgumentMatchers.anyList(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
@@ -261,7 +234,7 @@ class UserInsightControllerIT extends IntegrationTest {
         mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
         mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200).withBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}")));
 
-        Mockito.when(chatModel.call("video [query]")).thenReturn("""
+        var previewsJson = """
                                [
                   {
                     "title": "Test Preview",
@@ -269,7 +242,7 @@ class UserInsightControllerIT extends IntegrationTest {
                     "thumbnail": "http://localhost:8060/hqdefault"
                   }
                 ]
-                """);
+                """;
 
         var articlesJson = """
                   [
@@ -292,7 +265,10 @@ class UserInsightControllerIT extends IntegrationTest {
                   ]
                 """;
 
+        var mockPreviews = JsonUtils.fromJson(previewsJson, new ParameterizedTypeReference<List<UserPreview>>() {});
         var mockArticles = JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {});
+        Mockito.doReturn(mockPreviews).when(aiClient)
+                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList());
         Mockito.doReturn("mcp suggestion response").when(aiClient)
                 .generateSuggestionWithMcp(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
         Mockito.doReturn(mockArticles).when(aiClient)
