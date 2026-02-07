@@ -1,6 +1,7 @@
 package com.topleader.topleader.configuration;
 
 import com.topleader.topleader.common.ai.AiPrompt;
+import com.topleader.topleader.common.ai.McpToolsConfig;
 import com.topleader.topleader.common.calendar.calendly.CalendlyProperties;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.common.upload.UploadProperties;
@@ -79,6 +80,13 @@ public class NativeImageConfiguration {
             // DTOs and entities with JSON serialization
             registerForJsonSerialization(hints, Summary.class);
             registerForJsonSerialization(hints, UserArticle.class);
+
+            // MCP Tool request/response types for Spring AI
+            registerForJsonSerialization(hints, McpToolsConfig.UserProfileRequest.class);
+            registerForJsonSerialization(hints, McpToolsConfig.UserProfileResponse.class);
+            registerForJsonSerialization(hints, McpToolsConfig.CoachSearchRequest.class);
+            registerForJsonSerialization(hints, McpToolsConfig.CoachByNameRequest.class);
+            registerForJsonSerialization(hints, McpToolsConfig.CoachResponse.class);
 
             // Configuration properties
             registerForJsonSerialization(hints, CalendlyProperties.class);

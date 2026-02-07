@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: top-leader-qa
+  name: top-leader-prod
   labels:
     cloud.googleapis.com/location: europe-west3
   annotations:
@@ -10,9 +10,9 @@ spec:
   template:
     metadata:
       annotations:
-        autoscaling.knative.dev/minScale: "0"
-        autoscaling.knative.dev/maxScale: "1"
-        run.googleapis.com/cpu-throttling: "true"
+        autoscaling.knative.dev/minScale: "1"
+        autoscaling.knative.dev/maxScale: "4"
+        run.googleapis.com/cpu-throttling: "false"
         run.googleapis.com/startup-cpu-boost: "true"
         run.googleapis.com/cloudsql-instances: topleader-394306:europe-west3:top-leader-db
         run.googleapis.com/sessionAffinity: "true"
@@ -30,14 +30,20 @@ spec:
               memory: 700Mi
           env:
             - name: SPRING_PROFILES_ACTIVE
-              value: "qa"
+              value: "prod"
             - name: GCP_JSON_LOGS
               value: "CONSOLE_JSON"
+            # Calendly OAuth (not secret - public client ID)
+            - name: TOP_LEADER_CALENDLY_CLIENT_ID
+              value: "PJ2FbDI-YAyzEJya2H4RqHv_Sv0F-Hl0d-i93FkAuH8"
+            # Google OAuth (not secret - public client ID)
+            - name: GOOGLE_CLIENT_CLIENT_ID
+              value: "572595541175-n58eajajt5iqc5rsn25rv2mt8iejojsi.apps.googleusercontent.com"
             # Secrets from Secret Manager
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: SPRING_DATASOURCE_PASSWORD_QA
+                  name: SPRING_DATASOURCE_PASSWORD_PROD
                   key: latest
             - name: SPRING_MAIL_HOST
               value: "smtp.gmail.com"
@@ -59,11 +65,6 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: TOP_LEADER_CALENDLY_CLIENT_SECRETS
-                  key: latest
-            - name: GOOGLE_CLIENT_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: GOOGLE_CLIENT_CLIENT_ID
                   key: latest
             - name: GOOGLE_CLIENT_CLIENT_SECRET
               valueFrom:

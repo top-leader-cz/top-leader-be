@@ -100,7 +100,7 @@ resource "google_compute_global_forwarding_rule" "qa_https" {
 # PROD ENVIRONMENT LOAD BALANCER
 # =============================================================================
 
-# Backend Service for PROD App Engine
+# Backend Service for PROD Cloud Run
 resource "google_compute_backend_service" "prod_backend" {
   name                            = "top-be-prod"
   project                         = var.project_id
@@ -113,7 +113,7 @@ resource "google_compute_backend_service" "prod_backend" {
   enable_cdn                      = false
 
   backend {
-    group           = google_compute_region_network_endpoint_group.appengine_prod.id
+    group           = google_compute_region_network_endpoint_group.cloudrun_prod.id
     balancing_mode  = "UTILIZATION"
     capacity_scaler = 1
   }
@@ -192,28 +192,4 @@ resource "google_compute_global_forwarding_rule" "prod_https" {
   port_range            = "443"
   load_balancing_scheme = "EXTERNAL_MANAGED"
   ip_protocol           = "TCP"
-}
-
-# =============================================================================
-# OUTPUTS
-# =============================================================================
-
-output "qa_http_ip" {
-  value       = google_compute_global_forwarding_rule.qa_http.ip_address
-  description = "QA HTTP IP address"
-}
-
-output "qa_https_ip" {
-  value       = google_compute_global_forwarding_rule.qa_https.ip_address
-  description = "QA HTTPS IP address"
-}
-
-output "prod_http_ip" {
-  value       = google_compute_global_forwarding_rule.prod_http.ip_address
-  description = "PROD HTTP IP address"
-}
-
-output "prod_https_ip" {
-  value       = google_compute_global_forwarding_rule.prod_https.ip_address
-  description = "PROD HTTPS IP address"
 }

@@ -145,7 +145,7 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_qa" {
 
 
 # ============================================================================
-# PROD Environment Jobs (App Engine)
+# PROD Environment Jobs (Cloud Run)
 # ============================================================================
 
 resource "google_cloud_scheduler_job" "message_undisplayed_prod" {
@@ -165,13 +165,9 @@ resource "google_cloud_scheduler_job" "message_undisplayed_prod" {
     max_doublings        = 5
   }
 
-  app_engine_http_target {
-    http_method  = "POST"
-    relative_uri = "/api/protected/jobs/displayedMessages"
-
-    app_engine_routing {
-      service = "prod"
-    }
+  http_target {
+    http_method = "POST"
+    uri         = "${var.cloud_run_url_prod}/api/protected/jobs/displayedMessages"
 
     headers = {
       "Authorization" = local.job_auth_header
@@ -198,13 +194,9 @@ resource "google_cloud_scheduler_job" "feedback_notifications_prod" {
     max_doublings        = 5
   }
 
-  app_engine_http_target {
-    http_method  = "POST"
-    relative_uri = "/api/protected/jobs/feedback-notification"
-
-    app_engine_routing {
-      service = "prod"
-    }
+  http_target {
+    http_method = "POST"
+    uri         = "${var.cloud_run_url_prod}/api/protected/jobs/feedback-notification"
 
     headers = {
       "Authorization" = local.job_auth_header
@@ -231,13 +223,9 @@ resource "google_cloud_scheduler_job" "complete_session_prod" {
     max_doublings        = 5
   }
 
-  app_engine_http_target {
-    http_method  = "POST"
-    relative_uri = "/api/protected/jobs/mark-session-completed"
-
-    app_engine_routing {
-      service = "prod"
-    }
+  http_target {
+    http_method = "POST"
+    uri         = "${var.cloud_run_url_prod}/api/protected/jobs/mark-session-completed"
 
     headers = {
       "Authorization" = local.job_auth_header
@@ -264,13 +252,9 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_prod" {
     max_doublings        = 5
   }
 
-  app_engine_http_target {
-    http_method  = "POST"
-    relative_uri = "/api/protected/jobs/remind-sessions"
-
-    app_engine_routing {
-      service = "prod"
-    }
+  http_target {
+    http_method = "POST"
+    uri         = "${var.cloud_run_url_prod}/api/protected/jobs/remind-sessions"
 
     headers = {
       "Authorization" = local.job_auth_header

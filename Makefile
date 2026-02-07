@@ -12,7 +12,8 @@ GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 
 # Google Cloud commands
 .PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux deploy-qa deploy-prod
-.PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa
+.PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
+.PHONY: info-prod revisions-prod rollback-prod redeploy-prod
 
 # Login to Google Cloud and set project
 login:
@@ -26,9 +27,12 @@ logs-qa:
 		--format="table(timestamp,severity,textPayload)" \
 		--project=$(PROJECT_ID)
 
-# Fetch prod logs
+# Fetch prod logs (Cloud Run)
 logs-prod:
-	gcloud logging read 'resource.type="gae_app" AND resource.labels.module_id="default" AND severity>=ERROR' --limit=50 --format="table(timestamp,severity,textPayload)"
+	gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="top-leader-prod" AND severity>=ERROR' \
+		--limit=50 \
+		--format="table(timestamp,severity,textPayload)" \
+		--project=$(PROJECT_ID)
 
 # Generate OpenAPI spec
 openapi:
@@ -73,7 +77,7 @@ deploy-qa: build
 	git tag qa-deploy
 	git push origin qa-deploy
 
-# Deploy to PROD (creates release-v*.*.* tag, same pattern as frontend)
+# Deploy to PROD via GitHub Actions (creates release tag, builds in CI)
 deploy-prod: build
 	@LATEST=$$(git tag -l "release-v*.*.*" | sort -V | tail -n1); \
 	if [ -z "$$LATEST" ]; then \
@@ -88,6 +92,22 @@ deploy-prod: build
 	echo "Creating tag: $$NEW_TAG"; \
 	git tag "$$NEW_TAG"; \
 	git push origin "$$NEW_TAG"
+
+# Direct deploy to PROD (local Docker build + push + Cloud Run deploy, bypasses CI)
+deploy-prod-direct:
+	docker build --platform linux/amd64 -t $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):latest .
+	docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):latest
+	gcloud run services replace src/main/cloudrun/service-prod.yaml \
+		--region=$(REGION) \
+		--project=$(PROJECT_ID)
+
+# Build custom JRE image for linux/amd64
+jre-build:
+	docker build --platform linux/amd64 -f Dockerfile.jre -t $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/topleader-jre:latest .
+
+# Push custom JRE image to Artifact Registry
+jre-push: jre-build
+	docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/topleader-jre:latest
 
 # --- Cloud Run Commands ---
 
@@ -129,6 +149,47 @@ rollback-qa:
 	@echo ""
 	@read -p "Enter revision name to rollback to: " REVISION; \
 	gcloud run services update-traffic $(SERVICE_NAME) \
+		--to-revisions=$$REVISION=100 \
+		--region=$(REGION) \
+		--platform=managed \
+		--project=$(PROJECT_ID)
+
+# --- PROD Cloud Run Commands ---
+
+# Show PROD Cloud Run service information
+info-prod:
+	gcloud run services describe top-leader-prod \
+		--region=$(REGION) \
+		--project=$(PROJECT_ID)
+
+# List PROD Cloud Run revisions
+revisions-prod:
+	gcloud run revisions list \
+		--service=top-leader-prod \
+		--region=$(REGION) \
+		--platform=managed \
+		--sort-by=~metadata.creationTimestamp \
+		--project=$(PROJECT_ID)
+
+# Redeploy PROD Cloud Run (force new revision to pick up secret changes)
+redeploy-prod:
+	gcloud run services update top-leader-prod \
+		--region=$(REGION) \
+		--project=$(PROJECT_ID) \
+		--update-env-vars="FORCE_REDEPLOY=$$(date +%s)"
+
+# Rollback PROD to previous Cloud Run revision
+rollback-prod:
+	@echo "Available revisions for top-leader-prod:"
+	@gcloud run revisions list \
+		--service=top-leader-prod \
+		--region=$(REGION) \
+		--platform=managed \
+		--format="table(metadata.name,status.traffic,status.conditions[0].status)" \
+		--project=$(PROJECT_ID)
+	@echo ""
+	@read -p "Enter revision name to rollback to: " REVISION; \
+	gcloud run services update-traffic top-leader-prod \
 		--to-revisions=$$REVISION=100 \
 		--region=$(REGION) \
 		--platform=managed \
