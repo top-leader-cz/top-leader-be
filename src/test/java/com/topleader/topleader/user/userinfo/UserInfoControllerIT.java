@@ -387,14 +387,24 @@ class UserInfoControllerIT extends IntegrationTest {
 
         mvc.perform(get("/api/latest/user-info/sessions"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.length()").value(3))
-            // Sorted by time descending (most recent first)
-            .andExpect(jsonPath("$[0].id").value(futureId))
-            .andExpect(jsonPath("$[0].status").value("UPCOMING"))
-            .andExpect(jsonPath("$[1].id").value(noShowId))
-            .andExpect(jsonPath("$[1].status").value("NO_SHOW_CLIENT"))
-            .andExpect(jsonPath("$[2].id").value(pastId))
-            .andExpect(jsonPath("$[2].status").value("COMPLETED"));
+            .andExpect(content().json("""
+                {
+                  "summary": {
+                    "allocatedUnits": 10,
+                    "upcomingSessions": 1,
+                    "pendingSessions": 0,
+                    "completedSessions": 1,
+                    "noShowClientSessions": 1,
+                    "consumedUnits": 2,
+                    "remainingUnits": 7
+                  },
+                  "sessions": [
+                    { "id": %d, "status": "UPCOMING" },
+                    { "id": %d, "status": "NO_SHOW_CLIENT" },
+                    { "id": %d, "status": "COMPLETED" }
+                  ]
+                }
+                """.formatted(futureId, noShowId, pastId)));
     }
 
     @Test

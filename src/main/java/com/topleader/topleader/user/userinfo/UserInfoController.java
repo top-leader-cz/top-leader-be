@@ -210,8 +210,10 @@ public class UserInfoController {
     }
 
     @GetMapping("/sessions")
-    public List<SessionDto> getAllSessions(@AuthenticationPrincipal UserDetails user) {
-        return getSessionDtos(scheduledSessionService.listUsersSessions(user.getUsername()));
+    public SessionsResponse getAllSessions(@AuthenticationPrincipal UserDetails user) {
+        var sessions = getSessionDtos(scheduledSessionService.listUsersSessions(user.getUsername()));
+        var summary = scheduledSessionService.getSessionSummary(user.getUsername());
+        return new SessionsResponse(summary, sessions);
     }
 
     private List<SessionDto> getSessionDtos(List<ScheduledSession> sessions) {
@@ -326,6 +328,11 @@ public class UserInfoController {
             );
         }
     }
+
+    public record SessionsResponse(
+        ScheduledSessionService.SessionSummary summary,
+        List<SessionDto> sessions
+    ) {}
 
     public record SessionDto(
         Long id,

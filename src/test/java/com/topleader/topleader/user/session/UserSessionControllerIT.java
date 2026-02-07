@@ -219,9 +219,11 @@ class UserSessionControllerIT extends IntegrationTest {
     @Test
     @WithMockUser("user2")
     void generateActionsSteps() throws Exception {
-        var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.ACTIONS_STEPS),
-                List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "generated-long-term-goal", "English");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("1. generated-actions-steps-a. 2. generated-actions-steps-b.");
+        var expectedSteps = List.of("generated-actions-steps-a", "generated-actions-steps-b");
+        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class))
+                .call()
+                .entity(ArgumentMatchers.<ParameterizedTypeReference<List<String>>>any()))
+                .thenReturn(expectedSteps);
         mvc.perform(post("/api/latest/user-sessions/generate-action-steps")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -234,7 +236,7 @@ class UserSessionControllerIT extends IntegrationTest {
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$", hasItems("generated-actions-steps-a.", "generated-actions-steps-b.")))
+                .andExpect(jsonPath("$", hasItems("generated-actions-steps-a", "generated-actions-steps-b")))
         ;
     }
 

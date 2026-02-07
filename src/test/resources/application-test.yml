@@ -32,9 +32,10 @@ spring:
 
   ai:
     openai:
+      api-key: test-api-key
       chat:
         options:
-          model: gpt-4o
+          model: gpt-5.2
   mail:
     host: 127.0.0.1
     port: 3025
