@@ -2,7 +2,7 @@
 FROM eclipse-temurin:25-jdk AS builder
 
 # Modules required for Spring Boot app
-ENV MODULES="java.base,java.compiler,java.desktop,java.net.http,java.sql,java.naming,java.management,java.instrument,java.security.sasl,jdk.crypto.ec,jdk.unsupported"
+ENV MODULES="java.base,java.compiler,java.desktop,java.net.http,java.sql,java.naming,java.management,java.instrument,java.security.sasl,jdk.crypto.ec,jdk.unsupported,jdk.management"
 
 RUN jlink \
     --add-modules $MODULES \
