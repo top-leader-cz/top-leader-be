@@ -61,9 +61,15 @@ jobs:
           docker build -t ${IMAGE_URL}:latest .
           docker push ${IMAGE_URL}:latest
 
+          # Get the pushed image digest to force new Cloud Run revision
+          DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:latest --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})
+          echo "IMAGE_WITH_DIGEST=${IMAGE_URL}@${DIGEST}" >> $GITHUB_ENV
+
       - name: Deploy to Cloud Run QA
         run: |
-          # Deploy using service YAML (already has :latest tag)
+          # Replace :latest with exact digest to force new revision
+          sed -i "s|image:.*|image: ${{ env.IMAGE_WITH_DIGEST }}|" src/main/cloudrun/service-qa.yaml
+
           gcloud run services replace src/main/cloudrun/service-qa.yaml \
             --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }}
