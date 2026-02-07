@@ -146,8 +146,7 @@ We use **Terraform** for infrastructure as code (IaC):
 We deploy on **Google Cloud Platform** with the following architecture:
 
 **Backend:**
-- **Cloud Run** (QA) - containerized deployment with Distroless images, auto-scaling to zero, pay-per-request
-- **App Engine** (Production) - managed Java runtime, auto-scaling, zero server management
+- **Cloud Run** (QA & Production) - containerized deployment with Distroless images, auto-scaling to zero, pay-per-request
 - **Cloud SQL** (PostgreSQL 15) - managed database with automatic backups, high availability
 
 **Frontend:**
@@ -166,7 +165,7 @@ We deploy on **Google Cloud Platform** with the following architecture:
 - PRs to `develop`/`main` trigger build + tests only (no deploy)
 - Tag-based deployments:
   - `qa-deploy` → builds Docker image → deploys to Cloud Run QA
-  - `release-v*.*.*` → builds JAR → deploys to App Engine Production
+  - `release-v*.*.*` → builds Docker image → deploys to Cloud Run Production
 
 **Why this setup:**
 - **Cost-effective** - Cloud Run scales to zero, pay only for actual requests
@@ -214,9 +213,8 @@ Path-based routing:
 - Ideal for cloud deployment and cost optimization
 - Current codebase is native-image ready (minimal reflection, no heavy ORM)
 
-**Production Migration to Cloud Run:**
-- QA already runs on Cloud Run (completed)
-- Production will migrate from App Engine to Cloud Run
+**Cloud Run + Native Images:**
+- Both QA and Production run on Cloud Run
 - Native image + Cloud Run = instant cold starts and minimal costs
 
 ## Tech Stack
