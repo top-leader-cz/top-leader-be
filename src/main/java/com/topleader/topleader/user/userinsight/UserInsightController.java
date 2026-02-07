@@ -93,7 +93,7 @@ public class UserInsightController {
     public void dashboard(
             @AuthenticationPrincipal UserDetails authUser,
             @RequestBody @Valid DashboardRequest dashboardRequest,
-            @RequestParam(defaultValue = "true") boolean useMcp) {
+            @RequestParam(defaultValue = "false") boolean useMcp) {
         var username = authUser.getUsername();
         log.info("Initiating dashboard content generation: [{}] useMcp: [{}]", username, useMcp);
         var query = List.of(dashboardRequest.query());

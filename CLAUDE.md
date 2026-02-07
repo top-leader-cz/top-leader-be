@@ -10,7 +10,7 @@ TopLeader is a Spring Boot backend application for a coaching/mentoring platform
 
 - **Java 25** with Spring Boot 4.0.2
 - **PostgreSQL** with Flyway migrations
-- **Spring Data JDBC** (fully migrated from JPA for native image compatibility)
+- **Spring Data JDBC** (fully migrated from JPA)
 - **Spring Security** (form login + session-based auth)
 - **Spring Modulith 2.0.2** (modular monolith architecture)
 - **Lombok** for boilerplate reduction
@@ -193,11 +193,6 @@ make test           # Run tests
 make test-coverage  # Run tests with coverage report
 make native         # Build GraalVM native image
 ```
-
-### Connection Pooling
-- **Agroal** connection pool (optimized for virtual threads)
-- HikariCP has been excluded from dependencies
-- Configuration in `application.yml` under `spring.datasource.agroal`
 
 ### Testing
 - Tests use **PostgreSQL TestContainers** (not H2)

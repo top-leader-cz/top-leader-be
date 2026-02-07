@@ -15,25 +15,8 @@ RUN ./gradlew dependencies --no-daemon || true
 COPY src src
 RUN ./gradlew bootJar -x test -Dspring.aot.enabled=true --no-daemon
 
-# Stage 2: Create custom JRE with jlink
-FROM eclipse-temurin:25-jdk AS jre-builder
-
-# Modules required for Spring Boot app
-ENV MODULES="java.base,java.compiler,java.desktop,java.net.http,java.sql,java.naming,java.management,java.instrument,java.security.sasl,jdk.crypto.ec,jdk.unsupported"
-
-RUN jlink \
-    --add-modules $MODULES \
-    --strip-debug \
-    --no-man-pages \
-    --no-header-files \
-    --compress=zip-6 \
-    --output /custom-jre
-
-# Stage 3: Runtime with minimal custom JRE (distroless)
-FROM gcr.io/distroless/base-debian12
-
-# Copy custom JRE
-COPY --from=jre-builder /custom-jre /opt/java
+# Stage 2: Runtime with pre-built custom JRE
+FROM europe-west3-docker.pkg.dev/topleader-394306/top-leader/topleader-jre:latest
 
 # Copy application
 WORKDIR /app
@@ -46,8 +29,8 @@ EXPOSE 8080
 
 # Run with optimizations for 512Mi Cloud Run
 ENTRYPOINT ["/opt/java/bin/java", \
-    "-XX:MaxRAMPercentage=70.0", \
-    "-XX:InitialRAMPercentage=70.0", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-XX:InitialRAMPercentage=75.0", \
     "-XX:+UseG1GC", \
     "-XX:+UseCompactObjectHeaders", \
     "-XX:+UseStringDeduplication", \

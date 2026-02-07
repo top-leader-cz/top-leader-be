@@ -15,7 +15,7 @@
         <Console name="CONSOLE_JSON" target="SYSTEM_OUT">
             <!-- Use PatternLayout with JSON-like output that GCP can parse -->
             <PatternLayout>
-                <pattern>{"severity":"%level{UPPER}","message":"%enc{%message}{JSON}","logger":"%logger","thread":"%thread","timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}","username":"%X{username}"%notEmpty{,"stacktrace":"%enc{%xThrowable}{JSON}"}}%n</pattern>
+                <pattern>{"severity":"%level","message":"%enc{%message}{JSON}","logger":"%logger","thread":"%thread","timestamp":"%d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}","username":"%X{username}"%notEmpty{,"stacktrace":"%enc{%xThrowable}{JSON}"}}%n</pattern>
             </PatternLayout>
         </Console>
     </Appenders>

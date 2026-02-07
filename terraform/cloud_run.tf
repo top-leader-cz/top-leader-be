@@ -26,6 +26,24 @@ resource "google_compute_region_network_endpoint_group" "cloudrun_prod" {
   }
 }
 
+# Allow unauthenticated access to QA Cloud Run service
+resource "google_cloud_run_service_iam_member" "qa_public" {
+  location = var.region
+  project  = var.project_id
+  service  = "top-leader-qa"
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+# Allow unauthenticated access to PROD Cloud Run service
+resource "google_cloud_run_service_iam_member" "prod_public" {
+  location = var.region
+  project  = var.project_id
+  service  = "top-leader-prod"
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
 # Artifact Registry for Docker images
 resource "google_artifact_registry_repository" "top_leader" {
   location      = var.region

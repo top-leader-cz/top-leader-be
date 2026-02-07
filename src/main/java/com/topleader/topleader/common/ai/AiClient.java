@@ -47,12 +47,6 @@ public class AiClient {
         return chatModel.call(String.format(prompt, strengths, values, locale));
     }
 
-    public String findLeadershipTip(String locale, List<String> strengths, List<String> values) {
-        log.info("Finding leadership tip for strengths: {} and values: {} locale: {}", strengths, values, locale);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_TIP);
-        return chatModel.call(String.format(prompt, strengths, values, locale));
-    }
-
     public String findActionGoal(String locale, List<String> strengths, List<String> values, List<String> development, String longTermGoal, List<String> actionsSteps) {
         log.info("Finding personal growth for strengths: {} and values: {} locale: {}", strengths, values, locale);
         var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP);
@@ -73,10 +67,18 @@ public class AiClient {
         return chatModel.call(String.format(prompt, strengths, values, development, locale));
     }
 
-    public String findActionsSteps(String locale, List<String> strengths, List<String> values, String areaOfDevelopment, String longTermGoal) {
-        log.info("Finding actions steps for strengths: {} and values: {} locale: {} longTermGoal: {}", strengths, values, locale, areaOfDevelopment);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.ACTIONS_STEPS);
-        return chatModel.call(String.format(prompt, strengths, values, areaOfDevelopment, longTermGoal, locale));
+    public List<String> findActionsSteps(String language, List<String> strengths, List<String> values, String areaOfDevelopment, String longTermGoal) {
+        log.info("Finding actions steps for strengths: {} and values: {} language: {} areaOfDevelopment: {}", strengths, values, language, areaOfDevelopment);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.ACTIONS_STEPS,
+                Map.of("strengths", String.join(", ", strengths),
+                        "values", String.join(", ", values),
+                        "areaOfDevelopment", areaOfDevelopment,
+                        "longTermGoal", longTermGoal,
+                        "language", language));
+        log.info("Actions steps query: {}", prompt.getContents());
+        return Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .entity(new ParameterizedTypeReference<List<String>>() {}));
     }
 
     @SneakyThrows

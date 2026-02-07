@@ -71,10 +71,10 @@ public class UserSessionController {
     }
 
     @PostMapping("/generate-action-steps")
-    public Collection<String> generateActionStep(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
+    public List<String> generateActionStep(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
         var userInfo = userInfoService.find(user.getUsername());
         var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale("en")).getLocale();
-        return split(aiClient.findActionsSteps(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal()));
+        return aiClient.findActionsSteps(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal());
     }
 
     @GetMapping("/generate-recommended-growth")

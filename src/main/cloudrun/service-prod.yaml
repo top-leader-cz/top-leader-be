@@ -27,7 +27,7 @@ spec:
           resources:
             limits:
               cpu: "1"
-              memory: 512Mi
+              memory: 700Mi
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "prod"
@@ -43,7 +43,7 @@ spec:
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: SPRING_DATASOURCE_PASSWORD
+                  name: SPRING_DATASOURCE_PASSWORD_PROD
                   key: latest
             - name: SPRING_MAIL_HOST
               value: "smtp.gmail.com"
