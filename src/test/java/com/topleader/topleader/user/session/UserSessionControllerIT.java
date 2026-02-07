@@ -5,6 +5,7 @@ package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.ai.AiPrompt;
 import com.topleader.topleader.common.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
@@ -23,7 +24,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -56,14 +56,12 @@ class UserSessionControllerIT extends IntegrationTest {
     @Autowired
     private UserActionStepRepository userActionStepRepository;
 
-    @Autowired
-    ChatModel chatModel;
 
     @Autowired
     ChatClient chatClient;
 
     @Autowired
-    AiPromptService aiPromptService;
+    AiClient aiClient;
 
     @Autowired
     BadgeRepository badgeRepository;
@@ -198,9 +196,8 @@ class UserSessionControllerIT extends IntegrationTest {
     @Test
     @WithMockUser("user2")
     void generateLongTermGoal() throws Exception {
-        var leaderShipQuery = String.format(aiPromptService.getPrompt(AiPrompt.PromptType.LONG_TERM_GOALS),
-                List.of("s1", "s2"), List.of("v1", "v2"), "area-of-development", "English");
-        Mockito.when(chatModel.call(leaderShipQuery)).thenReturn("1. generated-long-term-goal-a. 2. generated-long-term-goal-b.");
+        Mockito.doReturn(List.of("generated-long-term-goal-a.", "generated-long-term-goal-b.")).when(aiClient)
+                .findLongTermGoal(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
         mvc.perform(post("/api/latest/user-sessions/generate-long-term-goal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""

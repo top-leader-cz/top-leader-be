@@ -1,9 +1,11 @@
 package com.topleader.topleader.common.ai;
 
 
+import com.topleader.topleader.feedback.api.Summary;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.session.domain.UserArticle;
+import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.common.util.common.user.UserUtils;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
@@ -11,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 
@@ -26,8 +27,6 @@ import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
 @RequiredArgsConstructor
 public class AiClient {
 
-    private final ChatModel chatModel;
-
     private final ChatClient chatClient;
 
     private final AiPromptService aiPromptService;
@@ -36,125 +35,177 @@ public class AiClient {
 
 
     public String findLeaderShipStyle(String locale, List<String> strengths, List<String> values) {
-        log.info("Finding leadership style for strengths: {} and values: {} locale: {}", strengths, values, locale);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.LEADERSHIP_STYLE);
-        return chatModel.call(String.format(prompt, strengths, values, locale));
+        log.info("Finding leadership style, locale: {}", locale);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.LEADERSHIP_STYLE,
+                Map.of("strengths", String.join(", ", strengths),
+                        "values", String.join(", ", values),
+                        "language", locale));
+        log.info("Leadership style query: {}", prompt.getContents());
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .content());
+        log.info("Leadership style response: {}", res);
+        return res;
     }
 
     public String findAnimalSpirit(String locale, List<String> strengths, List<String> values) {
-        log.info("Finding animal spirit for strengths: {} and values: {} locale: {}", strengths, values, locale);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.ANIMAL_SPIRIT);
-        return chatModel.call(String.format(prompt, strengths, values, locale));
+        log.info("Finding animal spirit, locale: {}", locale);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.ANIMAL_SPIRIT,
+                Map.of("strengths", String.join(", ", strengths),
+                        "values", String.join(", ", values),
+                        "language", locale));
+        log.info("Animal spirit query: {}", prompt.getContents());
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .content());
+        log.info("Animal spirit response: {}", res);
+        return res;
     }
 
     public String findActionGoal(String locale, List<String> strengths, List<String> values, List<String> development, String longTermGoal, List<String> actionsSteps) {
-        log.info("Finding personal growth for strengths: {} and values: {} locale: {}", strengths, values, locale);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP);
-        var query = String.format(prompt, strengths, values, development, longTermGoal, actionsSteps, locale);
-        log.info("query: {}", query);
-        return chatModel.call(query);
+        log.info("Finding personal growth tip, locale: {}", locale);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.PERSONAL_GROWTH_TIP,
+                Map.of("strengths", String.join(", ", strengths),
+                        "values", String.join(", ", values),
+                        "areaOfDevelopment", String.join(", ", development),
+                        "longTermGoal", longTermGoal,
+                        "actionSteps", String.join(", ", actionsSteps),
+                        "language", locale));
+        log.info("Personal growth tip query: {}", prompt.getContents());
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .content());
+        log.info("Personal growth tip response: {}", res);
+        return res;
     }
 
     public String findLeaderPersona(String locale, List<String> strengths, List<String> values) {
-        log.info("Finding leader persona for strengths: {} and values: {} locale: {}", strengths, values, locale);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.WORLD_LEADER_PERSONA);
-        return chatModel.call(String.format(prompt, strengths, values, locale));
+        log.info("Finding leader persona, locale: {}", locale);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.WORLD_LEADER_PERSONA,
+                Map.of("strengths", String.join(", ", strengths),
+                        "values", String.join(", ", values),
+                        "language", locale));
+        log.info("Leader persona query: {}", prompt.getContents());
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .content());
+        log.info("Leader persona response: {}", res);
+        return res;
     }
 
-    public String findLongTermGoal(String locale, List<String> strengths, List<String> values, String development) {
-        log.info("Finding long term goal for strengths: {} and values: {} locale: {} longTermGoal: {}", strengths, values, locale, development);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.LONG_TERM_GOALS);
-        return chatModel.call(String.format(prompt, strengths, values, development, locale));
+    public List<String> findLongTermGoal(String locale, List<String> strengths, List<String> values, String development) {
+        log.info("Finding long term goal, locale: {}, development: {}", locale, development);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.LONG_TERM_GOALS,
+                Map.of("strengths", String.join(", ", strengths),
+                        "values", String.join(", ", values),
+                        "areaOfDevelopment", development,
+                        "language", locale));
+        log.info("Long term goal query: {}", prompt.getContents());
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .entity(new ParameterizedTypeReference<List<String>>() {}));
+        log.info("Long term goal response: {}", res);
+        return res;
     }
 
     public List<String> findActionsSteps(String language, List<String> strengths, List<String> values, String areaOfDevelopment, String longTermGoal) {
-        log.info("Finding actions steps for strengths: {} and values: {} language: {} areaOfDevelopment: {}", strengths, values, language, areaOfDevelopment);
+        log.info("Finding action steps, language: {}, areaOfDevelopment: {}", language, areaOfDevelopment);
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.ACTIONS_STEPS,
                 Map.of("strengths", String.join(", ", strengths),
                         "values", String.join(", ", values),
                         "areaOfDevelopment", areaOfDevelopment,
                         "longTermGoal", longTermGoal,
                         "language", language));
-        log.info("Actions steps query: {}", prompt.getContents());
-        return Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+        log.info("Action steps query: {}", prompt.getContents());
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
                 .call()
                 .entity(new ParameterizedTypeReference<List<String>>() {}));
+        log.info("Action steps response: {}", res);
+        return res;
     }
 
     @SneakyThrows
-    public String generateSummary(String locale, Map<String, List<String>> results) {
-        log.info("AI api call for summary {}  locale: {},", results, locale);
+    public Summary generateSummary(String locale, Map<String, List<String>> results) {
+        log.info("Generating feedback summary, locale: {}", locale);
         var resultJson = MAPPER.writeValueAsString(results);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.FEEDBACK_SUMMARY);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.FEEDBACK_SUMMARY,
+                Map.of("resultJson", resultJson, "language", locale));
+        log.info("Feedback summary query: {}", prompt.getContents());
 
-        var aiQuery = String.format(prompt, resultJson, locale);
-        log.debug("AI query for summary {}  locale: {},", aiQuery, locale);
-
-        var res = chatModel.call(aiQuery);
-        log.info("AI Summary response: {},", res);
-        return AiUtils.replaceNonJsonString(res);
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .entity(Summary.class));
+        log.info("Feedback summary response: {}", res);
+        return res;
     }
 
-    public String generateUserPreviews(String username, List<String> actionsSteps) {
-        log.info("AI api call for user previews. User:[{}], short term goals: {} ", username, actionsSteps);
-        var prompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_PREVIEWS);
-        var query = String.format(prompt, actionsSteps);
-        log.info("AI query: {}", query);
+    public List<UserPreview> generateUserPreviews(String username, List<String> actionsSteps) {
+        log.info("Generating user previews, user: [{}]", username);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.USER_PREVIEWS,
+                Map.of("actionSteps", String.join(", ", actionsSteps)));
+        log.info("User previews query: {}", prompt.getContents());
 
-        var res = Failsafe.with(retryPolicy).get(() -> chatModel.call(query));
-        log.info("AI user preview response: {}  User:[{}]", res, username);
-        return AiUtils.replaceNonJsonString(res);
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .entity(new ParameterizedTypeReference<List<UserPreview>>() {}));
+        log.info("User previews response: {}  User:[{}]", res, username);
+        return res;
     }
 
     public List<RecommendedGrowth> generateRecommendedGrowths(User user, String businessStrategy, String position, String competency) {
-        var username = user.getUsername();
-        log.info("AI api call for user generateRecommendedGrowths. User:[{}] ", username);
+        log.info("Generating recommended growths, user: [{}]", user.getUsername());
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.RECOMMENDED_GROWTH,
                 Map.of("businessStrategy", businessStrategy,
                         "position", position,
                         "competency", competency,
                         "language", UserUtils.localeToLanguage(user.getLocale())));
-        log.info("generateRecommendedGrowths query: {} User:[{}]", prompt.getContents(), username);
+        log.info("Recommended growths query: {} User:[{}]", prompt.getContents(), user.getUsername());
 
         var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
                 .call()
                 .entity(new ParameterizedTypeReference<List<RecommendedGrowth>>() {}));
-        log.info("AI generateRecommendedGrowths response: {} User:[{}]", res, username);
+        log.info("Recommended growths response: {} User:[{}]", res, user.getUsername());
         return res;
     }
 
     public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
-        log.info("AI api call for user articles. User:[{}], short term goals: {} ", username, actionGoals);
+        log.info("Generating user articles, user: [{}], language: {}", username, language);
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.USER_ARTICLES,
                 Map.of("actionGoals", String.join(", ", actionGoals),
                         "language", language));
-        log.info("AI articles query: {}", prompt.getContents());
+        log.info("User articles query: {}", prompt.getContents());
 
         var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
-        log.info("AI user articles response: {}  User:[{}]", res, username);
+        log.info("User articles response: {}  User:[{}]", res, username);
         return res;
     }
 
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {
-        log.info("Findings Suggestions strengths: {} and values: {} locale: {}", strengths, values, language);
+        log.info("Generating suggestion, user: [{}], language: {}", username, language);
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.SUGGESTION,
                 Map.of("query", userQuery,
                 "strengths",  String.join(", ", strengths),
                 "values", String.join(", ", values),
                 "language", language));
-        log.info("Suggestions query: {}", prompt.getContents());
+        log.info("Suggestion query: {}", prompt.getContents());
 
         var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
                 .call()
                 .content());
-        log.info("Suggestions response: {}  User:[{}]", res, username);
+        log.info("Suggestion response: {}  User:[{}]", res, username);
         return AiUtils.replaceNonJsonString(res);
     }
 
     public String generateSuggestionWithMcp(String username, String userQuery, String language) {
-        log.info("Generating MCP-powered suggestion for user: {} query: {}", username, userQuery);
+        log.info("Generating MCP suggestion, user: [{}], language: {}", username, language);
 
         var suggestionPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.SUGGESTION);
 
@@ -186,8 +237,7 @@ public class AiClient {
                 .toolNames("getUserProfile", "searchCoaches", "getCoachByName")
                 .call()
                 .content());
-
-        log.info("MCP Suggestion response for user {}: {}", username, res);
+        log.info("MCP Suggestion response: {}  User:[{}]", res, username);
         return res;
     }
 }

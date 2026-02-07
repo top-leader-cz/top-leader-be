@@ -11,7 +11,6 @@ import org.mockito.Mockito;
 
 
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,11 +30,6 @@ public class TestBeanConfiguration {
     }
 
     @Bean
-    public ChatModel chatModel() {
-         return Mockito.mock(ChatModel.class);
-    }
-
-    @Bean
     public ChatClient chatClient() {
         return Mockito.mock(ChatClient.class, Mockito.RETURNS_DEEP_STUBS);
     }
@@ -43,11 +37,10 @@ public class TestBeanConfiguration {
     @Bean
     @Primary
     public AiClient mockAiClient(
-            ChatModel chatModel,
             ChatClient chatClient,
             AiPromptService aiPromptService,
             dev.failsafe.RetryPolicy<Object> retryPolicy) {
-        return Mockito.spy(new AiClient(chatModel, chatClient, aiPromptService, retryPolicy));
+        return Mockito.spy(new AiClient(chatClient, aiPromptService, retryPolicy));
     }
 
     @Bean

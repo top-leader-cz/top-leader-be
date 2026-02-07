@@ -186,10 +186,8 @@ public class UserSessionService {
     }
 
     public String handleUserPreview(String username, List<String> actionGoals) {
-          List<UserPreview> previews = CommonUtils.tryGetOrElse(() -> {
-                    var res = aiClient.generateUserPreviews(username, actionGoals);
-                    return jsonMapper.readValue(res, new TypeReference<List<UserPreview>>() {});
-                },
+          List<UserPreview> previews = CommonUtils.tryGetOrElse(
+                () -> aiClient.generateUserPreviews(username, actionGoals),
                 List.of(),
                 "Failed to generate user preview for user: [" + username + "]");
 

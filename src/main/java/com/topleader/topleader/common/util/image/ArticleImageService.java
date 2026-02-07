@@ -5,8 +5,8 @@ import dev.failsafe.RetryPolicy;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
@@ -19,14 +19,14 @@ import java.util.Map;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Lazy
 public class ArticleImageService {
 
     private static final int MAX_PROMPT_LENGTH = 100;
 
     private final RestClient restClient;
 
-    private final GcsLightweightClient gcsClient;
+    @Autowired(required = false)
+    private GcsLightweightClient gcsClient;
 
     private final RetryPolicy<Object> retryPolicy;
 
@@ -36,7 +36,7 @@ public class ArticleImageService {
     @Value("${openai.image.url}")
     private String imageGenerationUrl;
 
-    @Value("${gcp.storage.bucket-name}")
+    @Value("${gcp.storage.bucket-name:}")
     private String bucketName;
 
     public String generateImage(String imagePrompt) {
@@ -116,8 +116,8 @@ public class ArticleImageService {
     }
     private String storeImageInGcp(byte[] image, String prompt, String revisedPrompt) {
         try {
-            if (image == null) {
-                log.warn("No image data to store for prompt: {}", prompt);
+            if (image == null || gcsClient == null) {
+                log.warn("No image data or GCS client unavailable for prompt: {}", prompt);
                 return null;
             }
 
@@ -161,8 +161,8 @@ public class ArticleImageService {
 
     public String getImageAsBase64(String gcpUrl) {
         try {
-            if (StringUtils.isBlank(gcpUrl) || !gcpUrl.startsWith("gs://")) {
-                log.warn("Invalid GCP URL: {}", gcpUrl);
+            if (gcsClient == null || StringUtils.isBlank(gcpUrl) || !gcpUrl.startsWith("gs://")) {
+                log.warn("GCS client unavailable or invalid GCP URL: {}", gcpUrl);
                 return null;
             }
 
@@ -181,6 +181,4 @@ public class ArticleImageService {
             return null;
         }
     }
-
-
 }

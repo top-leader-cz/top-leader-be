@@ -22,7 +22,7 @@ spring:
         options:
           model: gpt-5.2
   datasource:
-    url: jdbc:postgresql://localhost:5434/top_leader
+    url: jdbc:postgresql://localhost:5432/top_leader
     username: root
     password: postgres
     hikari:

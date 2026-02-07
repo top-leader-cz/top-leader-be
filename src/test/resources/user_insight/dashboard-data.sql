@@ -3,6 +3,6 @@ values ('user', 'Some', 'Dude', '$2a$12$jsTVqLPSt7pqxT.sPYKZ/.y0Vd6E.thnlpAJHgho
 
 
 
-insert into ai_prompt (id, value) values ('USER_PREVIEWS', 'video %s');
+insert into ai_prompt (id, value) values ('USER_PREVIEWS', 'video {actionSteps}');
 insert into ai_prompt (id, value) values ('USER_ARTICLES', 'article %s');
 insert into ai_prompt (id, value) values ('SUGGESTION', 'suggestion %s %s %s %s');

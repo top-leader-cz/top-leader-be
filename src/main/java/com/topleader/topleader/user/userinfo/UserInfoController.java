@@ -13,6 +13,7 @@ import com.topleader.topleader.common.notification.Notification;
 import com.topleader.topleader.common.notification.NotificationService;
 import com.topleader.topleader.common.notification.context.CoachLinkedNotificationContext;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.scheduled_session.ScheduledSessionQueryRepository;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionService;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
@@ -330,7 +331,7 @@ public class UserInfoController {
     }
 
     public record SessionsResponse(
-        ScheduledSessionService.SessionSummary summary,
+        ScheduledSessionQueryRepository.SessionSummary summary,
         List<SessionDto> sessions
     ) {}
 
