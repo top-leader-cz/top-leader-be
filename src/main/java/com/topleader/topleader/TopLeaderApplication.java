@@ -35,14 +35,4 @@ public class TopLeaderApplication {
     public String legacyHealthCheck() {
         return "App ok";
     }
-
-    @GetMapping("_ah/warmup")
-    public String legacyWarm() {
-        return "App ok";
-    }
-
-
-
-
-
 }

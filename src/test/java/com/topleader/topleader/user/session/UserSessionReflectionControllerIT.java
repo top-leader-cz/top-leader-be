@@ -5,12 +5,14 @@ package com.topleader.topleader.user.session;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeRepository;
 import com.topleader.topleader.user.session.domain.UserArticle;
+import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 
 import java.time.LocalDate;
@@ -25,11 +27,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Example;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
@@ -65,13 +65,13 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     BadgeRepository badgeRepository;
 
     @Autowired
-    ChatModel chatModel;
-
-    @Autowired
     ChatClient chatClient;
 
     @Autowired
     ArticleRepository articleRepository;
+
+    @Autowired
+    AiClient aiClient;
 
 
     @Test
@@ -109,17 +109,18 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                 ]
                 """;
 
-        // Configure the mock to return "action-goal-response" for all chatModel.call() invocations
-        Mockito.when(chatModel.call(Mockito.anyString())).thenReturn("action-goal-response");
-        Mockito.when(chatModel.call(Mockito.eq("test preview prompt [do not lose]"))).thenReturn("""
-                               [
-                  {
-                    "title": "Test Preview",
-                    "url": "https://youtube.com/watch?v=test",
-                    "thumbnail": "http://localhost:8060/hqdefault"
-                  }
-                ]
-                """);
+        // Mock findActionGoal on spy (now uses chatClient)
+        Mockito.doReturn("action-goal-response").when(aiClient)
+                .findActionGoal(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList(),
+                        ArgumentMatchers.anyList(), ArgumentMatchers.anyString(), ArgumentMatchers.anyList());
+
+        // Mock generateUserPreviews on spy (now uses chatClient)
+        var preview = new UserPreview();
+        preview.setTitle("Test Preview");
+        preview.setUrl("https://youtube.com/watch?v=test");
+        preview.setThumbnail("http://localhost:8060/hqdefault");
+        Mockito.doReturn(List.of(preview)).when(aiClient)
+                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList());
 
         mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
         mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200)

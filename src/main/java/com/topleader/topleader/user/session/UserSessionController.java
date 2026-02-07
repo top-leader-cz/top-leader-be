@@ -64,10 +64,10 @@ public class UserSessionController {
     }
 
     @PostMapping("/generate-long-term-goal")
-    public Collection<String> generateLongTermGoal(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
+    public List<String> generateLongTermGoal(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
         var userInfo = userInfoService.find(user.getUsername());
         var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale(" ")).getLocale();
-        return split(aiClient.findLongTermGoal(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment()));
+        return aiClient.findLongTermGoal(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment());
     }
 
     @PostMapping("/generate-action-steps")
@@ -102,18 +102,6 @@ public class UserSessionController {
     public record FeedbackDto(String username, Long sessionId, @NotNull Map<String, Integer> answers, String feedback) {
 
     }
-
-
-
-    Collection<String> split(String data) {
-        return Arrays.stream(data
-                .split("[0-9]\\."))
-                .sequential()
-                .map(String::trim)
-                .filter(StringUtils::isNotBlank)
-                .collect(Collectors.toSet());
-    }
-
 
     public record ActionSteps(String areaOfDevelopment, String longTermGoal) {
 
