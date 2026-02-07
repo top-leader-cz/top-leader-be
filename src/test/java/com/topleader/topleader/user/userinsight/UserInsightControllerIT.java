@@ -3,6 +3,7 @@ package com.topleader.topleader.user.userinsight;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.ai.AiPrompt;
 import com.topleader.topleader.common.ai.AiPromptService;
 import com.topleader.topleader.user.session.domain.UserArticle;
@@ -43,6 +44,9 @@ class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
     ChatClient chatClient;
+
+    @Autowired
+    AiClient aiClient;
 
     @Autowired
     UserInfoRepository userInfoRepository;
@@ -195,13 +199,13 @@ class UserInsightControllerIT extends IntegrationTest {
                   ]
                 """;
 
-        // Mock the intermediate response spec so both content() and entity() work
-        var mockResponseSpec = Mockito.mock(ChatClient.CallResponseSpec.class);
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call()).thenReturn(mockResponseSpec);
-        Mockito.when(mockResponseSpec.content()).thenReturn("suggestion response");
-        Mockito.when(mockResponseSpec.entity(ArgumentMatchers.any(ParameterizedTypeReference.class)))
-                .thenReturn(JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {
-                }));
+        // Mock AiClient methods directly using spy
+        var mockArticles = JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {});
+        Mockito.doReturn("suggestion response").when(aiClient)
+                .generateSuggestion(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
+                        ArgumentMatchers.anyList(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
+        Mockito.doReturn(mockArticles).when(aiClient)
+                .generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
 
 
         mvc.perform(post("/api/latest/user-insight/dashboard").contentType(MediaType.APPLICATION_JSON).content("""
