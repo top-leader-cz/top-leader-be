@@ -55,7 +55,7 @@ variable "alert_emails" {
 }
 
 variable "alert_sms_number" {
-  description = "Phone number for SMS alerts (E.164 format, e.g. +420123456789).."
+  description = "Phone number for SMS alerts (E.164 format, e.g. +4201234yes56789).."
   type        = string
   default     = null
 }

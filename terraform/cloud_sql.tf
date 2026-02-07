@@ -59,14 +59,3 @@ resource "google_sql_database_instance" "main" {
     ignore_changes = [settings[0].maintenance_window]
   }
 }
-
-# Output the connection name for App Engine
-output "sql_connection_name" {
-  value       = google_sql_database_instance.main.connection_name
-  description = "Cloud SQL connection name for App Engine"
-}
-
-output "sql_public_ip" {
-  value       = google_sql_database_instance.main.public_ip_address
-  description = "Cloud SQL public IP address"
-}

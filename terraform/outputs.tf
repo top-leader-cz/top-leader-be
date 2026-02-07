@@ -8,7 +8,7 @@
 
 output "appengine_service_account" {
   value       = data.google_app_engine_default_service_account.default.email
-  description = "App Engine default service account email"
+  description = "App Engine default service account email (used by Cloud Run)"
 }
 
 output "cloudrun_compute_service_account" {
@@ -19,6 +19,20 @@ output "cloudrun_compute_service_account" {
 output "scheduler_service_account" {
   value       = google_service_account.scheduler.email
   description = "Cloud Scheduler service account email"
+}
+
+# -----------------------------------------------------------------------------
+# Cloud Run
+# -----------------------------------------------------------------------------
+
+output "cloudrun_qa_url" {
+  value       = "https://qa.topleaderplatform.io"
+  description = "Cloud Run QA service URL"
+}
+
+output "cloudrun_prod_url" {
+  value       = "https://topleaderplatform.io"
+  description = "Cloud Run PROD service URL"
 }
 
 # -----------------------------------------------------------------------------
@@ -46,17 +60,17 @@ output "prod_https_ip" {
 }
 
 # -----------------------------------------------------------------------------
-# Cloud Run
+# Cloud SQL
 # -----------------------------------------------------------------------------
 
-output "cloudrun_qa_url" {
-  value       = "https://qa.topleaderplatform.io"
-  description = "Cloud Run QA service URL"
+output "sql_connection_name" {
+  value       = google_sql_database_instance.main.connection_name
+  description = "Cloud SQL connection name for Cloud Run"
 }
 
-output "cloudrun_prod_url" {
-  value       = "https://topleaderplatform.io"
-  description = "Cloud Run PROD service URL"
+output "sql_public_ip" {
+  value       = google_sql_database_instance.main.public_ip_address
+  description = "Cloud SQL public IP address"
 }
 
 # -----------------------------------------------------------------------------

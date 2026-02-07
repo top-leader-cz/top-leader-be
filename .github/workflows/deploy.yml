@@ -57,21 +57,13 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")
           IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          docker build -t ${IMAGE_URL}:${SHORT_SHA} -t ${IMAGE_URL}:latest .
-          docker push ${IMAGE_URL}:${SHORT_SHA}
+          docker build -t ${IMAGE_URL}:latest .
           docker push ${IMAGE_URL}:latest
 
       - name: Deploy to Cloud Run QA
         run: |
-          SHORT_SHA=$(git rev-parse --short "$GITHUB_SHA")
-          IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}:${SHORT_SHA}
-
-          # Update image tag in service YAML
-          sed -i "s|image:.*|image: ${IMAGE_URL}|" src/main/cloudrun/service-qa.yaml
-
-          # Deploy using service YAML
+          # Deploy using service YAML (already has :latest tag)
           gcloud run services replace src/main/cloudrun/service-qa.yaml \
             --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }}
@@ -107,20 +99,24 @@ jobs:
             done
           fi
 
-      - name: Cleanup old images (keep last 2)
+      - name: Cleanup old images (keep latest + 1 previous)
         run: |
           IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          echo "Fetching QA image digests..."
-          DIGESTS=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+          echo "Cleaning up old QA images..."
+          # List all digests, exclude PROD versioned images, keep 2 newest QA images
+          OLD_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+            --include-tags \
             --sort-by=~CREATE_TIME \
-            --format="get(version)" \
-            --project=${{ env.PROJECT_ID }} | tail -n +3)
+            --format="table[no-heading](DIGEST,TAGS)" \
+            --project=${{ env.PROJECT_ID }} | \
+            grep -vE '[0-9]+\.[0-9]+\.[0-9]+' | \
+            awk '{print $1}' | tail -n +3)
 
-          if [ -z "$DIGESTS" ]; then
+          if [ -z "$OLD_IMAGES" ]; then
             echo "No old images to delete"
           else
             echo "Deleting old images..."
-            for DIGEST in $DIGESTS; do
+            for DIGEST in $OLD_IMAGES; do
               gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
                 --project=${{ env.PROJECT_ID }} \
                 --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
@@ -155,9 +151,8 @@ jobs:
         run: |
           VERSION="${GITHUB_REF#refs/tags/release-v}"
           IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          docker build -t ${IMAGE_URL}:${VERSION} -t ${IMAGE_URL}:latest .
+          docker build -t ${IMAGE_URL}:${VERSION} .
           docker push ${IMAGE_URL}:${VERSION}
-          docker push ${IMAGE_URL}:latest
 
       - name: Deploy to Cloud Run PROD
         run: |
@@ -200,26 +195,6 @@ jobs:
                 --platform=managed \
                 --project=${{ env.PROJECT_ID }} \
                 --quiet || echo "Failed to delete $REVISION"
-            done
-          fi
-
-      - name: Cleanup old images (keep last 3)
-        run: |
-          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          echo "Fetching PROD image digests..."
-          DIGESTS=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --sort-by=~CREATE_TIME \
-            --format="get(version)" \
-            --project=${{ env.PROJECT_ID }} | tail -n +4)
-
-          if [ -z "$DIGESTS" ]; then
-            echo "No old images to delete"
-          else
-            echo "Deleting old images..."
-            for DIGEST in $DIGESTS; do
-              gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
-                --project=${{ env.PROJECT_ID }} \
-                --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
             done
           fi
 

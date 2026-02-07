@@ -2,6 +2,19 @@
 # Note: The services themselves are deployed via GitHub Actions
 # Domain mapping must be done via gcloud (not supported in europe-west3 via Terraform)
 
+# App Engine Application (cannot be deleted once created)
+# No longer used for serving - all traffic goes through Cloud Run.
+# Kept because: 1) Can't be deleted  2) Its default service account is used by Cloud Run.
+resource "google_app_engine_application" "app" {
+  project       = var.project_id
+  location_id   = var.region
+  database_type = "CLOUD_DATASTORE_COMPATIBILITY"
+
+  feature_settings {
+    split_health_checks = true
+  }
+}
+
 # Serverless NEG for Cloud Run QA service
 resource "google_compute_region_network_endpoint_group" "cloudrun_qa" {
   name                  = "top-be-qa-cloudrun"
