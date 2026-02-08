@@ -166,8 +166,9 @@ public class UserSessionService {
                 actionGoals));
 
         if (!actionGoals.isEmpty()) {
-            var previewsFuture = CompletableFuture.supplyAsync(() -> handleUserPreview(username, actionGoals));
-            var articlesFuture = CompletableFuture.supplyAsync(() -> handleUserArticles(username, actionGoals));
+            var englishGoals = aiClient.translateToEnglish(String.join(", ", actionGoals));
+            var previewsFuture = CompletableFuture.supplyAsync(() -> handleUserPreview(username, actionGoals, englishGoals));
+            var articlesFuture = CompletableFuture.supplyAsync(() -> handleUserArticles(username, actionGoals, englishGoals));
 
             userInsight.setUserPreviews(previewsFuture.join());
             var userArticles = articlesFuture.join();
@@ -184,10 +185,10 @@ public class UserSessionService {
         userInsightService.save(userInsight);
     }
 
-    public String handleUserPreview(String username, List<String> actionGoals) {
+    public String handleUserPreview(String username, List<String> actionGoals, String englishGoals) {
         var start = System.currentTimeMillis();
         List<UserPreview> previews = CommonUtils.tryGetOrElse(
-                () -> aiClient.generateUserPreviews(username, actionGoals),
+                () -> aiClient.generateUserPreviews(username, actionGoals, englishGoals),
                 List.of(),
                 "Failed to generate user preview for user: [" + username + "]");
         log.info("[TIMING] AI generateUserPreviews took {}ms for user [{}]", System.currentTimeMillis() - start, username);
@@ -206,11 +207,11 @@ public class UserSessionService {
                 "Failed to convert user preview for user: [" + username + "]");
     }
 
-    public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
+    public List<UserArticle> handleUserArticles(String username, List<String> actionGoals, String englishGoals) {
         var start = System.currentTimeMillis();
         var user = userDetailService.find(username);
         List<UserArticle> articles = CommonUtils.tryGetOrElse(
-                () -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale())),
+                () -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()), englishGoals),
                 List.of(),
                 "Failed to generate user articles for user: [" + username + "]");
         log.info("[TIMING] AI generateUserArticles took {}ms for user [{}]", System.currentTimeMillis() - start, username);

@@ -160,20 +160,25 @@ public class AiClient {
         return res;
     }
 
-    public List<UserPreview> generateUserPreviews(String username, List<String> actionsSteps) {
+    public List<UserPreview> generateUserPreviews(String username, List<String> actionsSteps, String englishGoals) {
         log.info("Generating user previews, user: [{}]", username);
 
-        var query = "TED talks YouTube " + String.join(", ", actionsSteps);
+        var goalsText = String.join(", ", actionsSteps);
+        var query = englishGoals + " " + goalsText + " TED talk leadership development";
         log.info("[TAVILY] Searching videos: {}", query);
         var videoResults = searchVideos.apply(new McpToolsConfig.TavilySearchRequest(query));
+
+        if (videoResults.isEmpty()) {
+            log.warn("No video results from Tavily for user [{}]", username);
+            return List.of();
+        }
 
         var resultsText = videoResults.stream()
                 .map(r -> "- title: %s | url: %s | snippet: %s".formatted(r.title(), r.url(), r.content()))
                 .collect(java.util.stream.Collectors.joining("\n"));
 
         var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_PREVIEWS);
-        var userMessage = "Short-term-goals: %s\n\nSearch results:\n%s".formatted(
-                String.join(", ", actionsSteps), resultsText);
+        var userMessage = "Short-term-goals: %s\n\nSearch results:\n%s".formatted(goalsText, resultsText);
 
         log.info("User previews query for [{}], {} search results", username, videoResults.size());
 
@@ -202,12 +207,18 @@ public class AiClient {
         return res;
     }
 
-    public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
+    public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language, String englishGoals) {
         log.info("Generating user articles, user: [{}], language: {}", username, language);
 
-        var query = String.join(", ", actionGoals) + " article " + language;
+        var goalsText = String.join(", ", actionGoals);
+        var query = englishGoals + " " + goalsText + " article";
         log.info("[TAVILY] Searching articles: {}", query);
         var articleResults = searchArticles.apply(new McpToolsConfig.TavilySearchRequest(query));
+
+        if (articleResults.isEmpty()) {
+            log.warn("No article results from Tavily for user [{}]", username);
+            return List.of();
+        }
 
         var resultsText = articleResults.stream()
                 .map(r -> "- title: %s | url: %s | snippet: %s".formatted(r.title(), r.url(), r.content()))
@@ -226,6 +237,21 @@ public class AiClient {
                 .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
         log.info("User articles response: {} articles for user [{}]", res != null ? res.size() : 0, username);
         return res;
+    }
+
+    public String translateToEnglish(String text) {
+        try {
+            var result = chatClient.prompt()
+                    .system("Translate the following text to English. Return ONLY the translation, nothing else. If the text is already in English, return it as-is.")
+                    .user(text)
+                    .call()
+                    .content();
+            log.info("[TRANSLATE] '{}' -> '{}'", text, result);
+            return result;
+        } catch (Exception e) {
+            log.warn("[TRANSLATE] Failed to translate '{}', using original", text, e);
+            return text;
+        }
     }
 
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {

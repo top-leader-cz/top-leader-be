@@ -183,13 +183,15 @@ class UserInsightControllerIT extends IntegrationTest {
         // Mock AiClient methods directly using spy
         var mockPreviews = JsonUtils.fromJson(previewsJson, new ParameterizedTypeReference<List<UserPreview>>() {});
         var mockArticles = JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {});
+        Mockito.doReturn("english goals").when(aiClient)
+                .translateToEnglish(ArgumentMatchers.anyString());
         Mockito.doReturn(mockPreviews).when(aiClient)
-                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList());
+                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
         Mockito.doReturn("suggestion response").when(aiClient)
                 .generateSuggestion(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
                         ArgumentMatchers.anyList(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
         Mockito.doReturn(mockArticles).when(aiClient)
-                .generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
+                .generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
 
 
         mvc.perform(post("/api/latest/user-insight/dashboard?useMcp=false").contentType(MediaType.APPLICATION_JSON).content("""
@@ -267,12 +269,14 @@ class UserInsightControllerIT extends IntegrationTest {
 
         var mockPreviews = JsonUtils.fromJson(previewsJson, new ParameterizedTypeReference<List<UserPreview>>() {});
         var mockArticles = JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {});
+        Mockito.doReturn("english goals").when(aiClient)
+                .translateToEnglish(ArgumentMatchers.anyString());
         Mockito.doReturn(mockPreviews).when(aiClient)
-                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList());
+                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
         Mockito.doReturn("mcp suggestion response").when(aiClient)
                 .generateSuggestionWithMcp(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
         Mockito.doReturn(mockArticles).when(aiClient)
-                .generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
+                .generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
 
         mvc.perform(post("/api/latest/user-insight/dashboard?useMcp=true").contentType(MediaType.APPLICATION_JSON).content("""
                 {
