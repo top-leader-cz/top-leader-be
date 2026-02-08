@@ -13,7 +13,7 @@ spring:
     openai:
       chat:
         options:
-          model: gpt-4o
+          model: gpt-5.2
   datasource:
     url: jdbc:postgresql://${DB_HOST:localhost}:5432/top_leader
     username: top-leader
