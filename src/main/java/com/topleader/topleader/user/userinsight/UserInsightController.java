@@ -22,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
 
 import tools.jackson.databind.json.JsonMapper;
 
@@ -130,8 +132,13 @@ public class UserInsightController {
 
         Thread.ofVirtual().start(() -> {
             try {
-                var previews = userSessionService.handleUserPreview(username, query);
-                var articles = userSessionService.handleUserArticles(username, query);
+                var previewsFuture = CompletableFuture.supplyAsync(
+                        () -> userSessionService.handleUserPreview(username, query), Executors.newVirtualThreadPerTaskExecutor());
+                var articlesFuture = CompletableFuture.supplyAsync(
+                        () -> userSessionService.handleUserArticles(username, query), Executors.newVirtualThreadPerTaskExecutor());
+
+                var previews = previewsFuture.join();
+                var articles = articlesFuture.join();
                 var insight = userInsightService.getInsight(username);
                 insight.setUserPreviews(previews);
                 userInsightService.save(insight);
