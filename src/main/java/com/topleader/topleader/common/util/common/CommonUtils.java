@@ -63,18 +63,6 @@ public class CommonUtils {
 
 
     /**
-     * Try.of(() -> ...).map(mapper).onFailure(errorHandler).getOrElse(defaultValue)
-     */
-    public <T, R> R tryMapOrElse(Callable<T> supplier, Function<T, R> mapper, R defaultValue, Consumer<Exception> errorHandler) {
-        try {
-            return mapper.apply(supplier.call());
-        } catch (Exception e) {
-            errorHandler.accept(e);
-            return defaultValue;
-        }
-    }
-
-    /**
      * Try.of(() -> ...).onFailure(log::error).getOrNull()
      */
     public <T> T tryGetOrNull(Callable<T> supplier, String errorMessage) {

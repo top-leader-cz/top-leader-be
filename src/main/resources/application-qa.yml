@@ -17,7 +17,7 @@ spring:
     openai:
       chat:
         options:
-          model: gpt-5.2
+          model: gpt-4o
   datasource:
     username: top-leader
     hikari:
@@ -25,6 +25,8 @@ spring:
       minimum-idle: 2
       maximum-pool-size: 10
       connection-timeout: 5000
+      max-lifetime: 300000
+      idle-timeout: 180000
       data-source-properties:
         socketFactory: com.google.cloud.sql.postgres.SocketFactory
         cloudSqlInstance: topleader-394306:europe-west3:top-leader-db

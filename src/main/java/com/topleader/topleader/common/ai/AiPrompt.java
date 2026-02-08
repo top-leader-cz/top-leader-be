@@ -26,6 +26,7 @@ public class AiPrompt {
         RECOMMENDED_GROWTH,
         USER_ARTICLES,
         SUGGESTION,
+        IMAGE_MATCH,
     }
 
 }
