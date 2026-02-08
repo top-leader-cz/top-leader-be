@@ -183,21 +183,43 @@ public class AiClient {
     public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
         log.info("Generating user articles, user: [{}], language: {}", username, language);
 
-        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
-
         var userMessage = "Action goals: %s\nPreferred language: %s".formatted(
                 String.join(", ", actionGoals), language);
 
-        log.info("User articles query: {}", userMessage);
+        // Step 1: Search and select articles (fast - uses tool, minimal text output)
+        var selectPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
+        log.info("User articles selection query: {}", userMessage);
 
-        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
-                .system(systemPrompt)
+        var selected = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(selectPrompt)
                 .user(userMessage)
                 .toolNames("searchArticles")
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
-        log.info("User articles response: {}  User:[{}]", res, username);
-        return res;
+        log.info("User articles selected: {} articles for user [{}]", selected != null ? selected.size() : 0, username);
+
+        if (selected == null || selected.isEmpty()) {
+            return List.of();
+        }
+
+        // Step 2: Generate detailed summaries only for selected articles (no tools needed)
+        var summaryPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES_SUMMARY);
+        var articlesJson = selected.stream()
+                .map(a -> "- \"%s\" by %s (%s) - %s".formatted(a.getTitle(), a.getAuthor(), a.getSource(), a.getUrl()))
+                .collect(java.util.stream.Collectors.joining("\n"));
+        var summaryMessage = "Articles to enrich:\n%s\n\nUser action goals: %s\nTarget language: %s".formatted(
+                articlesJson, String.join(", ", actionGoals), language);
+
+        log.info("User articles summary query for [{}]", username);
+
+        var enriched = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(summaryPrompt)
+                .user(summaryMessage)
+                .call()
+                .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
+        log.info("User articles enriched: {} articles for user [{}]", enriched != null ? enriched.size() : 0, username);
+
+        return enriched != null ? enriched : selected;
     }
 
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {
