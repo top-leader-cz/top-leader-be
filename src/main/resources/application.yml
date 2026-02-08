@@ -17,7 +17,7 @@ spring:
     enabled: false
   ai:
     anthropic:
-      api-key: ${ANTHROPIC_API_KEY:dummy-api-key}
+      api-key: ${SPRING_AI_ANTHROPIC_APIKEY:dummy-api-key}
       chat:
         options:
           model: claude-sonnet-4-5-20250929

@@ -50,10 +50,10 @@ spec:
                 secretKeyRef:
                   name: SPRING_MAIL_PASSWORD
                   key: latest
-            - name: ANTHROPIC_API_KEY
+            - name: SPRING_AI_ANTHROPIC_APIKEY
               valueFrom:
                 secretKeyRef:
-                  name: ANTHROPIC_API_KEY
+                  name: SPRING_AI_ANTHROPIC_APIKEY
                   key: latest
             - name: OPENAI_API_KEY
               valueFrom:
