@@ -1,19 +1,22 @@
 package com.topleader.topleader.common.util.image;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.topleader.topleader.common.ai.AiClient;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.net.URI;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -21,11 +24,21 @@ import java.util.*;
 public class ArticleImageService {
 
     private static final int MAX_PROMPT_LENGTH = 100;
-    private static final String NO_MATCH = "NONE";
+    private static final int MIN_MATCHES = 1;
+    private static final List<String> STEM_SUFFIXES = List.of(
+            "ation", "tion", "ment", "ness", "ling", "ally", "ing", "ive", "ous", "ful",
+            "ity", "ble", "ant", "ent", "ism", "ist", "ate", "ize", "ise", "ial", "ual",
+            "ion", "age", "ly", "ed", "er", "al", "es"
+    );
+    private static final Set<String> STOP_WORDS = Set.of(
+            "a", "an", "the", "of", "in", "with", "and", "for", "to", "on", "at", "by",
+            "is", "it", "or", "as", "be", "that", "this", "from", "are", "was", "has",
+            "style", "illustration", "realistic", "modern", "clean", "concept", "scene",
+            "showing", "flat", "editorial", "muted", "tones", "colors", "warm", "soft"
+    );
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
-    private final AiClient aiClient;
 
     @Autowired(required = false)
     private GcsLightweightClient gcsClient;
@@ -42,6 +55,21 @@ public class ArticleImageService {
 
     @Value("${gcp.storage.bucket-name:}")
     private String bucketName;
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void preloadImageCache() {
+        if (gcsClient == null || StringUtils.isBlank(bucketName)) {
+            return;
+        }
+        Thread.ofVirtual().start(() -> {
+            try {
+                cachedImageNames = new HashSet<>(gcsClient.listObjects());
+                log.info("Pre-loaded {} image names from GCS bucket", cachedImageNames.size());
+            } catch (Exception e) {
+                log.error("Failed to pre-load GCS image names, will load on first request", e);
+            }
+        });
+    }
 
     public String generateImage(String imagePrompt) {
         try {
@@ -80,19 +108,72 @@ public class ArticleImageService {
                 return null;
             }
 
-            var existingImages = String.join("\n", imageNames);
-            var result = aiClient.findMatchingImage(imagePrompt, existingImages);
-
-            if (result != null && !result.isBlank() && !result.strip().equalsIgnoreCase(NO_MATCH)) {
-                var fileName = result.strip();
-                if (imageNames.contains(fileName)) {
-                    return String.format("gs://%s/%s", bucketName, fileName);
-                }
+            var promptKeywords = extractKeywords(imagePrompt);
+            if (promptKeywords.isEmpty()) {
+                return null;
             }
+
+            return imageNames.stream()
+                    .map(fileName -> {
+                        var fileKeywords = extractKeywordsFromFileName(fileName);
+                        var matchCount = countFuzzyMatches(promptKeywords, fileKeywords);
+                        return Map.entry(fileName, matchCount);
+                    })
+                    .filter(e -> e.getValue() >= 1)
+                    .max(Map.Entry.comparingByValue())
+                    .map(e -> {
+                        log.info("[IMAGE-MATCH] Matched '{}' -> '{}' (matches: {})", imagePrompt, e.getKey(), e.getValue());
+                        return String.format("gs://%s/%s", bucketName, e.getKey());
+                    })
+                    .orElse(null);
         } catch (Exception e) {
             log.warn("Failed to search for reusable images, will generate new one", e);
         }
         return null;
+    }
+
+    private Set<String> extractKeywords(String text) {
+        return Arrays.stream(text.toLowerCase().replaceAll("[^a-z0-9\\s]", "").split("\\s+"))
+                .filter(w -> w.length() > 2)
+                .filter(w -> !STOP_WORDS.contains(w))
+                .map(ArticleImageService::stem)
+                .collect(Collectors.toSet());
+    }
+
+    private Set<String> extractKeywordsFromFileName(String fileName) {
+        var name = fileName.replace(".png", "");
+        return Arrays.stream(name.split("_"))
+                .filter(w -> w.length() > 2)
+                .filter(w -> !STOP_WORDS.contains(w))
+                .map(ArticleImageService::stem)
+                .collect(Collectors.toSet());
+    }
+
+    private long countFuzzyMatches(Set<String> promptWords, Set<String> fileWords) {
+        return promptWords.stream()
+                .filter(wordA -> fileWords.stream().anyMatch(wordB -> fuzzyMatch(wordA, wordB)))
+                .count();
+    }
+
+    private static boolean fuzzyMatch(String a, String b) {
+        if (a.equals(b)) {
+            return true;
+        }
+        var shorter = a.length() <= b.length() ? a : b;
+        var longer = a.length() > b.length() ? a : b;
+        return shorter.length() >= 4 && longer.startsWith(shorter);
+    }
+
+    static String stem(String word) {
+        if (word.length() <= 4) {
+            return word;
+        }
+        for (var suffix : STEM_SUFFIXES) {
+            if (word.endsWith(suffix) && word.length() - suffix.length() >= 3) {
+                return word.substring(0, word.length() - suffix.length());
+            }
+        }
+        return word;
     }
 
     private Set<String> getOrLoadImageNames() throws Exception {

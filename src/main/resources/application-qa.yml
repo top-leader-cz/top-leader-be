@@ -17,7 +17,7 @@ spring:
     openai:
       chat:
         options:
-          model: gpt-5.2
+          model: gpt-4o
   datasource:
     username: top-leader
     hikari:

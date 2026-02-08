@@ -201,6 +201,8 @@ public class AiClient {
         return res;
     }
 
+
+
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {
         log.info("Generating suggestion, user: [{}], language: {}", username, language);
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.SUGGESTION,
