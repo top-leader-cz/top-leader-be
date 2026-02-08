@@ -24,14 +24,29 @@ import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class AiClient {
 
     private final ChatClient chatClient;
-
     private final AiPromptService aiPromptService;
-
     private final RetryPolicy<Object> retryPolicy;
+    private final java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchArticles;
+    private final java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchVideos;
+
+    public AiClient(
+            ChatClient chatClient,
+            AiPromptService aiPromptService,
+            RetryPolicy<Object> retryPolicy,
+            @org.springframework.beans.factory.annotation.Qualifier("searchArticles")
+            java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchArticles,
+            @org.springframework.beans.factory.annotation.Qualifier("searchVideos")
+            java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchVideos
+    ) {
+        this.chatClient = chatClient;
+        this.aiPromptService = aiPromptService;
+        this.retryPolicy = retryPolicy;
+        this.searchArticles = searchArticles;
+        this.searchVideos = searchVideos;
+    }
 
 
     public String findLeaderShipStyle(String locale, List<String> strengths, List<String> values) {
@@ -145,13 +160,31 @@ public class AiClient {
         return res;
     }
 
-    public List<UserPreview> generateUserPreviews(String username, List<String> actionsSteps) {
+    public List<UserPreview> generateUserPreviews(String username, List<String> actionsSteps, String englishGoals) {
         log.info("Generating user previews, user: [{}]", username);
-        var prompt = aiPromptService.prompt(AiPrompt.PromptType.USER_PREVIEWS,
-                Map.of("actionSteps", String.join(", ", actionsSteps)));
-        log.info("User previews query: {}", prompt.getContents());
 
-        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+        var goalsText = String.join(", ", actionsSteps);
+        var query = englishGoals + " " + goalsText + " TED talk leadership development";
+        log.info("[TAVILY] Searching videos: {}", query);
+        var videoResults = searchVideos.apply(new McpToolsConfig.TavilySearchRequest(query));
+
+        if (videoResults.isEmpty()) {
+            log.warn("No video results from Tavily for user [{}]", username);
+            return List.of();
+        }
+
+        var resultsText = videoResults.stream()
+                .map(r -> "- title: %s | url: %s | snippet: %s".formatted(r.title(), r.url(), r.content()))
+                .collect(java.util.stream.Collectors.joining("\n"));
+
+        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_PREVIEWS);
+        var userMessage = "Short-term-goals: %s\n\nSearch results:\n%s".formatted(goalsText, resultsText);
+
+        log.info("User previews query for [{}], {} search results", username, videoResults.size());
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
+                .user(userMessage)
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserPreview>>() {}));
         log.info("User previews response: {}  User:[{}]", res, username);
@@ -174,34 +207,52 @@ public class AiClient {
         return res;
     }
 
-    public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
+    public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language, String englishGoals) {
         log.info("Generating user articles, user: [{}], language: {}", username, language);
-        var prompt = aiPromptService.prompt(AiPrompt.PromptType.USER_ARTICLES,
-                Map.of("actionGoals", String.join(", ", actionGoals),
-                        "language", language));
-        log.info("User articles query: {}", prompt.getContents());
 
-        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+        var goalsText = String.join(", ", actionGoals);
+        var query = englishGoals + " " + goalsText + " article";
+        log.info("[TAVILY] Searching articles: {}", query);
+        var articleResults = searchArticles.apply(new McpToolsConfig.TavilySearchRequest(query));
+
+        if (articleResults.isEmpty()) {
+            log.warn("No article results from Tavily for user [{}]", username);
+            return List.of();
+        }
+
+        var resultsText = articleResults.stream()
+                .map(r -> "- title: %s | url: %s | snippet: %s".formatted(r.title(), r.url(), r.content()))
+                .collect(java.util.stream.Collectors.joining("\n"));
+
+        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
+        var userMessage = "Action goals: %s\nPreferred language: %s\n\nSearch results:\n%s".formatted(
+                String.join(", ", actionGoals), language, resultsText);
+
+        log.info("User articles query for [{}], {} search results", username, articleResults.size());
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
+                .user(userMessage)
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
-        log.info("User articles response: {}  User:[{}]", res, username);
+        log.info("User articles response: {} articles for user [{}]", res != null ? res.size() : 0, username);
         return res;
     }
 
-    public String findMatchingImage(String imagePrompt, String existingImages) {
-        log.info("Finding matching image for prompt: {}", imagePrompt);
-        var prompt = aiPromptService.prompt(AiPrompt.PromptType.IMAGE_MATCH,
-                Map.of("imagePrompt", imagePrompt,
-                        "existingImages", existingImages));
-
-        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
-                .call()
-                .content());
-        log.info("Image match response: {}", res);
-        return res;
+    public String translateToEnglish(String text) {
+        try {
+            var result = chatClient.prompt()
+                    .system("Translate the following text to English. Return ONLY the translation, nothing else. If the text is already in English, return it as-is.")
+                    .user(text)
+                    .call()
+                    .content();
+            log.info("[TRANSLATE] '{}' -> '{}'", text, result);
+            return result;
+        } catch (Exception e) {
+            log.warn("[TRANSLATE] Failed to translate '{}', using original", text, e);
+            return text;
+        }
     }
-
-
 
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {
         log.info("Generating suggestion, user: [{}], language: {}", username, language);
