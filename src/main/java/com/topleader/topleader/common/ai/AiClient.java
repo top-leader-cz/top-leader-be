@@ -9,7 +9,6 @@ import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.common.util.common.user.UserUtils;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
-import org.apache.commons.lang3.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -184,59 +183,20 @@ public class AiClient {
     public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
         log.info("Generating user articles, user: [{}], language: {}", username, language);
 
+        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
         var userMessage = "Action goals: %s\nPreferred language: %s".formatted(
                 String.join(", ", actionGoals), language);
 
-        // Step 1: Search and select articles (fast - uses tool, minimal text output)
-        var selectPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
-        log.info("User articles selection query: {}", userMessage);
+        log.info("User articles query: {}", userMessage);
 
-        var selected = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
-                .system(selectPrompt)
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
                 .user(userMessage)
                 .toolNames("searchArticles")
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
-        log.info("User articles selected: {} articles for user [{}]", selected != null ? selected.size() : 0, username);
-
-        if (selected == null || selected.isEmpty()) {
-            return List.of();
-        }
-
-        // Build a map of URL -> imagePrompt from step 1 (step 2 may lose it)
-        var imagePromptByUrl = selected.stream()
-                .filter(a -> a.getUrl() != null && a.getImagePrompt() != null)
-                .collect(java.util.stream.Collectors.toMap(UserArticle::getUrl, UserArticle::getImagePrompt, (a, b) -> a));
-
-        // Step 2: Generate detailed summaries only for selected articles (no tools needed)
-        var summaryPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES_SUMMARY);
-        var articlesJson = selected.stream()
-                .map(a -> "- \"%s\" by %s (%s) - %s".formatted(a.getTitle(), a.getAuthor(), a.getSource(), a.getUrl()))
-                .collect(java.util.stream.Collectors.joining("\n"));
-        var summaryMessage = "Articles to enrich:\n%s\n\nUser action goals: %s\nTarget language: %s".formatted(
-                articlesJson, String.join(", ", actionGoals), language);
-
-        log.info("User articles summary query for [{}]", username);
-
-        var enriched = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
-                .system(summaryPrompt)
-                .user(summaryMessage)
-                .call()
-                .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
-        log.info("User articles enriched: {} articles for user [{}]", enriched != null ? enriched.size() : 0, username);
-
-        if (enriched == null || enriched.isEmpty()) {
-            return selected;
-        }
-
-        // Restore imagePrompt from step 1 if step 2 lost it
-        enriched.forEach(a -> {
-            if (StringUtils.isBlank(a.getImagePrompt()) && a.getUrl() != null) {
-                a.setImagePrompt(imagePromptByUrl.get(a.getUrl()));
-            }
-        });
-
-        return enriched;
+        log.info("User articles response: {} articles for user [{}]", res != null ? res.size() : 0, username);
+        return res;
     }
 
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {
