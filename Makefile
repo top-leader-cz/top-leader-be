@@ -70,12 +70,11 @@ native:
 native-linux:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache -Pnative.march=x86-64-v3
 
-# Deploy to QA (local build + GitHub Actions verification)
+# Deploy to QA (local build + GitHub Actions deploy)
 deploy-qa: build
-	git tag -d qa-deploy 2>/dev/null || true
-	git push origin :refs/tags/qa-deploy 2>/dev/null || true
-	git tag qa-deploy
-	git push origin qa-deploy
+	$(eval QA_TAG := qa-deploy-$(shell date +%Y%m%d-%H%M%S))
+	git tag $(QA_TAG)
+	git push origin $(QA_TAG)
 
 # Deploy to PROD via GitHub Actions (creates release tag, builds in CI)
 deploy-prod: build
