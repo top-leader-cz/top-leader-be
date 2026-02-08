@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import dev.failsafe.RetryPolicy;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.anthropic.AnthropicChatModel;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.boot.http.client.ClientHttpRequestFactoryBuilder;
@@ -56,8 +56,8 @@ public class CustomBeansConfig {
     }
 
     @Bean
-    public ChatClient chatClient(OpenAiChatModel openAiChatModel) {
-        return ChatClient.builder(openAiChatModel).build();
+    public ChatClient chatClient(AnthropicChatModel anthropicChatModel) {
+        return ChatClient.builder(anthropicChatModel).build();
     }
 
     @Bean

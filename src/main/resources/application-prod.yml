@@ -14,10 +14,10 @@ spring:
       sql:
         database-name: top_leader_prod
   ai:
-    openai:
+    anthropic:
       chat:
         options:
-          model: gpt-4o
+          model: claude-sonnet-4-5-20250929
 
   datasource:
     url: jdbc:postgresql:///top_leader_prod

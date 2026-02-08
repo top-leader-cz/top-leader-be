@@ -16,11 +16,11 @@ spring:
   jmx:
     enabled: false
   ai:
-    openai:
-      api-key: ${OPENAI_API_KEY:dummy-api-key}
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY:dummy-api-key}
       chat:
         options:
-          model: gpt-4o
+          model: claude-sonnet-4-5-20250929
   datasource:
     url: jdbc:postgresql://localhost:5432/top_leader
     username: root
@@ -106,6 +106,7 @@ google:
 
 
 openai:
+  api-key: ${OPENAI_API_KEY:dummy-api-key}
   image:
     url: https://api.openai.com/v1/images/generations
 

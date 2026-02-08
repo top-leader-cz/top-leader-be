@@ -14,10 +14,10 @@ spring:
       sql:
         database-name: top_leader
   ai:
-    openai:
+    anthropic:
       chat:
         options:
-          model: gpt-4o
+          model: claude-sonnet-4-5-20250929
   datasource:
     username: top-leader
     hikari:

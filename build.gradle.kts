@@ -63,9 +63,7 @@ dependencies {
     implementation("org.springframework.session:spring-session-jdbc")
 
     // Spring AI
-    implementation("org.springframework.ai:spring-ai-starter-model-openai") {
-        exclude(group = "io.netty", module = "netty-codec-http3")
-    }
+    implementation("org.springframework.ai:spring-ai-starter-model-anthropic")
 
     // Database
     implementation("org.postgresql:postgresql")
@@ -221,7 +219,7 @@ tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") 
         "--spring.datasource.password=",
         "--spring.datasource.driver-class-name=org.h2.Driver",
         "--spring.flyway.enabled=false",
-        "--spring.ai.openai.api-key=dummy-key"
+        "--spring.ai.anthropic.api-key=dummy-key"
     )
 }
 
@@ -234,7 +232,7 @@ tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTe
         "--spring.datasource.password=",
         "--spring.datasource.driver-class-name=org.h2.Driver",
         "--spring.flyway.enabled=false",
-        "--spring.ai.openai.api-key=dummy-key"
+        "--spring.ai.anthropic.api-key=dummy-key"
     )
 }
 
@@ -246,6 +244,6 @@ tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTe
         "--spring.datasource.password=",
         "--spring.datasource.driver-class-name=org.h2.Driver",
         "--spring.flyway.enabled=false",
-        "--spring.ai.openai.api-key=dummy-key"
+        "--spring.ai.anthropic.api-key=dummy-key"
     )
 }

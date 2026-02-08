@@ -47,7 +47,7 @@ public class ArticleImageService {
 
     private volatile Set<String> cachedImageNames = new HashSet<>();
 
-    @Value("${spring.ai.openai.api-key}")
+    @Value("${openai.api-key}")
     private String openaiApiKey;
 
     @Value("${openai.image.url}")
