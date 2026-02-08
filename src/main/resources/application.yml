@@ -114,6 +114,9 @@ gcp:
     enabled: false
     bucket-name: ai-images-top-leader
 
+tavily:
+  api-key: ${TAVILY_API_KEY:}
+
 thumbmail: http://i3.ytimg.com/vi/%s/hqdefault.jpg
 
 springdoc:

@@ -132,10 +132,11 @@ public class UserInsightController {
 
         Thread.ofVirtual().start(() -> {
             try {
+                var englishGoals = aiClient.translateToEnglish(dashboardRequest.query());
                 var previewsFuture = CompletableFuture.supplyAsync(
-                        () -> userSessionService.handleUserPreview(username, query), Executors.newVirtualThreadPerTaskExecutor());
+                        () -> userSessionService.handleUserPreview(username, query, englishGoals), Executors.newVirtualThreadPerTaskExecutor());
                 var articlesFuture = CompletableFuture.supplyAsync(
-                        () -> userSessionService.handleUserArticles(username, query), Executors.newVirtualThreadPerTaskExecutor());
+                        () -> userSessionService.handleUserArticles(username, query, englishGoals), Executors.newVirtualThreadPerTaskExecutor());
 
                 var previews = previewsFuture.join();
                 var articles = articlesFuture.join();
