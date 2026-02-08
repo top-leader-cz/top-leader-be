@@ -24,14 +24,29 @@ import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
 
 @Slf4j
 @Component
-@RequiredArgsConstructor
 public class AiClient {
 
     private final ChatClient chatClient;
-
     private final AiPromptService aiPromptService;
-
     private final RetryPolicy<Object> retryPolicy;
+    private final java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchArticles;
+    private final java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchVideos;
+
+    public AiClient(
+            ChatClient chatClient,
+            AiPromptService aiPromptService,
+            RetryPolicy<Object> retryPolicy,
+            @org.springframework.beans.factory.annotation.Qualifier("searchArticles")
+            java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchArticles,
+            @org.springframework.beans.factory.annotation.Qualifier("searchVideos")
+            java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchVideos
+    ) {
+        this.chatClient = chatClient;
+        this.aiPromptService = aiPromptService;
+        this.retryPolicy = retryPolicy;
+        this.searchArticles = searchArticles;
+        this.searchVideos = searchVideos;
+    }
 
 
     public String findLeaderShipStyle(String locale, List<String> strengths, List<String> values) {
@@ -148,16 +163,23 @@ public class AiClient {
     public List<UserPreview> generateUserPreviews(String username, List<String> actionsSteps) {
         log.info("Generating user previews, user: [{}]", username);
 
+        var query = "TED talks YouTube " + String.join(", ", actionsSteps);
+        log.info("[TAVILY] Searching videos: {}", query);
+        var videoResults = searchVideos.apply(new McpToolsConfig.TavilySearchRequest(query));
+
+        var resultsText = videoResults.stream()
+                .map(r -> "- title: %s | url: %s | snippet: %s".formatted(r.title(), r.url(), r.content()))
+                .collect(java.util.stream.Collectors.joining("\n"));
+
         var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_PREVIEWS);
+        var userMessage = "Short-term-goals: %s\n\nSearch results:\n%s".formatted(
+                String.join(", ", actionsSteps), resultsText);
 
-        var userMessage = "Short-term-goals: %s".formatted(String.join(", ", actionsSteps));
-
-        log.info("User previews query: {}", userMessage);
+        log.info("User previews query for [{}], {} search results", username, videoResults.size());
 
         var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
                 .system(systemPrompt)
                 .user(userMessage)
-                .toolNames("searchVideos")
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserPreview>>() {}));
         log.info("User previews response: {}  User:[{}]", res, username);
@@ -183,16 +205,23 @@ public class AiClient {
     public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
         log.info("Generating user articles, user: [{}], language: {}", username, language);
 
-        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
-        var userMessage = "Action goals: %s\nPreferred language: %s".formatted(
-                String.join(", ", actionGoals), language);
+        var query = String.join(", ", actionGoals) + " article " + language;
+        log.info("[TAVILY] Searching articles: {}", query);
+        var articleResults = searchArticles.apply(new McpToolsConfig.TavilySearchRequest(query));
 
-        log.info("User articles query: {}", userMessage);
+        var resultsText = articleResults.stream()
+                .map(r -> "- title: %s | url: %s | snippet: %s".formatted(r.title(), r.url(), r.content()))
+                .collect(java.util.stream.Collectors.joining("\n"));
+
+        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
+        var userMessage = "Action goals: %s\nPreferred language: %s\n\nSearch results:\n%s".formatted(
+                String.join(", ", actionGoals), language, resultsText);
+
+        log.info("User articles query for [{}], {} search results", username, articleResults.size());
 
         var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
                 .system(systemPrompt)
                 .user(userMessage)
-                .toolNames("searchArticles")
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
         log.info("User articles response: {} articles for user [{}]", res != null ? res.size() : 0, username);
