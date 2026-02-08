@@ -58,8 +58,10 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          docker build -t ${IMAGE_URL}:latest .
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          docker build -t ${IMAGE_URL}:latest -t ${IMAGE_URL}:qa-${SHORT_SHA} .
           docker push ${IMAGE_URL}:latest
+          docker push ${IMAGE_URL}:qa-${SHORT_SHA}
 
           # Get the pushed image digest to force new Cloud Run revision
           DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:latest --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})

@@ -30,10 +30,14 @@ import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.exception.NotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.net.http.HttpClient;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
@@ -42,8 +46,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
@@ -73,7 +78,11 @@ public class UserSessionService {
 
     private final ObjectMapper jsonMapper;
 
-    private final RestTemplate restTemplate;
+    private final RestClient urlValidationClient = RestClient.builder()
+            .requestFactory(new JdkClientHttpRequestFactory(HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofSeconds(2))
+                    .build()))
+            .build();
 
     private final CompanyRepository companyRepository;
 
@@ -186,25 +195,35 @@ public class UserSessionService {
     }
 
     public String handleUserPreview(String username, List<String> actionGoals) {
-          List<UserPreview> previews = CommonUtils.tryGetOrElse(
+        var start = System.currentTimeMillis();
+        List<UserPreview> previews = CommonUtils.tryGetOrElse(
                 () -> aiClient.generateUserPreviews(username, actionGoals),
                 List.of(),
                 "Failed to generate user preview for user: [" + username + "]");
+        log.info("[TIMING] AI generateUserPreviews took {}ms for user [{}]", System.currentTimeMillis() - start, username);
 
-        var filtered = previews.stream()
-                .map(p -> {
-                    try {
-                        var videoId = p.getUrl().split("v=")[1];
-                        var thumbnail = String.format(thumbmail, videoId);
-                        p.setThumbnail(thumbnail);
-                        return p;
-                    } catch (Exception e) {
-                        log.warn("Failed to parse video url for user: [{}] url: [{}] ", username, p.getUrl(), e);
-                        return p;
-                    }
-                })
-                .filter(p -> urlValid(p.getThumbnail())
-                ).toList();
+        previews.forEach(p -> {
+            try {
+                var videoId = p.getUrl().split("v=")[1];
+                p.setThumbnail(String.format(thumbmail, videoId));
+            } catch (Exception e) {
+                log.warn("Failed to parse video url for user: [{}] url: [{}] ", username, p.getUrl(), e);
+            }
+        });
+
+        List<UserPreview> filtered;
+        var urlStart = System.currentTimeMillis();
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            var futures = previews.stream()
+                    .map(p -> CompletableFuture.supplyAsync(() -> urlValid(p.getThumbnail()) ? p : null, executor))
+                    .toList();
+
+            filtered = futures.stream()
+                    .map(CompletableFuture::join)
+                    .filter(Objects::nonNull)
+                    .toList();
+        }
+        log.info("[TIMING] URL validation (previews) took {}ms for user [{}], {}/{} valid", System.currentTimeMillis() - urlStart, username, filtered.size(), previews.size());
 
         return CommonUtils.tryGetOrNull(
                 () -> jsonMapper.writeValueAsString(filtered),
@@ -212,25 +231,40 @@ public class UserSessionService {
     }
 
     public List<UserArticle> handleUserArticles(String username, List<String> actionGoals) {
+        var start = System.currentTimeMillis();
         var user = userDetailService.find(username);
         List<UserArticle> articles = CommonUtils.tryGetOrElse(
                 () -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale())),
                 List.of(),
                 "Failed to generate user articles for user: [" + username + "]");
-        return articles.stream()
-                .map(article -> {
-                    if (!urlValid(article.getUrl())) {
-                        article.setUrl(null);
-                    }
-                    return article;
-                })
-                .map(article -> article.setImageUrl(articleImageService.generateImage(article.getImagePrompt())))
-                .toList();
+        log.info("[TIMING] AI generateUserArticles took {}ms for user [{}]", System.currentTimeMillis() - start, username);
+
+        var parallelStart = System.currentTimeMillis();
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            var futures = articles.stream()
+                    .map(article -> CompletableFuture.allOf(
+                            CompletableFuture.runAsync(() -> {
+                                if (!urlValid(article.getUrl())) {
+                                    article.setUrl(null);
+                                }
+                            }, executor),
+                            CompletableFuture.supplyAsync(() -> articleImageService.generateImage(article.getImagePrompt()), executor)
+                                    .thenAccept(article::setImageUrl)
+                    ))
+                    .toArray(CompletableFuture[]::new);
+
+            CompletableFuture.allOf(futures).join();
+        }
+        log.info("[TIMING] URL validation + image matching took {}ms for user [{}]", System.currentTimeMillis() - parallelStart, username);
+        return articles;
     }
 
     private boolean urlValid(String url) {
         try {
-            var response = restTemplate.getForEntity(url, String.class);
+            var response = urlValidationClient.get()
+                    .uri(url)
+                    .retrieve()
+                    .toBodilessEntity();
             return response.getStatusCode().value() != INVALID_LINK;
         } catch (Exception e) {
             log.warn("Failed to get url: [{}]", url, e);

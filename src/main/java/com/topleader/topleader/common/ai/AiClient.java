@@ -188,6 +188,19 @@ public class AiClient {
         return res;
     }
 
+    public String findMatchingImage(String imagePrompt, String existingImages) {
+        log.info("Finding matching image for prompt: {}", imagePrompt);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.IMAGE_MATCH,
+                Map.of("imagePrompt", imagePrompt,
+                        "existingImages", existingImages));
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .content());
+        log.info("Image match response: {}", res);
+        return res;
+    }
+
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {
         log.info("Generating suggestion, user: [{}], language: {}", username, language);
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.SUGGESTION,

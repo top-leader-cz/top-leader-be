@@ -60,7 +60,7 @@ public class TestBeanConfiguration {
 
         try {
             // Mock upload to return a test URL
-            Mockito.when(client.uploadImage(Mockito.any(byte[].class), Mockito.anyString(), Mockito.any(Map.class)))
+            Mockito.when(client.uploadImage(Mockito.any(byte[].class), Mockito.anyString()))
                     .thenReturn("gs://ai-images-top-leader/test_image.png");
 
             // Mock download to return test image bytes
