@@ -166,8 +166,11 @@ public class UserSessionService {
                 actionGoals));
 
         if (!actionGoals.isEmpty()) {
-            userInsight.setUserPreviews(handleUserPreview(username, actionGoals));
-            var userArticles = handleUserArticles(username, actionGoals);
+            var previewsFuture = CompletableFuture.supplyAsync(() -> handleUserPreview(username, actionGoals));
+            var articlesFuture = CompletableFuture.supplyAsync(() -> handleUserArticles(username, actionGoals));
+
+            userInsight.setUserPreviews(previewsFuture.join());
+            var userArticles = articlesFuture.join();
             if (!userArticles.isEmpty()) {
                 articlesRepository.deleteAllByUsername(username);
                 userArticles.forEach(article -> articlesRepository.save(new Article()

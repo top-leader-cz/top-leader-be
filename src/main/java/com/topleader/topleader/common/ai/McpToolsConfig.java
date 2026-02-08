@@ -154,21 +154,21 @@ public class McpToolsConfig {
     @Bean
     @Description("Search the web for real articles related to a topic. Returns article titles, URLs, and content snippets. Use this to find real articles with valid URLs for user recommendations.")
     public Function<TavilySearchRequest, List<TavilySearchResult>> searchArticles() {
-        return request -> tavilySearch(request.query(), List.of());
+        return request -> tavilySearch(request.query(), List.of(), 10);
     }
 
     @Bean
     @Description("Search for real YouTube videos related to a topic. Returns video titles, YouTube URLs, and descriptions. Use this to find real videos with valid URLs.")
     public Function<TavilySearchRequest, List<TavilySearchResult>> searchVideos() {
-        return request -> tavilySearch(request.query(), List.of("youtube.com"));
+        return request -> tavilySearch(request.query(), List.of("youtube.com"), 10);
     }
 
-    private List<TavilySearchResult> tavilySearch(String query, List<String> includeDomains) {
+    private List<TavilySearchResult> tavilySearch(String query, List<String> includeDomains, int maxResults) {
         log.info("Tavily search: {}", query);
         var body = new java.util.HashMap<String, Object>(Map.of(
                 "query", query,
                 "search_depth", "basic",
-                "max_results", 5
+                "max_results", maxResults
         ));
         if (!includeDomains.isEmpty()) {
             body.put("include_domains", includeDomains);
