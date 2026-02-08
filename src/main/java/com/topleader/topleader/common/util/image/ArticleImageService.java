@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
 import java.net.URI;
+import java.time.Duration;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -24,7 +25,7 @@ import java.util.stream.Collectors;
 public class ArticleImageService {
 
     private static final int MAX_PROMPT_LENGTH = 100;
-    private static final int MIN_MATCHES = 1;
+    private static final int MIN_MATCHES = 2;
     private static final List<String> STEM_SUFFIXES = List.of(
             "ation", "tion", "ment", "ness", "ling", "ally", "ing", "ive", "ous", "ful",
             "ity", "ble", "ant", "ent", "ism", "ist", "ate", "ize", "ise", "ial", "ual",
@@ -63,10 +64,18 @@ public class ArticleImageService {
         }
         Thread.ofVirtual().start(() -> {
             try {
-                cachedImageNames = new HashSet<>(gcsClient.listObjects());
-                log.info("Pre-loaded {} image names from GCS bucket", cachedImageNames.size());
+                Failsafe.with(RetryPolicy.builder()
+                                .withMaxRetries(3)
+                                .withDelay(Duration.ofSeconds(1))
+                                .handle(Exception.class)
+                                .onRetry(e -> log.warn("Retrying GCS image preload (attempt {})", e.getAttemptCount()))
+                                .build())
+                        .run(() -> {
+                            cachedImageNames = new HashSet<>(gcsClient.listObjects());
+                            log.info("Pre-loaded {} image names from GCS bucket", cachedImageNames.size());
+                        });
             } catch (Exception e) {
-                log.error("Failed to pre-load GCS image names, will load on first request", e);
+                log.error("Failed to pre-load GCS image names after retries, will load on first request", e);
             }
         });
     }
@@ -119,7 +128,7 @@ public class ArticleImageService {
                         var matchCount = countFuzzyMatches(promptKeywords, fileKeywords);
                         return Map.entry(fileName, matchCount);
                     })
-                    .filter(e -> e.getValue() >= 1)
+                    .filter(e -> e.getValue() >= MIN_MATCHES)
                     .max(Map.Entry.comparingByValue())
                     .map(e -> {
                         log.info("[IMAGE-MATCH] Matched '{}' -> '{}' (matches: {})", imagePrompt, e.getKey(), e.getValue());
