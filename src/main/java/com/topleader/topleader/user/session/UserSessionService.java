@@ -260,6 +260,9 @@ public class UserSessionService {
     }
 
     private boolean urlValid(String url) {
+        if (url == null || url.isBlank()) {
+            return false;
+        }
         try {
             var response = urlValidationClient.get()
                     .uri(url)
