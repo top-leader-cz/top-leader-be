@@ -242,20 +242,13 @@ public class UserSessionService {
         var parallelStart = System.currentTimeMillis();
         try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             var futures = articles.stream()
-                    .map(article -> CompletableFuture.allOf(
-                            CompletableFuture.runAsync(() -> {
-                                if (!urlValid(article.getUrl())) {
-                                    article.setUrl(null);
-                                }
-                            }, executor),
-                            CompletableFuture.supplyAsync(() -> articleImageService.generateImage(article.getImagePrompt()), executor)
-                                    .thenAccept(article::setImageUrl)
-                    ))
+                    .map(article -> CompletableFuture.supplyAsync(() -> articleImageService.generateImage(article.getImagePrompt()), executor)
+                            .thenAccept(article::setImageUrl))
                     .toArray(CompletableFuture[]::new);
 
             CompletableFuture.allOf(futures).join();
         }
-        log.info("[TIMING] URL validation + image matching took {}ms for user [{}]", System.currentTimeMillis() - parallelStart, username);
+        log.info("[TIMING] Image matching took {}ms for user [{}]", System.currentTimeMillis() - parallelStart, username);
         return articles;
     }
 
