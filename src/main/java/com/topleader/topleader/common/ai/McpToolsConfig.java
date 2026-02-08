@@ -154,13 +154,13 @@ public class McpToolsConfig {
     @Bean
     @Description("Search the web for real articles related to a topic. Returns article titles, URLs, and content snippets. Use this to find real articles with valid URLs for user recommendations.")
     public Function<TavilySearchRequest, List<TavilySearchResult>> searchArticles() {
-        return request -> tavilySearch(request.query(), List.of(), 10);
+        return request -> tavilySearch(request.query(), List.of(), 5);
     }
 
     @Bean
     @Description("Search for real YouTube videos related to a topic. Returns video titles, YouTube URLs, and descriptions. Use this to find real videos with valid URLs.")
     public Function<TavilySearchRequest, List<TavilySearchResult>> searchVideos() {
-        return request -> tavilySearch(request.query(), List.of("youtube.com"), 10);
+        return request -> tavilySearch(request.query(), List.of("youtube.com"), 5);
     }
 
     private List<TavilySearchResult> tavilySearch(String query, List<String> includeDomains, int maxResults) {
