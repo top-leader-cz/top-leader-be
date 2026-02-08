@@ -6,6 +6,7 @@ import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.ai.AiPromptService;
+import com.topleader.topleader.common.ai.McpToolsConfig;
 import com.topleader.topleader.common.util.image.GcsLightweightClient;
 import org.mockito.Mockito;
 
@@ -34,13 +35,20 @@ public class TestBeanConfiguration {
         return Mockito.mock(ChatClient.class, Mockito.RETURNS_DEEP_STUBS);
     }
 
+    @SuppressWarnings("unchecked")
     @Bean
     @Primary
     public AiClient mockAiClient(
             ChatClient chatClient,
             AiPromptService aiPromptService,
             dev.failsafe.RetryPolicy<Object> retryPolicy) {
-        return Mockito.spy(new AiClient(chatClient, aiPromptService, retryPolicy));
+        var mockSearchArticles = (java.util.function.Function<McpToolsConfig.TavilySearchRequest, java.util.List<McpToolsConfig.TavilySearchResult>>)
+                Mockito.mock(java.util.function.Function.class);
+        var mockSearchVideos = (java.util.function.Function<McpToolsConfig.TavilySearchRequest, java.util.List<McpToolsConfig.TavilySearchResult>>)
+                Mockito.mock(java.util.function.Function.class);
+        Mockito.when(mockSearchArticles.apply(Mockito.any())).thenReturn(java.util.List.of());
+        Mockito.when(mockSearchVideos.apply(Mockito.any())).thenReturn(java.util.List.of());
+        return Mockito.spy(new AiClient(chatClient, aiPromptService, retryPolicy, mockSearchArticles, mockSearchVideos));
     }
 
     @Bean

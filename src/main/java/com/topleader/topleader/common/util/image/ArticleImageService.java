@@ -47,6 +47,7 @@ public class ArticleImageService {
     private final RetryPolicy<Object> retryPolicy;
 
     private volatile Set<String> cachedImageNames = new HashSet<>();
+    private volatile Map<String, Set<String>> cachedImageKeywords = new HashMap<>();
 
     @Value("${spring.ai.openai.api-key}")
     private String openaiApiKey;
@@ -71,8 +72,12 @@ public class ArticleImageService {
                                 .onRetry(e -> log.warn("Retrying GCS image preload (attempt {})", e.getAttemptCount()))
                                 .build())
                         .run(() -> {
-                            cachedImageNames = new HashSet<>(gcsClient.listObjects());
-                            log.info("Pre-loaded {} image names from GCS bucket", cachedImageNames.size());
+                            var names = new HashSet<>(gcsClient.listObjects());
+                            var keywords = new HashMap<String, Set<String>>();
+                            names.forEach(name -> keywords.put(name, extractKeywordsFromFileName(name)));
+                            cachedImageKeywords = keywords;
+                            cachedImageNames = names;
+                            log.info("Pre-loaded {} image names with keywords from GCS bucket", names.size());
                         });
             } catch (Exception e) {
                 log.error("Failed to pre-load GCS image names after retries, will load on first request", e);
@@ -122,9 +127,10 @@ public class ArticleImageService {
                 return null;
             }
 
+            var keywords = cachedImageKeywords;
             return imageNames.stream()
                     .map(fileName -> {
-                        var fileKeywords = extractKeywordsFromFileName(fileName);
+                        var fileKeywords = keywords.getOrDefault(fileName, Set.of());
                         var matchCount = countFuzzyMatches(promptKeywords, fileKeywords);
                         return Map.entry(fileName, matchCount);
                     })
@@ -189,8 +195,12 @@ public class ArticleImageService {
         if (cachedImageNames.isEmpty()) {
             synchronized (this) {
                 if (cachedImageNames.isEmpty()) {
-                    cachedImageNames = new HashSet<>(gcsClient.listObjects());
-                    log.info("Loaded {} image names from GCS bucket", cachedImageNames.size());
+                    var names = new HashSet<>(gcsClient.listObjects());
+                    var keywords = new HashMap<String, Set<String>>();
+                    names.forEach(name -> keywords.put(name, extractKeywordsFromFileName(name)));
+                    cachedImageKeywords = keywords;
+                    cachedImageNames = names;
+                    log.info("Loaded {} image names with keywords from GCS bucket", names.size());
                 }
             }
         }
@@ -199,6 +209,7 @@ public class ArticleImageService {
 
     private void addToCache(String fileName) {
         cachedImageNames.add(fileName);
+        cachedImageKeywords.put(fileName, extractKeywordsFromFileName(fileName));
     }
 
     private DaliResponse generate(String imagePrompt) {

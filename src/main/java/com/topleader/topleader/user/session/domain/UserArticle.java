@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
-import java.time.ZonedDateTime;
+import java.util.List;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -15,11 +15,13 @@ public class UserArticle {
 
     private Long id;
     private String title;
+    private String originalTitle;
     private String author;
     private String source;
     private String url;
     private String readTime;
     private String language;
+    private String sourceLanguage;
     private String perex;
     private String summaryText;
     private String application;
@@ -27,5 +29,7 @@ public class UserArticle {
     private String imageData;
     private String imageUrl;
     private String date;
+    private List<String> keyTakeaways;
+    private Integer relevanceScore;
 
 }

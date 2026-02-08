@@ -26,8 +26,6 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -63,9 +61,6 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
     @Autowired
     BadgeRepository badgeRepository;
-
-    @Autowired
-    ChatClient chatClient;
 
     @Autowired
     ArticleRepository articleRepository;
@@ -114,13 +109,17 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                 .findActionGoal(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList(),
                         ArgumentMatchers.anyList(), ArgumentMatchers.anyString(), ArgumentMatchers.anyList());
 
+        // Mock translateToEnglish
+        Mockito.doReturn("english goals").when(aiClient)
+                .translateToEnglish(ArgumentMatchers.anyString());
+
         // Mock generateUserPreviews on spy (now uses chatClient)
         var preview = new UserPreview();
         preview.setTitle("Test Preview");
         preview.setUrl("https://youtube.com/watch?v=test");
         preview.setThumbnail("http://localhost:8060/hqdefault");
         Mockito.doReturn(List.of(preview)).when(aiClient)
-                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList());
+                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
 
         mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
         mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200)
@@ -142,10 +141,8 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
                 ))));
 
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().entity(new ParameterizedTypeReference<List<UserArticle>>() {
-                }))
-                .thenReturn(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<>() {
-                }));
+        Mockito.doReturn(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<List<UserArticle>>() {}))
+                .when(aiClient).generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
 
         mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article1"))
                 .willReturn(WireMock.aResponse()
