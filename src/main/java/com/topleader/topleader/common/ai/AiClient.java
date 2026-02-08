@@ -9,6 +9,7 @@ import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.common.util.common.user.UserUtils;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
+import org.apache.commons.lang3.StringUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -202,6 +203,11 @@ public class AiClient {
             return List.of();
         }
 
+        // Build a map of URL -> imagePrompt from step 1 (step 2 may lose it)
+        var imagePromptByUrl = selected.stream()
+                .filter(a -> a.getUrl() != null && a.getImagePrompt() != null)
+                .collect(java.util.stream.Collectors.toMap(UserArticle::getUrl, UserArticle::getImagePrompt, (a, b) -> a));
+
         // Step 2: Generate detailed summaries only for selected articles (no tools needed)
         var summaryPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES_SUMMARY);
         var articlesJson = selected.stream()
@@ -219,7 +225,18 @@ public class AiClient {
                 .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
         log.info("User articles enriched: {} articles for user [{}]", enriched != null ? enriched.size() : 0, username);
 
-        return enriched != null ? enriched : selected;
+        if (enriched == null || enriched.isEmpty()) {
+            return selected;
+        }
+
+        // Restore imagePrompt from step 1 if step 2 lost it
+        enriched.forEach(a -> {
+            if (StringUtils.isBlank(a.getImagePrompt()) && a.getUrl() != null) {
+                a.setImagePrompt(imagePromptByUrl.get(a.getUrl()));
+            }
+        });
+
+        return enriched;
     }
 
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {
