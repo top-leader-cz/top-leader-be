@@ -26,8 +26,6 @@ import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -63,9 +61,6 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
     @Autowired
     BadgeRepository badgeRepository;
-
-    @Autowired
-    ChatClient chatClient;
 
     @Autowired
     ArticleRepository articleRepository;
@@ -142,10 +137,8 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
                 ))));
 
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().entity(new ParameterizedTypeReference<List<UserArticle>>() {
-                }))
-                .thenReturn(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<>() {
-                }));
+        Mockito.doReturn(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<List<UserArticle>>() {}))
+                .when(aiClient).generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
 
         mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article1"))
                 .willReturn(WireMock.aResponse()

@@ -8,16 +8,23 @@ import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Description;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
+import org.springframework.web.client.RestClient;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 public class McpToolsConfig {
@@ -26,6 +33,10 @@ public class McpToolsConfig {
     private final UserInfoRepository userInfoRepository;
     private final CoachListViewRepository coachListViewRepository;
     private final DataHistoryRepository dataHistoryRepository;
+    private final RestClient restClient;
+
+    @Value("${tavily.api-key:}")
+    private String tavilyApiKey;
 
     public record UserProfileRequest(String username) {}
 
@@ -134,5 +145,55 @@ public class McpToolsConfig {
                         && request.lastName().equalsIgnoreCase(c.getLastName()))
                 .findFirst()
                 .map(CoachResponse::from);
+    }
+
+    public record TavilySearchRequest(String query) {}
+
+    public record TavilySearchResult(String title, String url, String content) {}
+
+    @Bean
+    @Description("Search the web for real articles related to a topic. Returns article titles, URLs, and content snippets. Use this to find real articles with valid URLs for user recommendations.")
+    public Function<TavilySearchRequest, List<TavilySearchResult>> searchArticles() {
+        return request -> tavilySearch(request.query(), List.of());
+    }
+
+    @Bean
+    @Description("Search for real YouTube videos related to a topic. Returns video titles, YouTube URLs, and descriptions. Use this to find real videos with valid URLs.")
+    public Function<TavilySearchRequest, List<TavilySearchResult>> searchVideos() {
+        return request -> tavilySearch(request.query(), List.of("youtube.com"));
+    }
+
+    private List<TavilySearchResult> tavilySearch(String query, List<String> includeDomains) {
+        log.info("Tavily search: {}", query);
+        var body = new java.util.HashMap<String, Object>(Map.of(
+                "query", query,
+                "search_depth", "basic",
+                "max_results", 5
+        ));
+        if (!includeDomains.isEmpty()) {
+            body.put("include_domains", includeDomains);
+        }
+
+        var response = restClient.post()
+                .uri("https://api.tavily.com/search")
+                .header("Authorization", "Bearer " + tavilyApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+
+        @SuppressWarnings("unchecked")
+        var results = (List<Map<String, Object>>) response.get("results");
+
+        var items = Optional.ofNullable(results).orElse(List.of()).stream()
+                .map(r -> new TavilySearchResult(
+                        (String) r.get("title"),
+                        (String) r.get("url"),
+                        (String) r.get("content")
+                ))
+                .toList();
+
+        log.info("Tavily results for '{}': {} items", query, items.size());
+        return items;
     }
 }

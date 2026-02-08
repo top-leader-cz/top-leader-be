@@ -81,3 +81,8 @@ spec:
                 secretKeyRef:
                   name: JOB_TRIGGER_PASSWORD
                   key: latest
+            - name: TAVILY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: TAVILY_API_KEY
+                  key: latest

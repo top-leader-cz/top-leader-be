@@ -147,11 +147,17 @@ public class AiClient {
 
     public List<UserPreview> generateUserPreviews(String username, List<String> actionsSteps) {
         log.info("Generating user previews, user: [{}]", username);
-        var prompt = aiPromptService.prompt(AiPrompt.PromptType.USER_PREVIEWS,
-                Map.of("actionSteps", String.join(", ", actionsSteps)));
-        log.info("User previews query: {}", prompt.getContents());
 
-        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_PREVIEWS);
+
+        var userMessage = "Short-term-goals: %s".formatted(String.join(", ", actionsSteps));
+
+        log.info("User previews query: {}", userMessage);
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
+                .user(userMessage)
+                .toolNames("searchVideos")
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserPreview>>() {}));
         log.info("User previews response: {}  User:[{}]", res, username);
@@ -176,32 +182,23 @@ public class AiClient {
 
     public List<UserArticle> generateUserArticles(String username, List<String> actionGoals, String language) {
         log.info("Generating user articles, user: [{}], language: {}", username, language);
-        var prompt = aiPromptService.prompt(AiPrompt.PromptType.USER_ARTICLES,
-                Map.of("actionGoals", String.join(", ", actionGoals),
-                        "language", language));
-        log.info("User articles query: {}", prompt.getContents());
 
-        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_ARTICLES);
+
+        var userMessage = "Action goals: %s\nPreferred language: %s".formatted(
+                String.join(", ", actionGoals), language);
+
+        log.info("User articles query: {}", userMessage);
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
+                .user(userMessage)
+                .toolNames("searchArticles")
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
         log.info("User articles response: {}  User:[{}]", res, username);
         return res;
     }
-
-    public String findMatchingImage(String imagePrompt, String existingImages) {
-        log.info("Finding matching image for prompt: {}", imagePrompt);
-        var prompt = aiPromptService.prompt(AiPrompt.PromptType.IMAGE_MATCH,
-                Map.of("imagePrompt", imagePrompt,
-                        "existingImages", existingImages));
-
-        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
-                .call()
-                .content());
-        log.info("Image match response: {}", res);
-        return res;
-    }
-
-
 
     public String generateSuggestion(String username, String userQuery, List<String> strengths, List<String> values, String language) {
         log.info("Generating suggestion, user: [{}], language: {}", username, language);
