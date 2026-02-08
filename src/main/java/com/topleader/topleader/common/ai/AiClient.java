@@ -147,11 +147,17 @@ public class AiClient {
 
     public List<UserPreview> generateUserPreviews(String username, List<String> actionsSteps) {
         log.info("Generating user previews, user: [{}]", username);
-        var prompt = aiPromptService.prompt(AiPrompt.PromptType.USER_PREVIEWS,
-                Map.of("actionSteps", String.join(", ", actionsSteps)));
-        log.info("User previews query: {}", prompt.getContents());
 
-        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.USER_PREVIEWS);
+
+        var userMessage = "Short-term-goals: %s".formatted(String.join(", ", actionsSteps));
+
+        log.info("User previews query: {}", userMessage);
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
+                .user(userMessage)
+                .toolNames("searchVideos")
                 .call()
                 .entity(new ParameterizedTypeReference<List<UserPreview>>() {}));
         log.info("User previews response: {}  User:[{}]", res, username);

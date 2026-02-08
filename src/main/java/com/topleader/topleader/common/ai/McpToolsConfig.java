@@ -147,42 +147,53 @@ public class McpToolsConfig {
                 .map(CoachResponse::from);
     }
 
-    public record ArticleSearchRequest(String query) {}
+    public record TavilySearchRequest(String query) {}
 
-    public record ArticleSearchResult(String title, String url, String content) {}
+    public record TavilySearchResult(String title, String url, String content) {}
 
     @Bean
     @Description("Search the web for real articles related to a topic. Returns article titles, URLs, and content snippets. Use this to find real articles with valid URLs for user recommendations.")
-    public Function<ArticleSearchRequest, List<ArticleSearchResult>> searchArticles() {
-        return request -> {
-            log.info("Tavily search: {}", request.query());
-            var body = Map.of(
-                    "query", request.query(),
-                    "search_depth", "basic",
-                    "max_results", 5
-            );
+    public Function<TavilySearchRequest, List<TavilySearchResult>> searchArticles() {
+        return request -> tavilySearch(request.query(), List.of());
+    }
 
-            var response = restClient.post()
-                    .uri("https://api.tavily.com/search")
-                    .header("Authorization", "Bearer " + tavilyApiKey)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .body(body)
-                    .retrieve()
-                    .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+    @Bean
+    @Description("Search for real YouTube videos related to a topic. Returns video titles, YouTube URLs, and descriptions. Use this to find real videos with valid URLs.")
+    public Function<TavilySearchRequest, List<TavilySearchResult>> searchVideos() {
+        return request -> tavilySearch(request.query(), List.of("youtube.com"));
+    }
 
-            @SuppressWarnings("unchecked")
-            var results = (List<Map<String, Object>>) response.get("results");
+    private List<TavilySearchResult> tavilySearch(String query, List<String> includeDomains) {
+        log.info("Tavily search: {}", query);
+        var body = new java.util.HashMap<String, Object>(Map.of(
+                "query", query,
+                "search_depth", "basic",
+                "max_results", 5
+        ));
+        if (!includeDomains.isEmpty()) {
+            body.put("include_domains", includeDomains);
+        }
 
-            var articles = Optional.ofNullable(results).orElse(List.of()).stream()
-                    .map(r -> new ArticleSearchResult(
-                            (String) r.get("title"),
-                            (String) r.get("url"),
-                            (String) r.get("content")
-                    ))
-                    .toList();
+        var response = restClient.post()
+                .uri("https://api.tavily.com/search")
+                .header("Authorization", "Bearer " + tavilyApiKey)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(body)
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
 
-            log.info("Tavily results for '{}': {} articles", request.query(), articles.size());
-            return articles;
-        };
+        @SuppressWarnings("unchecked")
+        var results = (List<Map<String, Object>>) response.get("results");
+
+        var items = Optional.ofNullable(results).orElse(List.of()).stream()
+                .map(r -> new TavilySearchResult(
+                        (String) r.get("title"),
+                        (String) r.get("url"),
+                        (String) r.get("content")
+                ))
+                .toList();
+
+        log.info("Tavily results for '{}': {} items", query, items.size());
+        return items;
     }
 }

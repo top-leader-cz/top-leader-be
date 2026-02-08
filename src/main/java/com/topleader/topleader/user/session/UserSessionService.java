@@ -30,11 +30,8 @@ import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.exception.NotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.net.http.HttpClient;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -46,9 +43,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.client.JdkClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClient;
 
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
@@ -61,8 +56,6 @@ import static java.util.function.Predicate.not;
 @Service
 @RequiredArgsConstructor
 public class UserSessionService {
-
-    private static final int INVALID_LINK = 404;
 
     private final UserInfoService userInfoService;
 
@@ -77,12 +70,6 @@ public class UserSessionService {
     private final AiClient aiClient;
 
     private final ObjectMapper jsonMapper;
-
-    private final RestClient urlValidationClient = RestClient.builder()
-            .requestFactory(new JdkClientHttpRequestFactory(HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofSeconds(2))
-                    .build()))
-            .build();
 
     private final CompanyRepository companyRepository;
 
@@ -211,22 +198,8 @@ public class UserSessionService {
             }
         });
 
-        List<UserPreview> filtered;
-        var urlStart = System.currentTimeMillis();
-        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            var futures = previews.stream()
-                    .map(p -> CompletableFuture.supplyAsync(() -> urlValid(p.getThumbnail()) ? p : null, executor))
-                    .toList();
-
-            filtered = futures.stream()
-                    .map(CompletableFuture::join)
-                    .filter(Objects::nonNull)
-                    .toList();
-        }
-        log.info("[TIMING] URL validation (previews) took {}ms for user [{}], {}/{} valid", System.currentTimeMillis() - urlStart, username, filtered.size(), previews.size());
-
         return CommonUtils.tryGetOrNull(
-                () -> jsonMapper.writeValueAsString(filtered),
+                () -> jsonMapper.writeValueAsString(previews),
                 "Failed to convert user preview for user: [" + username + "]");
     }
 
@@ -250,22 +223,6 @@ public class UserSessionService {
         }
         log.info("[TIMING] Image matching took {}ms for user [{}]", System.currentTimeMillis() - parallelStart, username);
         return articles;
-    }
-
-    private boolean urlValid(String url) {
-        if (url == null || url.isBlank()) {
-            return false;
-        }
-        try {
-            var response = urlValidationClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .toBodilessEntity();
-            return response.getStatusCode().value() != INVALID_LINK;
-        } catch (Exception e) {
-            log.warn("Failed to get url: [{}]", url, e);
-            return false;
-        }
     }
 
     public List<UserActionStep> prepareActualActionSteps(
