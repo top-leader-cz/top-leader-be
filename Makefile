@@ -13,7 +13,7 @@ GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 # Google Cloud commands
 .PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux deploy-qa deploy-prod
 .PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
-.PHONY: info-prod revisions-prod rollback-prod redeploy-prod
+.PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy
 
 # Login to Google Cloud and set project
 login:
@@ -108,6 +108,12 @@ jre-build:
 # Push custom JRE image to Artifact Registry
 jre-push: jre-build
 	docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/topleader-jre:latest
+
+# --- Database ---
+
+# Start Cloud SQL Auth Proxy (connect to DB from IDEA/psql via localhost:5432)
+db-proxy:
+	./misc/setup-cloud-sql-proxy.sh
 
 # --- Cloud Run Commands ---
 

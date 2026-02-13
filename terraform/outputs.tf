@@ -68,9 +68,9 @@ output "sql_connection_name" {
   description = "Cloud SQL connection name for Cloud Run"
 }
 
-output "sql_public_ip" {
-  value       = google_sql_database_instance.main.public_ip_address
-  description = "Cloud SQL public IP address"
+output "sql_private_ip" {
+  value       = google_sql_database_instance.main.private_ip_address
+  description = "Cloud SQL private IP address"
 }
 
 # -----------------------------------------------------------------------------

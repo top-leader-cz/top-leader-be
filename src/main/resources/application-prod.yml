@@ -9,10 +9,6 @@ server:
         http-only: true
 
 spring:
-  cloud:
-    gcp:
-      sql:
-        database-name: top_leader_prod
   ai:
     openai:
       chat:
@@ -20,18 +16,12 @@ spring:
           model: gpt-4o
 
   datasource:
-    url: jdbc:postgresql:///top_leader_prod
+    url: jdbc:postgresql://${DB_HOST:localhost}:5432/top_leader_prod
     username: top-leader-prod
     hikari:
-      # Optimized for virtual threads (production)
       minimum-idle: 5
       maximum-pool-size: 40
       connection-timeout: 5000
-      data-source-properties:
-        socketFactory: com.google.cloud.sql.postgres.SocketFactory
-        cloudSqlInstance: topleader-394306:europe-west3:top-leader-db
-        enableIamAuth: false
-        sslmode: disable
 top-leader:
   app-url: https://topleaderplatform.io
   feedback:

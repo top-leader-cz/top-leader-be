@@ -22,15 +22,6 @@ variable "environment" {
   default     = "prod"
 }
 
-variable "sql_authorized_networks" {
-  description = "List of authorized networks for Cloud SQL"
-  type = list(object({
-    name  = string
-    value = string
-  }))
-  default = []
-}
-
 variable "job_trigger_password" {
   description = "Password for Cloud Scheduler jobs to authenticate with /api/protected/jobs endpoints"
   type        = string

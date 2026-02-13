@@ -1,4 +1,38 @@
+# =============================================================================
+# VPC Network for Private Cloud SQL
+# =============================================================================
+
+resource "google_compute_network" "main" {
+  name                    = "top-leader-vpc"
+  project                 = var.project_id
+  auto_create_subnetworks = true
+
+  depends_on = [google_project_service.compute]
+}
+
+resource "google_compute_global_address" "private_ip_range" {
+  name          = "top-leader-private-ip"
+  project       = var.project_id
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.main.id
+
+  depends_on = [google_project_service.servicenetworking]
+}
+
+resource "google_service_networking_connection" "private_vpc" {
+  network                 = google_compute_network.main.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_range.name]
+
+  depends_on = [google_project_service.servicenetworking]
+}
+
+# =============================================================================
 # Cloud SQL PostgreSQL Instance
+# =============================================================================
+
 resource "google_sql_database_instance" "main" {
   name                = "top-leader-db"
   project             = var.project_id
@@ -36,16 +70,9 @@ resource "google_sql_database_instance" "main" {
     deletion_protection_enabled = true
 
     ip_configuration {
-      ipv4_enabled = true
-      ssl_mode     = "ENCRYPTED_ONLY"
-
-      dynamic "authorized_networks" {
-        for_each = var.sql_authorized_networks
-        content {
-          name  = authorized_networks.value.name
-          value = authorized_networks.value.value
-        }
-      }
+      ipv4_enabled    = false
+      private_network = google_compute_network.main.id
+      ssl_mode        = "ENCRYPTED_ONLY"
     }
 
     insights_config {
@@ -54,6 +81,8 @@ resource "google_sql_database_instance" "main" {
       query_string_length     = 1024
     }
   }
+
+  depends_on = [google_service_networking_connection.private_vpc]
 
   lifecycle {
     ignore_changes = [settings[0].maintenance_window]

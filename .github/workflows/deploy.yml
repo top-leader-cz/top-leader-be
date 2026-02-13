@@ -61,9 +61,15 @@ jobs:
           docker build -t ${IMAGE_URL}:latest .
           docker push ${IMAGE_URL}:latest
 
+          # Get the pushed image digest to force new Cloud Run revision
+          DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:latest --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})
+          echo "IMAGE_WITH_DIGEST=${IMAGE_URL}@${DIGEST}" >> $GITHUB_ENV
+
       - name: Deploy to Cloud Run QA
         run: |
-          # Deploy using service YAML (already has :latest tag)
+          # Replace :latest with exact digest to force new revision
+          sed -i "s|image:.*|image: ${{ env.IMAGE_WITH_DIGEST }}|" src/main/cloudrun/service-qa.yaml
+
           gcloud run services replace src/main/cloudrun/service-qa.yaml \
             --region=${{ env.REGION }} \
             --project=${{ env.PROJECT_ID }}
@@ -195,6 +201,30 @@ jobs:
                 --platform=managed \
                 --project=${{ env.PROJECT_ID }} \
                 --quiet || echo "Failed to delete $REVISION"
+            done
+          fi
+
+      - name: Cleanup old images (keep last 3 versions)
+        run: |
+          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
+          echo "Cleaning up old PROD images..."
+          # List version tags, sort descending, skip first 3, delete older
+          OLD_VERSIONS=$(gcloud artifacts docker tags list ${IMAGE_PATH} \
+            --format="get(tag)" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
+            grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | \
+            sort -rV | \
+            tail -n +4)
+
+          if [ -z "$OLD_VERSIONS" ]; then
+            echo "No old versioned images to delete"
+          else
+            echo "Deleting old versioned images..."
+            for TAG in $OLD_VERSIONS; do
+              echo "Deleting version ${TAG}"
+              gcloud artifacts docker images delete ${IMAGE_PATH}:${TAG} \
+                --project=${{ env.PROJECT_ID }} \
+                --quiet --delete-tags || echo "Failed to delete ${TAG}"
             done
           fi
 

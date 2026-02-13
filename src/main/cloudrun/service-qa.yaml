@@ -14,7 +14,8 @@ spec:
         autoscaling.knative.dev/maxScale: "1"
         run.googleapis.com/cpu-throttling: "true"
         run.googleapis.com/startup-cpu-boost: "true"
-        run.googleapis.com/cloudsql-instances: topleader-394306:europe-west3:top-leader-db
+        run.googleapis.com/vpc-access-connector: projects/topleader-394306/locations/europe-west3/connectors/top-leader-vpc-connector
+        run.googleapis.com/vpc-access-egress: private-ranges-only
         run.googleapis.com/sessionAffinity: "true"
     spec:
       containerConcurrency: 80
@@ -27,12 +28,15 @@ spec:
           resources:
             limits:
               cpu: "1"
-              memory: 700Mi
+              memory: 512Mi
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "qa"
             - name: GCP_JSON_LOGS
               value: "CONSOLE_JSON"
+            # DB_HOST is the Cloud SQL private IP (from terraform output sql_private_ip)
+            - name: DB_HOST
+              value: "REPLACE_AFTER_TERRAFORM_APPLY"
             # Secrets from Secret Manager
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
