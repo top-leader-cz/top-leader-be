@@ -28,7 +28,7 @@ spec:
           resources:
             limits:
               cpu: "1"
-              memory: 512mi
+              memory: 512Mi
           env:
             - name: SPRING_PROFILES_ACTIVE
               value: "qa"
