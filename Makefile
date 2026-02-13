@@ -14,6 +14,7 @@ GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 .PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux deploy-qa deploy-prod
 .PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
 .PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy
+.PHONY: threaddump-qa threaddump-prod
 
 # Login to Google Cloud and set project
 login:
@@ -107,6 +108,24 @@ jre-build:
 # Push custom JRE image to Artifact Registry
 jre-push: jre-build
 	docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/topleader-jre:latest
+
+# --- Actuator (via management port 8081) ---
+
+# Thread dump from QA
+threaddump-qa:
+	@echo "Connecting to QA management port..."
+	@gcloud run services proxy $(SERVICE_NAME) --port=8081 --region=$(REGION) --project=$(PROJECT_ID) &
+	@sleep 3
+	@curl -s localhost:8081/actuator/threaddump | python3 -m json.tool
+	@kill %1 2>/dev/null || true
+
+# Thread dump from PROD
+threaddump-prod:
+	@echo "Connecting to PROD management port..."
+	@gcloud run services proxy top-leader-prod --port=8081 --region=$(REGION) --project=$(PROJECT_ID) &
+	@sleep 3
+	@curl -s localhost:8081/actuator/threaddump | python3 -m json.tool
+	@kill %1 2>/dev/null || true
 
 # --- Database ---
 

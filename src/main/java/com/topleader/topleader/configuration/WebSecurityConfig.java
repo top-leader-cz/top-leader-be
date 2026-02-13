@@ -46,7 +46,7 @@ public class WebSecurityConfig {
     @Order(1)
     public SecurityFilterChain protectedChain(HttpSecurity http, PasswordEncoder passwordEncoder) throws Exception {
         http
-            .securityMatcher("/api/protected/**")
+            .securityMatcher("/api/protected/**", "/actuator/**")
             .userDetailsService(new InMemoryUserDetailsManager(
                 User.withUsername("job-trigger")
                     .password(passwordEncoder.encode(jobTriggerPassword))
