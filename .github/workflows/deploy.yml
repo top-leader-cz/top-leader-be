@@ -6,6 +6,7 @@ on:
     tags:
       - 'qa-deploy'
       - 'qa-deploy-*'
+      - 'qa-native-*'
       - 'release-v*.*.*'
   pull_request:
     branches: [ "develop", "main" ]
@@ -132,6 +133,118 @@ jobs:
           done
 
           # 2. Delete all untagged images (orphaned platform manifests)
+          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+            --include-tags \
+            --format="get(DIGEST)" \
+            --filter="tags=''" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null)
+
+          for DIGEST in $UNTAGGED; do
+            echo "Deleting untagged: ${DIGEST}"
+            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+              --project=${{ env.PROJECT_ID }} \
+              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
+          done
+
+  deploy-qa-native:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-native')
+    runs-on: ubuntu-latest-8-cores
+    env:
+      REGION: europe-west3
+      SERVICE_NAME: top-leader-qa
+      PROJECT_ID: topleader-394306
+      IMAGE_NAME: top-leader-be
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cloud Authentication
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev,gcr.io
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push native Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.native
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}:native-latest
+            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}:native-${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Get image digest
+        run: |
+          IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
+          DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:native-latest \
+            --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})
+          echo "IMAGE_WITH_DIGEST=${IMAGE_URL}@${DIGEST}" >> $GITHUB_ENV
+
+          DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:native-latest \
+            --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})
+          echo "IMAGE_WITH_DIGEST=${IMAGE_URL}@${DIGEST}" >> $GITHUB_ENV
+
+      - name: Deploy to Cloud Run QA
+        run: |
+          sed -i "s|image:.*|image: ${{ env.IMAGE_WITH_DIGEST }}|" src/main/cloudrun/service-qa.yaml
+
+          gcloud run services replace src/main/cloudrun/service-qa.yaml \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }}
+
+          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --member="allUsers" \
+            --role="roles/run.invoker" \
+            --project=${{ env.PROJECT_ID }}
+
+      - name: Cleanup old revisions (keep last 2)
+        run: |
+          REVISIONS=$(gcloud run revisions list \
+            --service=${{ env.SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --platform=managed \
+            --sort-by=~metadata.creationTimestamp \
+            --format="value(metadata.name)" \
+            --project=${{ env.PROJECT_ID }} | tail -n +3)
+
+          for REVISION in $REVISIONS; do
+            gcloud run revisions delete $REVISION \
+              --region=${{ env.REGION }} \
+              --platform=managed \
+              --project=${{ env.PROJECT_ID }} \
+              --quiet || echo "Failed to delete $REVISION"
+          done
+
+      - name: Cleanup old native images (keep 2 newest)
+        run: |
+          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
+
+          OLD_NATIVE=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+            --include-tags \
+            --sort-by=~CREATE_TIME \
+            --format="csv[no-heading](DIGEST,TAGS)" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
+            grep 'native-' | tail -n +3 | cut -d',' -f1)
+
+          for DIGEST in $OLD_NATIVE; do
+            echo "Deleting old native image: ${DIGEST}"
+            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+              --project=${{ env.PROJECT_ID }} \
+              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
+          done
+
           UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
             --include-tags \
             --format="get(DIGEST)" \

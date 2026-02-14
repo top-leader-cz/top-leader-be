@@ -70,17 +70,11 @@ native:
 native-linux:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache -Pnative.march=x86-64-v3
 
-# Deploy native image to QA (Docker build + push + Cloud Run deploy)
+# Deploy native image to QA via GitHub Actions (creates tag, CI builds native + deploys)
 deploy-qa-native:
-	docker build --platform linux/amd64 -f Dockerfile.native \
-		-t $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):native-latest .
-	docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):native-latest
-	@DIGEST=$$(gcloud artifacts docker images describe \
-		$(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):native-latest \
-		--format='get(image_summary.digest)' --project=$(PROJECT_ID)); \
-	sed "s|image:.*|image: $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME)@$$DIGEST|" \
-		src/main/cloudrun/service-qa.yaml | \
-	gcloud run services replace - --region=$(REGION) --project=$(PROJECT_ID)
+	$(eval QA_NATIVE_TAG := qa-native-$(shell date +%Y%m%d-%H%M%S))
+	git tag $(QA_NATIVE_TAG)
+	git push origin $(QA_NATIVE_TAG)
 
 # Deploy to QA (local build + GitHub Actions deploy)
 deploy-qa: build
