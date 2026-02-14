@@ -36,7 +36,7 @@ spec:
               value: "CONSOLE_JSON"
             # DB_HOST is the Cloud SQL private IP (from terraform output sql_private_ip)
             - name: DB_HOST
-              value: "REPLACE_AFTER_TERRAFORM_APPLY"
+              value: "10.27.0.3"
             # Calendly OAuth (not secret - public client ID)
             - name: TOP_LEADER_CALENDLY_CLIENT_ID
               value: "PJ2FbDI-YAyzEJya2H4RqHv_Sv0F-Hl0d-i93FkAuH8"

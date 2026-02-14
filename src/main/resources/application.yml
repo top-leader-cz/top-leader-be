@@ -26,7 +26,7 @@ spring:
     username: root
     password: postgres
     hikari:
-      # Optimized for virtual threads (local development)
+      # Optimized for virtual threads (local development)takze ded deployment?
       minimum-idle: 5
       maximum-pool-size: 20
       idle-timeout: 300000

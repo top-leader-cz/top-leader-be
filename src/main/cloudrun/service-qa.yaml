@@ -36,7 +36,7 @@ spec:
               value: "CONSOLE_JSON"
             # DB_HOST is the Cloud SQL private IP (from terraform output sql_private_ip)
             - name: DB_HOST
-              value: "REPLACE_AFTER_TERRAFORM_APPLY"
+              value: "10.27.0.3"
             # Secrets from Secret Manager
             - name: SPRING_DATASOURCE_PASSWORD
               valueFrom:
