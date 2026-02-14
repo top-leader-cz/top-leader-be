@@ -4,7 +4,7 @@ plugins {
     id("org.springframework.boot") version "4.0.2"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.freefair.lombok") version "9.2.0"
-    id("org.graalvm.buildtools.native") version "0.10.6"
+    id("org.graalvm.buildtools.native") version "0.11.1"
 }
 
 group = "com.topleader"
@@ -39,15 +39,6 @@ dependencyManagement {
 }
 
 dependencies {
-    // Google Cloud (auth library needed for GCS)
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0") {
-        exclude(group = "io.opencensus")           // deprecated, replaced by OTEL
-        exclude(group = "io.grpc")                 // gRPC context - not needed
-        exclude(group = "com.google.code.findbugs") // JSR305 annotations - not needed at runtime
-        exclude(group = "com.google.j2objc")       // J2ObjC iOS annotations
-        exclude(group = "com.google.errorprone")   // Error Prone - compile-time tool
-    }
-
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
@@ -216,31 +207,6 @@ graalvmNative {
 // Configure AOT processing to use H2 (only for AOT hint generation, not baked into runtime)
 tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessAot>("processAot") {
     classpath = classpath.plus(aotOnly)
-    args(
-        "--spring.datasource.url=jdbc:h2:mem:aot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
-        "--spring.datasource.username=sa",
-        "--spring.datasource.password=",
-        "--spring.datasource.driver-class-name=org.h2.Driver",
-        "--spring.flyway.enabled=false",
-        "--spring.ai.openai.api-key=dummy-key"
-    )
-}
-
-// Configure Test AOT processing with H2 and exclude TestContainers-based tests
-tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
-    classpath = classpath.plus(aotOnly)
-    args(
-        "--spring.datasource.url=jdbc:h2:mem:aot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
-        "--spring.datasource.username=sa",
-        "--spring.datasource.password=",
-        "--spring.datasource.driver-class-name=org.h2.Driver",
-        "--spring.flyway.enabled=false",
-        "--spring.ai.openai.api-key=dummy-key"
-    )
-}
-
-// Configure Test AOT processing with H2 and exclude TestContainers-based tests
-tasks.named<org.springframework.boot.gradle.tasks.aot.ProcessTestAot>("processTestAot") {
     args(
         "--spring.datasource.url=jdbc:h2:mem:aot;DB_CLOSE_DELAY=-1;MODE=PostgreSQL",
         "--spring.datasource.username=sa",

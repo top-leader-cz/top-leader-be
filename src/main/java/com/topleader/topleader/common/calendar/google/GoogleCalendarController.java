@@ -5,8 +5,9 @@ package com.topleader.topleader.common.calendar.google;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.Base64;
+import java.util.UUID;
 
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -47,23 +48,35 @@ public class GoogleCalendarController {
     private String appUrl;
 
 
+    private static final String OAUTH_STATE_ATTR = "oauth_state";
+
     @GetMapping("/login/google")
     public RedirectView googleConnectionStatus(
-        @AuthenticationPrincipal UserDetails u
+        @AuthenticationPrincipal UserDetails u,
+        HttpSession session
     ) {
-        return new RedirectView(authorize(u.getUsername()));
+        var state = UUID.randomUUID().toString();
+        session.setAttribute(OAUTH_STATE_ATTR, state);
+        return new RedirectView(authorize(state));
     }
 
     @GetMapping(value = "/login/google", params = {"code", "state"})
     public ResponseEntity<String> oauth2Callback(
         @RequestParam(value = "code") String code,
-        @RequestParam(value = "state") String state
+        @RequestParam(value = "state") String state,
+        @AuthenticationPrincipal UserDetails u,
+        HttpSession session
     ) {
+        var expectedState = (String) session.getAttribute(OAUTH_STATE_ATTR);
+        session.removeAttribute(OAUTH_STATE_ATTR);
+
+        if (expectedState == null || !expectedState.equals(state)) {
+            log.warn("Invalid OAuth state parameter for user {}", u.getUsername());
+            return ResponseEntity.badRequest().body("Invalid OAuth state");
+        }
+
         var response = clientFactory.exchangeCode(code, redirectUri);
-
-        var userEmail = new String(Base64.getDecoder().decode(state));
-
-        calendarService.storeTokenInfo(userEmail, response);
+        calendarService.storeTokenInfo(u.getUsername(), response);
 
         var redirectUrl = appUrl + "/#/sync-success?provider=gcal";
         var html = """
@@ -82,8 +95,7 @@ public class GoogleCalendarController {
             .body(html);
     }
 
-    private String authorize(String username) {
-        var state = Base64.getEncoder().encodeToString(username.getBytes());
+    private String authorize(String state) {
         return AUTH_URL
                 + "?client_id=" + URLEncoder.encode(clientId, StandardCharsets.UTF_8)
                 + "&redirect_uri=" + URLEncoder.encode(redirectUri, StandardCharsets.UTF_8)

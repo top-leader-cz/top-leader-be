@@ -51,7 +51,7 @@ public class TokenController {
 
     @PostMapping("/set-password/{token}")
     public void setPassword(@PathVariable String token,  @Valid @RequestBody TokenController.SetPasswordRequestRequest request) {
-        log.info("User set-password start. token: {}", token);
+        log.info("User set-password start");
 
         var savedToken = tokenService.findByTokenAndType(token, Token.Type.SET_PASSWORD)
                 .orElseThrow(NotFoundException::new);
@@ -64,7 +64,7 @@ public class TokenController {
         userRepository.save(user);
         tokenService.delete(savedToken);
 
-        log.info("User set-password finished. token: {}", token);
+        log.info("User set-password finished for user {}", user.getUsername());
     }
 
     @PostMapping("/reset-password-link")
