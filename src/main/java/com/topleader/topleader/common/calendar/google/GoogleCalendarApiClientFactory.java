@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -15,6 +16,7 @@ import org.springframework.web.client.RestClient;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class GoogleCalendarApiClientFactory {
 
     private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
@@ -27,10 +29,6 @@ public class GoogleCalendarApiClientFactory {
 
     @Value("${google.client.client-secret}")
     private String clientSecret;
-
-    public GoogleCalendarApiClientFactory() {
-        this.restClient = RestClient.create();
-    }
 
     public TokenResponse exchangeCode(String code, String redirectUri) {
         var params = new LinkedMultiValueMap<String, String>();

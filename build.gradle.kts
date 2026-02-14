@@ -40,7 +40,13 @@ dependencyManagement {
 
 dependencies {
     // Google Cloud (auth library needed for GCS)
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0")
+    implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0") {
+        exclude(group = "io.opencensus")           // deprecated, replaced by OTEL
+        exclude(group = "io.grpc")                 // gRPC context - not needed
+        exclude(group = "com.google.code.findbugs") // JSR305 annotations - not needed at runtime
+        exclude(group = "com.google.j2objc")       // J2ObjC iOS annotations
+        exclude(group = "com.google.errorprone")   // Error Prone - compile-time tool
+    }
 
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web") {
@@ -52,10 +58,15 @@ dependencies {
         exclude(group = "org.eclipse.jetty.ee11", module = "jetty-ee11-plus")
         exclude(group = "org.apache.tomcat.embed", module = "tomcat-embed-el")
     }
-    implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
+    implementation("org.springframework.boot:spring-boot-starter-opentelemetry") {
+        exclude(group = "io.opentelemetry", module = "opentelemetry-exporter-sender-okhttp") // use JDK sender instead
+    }
+    implementation("io.opentelemetry:opentelemetry-exporter-sender-jdk")
     implementation("org.springframework.boot:spring-boot-starter-data-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-security")
-    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-validation") {
+        exclude(group = "org.apache.tomcat.embed", module = "tomcat-embed-el") // using Jetty, not Tomcat
+    }
     implementation("org.springframework.boot:spring-boot-starter-mail")
     implementation("org.springframework.boot:spring-boot-starter-flyway")
     implementation("org.springframework.session:spring-session-jdbc")
