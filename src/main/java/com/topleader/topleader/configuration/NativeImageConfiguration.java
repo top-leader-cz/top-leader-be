@@ -116,6 +116,9 @@ public class NativeImageConfiguration {
             registerForJsonSerialization(hints, CalendlyProperties.class);
             registerForJsonSerialization(hints, UploadProperties.class);
 
+            // Spring Security session types (Jackson 2 serialization via SecurityJackson2Modules)
+            registerSessionSecurityClasses(hints, classLoader);
+
             // Enums used in JDBC (default enum conversion uses Enum.valueOf() = reflection)
             registerEnum(hints, User.Authority.class);
             registerEnum(hints, User.Status.class);
@@ -147,6 +150,53 @@ public class NativeImageConfiguration {
         private void registerEnum(RuntimeHints hints, Class<?> enumClass) {
             hints.reflection().registerType(enumClass,
                     MemberCategory.INVOKE_PUBLIC_METHODS);
+        }
+
+        private void registerSessionSecurityClasses(RuntimeHints hints, ClassLoader classLoader) {
+            var jsonCategories = new MemberCategory[]{
+                    MemberCategory.ACCESS_DECLARED_FIELDS,
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_DECLARED_METHODS,
+                    MemberCategory.INVOKE_PUBLIC_METHODS
+            };
+
+            // Security types stored in HTTP session (serialized via Jackson 2)
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.core.context.SecurityContextImpl", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.authentication.UsernamePasswordAuthenticationToken", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.core.authority.SimpleGrantedAuthority", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.core.userdetails.User", jsonCategories);
+
+            // Jackson 2 modules and deserializers from Spring Security
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.jackson2.CoreJackson2Module", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.jackson2.SecurityJackson2Modules", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.jackson2.UserDeserializer", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.jackson2.UsernamePasswordAuthenticationTokenDeserializer", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.jackson2.UnmodifiableListDeserializer", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.jackson2.UnmodifiableSetDeserializer", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.jackson2.UnmodifiableMapDeserializer", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.web.jackson2.WebJackson2Module", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.security.web.jackson2.WebServletJackson2Module", jsonCategories);
+
+            // JDK collection types used by Spring Security (returned from unmodifiable wrappers)
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "java.util.Collections$UnmodifiableRandomAccessList", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "java.util.Collections$UnmodifiableSet", jsonCategories);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "java.util.Collections$UnmodifiableMap", jsonCategories);
         }
 
         private void registerLog4j2Classes(RuntimeHints hints, ClassLoader classLoader) {
