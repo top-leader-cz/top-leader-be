@@ -1,152 +1,173 @@
 # Native Image & Startup Optimization
 
-## CDS (Class Data Sharing) - Not Recommended
+## GraalVM Native Image (QA)
 
-We attempted to implement CDS (Class Data Sharing) to improve startup time, but it did not work well with Spring Boot.
+Native image is deployed on QA via GitHub Actions for fast cold starts with scale-to-zero.
 
-### Issues Encountered
+### Performance
 
-1. **Training environment mismatch** - CDS requires the training run to match the runtime environment exactly. Spring Boot's dynamic nature (proxies, AOP, lazy initialization) means many classes are not loaded during training.
+| Metric | JVM + AOT | Native Image |
+|--------|-----------|--------------|
+| Startup | ~12-15s | **~0.6s** |
+| Memory (Cloud Run) | 600Mi | 256-384Mi |
+| Peak throughput | faster (JIT) | ~10-30% slower |
+| Image size | ~73MB JAR + JRE | ~165MB binary |
+| Build time (CI) | ~3 min | ~8-12 min |
 
-2. **`UseCompactObjectHeaders` flag mismatch** - The JVM flag must be consistent between training and runtime, otherwise the archive is incompatible.
+### Build Config
 
-3. **Spring Security/Session issues** - Authentication-related classes were not properly archived, causing login failures at runtime.
+- GraalVM CE 25, Java 25
+- `-march=x86-64` (baseline, compatible with all x86-64 CPUs including Cloud Run)
+- `--initialize-at-build-time` for logging + serialization libs (Log4j2, Jackson, SnakeYAML)
+- No `-Ob` flag (full optimization for smaller binary + faster runtime)
+- No JPA/Hibernate (JDBC only) — simplifies native compilation significantly
 
-4. **No startup improvement** - With CDS enabled, startup was actually slower (20s vs 16s without CDS).
+### Deploy to QA
 
-### Why CDS Doesn't Work Well with Spring Boot
+```bash
+make deploy-qa-native
+```
 
-- Spring Boot uses extensive reflection and dynamic class loading
-- Spring AOT helps but doesn't solve all issues
-- The training run (`-Dspring.context.exit=onRefresh`) exits before all classes are loaded
-- Database connections, security filters, and session management require runtime initialization
+This pushes a `qa-native-*` tag which triggers GitHub Actions:
+1. Builds native image inside Docker (`Dockerfile.native`) on x86-64 runner
+2. Pushes to Artifact Registry as `native-latest` + `native-{sha}`
+3. Deploys to Cloud Run QA
+4. Cleans up old revisions and images
 
-### Alternatives
+### CI Pipeline (GitHub Actions)
 
-| Option | Startup Time | Notes |
-|--------|--------------|-------|
-| JVM + Spring AOT | ~15-17s | Current approach |
-| CRaC (Checkpoint/Restore) | <1s | Requires special JDK, complex setup |
-| GraalVM Native Image | **~0.3-0.5s** | No JPA = very fast startup, longer build time |
+- **Runner**: `ubuntu-latest` (4 vCPU, 16 GB RAM)
+- **Docker BuildKit** with GHA cache (caches base image + dependency layers)
+- **Build time**: ~8-12 min (first build ~15 min due to dependency download)
+- Tag pattern: `qa-native-*` triggers `deploy-qa-native` job in `deploy.yml`
+
+### Dockerfile.native
+
+Multi-stage build:
+1. **Builder**: `ghcr.io/graalvm/native-image-community:25` — compiles native binary
+2. **Runtime**: `debian:bookworm-slim` — minimal runtime with ca-certificates
+
+```dockerfile
+ENTRYPOINT ["./top-leader", "-Xmx256m", "-Xms256m"]
+```
+
+### Reflection Hints (NativeImageConfiguration)
+
+GraalVM native image removes all classes not reachable via static analysis. Jackson uses reflection at runtime (`Class.getRecordComponents()`) to deserialize JSON into records/classes. These types must be registered manually.
+
+All reflection hints are centralized in `NativeImageConfiguration.java`:
+
+```java
+// RestClient response types (Jackson deserialization via reflection)
+registerForJsonSerialization(hints, GcsLightweightClient.MetadataTokenResponse.class);
+registerForJsonSerialization(hints, GoogleCalendarApiClientFactory.TokenResponse.class);
+registerForJsonSerialization(hints, DaliResponse.class);
+// ... etc
+```
+
+**When to add new hints**: Any class/record used with `RestClient.body(MyClass.class)` or `ParameterizedTypeReference<MyClass>` needs a `registerForJsonSerialization()` entry.
+
+**Controller `@RequestBody` types**: Spring AOT handles these automatically — no manual hints needed.
+
+### Known Issues & Fixes
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| `CPU does not support x86-64-v3` | `-march=native` compiled for CI CPU | Changed to `-march=x86-64` |
+| `Record components not available` | Missing reflection hints for Jackson | Added to `NativeImageConfiguration` |
+| Can't build on Apple Silicon | QEMU can't emulate x86-64-v3 | Build in CI (GitHub Actions) |
+
+### Local Native Build (macOS only)
+
+```bash
+make native          # Build for local macOS (Apple Silicon)
+```
+
+This builds a macOS ARM binary — useful for local testing but **not deployable** to Cloud Run (needs linux/amd64).
+
+---
+
+## JVM + Spring AOT (PROD)
+
+Production uses JVM with Spring AOT for better peak throughput after JIT warmup.
 
 ### Current Optimization Strategy
 
-Instead of CDS, we use:
-
-1. **Spring AOT** - Pre-computes bean definitions at build time
-2. **jlink custom JRE** - Minimal JRE with only required modules (~53MB)
-3. **JVM flags** - Tiered compilation, G1GC, memory settings
-4. **Distroless base image** - Minimal container footprint
+1. **Spring AOT** (`-Dspring.aot.enabled=true`) — pre-computes bean definitions at build time
+2. **Custom JRE** — pre-built jlink JRE in Artifact Registry (~53MB)
+3. **JVM flags** — G1GC, memory settings, compact object headers
+4. **Clean build** — `gradlew clean bootJar` prevents stale AOT cache
 
 ### Dockerfile Configuration
 
 ```dockerfile
-# Stage 1: Build with Spring AOT
 FROM eclipse-temurin:25-jdk AS builder
-WORKDIR /app
-COPY gradle gradle
-COPY gradlew build.gradle.kts settings.gradle.kts ./
-RUN chmod +x gradlew
-RUN ./gradlew dependencies --no-daemon || true
-COPY src src
-RUN ./gradlew bootJar -x test -Dspring.aot.enabled=true --no-daemon
+RUN ./gradlew clean bootJar -x test --no-daemon
 
-# Stage 2: Create custom JRE with jlink (~53MB)
-FROM eclipse-temurin:25-jdk AS jre-builder
-ENV MODULES="java.base,java.compiler,java.desktop,java.net.http,java.sql,java.logging,java.naming,java.management,java.instrument,java.security.sasl,jdk.crypto.ec,jdk.unsupported"
-RUN jlink \
-    --add-modules $MODULES \
-    --strip-debug \
-    --no-man-pages \
-    --no-header-files \
-    --compress=zip-6 \
-    --output /custom-jre
-
-# Stage 3: Runtime with distroless (~20MB base)
-FROM gcr.io/distroless/base-debian12
-COPY --from=jre-builder /custom-jre /opt/java
-WORKDIR /app
-COPY --from=builder /app/build/libs/top-leader.jar app.jar
-ENV JAVA_HOME=/opt/java
-ENV PATH="$JAVA_HOME/bin:$PATH"
-ENV PORT=8080
-EXPOSE 8080
-
-# JVM optimizations for Cloud Run (512Mi)
+FROM europe-west3-docker.pkg.dev/.../topleader-jre:latest
 ENTRYPOINT ["/opt/java/bin/java", \
-    "-XX:MaxRAMPercentage=70.0", \
-    "-XX:InitialRAMPercentage=70.0", \
+    "-Dspring.aot.enabled=true", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-XX:InitialRAMPercentage=75.0", \
     "-XX:+UseG1GC", \
     "-XX:+UseCompactObjectHeaders", \
     "-XX:+UseStringDeduplication", \
     "-XX:+TieredCompilation", \
-    "-XX:TieredStopAtLevel=1", \
+    "-XX:MaxMetaspaceSize=128m", \
+    "-XX:+ExitOnOutOfMemoryError", \
+    "-XX:G1HeapRegionSize=4m", \
     "-jar", "app.jar"]
 ```
 
-### JVM Flags Explained
+### JVM Flags
 
 | Flag | Purpose |
 |------|---------|
-| `MaxRAMPercentage=70.0` | Max heap = 70% of 512MB (~358MB) |
-| `InitialRAMPercentage=70.0` | Pre-allocate heap at startup (faster) |
+| `MaxRAMPercentage=75.0` | Max heap = 75% of container memory |
+| `InitialRAMPercentage=75.0` | Pre-allocate heap at startup (faster) |
 | `UseG1GC` | Best GC for containers |
 | `UseCompactObjectHeaders` | Java 25 feature, reduces object header size |
 | `UseStringDeduplication` | Reduces memory for duplicate strings |
-| `TieredCompilation` | Faster JIT warmup |
-| `TieredStopAtLevel=1` | C1 compiler only (faster startup, slower peak) |
+| `TieredCompilation` | Full JIT (C1 + C2) for best peak throughput |
+| `MaxMetaspaceSize=128m` | Cap metaspace (Spring Boot needs ~90-100m) |
+| `ExitOnOutOfMemoryError` | Kill container on OOM (Cloud Run restarts it) |
 
-### jlink Modules Explained
+---
 
-| Module | Required For |
-|--------|--------------|
-| `java.base` | Core Java |
-| `java.compiler` | Spring AOT |
-| `java.desktop` | AWT fonts (some libs need it) |
-| `java.net.http` | HTTP client |
-| `java.sql` | JDBC/PostgreSQL |
-| `java.logging` | Logging |
-| `java.naming` | JNDI (Spring) |
-| `java.management` | Required by Log4j2 |
-| `java.instrument` | Bytecode (Spring AOP) |
-| `java.security.sasl` | Security |
-| `jdk.crypto.ec` | TLS/SSL |
-| `jdk.unsupported` | Unsafe (Netty, Jackson) |
+## CDS (Class Data Sharing) - Not Recommended
+
+We attempted CDS but it did not work well with Spring Boot.
+
+### Issues
+
+- Training environment mismatch — CDS requires exact match between training and runtime
+- `UseCompactObjectHeaders` flag mismatch between training and runtime
+- Spring Security/Session classes not properly archived
+- No startup improvement (20s vs 16s without CDS)
+
+### Why CDS Doesn't Work with Spring Boot
+
+- Extensive reflection and dynamic class loading
+- Training run exits before all classes are loaded
+- Database connections, security filters, session management require runtime init
+
+---
+
+## Strategy: JVM for PROD, Native for QA
+
+| | QA (Native) | PROD (JVM + AOT) |
+|---|---|---|
+| Startup | ~0.6s | ~12-15s |
+| Peak throughput | slower | **faster** (JIT) |
+| Memory | 256-384Mi | 600Mi |
+| Scale to zero | yes (fast cold start) | possible but slow cold start |
+| Build time | ~8-12 min | ~3 min |
+
+**Rationale**: QA has low traffic and scale-to-zero — fast cold start matters. PROD has sustained traffic — peak throughput matters more than startup.
 
 ### Future Considerations
 
-- **Project Leyden** - When fully available, may provide better CDS support for Spring Boot
-- **CRaC** - Consider when Cloud Run adds native support
-- **GraalVM Native** - Already configured in build.gradle.kts, use when build time is acceptable
-
-### Optional: Remove postgres-socket-factory (Cloud Run only)
-
-The `com.google.cloud.sql:postgres-socket-factory` dependency can be removed if running exclusively on Cloud Run. This saves ~0.5s startup and reduces JAR size.
-
-**Current setup (App Engine + Cloud Run compatible):**
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql:///<DATABASE_NAME>
-    hikari:
-      data-source-properties:
-        socketFactory: com.google.cloud.sql.postgres.SocketFactory
-        cloudSqlInstance: <PROJECT_ID>:<REGION>:<INSTANCE_NAME>
-```
-
-**Cloud Run only setup (no socket factory needed):**
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql:///<DATABASE_NAME>?host=/cloudsql/<PROJECT_ID>:<REGION>:<INSTANCE_NAME>
-    # Remove socketFactory and cloudSqlInstance from data-source-properties
-```
-
-**Trade-offs:**
-
-| Keep socket-factory | Remove socket-factory |
-|---------------------|----------------------|
-| Works on App Engine + Cloud Run | Cloud Run only |
-| IAM authentication support | Password auth only |
-| Auto retry/reconnect | Manual handling |
-| +0.5s startup | Faster startup |
+- **GraalVM PGO** (Profile-Guided Optimization) — could close the throughput gap
+- **Project Leyden** — better CDS/AOT for standard JVM
+- **CRaC** — checkpoint/restore when Cloud Run adds support
+- **Native for PROD** — consider when native throughput gap narrows

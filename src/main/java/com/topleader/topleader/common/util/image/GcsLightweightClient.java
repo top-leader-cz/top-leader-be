@@ -130,13 +130,13 @@ public class GcsLightweightClient {
                 .body(byte[].class);
     }
 
-    record MetadataTokenResponse(
+    public record MetadataTokenResponse(
             @JsonProperty("access_token") String accessToken,
             @JsonProperty("expires_in") int expiresIn,
             @JsonProperty("token_type") String tokenType
     ) {}
 
-    record GcsListResponse(List<GcsObject> items, String nextPageToken) {}
+    public record GcsListResponse(List<GcsObject> items, String nextPageToken) {}
 
-    record GcsObject(String name) {}
+    public record GcsObject(String name) {}
 }
