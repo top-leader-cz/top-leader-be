@@ -58,8 +58,10 @@ jobs:
       - name: Build and push Docker image
         run: |
           IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          docker build -t ${IMAGE_URL}:latest .
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          docker build -t ${IMAGE_URL}:latest -t ${IMAGE_URL}:qa-${SHORT_SHA} .
           docker push ${IMAGE_URL}:latest
+          docker push ${IMAGE_URL}:qa-${SHORT_SHA}
 
           # Get the pushed image digest to force new Cloud Run revision
           DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:latest --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})
@@ -105,29 +107,38 @@ jobs:
             done
           fi
 
-      - name: Cleanup old images (keep latest + 1 previous)
+      - name: Cleanup old images (keep latest + 1 previous QA)
         run: |
           IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          echo "Cleaning up old QA images..."
-          # List all digests, exclude PROD versioned images, keep 2 newest QA images
-          OLD_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+          echo "Cleaning up old images..."
+
+          # Delete all untagged images
+          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
             --include-tags \
             --sort-by=~CREATE_TIME \
-            --format="table[no-heading](DIGEST,TAGS)" \
-            --project=${{ env.PROJECT_ID }} | \
-            grep -vE '[0-9]+\.[0-9]+\.[0-9]+' | \
-            awk '{print $1}' | tail -n +3)
+            --format="get(DIGEST)" \
+            --filter="tags=''" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null)
 
-          if [ -z "$OLD_IMAGES" ]; then
-            echo "No old images to delete"
-          else
-            echo "Deleting old images..."
-            for DIGEST in $OLD_IMAGES; do
-              gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
-                --project=${{ env.PROJECT_ID }} \
-                --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-            done
-          fi
+          for DIGEST in $UNTAGGED; do
+            echo "Deleting untagged: ${DIGEST}"
+            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+              --project=${{ env.PROJECT_ID }} \
+              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
+          done
+
+          # Delete old QA images (keep 2 newest qa-* tagged)
+          OLD_QA=$(gcloud artifacts docker tags list ${IMAGE_PATH} \
+            --format="get(tag)" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
+            grep -E '^qa-' | sort -r | tail -n +3)
+
+          for TAG in $OLD_QA; do
+            echo "Deleting old QA image: ${TAG}"
+            gcloud artifacts docker images delete ${IMAGE_PATH}:${TAG} \
+              --project=${{ env.PROJECT_ID }} \
+              --quiet --delete-tags || echo "Failed to delete ${TAG}"
+          done
 
   deploy-prod:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/release-v')
@@ -160,13 +171,14 @@ jobs:
           docker build -t ${IMAGE_URL}:${VERSION} .
           docker push ${IMAGE_URL}:${VERSION}
 
+          # Get the pushed image digest for deploy verification
+          DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:${VERSION} --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})
+          echo "IMAGE_WITH_DIGEST=${IMAGE_URL}@${DIGEST}" >> $GITHUB_ENV
+
       - name: Deploy to Cloud Run PROD
         run: |
-          VERSION="${GITHUB_REF#refs/tags/release-v}"
-          IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}:${VERSION}
-
-          # Update image tag in service YAML
-          sed -i "s|image:.*|image: ${IMAGE_URL}|" src/main/cloudrun/service-prod.yaml
+          # Replace image with exact digest to guarantee correct version
+          sed -i "s|image:.*|image: ${{ env.IMAGE_WITH_DIGEST }}|" src/main/cloudrun/service-prod.yaml
 
           # Deploy using service YAML
           gcloud run services replace src/main/cloudrun/service-prod.yaml \
@@ -179,6 +191,20 @@ jobs:
             --member="allUsers" \
             --role="roles/run.invoker" \
             --project=${{ env.PROJECT_ID }}
+
+      - name: Verify deployment
+        run: |
+          RUNNING_IMAGE=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
+            --region=${{ env.REGION }} \
+            --project=${{ env.PROJECT_ID }} \
+            --format='get(spec.template.spec.containers[0].image)')
+          echo "Running image: ${RUNNING_IMAGE}"
+          echo "Expected image: ${{ env.IMAGE_WITH_DIGEST }}"
+          if [ "${RUNNING_IMAGE}" != "${{ env.IMAGE_WITH_DIGEST }}" ]; then
+            echo "ERROR: Deployed image does not match expected image!"
+            exit 1
+          fi
+          echo "Deployment verified successfully"
 
       - name: Cleanup old revisions (keep last 3)
         run: |
@@ -207,8 +233,24 @@ jobs:
       - name: Cleanup old images (keep last 3 versions)
         run: |
           IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          echo "Cleaning up old PROD images..."
-          # List version tags, sort descending, skip first 3, delete older
+          echo "Cleaning up old images..."
+
+          # Delete all untagged images
+          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+            --include-tags \
+            --sort-by=~CREATE_TIME \
+            --format="get(DIGEST)" \
+            --filter="tags=''" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null)
+
+          for DIGEST in $UNTAGGED; do
+            echo "Deleting untagged: ${DIGEST}"
+            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+              --project=${{ env.PROJECT_ID }} \
+              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
+          done
+
+          # Delete old PROD versioned images (keep 3 newest)
           OLD_VERSIONS=$(gcloud artifacts docker tags list ${IMAGE_PATH} \
             --format="get(tag)" \
             --project=${{ env.PROJECT_ID }} 2>/dev/null | \
@@ -216,17 +258,12 @@ jobs:
             sort -rV | \
             tail -n +4)
 
-          if [ -z "$OLD_VERSIONS" ]; then
-            echo "No old versioned images to delete"
-          else
-            echo "Deleting old versioned images..."
-            for TAG in $OLD_VERSIONS; do
-              echo "Deleting version ${TAG}"
-              gcloud artifacts docker images delete ${IMAGE_PATH}:${TAG} \
-                --project=${{ env.PROJECT_ID }} \
-                --quiet --delete-tags || echo "Failed to delete ${TAG}"
-            done
-          fi
+          for TAG in $OLD_VERSIONS; do
+            echo "Deleting old version: ${TAG}"
+            gcloud artifacts docker images delete ${IMAGE_PATH}:${TAG} \
+              --project=${{ env.PROJECT_ID }} \
+              --quiet --delete-tags || echo "Failed to delete ${TAG}"
+          done
 
       - name: Create GitHub Release with changelog
         env:
