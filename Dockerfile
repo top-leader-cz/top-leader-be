@@ -13,7 +13,7 @@ RUN ./gradlew dependencies --no-daemon || true
 
 # Copy source and build with Spring AOT
 COPY src src
-RUN ./gradlew bootJar -x test -Dspring.aot.enabled=true --no-daemon
+RUN ./gradlew clean bootJar -x test --no-daemon
 
 # Stage 2: Runtime with pre-built custom JRE
 FROM europe-west3-docker.pkg.dev/topleader-394306/top-leader/topleader-jre:latest
@@ -27,8 +27,9 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 ENV PORT=8080
 EXPOSE 8080
 
-# Run with optimizations for 512Mi Cloud Run
+# Run with optimizations for Cloud Run
 ENTRYPOINT ["/opt/java/bin/java", \
+    "-Dspring.aot.enabled=true", \
     "-XX:MaxRAMPercentage=75.0", \
     "-XX:InitialRAMPercentage=75.0", \
     "-XX:+UseG1GC", \

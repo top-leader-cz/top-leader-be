@@ -116,10 +116,24 @@ jobs:
           IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
           echo "Cleaning up old images..."
 
-          # Delete all untagged images
-          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+          # 1. Delete old QA tagged images first (keep 2 newest by creation time)
+          OLD_QA=$(gcloud artifacts docker images list ${IMAGE_PATH} \
             --include-tags \
             --sort-by=~CREATE_TIME \
+            --format="csv[no-heading](DIGEST,TAGS)" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
+            grep 'qa-' | tail -n +3 | cut -d',' -f1)
+
+          for DIGEST in $OLD_QA; do
+            echo "Deleting old QA image: ${DIGEST}"
+            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+              --project=${{ env.PROJECT_ID }} \
+              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
+          done
+
+          # 2. Delete all untagged images (orphaned platform manifests)
+          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+            --include-tags \
             --format="get(DIGEST)" \
             --filter="tags=''" \
             --project=${{ env.PROJECT_ID }} 2>/dev/null)
@@ -129,19 +143,6 @@ jobs:
             gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
               --project=${{ env.PROJECT_ID }} \
               --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done
-
-          # Delete old QA images (keep 2 newest qa-* tagged)
-          OLD_QA=$(gcloud artifacts docker tags list ${IMAGE_PATH} \
-            --format="get(tag)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
-            grep -E '^qa-' | sort -r | tail -n +3)
-
-          for TAG in $OLD_QA; do
-            echo "Deleting old QA image: ${TAG}"
-            gcloud artifacts docker images delete ${IMAGE_PATH}:${TAG} \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${TAG}"
           done
 
   deploy-prod:
@@ -239,10 +240,24 @@ jobs:
           IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
           echo "Cleaning up old images..."
 
-          # Delete all untagged images
-          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+          # 1. Delete old PROD versioned images (keep 3 newest by creation time)
+          OLD_VERSIONS=$(gcloud artifacts docker images list ${IMAGE_PATH} \
             --include-tags \
             --sort-by=~CREATE_TIME \
+            --format="csv[no-heading](DIGEST,TAGS)" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
+            grep -E '[0-9]+\.[0-9]+\.[0-9]+' | tail -n +4 | cut -d',' -f1)
+
+          for DIGEST in $OLD_VERSIONS; do
+            echo "Deleting old version: ${DIGEST}"
+            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+              --project=${{ env.PROJECT_ID }} \
+              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
+          done
+
+          # 2. Delete all untagged images (orphaned platform manifests)
+          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+            --include-tags \
             --format="get(DIGEST)" \
             --filter="tags=''" \
             --project=${{ env.PROJECT_ID }} 2>/dev/null)
@@ -252,21 +267,6 @@ jobs:
             gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
               --project=${{ env.PROJECT_ID }} \
               --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done
-
-          # Delete old PROD versioned images (keep 3 newest)
-          OLD_VERSIONS=$(gcloud artifacts docker tags list ${IMAGE_PATH} \
-            --format="get(tag)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
-            grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | \
-            sort -rV | \
-            tail -n +4)
-
-          for TAG in $OLD_VERSIONS; do
-            echo "Deleting old version: ${TAG}"
-            gcloud artifacts docker images delete ${IMAGE_PATH}:${TAG} \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${TAG}"
           done
 
       - name: Create GitHub Release with changelog
