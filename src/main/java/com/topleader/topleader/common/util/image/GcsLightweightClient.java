@@ -1,6 +1,6 @@
 package com.topleader.topleader.common.util.image;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.StreamSupport;
 
 @Slf4j
 @Component
@@ -48,18 +47,18 @@ public class GcsLightweightClient {
                     .uri(url)
                     .header("Authorization", "Bearer " + token)
                     .retrieve()
-                    .body(JsonNode.class);
+                    .body(GcsListResponse.class);
 
             Optional.ofNullable(root)
-                    .map(r -> r.get("items"))
-                    .filter(JsonNode::isArray)
+                    .map(GcsListResponse::items)
                     .stream()
-                    .flatMap(items -> StreamSupport.stream(items.spliterator(), false))
-                    .map(item -> item.get("name").asText())
+                    .flatMap(List::stream)
+                    .map(GcsObject::name)
                     .forEach(result::add);
 
-            var nextPageToken = root.get("nextPageToken");
-            pageToken = (nextPageToken != null && !nextPageToken.isNull()) ? nextPageToken.asText() : null;
+            pageToken = Optional.ofNullable(root)
+                    .map(GcsListResponse::nextPageToken)
+                    .orElse(null);
         } while (pageToken != null);
 
         log.info("Listed {} objects from GCS bucket: {}", result.size(), bucketName);
@@ -75,15 +74,17 @@ public class GcsLightweightClient {
             return cachedToken;
         }
 
-        var root = restClient.get()
+        var response = restClient.get()
                 .uri(METADATA_TOKEN_URL)
                 .header("Metadata-Flavor", "Google")
                 .retrieve()
-                .body(JsonNode.class);
+                .body(MetadataTokenResponse.class);
 
-        cachedToken = root.get("access_token").asText();
-        var expiresIn = root.get("expires_in").asInt();
-        tokenExpiry = Instant.now().plusSeconds(expiresIn - 60);
+        cachedToken = response.accessToken();
+        tokenExpiry = Instant.now().plusSeconds(response.expiresIn() - 60);
+
+        var masked = cachedToken.substring(0, 3) + "***" + cachedToken.substring(cachedToken.length() - 3);
+        log.info("GCS access token refreshed: {}", masked);
 
         return cachedToken;
     }
@@ -128,4 +129,14 @@ public class GcsLightweightClient {
                 .retrieve()
                 .body(byte[].class);
     }
+
+    record MetadataTokenResponse(
+            @JsonProperty("access_token") String accessToken,
+            @JsonProperty("expires_in") int expiresIn,
+            @JsonProperty("token_type") String tokenType
+    ) {}
+
+    record GcsListResponse(List<GcsObject> items, String nextPageToken) {}
+
+    record GcsObject(String name) {}
 }

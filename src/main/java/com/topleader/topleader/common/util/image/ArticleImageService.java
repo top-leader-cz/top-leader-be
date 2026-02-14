@@ -182,15 +182,11 @@ public class ArticleImageService {
     }
 
     static String stem(String word) {
-        if (word.length() <= 4) {
-            return word;
-        }
-        for (var suffix : STEM_SUFFIXES) {
-            if (word.endsWith(suffix) && word.length() - suffix.length() >= 3) {
-                return word.substring(0, word.length() - suffix.length());
-            }
-        }
-        return word;
+        return word.length() <= 4 ? word : STEM_SUFFIXES.stream()
+                .filter(suffix -> word.endsWith(suffix) && word.length() - suffix.length() >= 3)
+                .findFirst()
+                .map(suffix -> word.substring(0, word.length() - suffix.length()))
+                .orElse(word);
     }
 
     private Set<String> getOrLoadImageNames() throws Exception {
