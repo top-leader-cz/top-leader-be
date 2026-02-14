@@ -22,11 +22,17 @@ import com.topleader.topleader.history.data.StoredData;
 import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.history.data.ValuesStoredData;
+import com.topleader.topleader.feedback.api.QuestionType;
+import com.topleader.topleader.session.coaching_package.CoachingPackage;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
+import com.topleader.topleader.session.user_allocation.UserAllocation;
 import com.topleader.topleader.user.User;
+import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.session.domain.UserPreview;
+import com.topleader.topleader.user.session.reminder.SessionReminderView;
+import com.topleader.topleader.user.token.Token;
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
 import org.springframework.aot.hint.RuntimeHintsRegistrar;
@@ -97,6 +103,7 @@ public class NativeImageConfiguration {
             registerForJsonSerialization(hints, TokenResponse.class);
             registerForJsonSerialization(hints, DaliResponse.class);
             registerForJsonSerialization(hints, DaliResponse.ImageData.class);
+            registerForJsonSerialization(hints, tools.jackson.databind.JsonNode.class);
 
             // MCP Tool request/response types for Spring AI
             registerForJsonSerialization(hints, McpToolsConfig.UserProfileRequest.class);
@@ -109,7 +116,7 @@ public class NativeImageConfiguration {
             registerForJsonSerialization(hints, CalendlyProperties.class);
             registerForJsonSerialization(hints, UploadProperties.class);
 
-            // Enums used in JDBC converters
+            // Enums used in JDBC (default enum conversion uses Enum.valueOf() = reflection)
             registerEnum(hints, User.Authority.class);
             registerEnum(hints, User.Status.class);
             registerEnum(hints, Coach.PrimaryRole.class);
@@ -120,6 +127,13 @@ public class NativeImageConfiguration {
             registerEnum(hints, CalendarSyncInfo.Status.class);
             registerEnum(hints, CalendarSyncInfo.SyncType.class);
             registerEnum(hints, Notification.Type.class);
+            registerEnum(hints, CoachingPackage.PoolType.class);
+            registerEnum(hints, CoachingPackage.PackageStatus.class);
+            registerEnum(hints, UserAllocation.AllocationStatus.class);
+            registerEnum(hints, Token.Type.class);
+            registerEnum(hints, Badge.AchievementType.class);
+            registerEnum(hints, QuestionType.class);
+            registerEnum(hints, SessionReminderView.ReminderInterval.class);
         }
 
         private void registerForJsonSerialization(RuntimeHints hints, Class<?> clazz) {
