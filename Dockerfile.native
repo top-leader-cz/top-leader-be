@@ -26,4 +26,6 @@ COPY --from=builder /app/build/native/nativeCompile/top-leader .
 ENV PORT=8080
 EXPOSE 8080
 
-ENTRYPOINT ["./top-leader"]
+ENTRYPOINT ["./top-leader", \
+    "-Xmx256m", \
+    "-Xms256m"]
