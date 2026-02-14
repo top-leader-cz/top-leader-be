@@ -11,7 +11,7 @@ ARTIFACT_REPO := cloud-run
 GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 
 # Google Cloud commands
-.PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux deploy-qa deploy-prod
+.PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux deploy-qa deploy-qa-native deploy-prod
 .PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
 .PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy
 
@@ -69,6 +69,18 @@ native:
 # Build native image optimized for Linux x86-64 (for deployment)
 native-linux:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache -Pnative.march=x86-64-v3
+
+# Deploy native image to QA (Docker build + push + Cloud Run deploy)
+deploy-qa-native:
+	docker build --platform linux/amd64 -f Dockerfile.native \
+		-t $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):native-latest .
+	docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):native-latest
+	@DIGEST=$$(gcloud artifacts docker images describe \
+		$(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):native-latest \
+		--format='get(image_summary.digest)' --project=$(PROJECT_ID)); \
+	sed "s|image:.*|image: $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME)@$$DIGEST|" \
+		src/main/cloudrun/service-qa.yaml | \
+	gcloud run services replace - --region=$(REGION) --project=$(PROJECT_ID)
 
 # Deploy to QA (local build + GitHub Actions deploy)
 deploy-qa: build
