@@ -70,7 +70,7 @@ resource "google_sql_database_instance" "main" {
     deletion_protection_enabled = true
 
     ip_configuration {
-      ipv4_enabled    = false
+      ipv4_enabled    = true
       private_network = google_compute_network.main.id
       ssl_mode        = "ENCRYPTED_ONLY"
     }
