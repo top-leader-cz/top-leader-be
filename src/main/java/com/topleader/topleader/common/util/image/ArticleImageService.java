@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.core.env.Environment;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -40,6 +41,7 @@ public class ArticleImageService {
 
     private final RestClient restClient;
     private final ObjectMapper objectMapper;
+    private final Environment environment;
 
     @Autowired(required = false)
     private GcsLightweightClient gcsClient;
@@ -60,7 +62,7 @@ public class ArticleImageService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void preloadImageCache() {
-        if (gcsClient == null || StringUtils.isBlank(bucketName)) {
+        if (gcsClient == null || StringUtils.isBlank(bucketName) || !environment.matchesProfiles("qa | prod")) {
             return;
         }
         Thread.ofVirtual().start(() -> {
