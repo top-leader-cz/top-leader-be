@@ -184,7 +184,7 @@ graalvmNative {
 
             buildArgs.addAll(listOf(
                 "-H:+ReportExceptionStackTraces",
-                "-march=native",
+                "-march=x86-64",
                 listOf(
                     "org.slf4j",
                     "org.apache.logging.slf4j",
