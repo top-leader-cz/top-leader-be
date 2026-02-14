@@ -148,7 +148,7 @@ jobs:
 
   deploy-qa-native:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-native')
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest
     env:
       REGION: europe-west3
       SERVICE_NAME: top-leader-qa
