@@ -35,7 +35,7 @@ ENTRYPOINT ["/opt/java/bin/java", \
     "-XX:+UseCompactObjectHeaders", \
     "-XX:+UseStringDeduplication", \
     "-XX:+TieredCompilation", \
-    "-XX:MaxMetaspaceSize=128m", \
+    "-XX:MaxMetaspaceSize=80m", \
     "-XX:+ExitOnOutOfMemoryError", \
     "-XX:G1HeapRegionSize=4m", \
     "-jar", "app.jar"]

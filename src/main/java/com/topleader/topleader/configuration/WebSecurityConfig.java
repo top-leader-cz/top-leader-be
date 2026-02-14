@@ -60,7 +60,12 @@ public class WebSecurityConfig {
                 e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
             )
             .httpBasic(Customizer.withDefaults())
+            // CSRF: safe to disable — SPA sends JSON (Content-Type: application/json) which
+            // requires CORS preflight for cross-origin requests, and SameSite=Lax cookie
+            // prevents cross-site request forgery for state-changing POST requests.
             .csrf(AbstractHttpConfigurer::disable)
+            // CORS: disabled (browser default same-origin policy applies) — frontend is served
+            // from the same origin; cross-origin access is not needed.
             .cors(AbstractHttpConfigurer::disable)
         ;
         return http.build();
@@ -124,7 +129,12 @@ public class WebSecurityConfig {
                 .contentTypeOptions(Customizer.withDefaults())
                 .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
             )
+            // CSRF: safe to disable — SPA sends JSON (Content-Type: application/json) which
+            // requires CORS preflight for cross-origin requests, and SameSite=Lax cookie
+            // prevents cross-site request forgery for state-changing POST requests.
             .csrf(AbstractHttpConfigurer::disable)
+            // CORS: disabled (browser default same-origin policy applies) — frontend is served
+            // from the same origin; cross-origin access is not needed.
             .cors(AbstractHttpConfigurer::disable)
         ;
 

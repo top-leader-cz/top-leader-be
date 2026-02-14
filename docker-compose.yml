@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: top_leader_dev
+      POSTGRES_DB: top_leader
       POSTGRES_HOST_AUTH_METHOD: trust
     ports:
       - "5432:5432"
