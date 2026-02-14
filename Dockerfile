@@ -27,15 +27,16 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 ENV PORT=8080
 EXPOSE 8080
 
-# Run with optimizations for 512Mi Cloud Run
+# Run with optimizations for Cloud Run
 ENTRYPOINT ["/opt/java/bin/java", \
+    "-Dspring.aot.enabled=true", \
     "-XX:MaxRAMPercentage=75.0", \
     "-XX:InitialRAMPercentage=75.0", \
     "-XX:+UseG1GC", \
     "-XX:+UseCompactObjectHeaders", \
     "-XX:+UseStringDeduplication", \
     "-XX:+TieredCompilation", \
-    "-XX:MaxMetaspaceSize=80m", \
+    "-XX:MaxMetaspaceSize=128m", \
     "-XX:+ExitOnOutOfMemoryError", \
     "-XX:G1HeapRegionSize=4m", \
     "-jar", "app.jar"]
