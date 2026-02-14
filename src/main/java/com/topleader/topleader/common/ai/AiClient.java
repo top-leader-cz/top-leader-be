@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 import java.util.Map;
 
+import com.topleader.topleader.common.util.common.JsonUtils;
 import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
 
 
@@ -153,9 +154,10 @@ public class AiClient {
                 Map.of("resultJson", resultJson, "language", locale));
         log.info("Feedback summary query: {}", prompt.getContents());
 
-        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
-                .call()
-                .entity(Summary.class));
+        var res = Failsafe.with(retryPolicy).get(() -> {
+            var content = chatClient.prompt(prompt).call().content();
+            return JsonUtils.fromJsonString(content, Summary.class);
+        });
         log.info("Feedback summary response: {}", res);
         return res;
     }

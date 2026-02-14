@@ -8,8 +8,6 @@ import tools.jackson.databind.json.JsonMapper;
 import tools.jackson.databind.JsonNode;
 import net.javacrumbs.jsonunit.core.Option;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Objects;
 
 import static net.javacrumbs.jsonunit.assertj.JsonAssertions.assertThatJson;
@@ -39,8 +37,11 @@ public final class TestUtils {
 
     @SneakyThrows
     public static byte[] readFileAsBytes(String name) {
-        return Files.readAllBytes(Paths.get(Objects.requireNonNull(TestUtils.class.getClassLoader()
-            .getResource(name)).toURI()));
+        try (var is = Objects.requireNonNull(
+                TestUtils.class.getClassLoader().getResourceAsStream(name),
+                "Resource not found: " + name)) {
+            return is.readAllBytes();
+        }
     }
 
     public static void assertJsonEquals(String result, String expected) {

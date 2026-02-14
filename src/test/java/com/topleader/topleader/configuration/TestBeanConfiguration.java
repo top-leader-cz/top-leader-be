@@ -3,24 +3,93 @@ package com.topleader.topleader.configuration;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
+import com.topleader.topleader.ResetDatabaseAfterTestMethodListener;
+import com.topleader.topleader.StubFunction;
 import com.topleader.topleader.common.ai.McpToolsConfig;
 import com.topleader.topleader.common.util.image.GcsLightweightClient;
 import okhttp3.mockwebserver.MockWebServer;
-import org.mockito.Mockito;
 
+import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.RuntimeHintsRegistrar;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.ImportRuntimeHints;
 import org.springframework.context.annotation.Primary;
+
+import com.topleader.topleader.common.email.Emailing;
+import com.topleader.topleader.feedback.repository.RecipientRepository;
+import com.topleader.topleader.message.MessageRepository;
+import com.topleader.topleader.user.UserRepository;
 
 import java.io.IOException;
 import java.util.Base64;
 import java.util.List;
-import java.util.function.Function;
 
 @Configuration
+@ImportRuntimeHints(TestBeanConfiguration.TestRuntimeHints.class)
 public class TestBeanConfiguration {
+
+    static class TestRuntimeHints implements RuntimeHintsRegistrar {
+        @Override
+        public void registerHints(RuntimeHints hints, ClassLoader classLoader) {
+            // JDK proxies used as test doubles in unit tests (FeedbackControllerTest, MessageServiceTest)
+            hints.proxies().registerJdkProxy(RecipientRepository.class);
+            hints.proxies().registerJdkProxy(UserRepository.class);
+            hints.proxies().registerJdkProxy(MessageRepository.class);
+            hints.proxies().registerJdkProxy(Emailing.class);
+
+            // SqlScriptsTestExecutionListener reflectively calls getDataSource()
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "org.springframework.jdbc.datasource.DataSourceTransactionManager",
+                    MemberCategory.INVOKE_PUBLIC_METHODS);
+
+            // ResetDatabaseAfterTestMethodListener needs reflection for instantiation in native image
+            hints.reflection().registerType(ResetDatabaseAfterTestMethodListener.class,
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS,
+                    MemberCategory.INVOKE_PUBLIC_METHODS);
+
+            // MessageService needs field access for ReflectionTestUtils.setField in MessageServiceTest
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "com.topleader.topleader.message.MessageService",
+                    MemberCategory.DECLARED_FIELDS);
+
+            // JsonPath function classes used by json-unit-assertj ($.length(), etc.)
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "com.jayway.jsonpath.internal.function.text.Length",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "com.jayway.jsonpath.internal.function.text.Concatenate",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "com.jayway.jsonpath.internal.function.numeric.Min",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "com.jayway.jsonpath.internal.function.numeric.Max",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "com.jayway.jsonpath.internal.function.numeric.Average",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+            hints.reflection().registerTypeIfPresent(classLoader,
+                    "com.jayway.jsonpath.internal.function.numeric.Sum",
+                    MemberCategory.INVOKE_DECLARED_CONSTRUCTORS);
+
+            // Test resource files read via TestUtils.readFileAsString()
+            hints.resources().registerPattern("ai/**");
+            hints.resources().registerPattern("sql/**");
+            hints.resources().registerPattern("json/**");
+            hints.resources().registerPattern("admin/**");
+            hints.resources().registerPattern("availability/**");
+            hints.resources().registerPattern("feedback/**");
+            hints.resources().registerPattern("session/**");
+            hints.resources().registerPattern("translation/**");
+            hints.resources().registerPattern("user_insight/**");
+            hints.resources().registerPattern("user_session/**");
+            hints.resources().registerPattern("user_settings/**");
+        }
+    }
 
     @Bean
     public GreenMail greenMail(@Value("${spring.mail.port}") final Integer emailPort) {
@@ -28,26 +97,18 @@ public class TestBeanConfiguration {
                 .withConfiguration(GreenMailConfiguration.aConfig().withDisabledAuthentication());
     }
 
-    @SuppressWarnings("unchecked")
     @Bean
     @Primary
     @Qualifier("searchArticles")
-    public Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles() {
-        var mock = (Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>>)
-                Mockito.mock(Function.class);
-        Mockito.when(mock.apply(Mockito.any())).thenReturn(List.of());
-        return mock;
+    public StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles() {
+        return new StubFunction<>(request -> List.of());
     }
 
-    @SuppressWarnings("unchecked")
     @Bean
     @Primary
     @Qualifier("searchVideos")
-    public Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos() {
-        var mock = (Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>>)
-                Mockito.mock(Function.class);
-        Mockito.when(mock.apply(Mockito.any())).thenReturn(List.of());
-        return mock;
+    public StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos() {
+        return new StubFunction<>(request -> List.of());
     }
 
     @Bean(destroyMethod = "close")

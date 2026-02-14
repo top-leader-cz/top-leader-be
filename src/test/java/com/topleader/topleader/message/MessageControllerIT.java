@@ -34,6 +34,9 @@ class MessageControllerIT extends IntegrationTest {
     private MessageRepository messageRepository;
 
     @Autowired
+    private MessageService messageService;
+
+    @Autowired
     private UserChatRepository userChatRepository;
 
     @Autowired
@@ -56,20 +59,20 @@ class MessageControllerIT extends IntegrationTest {
         ;
 
         final var messages = messageRepository.findAll().stream()
-                .filter(m -> m.getUserFrom().equals("user1") && m.getUserTo().equals("user2"))
+                .filter(m -> m.userFrom().equals("user1") && m.userTo().equals("user2"))
                 .collect(Collectors.toList());
 
         assertThat(messages, hasSize(3));
 
         final var latestMessage = messages.stream()
-            .max(Comparator.comparing(Message::getCreatedAt));
+            .max(Comparator.comparing(Message::createdAt));
 
         assertThat(latestMessage.isPresent(), is(true));
-        assertThat(latestMessage.get().getMessageData(), is("hello there :-)"));
+        assertThat(latestMessage.get().messageData(), is("hello there :-)"));
 
         final var lastMessage = messageRepository.findById(lastMessageRepository.findById(1L).orElseThrow().getMessageId()).orElseThrow();
 
-        assertThat(lastMessage.getMessageData(), is("hello there :-)"));
+        assertThat(lastMessage.messageData(), is("hello there :-)"));
     }
 
     @Test
@@ -89,12 +92,12 @@ class MessageControllerIT extends IntegrationTest {
         ;
 
         final var messages = messageRepository.findAll().stream()
-            .filter(m -> m.getUserFrom().equals("user1") && m.getUserTo().equals("user4"))
+            .filter(m -> m.userFrom().equals("user1") && m.userTo().equals("user4"))
             .toList();
 
         assertThat(messages, hasSize(1));
 
-        assertThat(messages.getFirst().getMessageData(), is("hello there :-)"));
+        assertThat(messages.getFirst().messageData(), is("hello there :-)"));
 
         final var chat = userChatRepository.findUserChat("user1", "user4");
 
@@ -105,7 +108,7 @@ class MessageControllerIT extends IntegrationTest {
             lastMessageRepository.findById(chat.get().getChatId()).orElseThrow().getMessageId()
         ).orElseThrow();
 
-        assertThat(lastMessage.getMessageData(), is("hello there :-)"));
+        assertThat(lastMessage.messageData(), is("hello there :-)"));
     }
 
     @Test
@@ -250,7 +253,7 @@ class MessageControllerIT extends IntegrationTest {
         var chat = userChatRepository.findUserChat("user1", "user2").orElseThrow();
         var firstLastMessage = lastMessageRepository.findById(chat.getChatId()).orElseThrow();
         var firstMessage = messageRepository.findById(firstLastMessage.getMessageId()).orElseThrow();
-        assertThat(firstMessage.getMessageData(), is("First message"));
+        assertThat(firstMessage.messageData(), is("First message"));
 
         // Send second message - should update last message
         mvc.perform(post("/api/latest/messages")
@@ -267,15 +270,15 @@ class MessageControllerIT extends IntegrationTest {
         var secondMessage = messageRepository.findById(secondLastMessage.getMessageId()).orElseThrow();
 
         // Verify last message was updated (upserted)
-        assertThat(secondMessage.getMessageData(), is("Second message"));
-        assertThat(secondMessage.getId() > firstMessage.getId(), is(true));
+        assertThat(secondMessage.messageData(), is("Second message"));
+        assertThat(secondMessage.id() > firstMessage.id(), is(true));
     }
 
     @Test
     @WithMockUser(username = "user1", roles = "USER")
     void testMarkMessagesAsDisplayed() throws Exception {
         // Initially user1 has unread messages from user2 and user3
-        var unreadBefore = messageRepository.getUnreadMessagesCount("user1");
+        var unreadBefore = messageService.getUnreadMessagesCount("user1");
         assertThat(unreadBefore, hasSize(2));
 
         // Get chat with user2 marks ALL messages for user1 as displayed
@@ -283,7 +286,7 @@ class MessageControllerIT extends IntegrationTest {
             .andExpect(status().isOk());
 
         // All messages should now be marked as displayed
-        var unreadAfter = messageRepository.getUnreadMessagesCount("user1");
+        var unreadAfter = messageService.getUnreadMessagesCount("user1");
         assertThat(unreadAfter, hasSize(0));
     }
 

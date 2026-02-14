@@ -25,6 +25,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -219,7 +220,9 @@ public class CoachListController {
     private Set<String> getAllowedRates(User user) {
         var userRates = userRepository.findAllowedCoachRates(user.getUsername());
         return Optional.ofNullable(userRates)
-            .filter(not(Set::isEmpty))
+            .filter(not(List::isEmpty))
+            .map(HashSet::new)
+            .map(rates -> (Set<String>) rates)
             .or(() -> Optional.ofNullable(user.getCompanyId())
                 .flatMap(companyRepository::findById)
                 .map(Company::getAllowedCoachRates)

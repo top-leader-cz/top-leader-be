@@ -95,11 +95,10 @@ public class CoachController {
     @PostMapping("/photo")
     public void setCoachInfo(@AuthenticationPrincipal UserDetails user, @RequestParam("image") MultipartFile file) throws IOException {
         imageValidationUtils.validateImageUpload(file);
-        var reEncodedImage = reencodeImage(file.getBytes());
         var image = coachImageRepository.findByUsername(user.getUsername())
                 .orElse(new CoachImage().setUsername(user.getUsername()));
-        image.setType(IMAGE_JPEG_VALUE)
-            .setImageData(ImageUtil.compressImage(reEncodedImage));
+        image.setType(file.getContentType())
+            .setImageData(ImageUtil.compressImage(file.getBytes()));
         coachImageRepository.save(image);
     }
 
@@ -109,7 +108,7 @@ public class CoachController {
 
         return coachImageRepository.findByUsername(user.getUsername())
             .map(i -> ResponseEntity.status(HttpStatus.OK)
-                .contentType(MediaType.IMAGE_JPEG)
+                .contentType(MediaType.parseMediaType(i.getType()))
                 .body(ImageUtil.decompressImage(i.getImageData()))
             )
             .orElseThrow(NotFoundException::new);
@@ -157,18 +156,6 @@ public class CoachController {
         sessionService.cancelSessionByCoach(sessionId, user.getUsername());
     }
 
-    private byte[] reencodeImage(byte[] data) throws IOException {
-        var inputStream = new java.io.ByteArrayInputStream(data);
-        var image = javax.imageio.ImageIO.read(inputStream);
-
-        if (image == null) {
-            throw new IllegalArgumentException("Failed to read image");
-        }
-
-        var outputStream = new java.io.ByteArrayOutputStream();
-        javax.imageio.ImageIO.write(image, "JPEG", outputStream);
-        return outputStream.toByteArray();
-    }
 
     public record UpcomingSessionDto(
         Long id,

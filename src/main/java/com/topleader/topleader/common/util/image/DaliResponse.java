@@ -7,7 +7,7 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record DaliResponse(
-    long created,
+    Long created,
     List<ImageData> data
 ) {
     public record ImageData(

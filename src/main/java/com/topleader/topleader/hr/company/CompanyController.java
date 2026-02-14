@@ -43,8 +43,8 @@ public class CompanyController {
     }
 
     private Company loadWithRates(Company company) {
-        var rates = companyRepository.findCoachRatesByCompanyId(company.getId());
-        return company.setAllowedCoachRates(new HashSet<>(rates));
+        var rates = new HashSet<>(companyRepository.findCoachRatesByCompanyId(company.getId()));
+        return company.setAllowedCoachRates(rates);
     }
 
     @PostMapping

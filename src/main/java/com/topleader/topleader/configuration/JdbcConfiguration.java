@@ -18,15 +18,20 @@ import com.topleader.topleader.user.session.domain.UserArticle;
 import org.apache.commons.lang3.StringUtils;
 import org.postgresql.util.PGobject;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.convert.ReadingConverter;
 import org.springframework.data.convert.WritingConverter;
 import org.springframework.data.jdbc.core.convert.JdbcCustomConversions;
+import org.springframework.data.jdbc.core.dialect.JdbcPostgresDialect;
 import org.springframework.data.jdbc.repository.config.AbstractJdbcConfiguration;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -39,8 +44,14 @@ import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
 public class JdbcConfiguration extends AbstractJdbcConfiguration {
 
     @Override
+    public JdbcPostgresDialect jdbcDialect(@Lazy NamedParameterJdbcOperations operations) {
+        return JdbcPostgresDialect.INSTANCE;
+    }
+
+    @Override
     public JdbcCustomConversions jdbcCustomConversions() {
         return new JdbcCustomConversions(List.of(
+                new IntegerToBooleanConverter(),
                 new PGobjectToStringConverter(),
                 new AuthoritiesReadingConverter(),
                 new AuthoritiesWritingConverter(),
@@ -80,9 +91,19 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
                 new ZonedDateTimeToTimestampConverter(),
                 new TimestampToLocalDateTimeConverter(),
                 new LocalDateTimeToTimestampConverter(),
+                new TimeToLocalTimeConverter(),
+                new LocalTimeToTimeConverter(),
                 new UserArticleReadingConverter(),
                 new UserArticleWritingConverter()
         ));
+    }
+
+    @ReadingConverter
+    static class IntegerToBooleanConverter implements Converter<Integer, Boolean> {
+        @Override
+        public Boolean convert(Integer source) {
+            return source != null && source != 0;
+        }
     }
 
     @ReadingConverter
@@ -533,6 +554,27 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
         public String convert(Notification.Type source) {
             return Optional.ofNullable(source)
                     .map(Enum::name)
+                    .orElse(null);
+        }
+    }
+
+    // Native image: AOT-generated code can't convert java.sql.Time <-> java.time.LocalTime without explicit converters
+    @ReadingConverter
+    static class TimeToLocalTimeConverter implements Converter<Time, LocalTime> {
+        @Override
+        public LocalTime convert(Time source) {
+            return Optional.ofNullable(source)
+                    .map(Time::toLocalTime)
+                    .orElse(null);
+        }
+    }
+
+    @WritingConverter
+    static class LocalTimeToTimeConverter implements Converter<LocalTime, Time> {
+        @Override
+        public Time convert(LocalTime source) {
+            return Optional.ofNullable(source)
+                    .map(Time::valueOf)
                     .orElse(null);
         }
     }

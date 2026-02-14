@@ -95,12 +95,12 @@ public class MessageController {
 
         public static MessageDto from(Message m) {
             return new MessageDto(
-                m.getId(),
-                m.getUserFrom(),
-                m.getUserTo(),
-                m.getMessageData(),
-                m.getDisplayed(),
-                m.getCreatedAt()
+                m.id(),
+                m.userFrom(),
+                m.userTo(),
+                m.messageData(),
+                m.displayed(),
+                m.createdAt()
             );
         }
     }

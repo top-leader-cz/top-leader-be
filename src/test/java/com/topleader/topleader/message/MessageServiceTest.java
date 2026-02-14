@@ -1,68 +1,71 @@
 package com.topleader.topleader.message;
 
+import com.topleader.topleader.TestProxy;
 import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyList;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@ExtendWith(MockitoExtension.class)
 class MessageServiceTest {
 
-    @Mock
-    private MessageRepository messageRepository;
+    record TestContext(
+            MessageService service,
+            TestProxy<MessageRepository> messageRepo,
+            TestProxy<Emailing> emailService
+    ) {}
 
-    @Mock
-    private UserRepository userRepository;
+    @SuppressWarnings("unchecked")
+    private TestContext createService(List<String> undisplayedUsers, User... users) {
+        var messageRepo = TestProxy.of(MessageRepository.class)
+                .stub("findUndisplayed", undisplayedUsers)
+                .stub("setNotified", args -> null)
+                .build();
 
-    @Mock
-    private Templating velocityService;
+        var userRepo = TestProxy.of(UserRepository.class)
+                .stub("findByUsername", args -> {
+                    for (var user : users) {
+                        if (user.getUsername().equals(args[0])) return Optional.of(user);
+                    }
+                    return Optional.empty();
+                })
+                .build();
 
-    @Mock
-    private Emailing emailService;
+        Templating velocityService = (params, template) -> "<html>Email body</html>";
 
-    private MessageService messageService;
+        var emailProxy = TestProxy.of(Emailing.class)
+                .stub("sendEmail", args -> null)
+                .build();
 
-    @BeforeEach
-    void setUp() {
-        messageService = new MessageService(messageRepository, null, null, null, userRepository, velocityService, emailService);
-        ReflectionTestUtils.setField(messageService, "appUrl", "https://test.com");
-        ReflectionTestUtils.setField(messageService, "defaultLocale", "en");
-        ReflectionTestUtils.setField(messageService, "supportedInvitations", List.of("en", "cs"));
+        var service = new MessageService(
+                messageRepo.proxy(), null, null, null,
+                userRepo.proxy(), velocityService, emailProxy.proxy(), null
+        );
+        ReflectionTestUtils.setField(service, "appUrl", "https://test.com");
+        ReflectionTestUtils.setField(service, "defaultLocale", "en");
+        ReflectionTestUtils.setField(service, "supportedInvitations", List.of("en", "cs"));
+
+        return new TestContext(service, messageRepo, emailProxy);
     }
 
     @Test
     void processNotDisplayedMessages_shouldNotCallSetNotified_whenNoUsersToNotify() {
-        // Given
-        when(messageRepository.findUndisplayed()).thenReturn(List.of());
+        var ctx = createService(List.of());
 
-        // When
-        messageService.processNotDisplayedMessages();
+        ctx.service().processNotDisplayedMessages();
 
-        // Then
-        verify(messageRepository).findUndisplayed();
-        verify(messageRepository, never()).setNotified(anyList());
-        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+        assertThat(ctx.messageRepo().wasNotCalled("setNotified")).isTrue();
+        assertThat(ctx.emailService().wasNotCalled("sendEmail")).isTrue();
     }
 
     @Test
     void processNotDisplayedMessages_shouldCallSetNotified_whenUsersToNotifyExist() {
-        // Given
         var testUser = new User()
             .setUsername("testuser")
             .setEmail("test@example.com")
@@ -70,34 +73,31 @@ class MessageServiceTest {
             .setLastName("User")
             .setLocale("en");
 
-        when(messageRepository.findUndisplayed()).thenReturn(List.of("testuser"));
-        when(userRepository.findByUsername("testuser")).thenReturn(Optional.of(testUser));
-        when(velocityService.getMessage(any(), anyString())).thenReturn("<html>Email body</html>");
+        var ctx = createService(List.of("testuser"), testUser);
 
-        // When
-        messageService.processNotDisplayedMessages();
+        ctx.service().processNotDisplayedMessages();
 
-        // Then
-        verify(messageRepository).findUndisplayed();
-        verify(userRepository).findByUsername("testuser");
-        verify(emailService).sendEmail("test@example.com", "New Message Alert on TopLeader Platform", "<html>Email body</html>");
-        verify(messageRepository).setNotified(List.of("testuser"));
+        var emailCalls = ctx.emailService().invocationsOf("sendEmail");
+        assertThat(emailCalls).hasSize(1);
+        assertThat(emailCalls.get(0)[0]).isEqualTo("test@example.com");
+        assertThat(emailCalls.get(0)[1]).isEqualTo("New Message Alert on TopLeader Platform");
+        assertThat(emailCalls.get(0)[2]).isEqualTo("<html>Email body</html>");
+
+        var notifyCalls = ctx.messageRepo().invocationsOf("setNotified");
+        assertThat(notifyCalls).hasSize(1);
+        assertThat((List<String>) notifyCalls.get(0)[0]).containsExactly("testuser");
     }
 
     @Test
-    void processNotDisplayedMessages_shouldNotCallSetNotified_whenUserRepositoryReturnsEmpty() {
-        // Given
-        when(messageRepository.findUndisplayed()).thenReturn(List.of("nonexistentuser"));
-        when(userRepository.findByUsername("nonexistentuser")).thenReturn(Optional.empty());
+    void processNotDisplayedMessages_shouldStillNotifyWhenUserRepositoryReturnsEmpty() {
+        var ctx = createService(List.of("nonexistentuser"));
 
-        // When
-        messageService.processNotDisplayedMessages();
+        ctx.service().processNotDisplayedMessages();
 
-        // Then
-        verify(messageRepository).findUndisplayed();
-        verify(userRepository).findByUsername("nonexistentuser");
-        verify(emailService, never()).sendEmail(anyString(), anyString(), anyString());
+        assertThat(ctx.emailService().wasNotCalled("sendEmail")).isTrue();
         // setNotified is still called with the list even though emails weren't sent
-        verify(messageRepository).setNotified(List.of("nonexistentuser"));
+        var notifyCalls = ctx.messageRepo().invocationsOf("setNotified");
+        assertThat(notifyCalls).hasSize(1);
+        assertThat((List<String>) notifyCalls.get(0)[0]).containsExactly("nonexistentuser");
     }
 }

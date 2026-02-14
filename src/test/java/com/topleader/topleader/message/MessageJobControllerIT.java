@@ -39,8 +39,8 @@ public class MessageJobControllerIT extends IntegrationTest {
         Assertions.assertThat(body).contains("Cool user1,").contains("http://app-test-url");
 
         Assertions.assertThat(messageRepository.findAll().stream()
-                .filter(m -> m.getUserTo().equals("user1"))
-                        .map(Message::isNotified)
+                .filter(m -> m.userTo().equals("user1"))
+                        .map(Message::notified)
                 .collect(Collectors.toList()))
                 .containsExactly(true, true, true);
     }

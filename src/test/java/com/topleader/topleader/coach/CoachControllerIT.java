@@ -9,6 +9,7 @@ import com.topleader.topleader.session.scheduled_session.ScheduledSessionReposit
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.image.ImageUtil;
 import java.time.LocalDateTime;
+import java.util.Base64;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -89,11 +90,15 @@ class CoachControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach", authorities = {"COACH"})
     void setCoachImage() throws Exception {
 
-        // Create a real 1x1 pixel JPEG image
-        var bufferedImage = new java.awt.image.BufferedImage(1, 1, java.awt.image.BufferedImage.TYPE_INT_RGB);
-        var outputStream = new java.io.ByteArrayOutputStream();
-        javax.imageio.ImageIO.write(bufferedImage, "JPEG", outputStream);
-        var jpegBytes = outputStream.toByteArray();
+        // Minimal valid JPEG (1x1 pixel, no AWT dependency)
+        var jpegBytes = Base64.getDecoder().decode(
+                "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAgGBgcGBQgHBwcJCQgKDBQNDAsLDBkSEw8UHRof"
+                + "Hh0aHBwgJC4nICIsIxwcKDcpLDAxNDQ0Hyc5PTgyPC4zNDL/2wBDAQkJCQwLDBgNDRgyIRwh"
+                + "MjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjL/wAAR"
+                + "CAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAA"
+                + "AAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMR"
+                + "AD8AKwA//9k="
+        );
 
         final var file = new MockMultipartFile("image", "test-image.jpg", "image/jpeg", jpegBytes);
 
