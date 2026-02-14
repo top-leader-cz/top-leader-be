@@ -3,12 +3,14 @@
  */
 package com.topleader.topleader.session.scheduled_session;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -23,6 +25,7 @@ import java.time.LocalDateTime;
 @Table("scheduled_session")
 @Accessors(chain = true)
 @NoArgsConstructor
+@AllArgsConstructor(onConstructor_ = @PersistenceCreator)
 public class ScheduledSession {
 
     @Id

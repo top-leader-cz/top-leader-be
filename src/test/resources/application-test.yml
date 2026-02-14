@@ -14,8 +14,11 @@ spring:
   main:
     allow-bean-definition-overriding: true
 
-  # Datasource config - will be overridden by TestContainers customizer
+  # Datasource config - overridden by TestContainers customizer (JVM tests) or env vars (native tests)
   datasource:
+    url: ${TEST_DATASOURCE_URL:jdbc:postgresql://localhost:5432/topleader_test}
+    username: ${TEST_DATASOURCE_USERNAME:test}
+    password: ${TEST_DATASOURCE_PASSWORD:test}
     driver-class-name: org.postgresql.Driver
     agroal:
       min-size: 1

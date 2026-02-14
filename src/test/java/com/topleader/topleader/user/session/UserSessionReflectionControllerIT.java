@@ -4,6 +4,7 @@
 package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.StubFunction;
 import com.topleader.topleader.common.ai.McpToolsConfig;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
@@ -22,7 +23,6 @@ import okio.Buffer;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -31,7 +31,6 @@ import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.function.Function;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -63,21 +62,21 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
     @Autowired
     @Qualifier("searchArticles")
-    Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles;
+    StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles;
 
     @Autowired
     @Qualifier("searchVideos")
-    Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos;
+    StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos;
 
 
     @Test
     @WithMockUser("user2")
     void setUserSessionReflectionData() throws Exception {
-        // Configure Tavily mocks to return search results
-        Mockito.when(mockSearchVideos.apply(Mockito.any())).thenReturn(List.of(
+        // Configure Tavily stubs to return search results
+        mockSearchVideos.returns(List.of(
                 new McpToolsConfig.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video")
         ));
-        Mockito.when(mockSearchArticles.apply(Mockito.any())).thenReturn(List.of(
+        mockSearchArticles.returns(List.of(
                 new McpToolsConfig.TavilySearchResult("Article 1", "http://localhost:8060/article1", "Leadership communication"),
                 new McpToolsConfig.TavilySearchResult("Article 2", "http://localhost:8060/article2", "Team motivation")
         ));

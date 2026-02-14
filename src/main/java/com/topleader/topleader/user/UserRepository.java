@@ -3,7 +3,6 @@ package com.topleader.topleader.user;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
@@ -19,7 +18,7 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
      List<User> findAllByUsernameIn(Collection<String> usernames);
 
      @Query("SELECT rate_name FROM user_coach_rates WHERE username = :username")
-     Set<String> findAllowedCoachRates(String username);
+     List<String> findAllowedCoachRates(String username);
 
      @Modifying
      @Query("DELETE FROM user_coach_rates WHERE username = :username")

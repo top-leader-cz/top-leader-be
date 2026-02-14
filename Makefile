@@ -11,7 +11,7 @@ ARTIFACT_REPO := cloud-run
 GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 
 # Google Cloud commands
-.PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux deploy-qa deploy-prod
+.PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux native-test native-test-db-start native-test-db-stop deploy-qa deploy-qa-native deploy-prod
 .PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
 .PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy
 .PHONY: threaddump-qa threaddump-prod
@@ -44,13 +44,39 @@ build:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle build -x processTestAot --parallel --build-cache
 
 # Testing commands
-# Run all tests
+# Run all tests (JVM, uses TestContainers)
 test:
-	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test -x processTestAot
+
+# Run native tests (requires external PostgreSQL, see native-test-db-start)
+# NATIVE_DB_URL is used by build.gradle.kts to configure processTestAot and nativeTest
+# JVM :test task uses TestContainers (does NOT see TEST_DATASOURCE_URL)
+native-test: native-test-db-start
+	@echo "Running native tests (JVM tests + AOT + compile + native test)..."
+	NATIVE_DB_URL=jdbc:postgresql://localhost:5444/topleader_test \
+	NATIVE_DB_USER=test NATIVE_DB_PASS=test \
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(GRADLE_HOME)/bin/gradle nativeTest \
+		--no-daemon --no-configuration-cache --no-build-cache || \
+		($(MAKE) native-test-db-stop && exit 1)
+	$(MAKE) native-test-db-stop
+	@echo "Native tests passed!"
+
+# Start PostgreSQL for native tests
+native-test-db-start:
+	@docker rm -f topleader-test-db 2>/dev/null || true
+	docker run -d --name topleader-test-db -p 5444:5432 \
+		-e POSTGRES_DB=topleader_test -e POSTGRES_USER=test -e POSTGRES_PASSWORD=test \
+		postgres:15-alpine
+	@echo "Waiting for PostgreSQL to start..."
+	@sleep 3
+
+# Stop PostgreSQL for native tests
+native-test-db-stop:
+	@docker stop topleader-test-db 2>/dev/null && docker rm topleader-test-db 2>/dev/null || true
 
 # Run tests and generate coverage report
 test-coverage:
-	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test jacocoTestReport
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test -x processTestAot jacocoTestReport
 	@echo "Coverage report generated at: build/reports/jacoco/test/html/index.html"
 
 # Run tests with coverage and open report in browser
@@ -60,7 +86,7 @@ test-with-coverage: test-coverage
 
 # Verify coverage meets minimum threshold (80%) - FAILS if below threshold
 coverage-verify:
-	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test jacocoTestReport jacocoTestCoverageVerification
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test -x processTestAot jacocoTestReport jacocoTestCoverageVerification
 	@echo "✅ Coverage verification passed - minimum 80% instruction coverage achieved"
 
 # Build native image with GraalVM (quick mode ~2-3 min)
@@ -70,6 +96,12 @@ native:
 # Build native image optimized for Linux x86-64 (for deployment)
 native-linux:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(HOME)/.sdkman/candidates/gradle/current/bin/gradle nativeCompile --no-configuration-cache --build-cache -Pnative.march=x86-64-v3
+
+# Deploy native image to QA via GitHub Actions (creates tag, CI builds native + deploys)
+deploy-qa-native:
+	$(eval QA_NATIVE_TAG := qa-native-$(shell date +%Y%m%d-%H%M%S))
+	git tag $(QA_NATIVE_TAG)
+	git push origin $(QA_NATIVE_TAG)
 
 # Deploy to QA (local build + GitHub Actions deploy)
 deploy-qa: build

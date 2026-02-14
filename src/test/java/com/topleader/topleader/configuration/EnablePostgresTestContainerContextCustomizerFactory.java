@@ -53,16 +53,35 @@ public class EnablePostgresTestContainerContextCustomizerFactory implements Cont
 
         @Override
         public void customizeContext(ConfigurableApplicationContext context, MergedContextConfiguration mergedConfig) {
-            var postgresContainer = new PostgreSQLContainer(image);
-            postgresContainer.start();
-            var properties = Map.<String, Object>of(
-                "spring.datasource.url", postgresContainer.getJdbcUrl(),
-                "spring.datasource.username", postgresContainer.getUsername(),
-                "spring.datasource.password", postgresContainer.getPassword(),
-                // Prevent any in memory db from replacing the data source
-                // See @AutoConfigureTestDatabase
-                "spring.test.database.replace", "NONE"
-            );
+            var externalUrl = System.getenv("TEST_DATASOURCE_URL");
+            Map<String, Object> properties;
+
+            if (externalUrl != null) {
+                // External DB: native tests or CI (env var set)
+                properties = Map.of(
+                    "spring.datasource.url", externalUrl,
+                    "spring.datasource.username", System.getenv().getOrDefault("TEST_DATASOURCE_USERNAME", "test"),
+                    "spring.datasource.password", System.getenv().getOrDefault("TEST_DATASOURCE_PASSWORD", "test"),
+                    "spring.datasource.driver-class-name", "org.postgresql.Driver",
+                    "spring.test.database.replace", "NONE"
+                );
+            } else if (Boolean.getBoolean("spring.aot.processing")) {
+                // AOT processing without external DB — should not happen in native-test flow,
+                // but provide safe fallback that avoids starting Docker containers
+                return;
+            } else {
+                // JVM tests: start TestContainers PostgreSQL
+                var postgresContainer = new PostgreSQLContainer(image);
+                postgresContainer.start();
+                properties = Map.of(
+                    "spring.datasource.url", postgresContainer.getJdbcUrl(),
+                    "spring.datasource.username", postgresContainer.getUsername(),
+                    "spring.datasource.password", postgresContainer.getPassword(),
+                    "spring.datasource.driver-class-name", "org.postgresql.Driver",
+                    "spring.test.database.replace", "NONE"
+                );
+            }
+
             var propertySource = new MapPropertySource("PostgresContainer Test Properties", properties);
             context.getEnvironment().getPropertySources().addFirst(propertySource);
         }

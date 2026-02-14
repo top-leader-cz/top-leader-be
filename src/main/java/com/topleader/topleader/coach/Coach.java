@@ -2,12 +2,14 @@ package com.topleader.topleader.coach;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.topleader.topleader.common.util.common.JsonbValue;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDate;
@@ -24,6 +26,7 @@ import java.util.Set;
 @Table("coach")
 @Accessors(chain = true)
 @NoArgsConstructor
+@AllArgsConstructor(onConstructor_ = @PersistenceCreator)
 public class Coach {
 
     @Id

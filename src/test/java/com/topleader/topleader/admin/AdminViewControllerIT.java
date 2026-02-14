@@ -113,7 +113,7 @@ class AdminViewControllerIT extends IntegrationTest {
         assertThat(fetchedUser.getCoach()).isEqualTo(updatedUser.coach());
         assertThat(fetchedUser.getCredit()).isEqualTo(updatedUser.credit());
         assertThat(fetchedUser.getFreeCoach()).isEqualTo(updatedUser.freeCoach());
-        assertThat(userRepository.findAllowedCoachRates(fetchedUser.getUsername())).isEqualTo(updatedUser.allowedCoachRates());
+        assertThat(userRepository.findAllowedCoachRates(fetchedUser.getUsername())).containsExactlyInAnyOrderElementsOf(updatedUser.allowedCoachRates());
 
 
         var receivedMessage = greenMail.getReceivedMessages()[0];

@@ -1,9 +1,12 @@
 package com.topleader.topleader.user.userinsight;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.time.LocalDateTime;
@@ -13,6 +16,8 @@ import java.time.LocalDateTime;
 @Table("user_insight")
 @Accessors(chain = true)
 @EqualsAndHashCode(of = {"id"})
+@NoArgsConstructor
+@AllArgsConstructor(onConstructor_ = @PersistenceCreator)
 public class UserInsight {
 
     @Id

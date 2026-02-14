@@ -20,8 +20,7 @@ public interface MessageRepository extends ListCrudRepository<Message, Long>, Pa
     @Query("UPDATE user_message SET displayed = true WHERE user_to = :username")
     void setAllUserMessagesAsDisplayed(String username);
 
-    @Query("SELECT user_from AS userFrom, COUNT(*) AS unread FROM user_message WHERE user_to = :username AND displayed = false GROUP BY user_from")
-    List<UnreadMessagesCount> getUnreadMessagesCount(String username);
+    // Moved to MessageService - AOT generates RowMapper for Message.class instead of UnreadMessagesCount.class
 
     @Query("SELECT DISTINCT user_to FROM user_message WHERE displayed = false AND notified = false")
     List<String> findUndisplayed();

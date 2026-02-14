@@ -1,6 +1,7 @@
 package com.topleader.topleader.user.userinsight;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.StubFunction;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.common.ai.McpToolsConfig;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
@@ -10,7 +11,6 @@ import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -51,11 +51,11 @@ class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
     @Qualifier("searchArticles")
-    Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles;
+    StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles;
 
     @Autowired
     @Qualifier("searchVideos")
-    Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos;
+    StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos;
 
 
     @Test
@@ -143,7 +143,7 @@ class UserInsightControllerIT extends IntegrationTest {
     @Sql(scripts = {"/user_insight/dashboard-data.sql"})
     void dashboard() throws Exception {
         stubResponse("/hqdefault", () -> new MockResponse().setResponseCode(200).setBody("ok"));
-        stubResponse("/image", () -> new MockResponse().setResponseCode(200).setBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}"));
+        stubResponse("/image", () -> new MockResponse().setResponseCode(200).addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE).setBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}"));
 
         var previewsJson = """
                 [
@@ -176,11 +176,11 @@ class UserInsightControllerIT extends IntegrationTest {
                 ]
                 """;
 
-        // Configure Tavily mocks to return search results
-        Mockito.when(mockSearchVideos.apply(Mockito.any())).thenReturn(List.of(
+        // Configure Tavily stubs to return search results
+        mockSearchVideos.returns(List.of(
                 new McpToolsConfig.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video about leadership")
         ));
-        Mockito.when(mockSearchArticles.apply(Mockito.any())).thenReturn(List.of(
+        mockSearchArticles.returns(List.of(
                 new McpToolsConfig.TavilySearchResult("Leadership Article", "https://example.com/articles/leadership-principles", "Article about leadership principles")
         ));
 
@@ -230,7 +230,7 @@ class UserInsightControllerIT extends IntegrationTest {
     @Sql(scripts = {"/user_insight/dashboard-data.sql"})
     void dashboardWithMcp() throws Exception {
         stubResponse("/hqdefault", () -> new MockResponse().setResponseCode(200).setBody("ok"));
-        stubResponse("/image", () -> new MockResponse().setResponseCode(200).setBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}"));
+        stubResponse("/image", () -> new MockResponse().setResponseCode(200).addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE).setBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}"));
 
         var previewsJson = """
                 [
@@ -263,11 +263,11 @@ class UserInsightControllerIT extends IntegrationTest {
                 ]
                 """;
 
-        // Configure Tavily mocks to return search results
-        Mockito.when(mockSearchVideos.apply(Mockito.any())).thenReturn(List.of(
+        // Configure Tavily stubs to return search results
+        mockSearchVideos.returns(List.of(
                 new McpToolsConfig.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video")
         ));
-        Mockito.when(mockSearchArticles.apply(Mockito.any())).thenReturn(List.of(
+        mockSearchArticles.returns(List.of(
                 new McpToolsConfig.TavilySearchResult("Leadership Article", "https://example.com/articles/leadership-principles", "Article about leadership")
         ));
 

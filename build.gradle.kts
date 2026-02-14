@@ -95,8 +95,6 @@ dependencies {
         exclude(group = "org.mockito", module = "mockito-core")
         exclude(group = "org.mockito", module = "mockito-junit-jupiter")
     }
-    testImplementation("org.mockito:mockito-proxy:5.21.0")
-    testImplementation("org.mockito:mockito-junit-jupiter:5.21.0")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testImplementation("org.testcontainers:testcontainers-postgresql")
     testImplementation("org.testcontainers:testcontainers-junit-jupiter")
@@ -189,8 +187,8 @@ graalvmNative {
             mainClass.set("com.topleader.topleader.TopLeaderApplication")
 
             buildArgs.addAll(listOf(
-                "-H:+ReportExceptionStackTraces",
                 "-J-Xmx10g",
+                "-H:+ReportExceptionStackTraces",
                 "-march=native",
                 listOf(
                     "org.slf4j",
@@ -208,6 +206,34 @@ graalvmNative {
         }
     }
     toolchainDetection.set(false)
+}
+
+// Propagate test DB config to processTestAot and nativeTest (but NOT JVM :test which uses TestContainers)
+// Use NATIVE_DB_URL env var to avoid JVM :test picking up TEST_DATASOURCE_URL
+val nativeDbUrl = System.getenv("NATIVE_DB_URL")
+val nativeDbUser = System.getenv("NATIVE_DB_USER") ?: "test"
+val nativeDbPass = System.getenv("NATIVE_DB_PASS") ?: "test"
+
+tasks.named<JavaExec>("processTestAot") {
+    if (nativeDbUrl != null) {
+        environment("TEST_DATASOURCE_URL", nativeDbUrl)
+        environment("TEST_DATASOURCE_USERNAME", nativeDbUser)
+        environment("TEST_DATASOURCE_PASSWORD", nativeDbPass)
+        jvmArgs(
+            "-Dspring.datasource.url=$nativeDbUrl",
+            "-Dspring.datasource.username=$nativeDbUser",
+            "-Dspring.datasource.password=$nativeDbPass",
+            "-Dspring.datasource.driver-class-name=org.postgresql.Driver"
+        )
+    }
+}
+
+tasks.named<org.graalvm.buildtools.gradle.tasks.NativeRunTask>("nativeTest") {
+    if (nativeDbUrl != null) {
+        environment.put("TEST_DATASOURCE_URL", nativeDbUrl)
+        environment.put("TEST_DATASOURCE_USERNAME", nativeDbUser)
+        environment.put("TEST_DATASOURCE_PASSWORD", nativeDbPass)
+    }
 }
 
 // Configure AOT processing to use H2 (only for AOT hint generation, not baked into runtime)
