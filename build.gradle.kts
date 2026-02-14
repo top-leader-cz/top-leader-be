@@ -39,15 +39,6 @@ dependencyManagement {
 }
 
 dependencies {
-    // Google Cloud (auth library needed for GCS)
-    implementation("com.google.auth:google-auth-library-oauth2-http:1.41.0") {
-        exclude(group = "io.opencensus")           // deprecated, replaced by OTEL
-        exclude(group = "io.grpc")                 // gRPC context - not needed
-        exclude(group = "com.google.code.findbugs") // JSR305 annotations - not needed at runtime
-        exclude(group = "com.google.j2objc")       // J2ObjC iOS annotations
-        exclude(group = "com.google.errorprone")   // Error Prone - compile-time tool
-    }
-
     // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-web") {
         exclude(group = "org.springframework.boot", module = "spring-boot-starter-tomcat")
