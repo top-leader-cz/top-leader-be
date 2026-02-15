@@ -9,9 +9,9 @@ import com.topleader.topleader.feedback.repository.FeedbackFormQuestionRepositor
 import com.topleader.topleader.feedback.repository.RecipientRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -26,9 +26,6 @@ import static org.mockito.Mockito.when;
 class FeedbackControllerTest {
 
     @Mock
-    private FeedbackService feedbackService;
-
-    @Mock
     private FeedbackFormQuestionRepository feedbackFormQuestionRepository;
 
     @Mock
@@ -37,8 +34,12 @@ class FeedbackControllerTest {
     @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
     private FeedbackController feedbackController;
+
+    @BeforeEach
+    void setUp() {
+        feedbackController = new FeedbackController(null, feedbackFormQuestionRepository, recipientRepository, userRepository);
+    }
 
     @Test
     void getFeedbackData_shouldHandleDuplicateRecipients() {

@@ -33,6 +33,7 @@ spring:
   ai:
     openai:
       api-key: test-api-key
+      base-url: http://localhost:8060
       chat:
         options:
           model: gpt-5.2

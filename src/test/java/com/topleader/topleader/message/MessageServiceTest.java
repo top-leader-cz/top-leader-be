@@ -7,7 +7,6 @@ import com.topleader.topleader.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -37,11 +36,11 @@ class MessageServiceTest {
     @Mock
     private EmailService emailService;
 
-    @InjectMocks
     private MessageService messageService;
 
     @BeforeEach
     void setUp() {
+        messageService = new MessageService(messageRepository, null, null, null, userRepository, velocityService, emailService);
         ReflectionTestUtils.setField(messageService, "appUrl", "https://test.com");
         ReflectionTestUtils.setField(messageService, "defaultLocale", "en");
         ReflectionTestUtils.setField(messageService, "supportedInvitations", List.of("en", "cs"));

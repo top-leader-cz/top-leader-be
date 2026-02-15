@@ -1,6 +1,5 @@
 package com.topleader.topleader.coach.availability;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.topleader.topleader.IntegrationTest;
 
 import java.time.DayOfWeek;
@@ -11,6 +10,7 @@ import java.util.Comparator;
 import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.common.calendar.settings.AvailabilitySettingRepository;
 import com.topleader.topleader.common.calendar.settings.CoachAvailabilitySettings;
+import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,13 +18,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static com.topleader.topleader.common.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
 import static com.topleader.topleader.common.calendar.domain.CalendarSyncInfo.SyncType.GOOGLE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
@@ -239,12 +237,10 @@ class CoachAvailabilityControllerIT extends IntegrationTest {
     @WithMockUser(username = "coach1", authorities = {"COACH"})
     @Sql("/sql/coach/coach-list-test.sql")
     void getCalendlyEvents() throws Exception {
-        mockServer.stubFor(WireMock.get(urlMatching("/event_types?\\?user=.*"))
-                .withHeader(AUTHORIZATION, equalTo("Bearer accessToken"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(TestUtils.readFileAsString("availability/get-events-types-response.json"))));
+        stubResponse("/event_types", () -> new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "application/json")
+                .setBody(TestUtils.readFileAsString("availability/get-events-types-response.json")));
 
         mvc.perform(get("/api/latest/coach-availability/event-types"))
                 .andExpect(status().isOk())

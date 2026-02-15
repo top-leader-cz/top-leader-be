@@ -98,7 +98,7 @@ dependencies {
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("com.icegreen:greenmail:2.1.8")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
-    testImplementation("org.wiremock:wiremock-standalone:3.10.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
 }
 

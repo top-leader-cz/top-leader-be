@@ -1,31 +1,26 @@
 package com.topleader.topleader.user.userinsight;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
-import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.ai.McpToolsConfig;
-import com.topleader.topleader.user.session.domain.UserArticle;
-import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.common.util.common.JsonUtils;
+import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
-import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -37,12 +32,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
-    ChatClient chatClient;
-
-    @Autowired
-    AiClient aiClient;
-
-    @Autowired
     UserInfoRepository userInfoRepository;
 
     @Autowired
@@ -52,13 +41,21 @@ class UserInsightControllerIT extends IntegrationTest {
     ArticleRepository articleRepository;
 
     @Autowired
-    java.util.function.Function<McpToolsConfig.UserProfileRequest, McpToolsConfig.UserProfileResponse> getUserProfile;
+    Function<McpToolsConfig.UserProfileRequest, McpToolsConfig.UserProfileResponse> getUserProfile;
 
     @Autowired
-    java.util.function.Function<McpToolsConfig.CoachSearchRequest, java.util.List<McpToolsConfig.CoachResponse>> searchCoaches;
+    Function<McpToolsConfig.CoachSearchRequest, List<McpToolsConfig.CoachResponse>> searchCoaches;
 
     @Autowired
-    java.util.function.Function<McpToolsConfig.CoachByNameRequest, java.util.Optional<McpToolsConfig.CoachResponse>> getCoachByName;
+    Function<McpToolsConfig.CoachByNameRequest, java.util.Optional<McpToolsConfig.CoachResponse>> getCoachByName;
+
+    @Autowired
+    @Qualifier("searchArticles")
+    Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles;
+
+    @Autowired
+    @Qualifier("searchVideos")
+    Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos;
 
 
     @Test
@@ -66,7 +63,7 @@ class UserInsightControllerIT extends IntegrationTest {
     @Sql(scripts = {"/user_insight/user-insight.sql"})
     void getInsight() throws Exception {
         mvc.perform(get("/api/latest/user-insight")).andDo(print()).andExpect(content().json("""
-                
+
                       {
                   "animalSpirit": {
                     "text": "animal-response",
@@ -137,20 +134,19 @@ class UserInsightControllerIT extends IntegrationTest {
                               "date": "2025-08-25",
                               "imageUrl": "gs://ai-images-top-leader/test_image.png"
                             }
-                
+
                 """));
     }
 
     @Test
-
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/dashboard-data.sql"})
     void dashboard() throws Exception {
-        mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
-        mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200).withBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}")));
+        stubResponse("/hqdefault", () -> new MockResponse().setResponseCode(200).setBody("ok"));
+        stubResponse("/image", () -> new MockResponse().setResponseCode(200).setBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}"));
 
         var previewsJson = """
-                               [
+                [
                   {
                     "title": "Test Preview",
                     "url": "https://youtube.com/watch?v=test",
@@ -160,7 +156,7 @@ class UserInsightControllerIT extends IntegrationTest {
                 """;
 
         var articlesJson = """
-                  [
+                [
                   {
                     "url": "https://example.com/articles/leadership-principles",
                     "perex": "Discover the fundamental principles that define successful leadership in modern organizations and how to apply them effectively.",
@@ -177,22 +173,22 @@ class UserInsightControllerIT extends IntegrationTest {
                     "imageUrl": "https://example.com/images/leadership-team.jpg",
                     "date": "2025-11-01"
                   }
-                  ]
+                ]
                 """;
 
-        // Mock AiClient methods directly using spy
-        var mockPreviews = JsonUtils.fromJson(previewsJson, new ParameterizedTypeReference<List<UserPreview>>() {});
-        var mockArticles = JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {});
-        Mockito.doReturn("english goals").when(aiClient)
-                .translateToEnglish(ArgumentMatchers.anyString());
-        Mockito.doReturn(mockPreviews).when(aiClient)
-                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
-        Mockito.doReturn("suggestion response").when(aiClient)
-                .generateSuggestion(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
-                        ArgumentMatchers.anyList(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
-        Mockito.doReturn(mockArticles).when(aiClient)
-                .generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+        // Configure Tavily mocks to return search results
+        Mockito.when(mockSearchVideos.apply(Mockito.any())).thenReturn(List.of(
+                new McpToolsConfig.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video about leadership")
+        ));
+        Mockito.when(mockSearchArticles.apply(Mockito.any())).thenReturn(List.of(
+                new McpToolsConfig.TavilySearchResult("Leadership Article", "https://example.com/articles/leadership-principles", "Article about leadership principles")
+        ));
 
+        // Stub AI responses
+        stubAiResponse("Translate the following text to English", "english goals");
+        stubAiResponse("video", previewsJson);
+        stubAiResponse("suggestion", "suggestion response");
+        stubAiResponse("article", articlesJson);
 
         mvc.perform(post("/api/latest/user-insight/dashboard?useMcp=false").contentType(MediaType.APPLICATION_JSON).content("""
                 {
@@ -233,11 +229,11 @@ class UserInsightControllerIT extends IntegrationTest {
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/dashboard-data.sql"})
     void dashboardWithMcp() throws Exception {
-        mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
-        mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200).withBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}")));
+        stubResponse("/hqdefault", () -> new MockResponse().setResponseCode(200).setBody("ok"));
+        stubResponse("/image", () -> new MockResponse().setResponseCode(200).setBody("{\"data\":[{\"url\":\"http://localhost:8060/test-image.png\"}]}"));
 
         var previewsJson = """
-                               [
+                [
                   {
                     "title": "Test Preview",
                     "url": "https://youtube.com/watch?v=test",
@@ -247,7 +243,7 @@ class UserInsightControllerIT extends IntegrationTest {
                 """;
 
         var articlesJson = """
-                  [
+                [
                   {
                     "url": "https://example.com/articles/leadership-principles",
                     "perex": "Discover the fundamental principles.",
@@ -264,19 +260,25 @@ class UserInsightControllerIT extends IntegrationTest {
                     "imageUrl": "https://example.com/images/leadership-team.jpg",
                     "date": "2025-11-01"
                   }
-                  ]
+                ]
                 """;
 
-        var mockPreviews = JsonUtils.fromJson(previewsJson, new ParameterizedTypeReference<List<UserPreview>>() {});
-        var mockArticles = JsonUtils.fromJson(articlesJson, new ParameterizedTypeReference<List<UserArticle>>() {});
-        Mockito.doReturn("english goals").when(aiClient)
-                .translateToEnglish(ArgumentMatchers.anyString());
-        Mockito.doReturn(mockPreviews).when(aiClient)
-                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
-        Mockito.doReturn("mcp suggestion response").when(aiClient)
-                .generateSuggestionWithMcp(ArgumentMatchers.anyString(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
-        Mockito.doReturn(mockArticles).when(aiClient)
-                .generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+        // Configure Tavily mocks to return search results
+        Mockito.when(mockSearchVideos.apply(Mockito.any())).thenReturn(List.of(
+                new McpToolsConfig.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video")
+        ));
+        Mockito.when(mockSearchArticles.apply(Mockito.any())).thenReturn(List.of(
+                new McpToolsConfig.TavilySearchResult("Leadership Article", "https://example.com/articles/leadership-principles", "Article about leadership")
+        ));
+
+        // Stub AI responses
+        stubAiResponse("Translate the following text to English", "english goals");
+        stubAiResponse("video", previewsJson);
+        stubAiResponse("article", articlesJson);
+
+        // MCP tool call: first turn triggers getUserProfile, second turn returns content
+        stubAiToolCall("TOOL INSTRUCTIONS", "getUserProfile", "{\"username\":\"user\"}");
+        stubAiResponse("TOOL INSTRUCTIONS", "mcp suggestion response");
 
         mvc.perform(post("/api/latest/user-insight/dashboard?useMcp=true").contentType(MediaType.APPLICATION_JSON).content("""
                 {
@@ -291,8 +293,6 @@ class UserInsightControllerIT extends IntegrationTest {
 
                     assertThat(userInsight.isSuggestionPending()).isFalse();
                     assertThat(userInsight.getSuggestion()).isEqualTo("mcp suggestion response");
-
-                    Mockito.verify(aiClient).generateSuggestionWithMcp("user", "recommend me a coach", "English");
 
                     var articles = articleRepository.findByUsername("user");
                     assertThat(articles).hasSize(1);

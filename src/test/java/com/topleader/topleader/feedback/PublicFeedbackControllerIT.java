@@ -3,16 +3,12 @@ package com.topleader.topleader.feedback;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
-import com.topleader.topleader.common.ai.AiClient;
-import com.topleader.topleader.feedback.api.Summary;
 import com.topleader.topleader.feedback.repository.FeedbackFormAnswerRepository;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.user.UserRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
@@ -36,9 +32,6 @@ class PublicFeedbackControllerIT extends IntegrationTest {
 
     @Autowired
     FeedbackFormRepository feedbackFormRepository;
-
-    @Autowired
-    AiClient aiClient;
 
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql"})
@@ -76,11 +69,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
     @Test
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/submit-feedback.sql", "/user_insight/ai-prompt.sql"})
     void submitForm() throws Exception {
-        var mockSummary = new Summary();
-        mockSummary.setStrongAreas("strong areas");
-        mockSummary.setAreasOfImprovement("areas of improvement");
-        Mockito.doReturn(mockSummary).when(aiClient)
-                .generateSummary(ArgumentMatchers.anyString(), ArgumentMatchers.anyMap());
+        stubAiResponse("What is your name", "{\"strongAreas\":\"strong areas\",\"areasOfImprovement\":\"areas of improvement\"}");
 
          mvc.perform(post("/api/public/latest/feedback/1/pepa@cerny.cz/token")
                         .contentType(MediaType.APPLICATION_JSON)

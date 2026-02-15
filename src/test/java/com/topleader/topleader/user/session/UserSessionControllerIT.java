@@ -5,9 +5,6 @@ package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
-import com.topleader.topleader.common.ai.AiClient;
-import com.topleader.topleader.common.ai.AiPrompt;
-import com.topleader.topleader.common.ai.AiPromptService;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
@@ -21,12 +18,7 @@ import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeRepository;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.context.support.WithUserDetails;
@@ -55,13 +47,6 @@ class UserSessionControllerIT extends IntegrationTest {
 
     @Autowired
     private UserActionStepRepository userActionStepRepository;
-
-
-    @Autowired
-    ChatClient chatClient;
-
-    @Autowired
-    AiClient aiClient;
 
     @Autowired
     BadgeRepository badgeRepository;
@@ -196,8 +181,7 @@ class UserSessionControllerIT extends IntegrationTest {
     @Test
     @WithMockUser("user2")
     void generateLongTermGoal() throws Exception {
-        Mockito.doReturn(List.of("generated-long-term-goal-a.", "generated-long-term-goal-b.")).when(aiClient)
-                .findLongTermGoal(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
+        stubAiResponse("generate three long-term goals", "[\"generated-long-term-goal-a.\",\"generated-long-term-goal-b.\"]");
         mvc.perform(post("/api/latest/user-sessions/generate-long-term-goal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -216,11 +200,7 @@ class UserSessionControllerIT extends IntegrationTest {
     @Test
     @WithMockUser("user2")
     void generateActionsSteps() throws Exception {
-        var expectedSteps = List.of("generated-actions-steps-a", "generated-actions-steps-b");
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class))
-                .call()
-                .entity(ArgumentMatchers.<ParameterizedTypeReference<List<String>>>any()))
-                .thenReturn(expectedSteps);
+        stubAiResponse("Based on the user's top 5 talents", "[\"generated-actions-steps-a\",\"generated-actions-steps-b\"]");
         mvc.perform(post("/api/latest/user-sessions/generate-action-steps")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -240,17 +220,15 @@ class UserSessionControllerIT extends IntegrationTest {
     @Test
     @WithUserDetails("user2")
     void generateRecommendedGrowth() throws Exception {
-        var expectedGrowths = List.of(
-                createRecommendedGrowth("Advanced Programming Skills",
-                        "Enhance your programming expertise by learning advanced languages and frameworks that are in high demand, which can lead to higher-paying roles."),
-                createRecommendedGrowth("Business Acumen in Tech",
-                        "Develop a deeper understanding of the business side of technology, including how tech solutions can drive revenue, to align your technical skills with business growth strategies."),
-                createRecommendedGrowth("Project Management",
-                        "Learn project management methodologies like Agile or Scrum to take on leadership roles in projects, which often come with increased salary potential.")
-        );
+        var expectedJson = """
+                [
+                  {"area":"Advanced Programming Skills","recommendation":"Enhance your programming expertise by learning advanced languages and frameworks that are in high demand, which can lead to higher-paying roles."},
+                  {"area":"Business Acumen in Tech","recommendation":"Develop a deeper understanding of the business side of technology, including how tech solutions can drive revenue, to align your technical skills with business growth strategies."},
+                  {"area":"Project Management","recommendation":"Learn project management methodologies like Agile or Scrum to take on leadership roles in projects, which often come with increased salary potential."}
+                ]
+                """;
 
-        Mockito.when(chatClient.prompt(ArgumentMatchers.any(Prompt.class)).call().entity(new ParameterizedTypeReference<List<RecommendedGrowth>>() {}))
-                .thenReturn(expectedGrowths);
+        stubAiResponse("test query", expectedJson);
 
         var result = mvc.perform(get("/api/latest/user-sessions/generate-recommended-growth"))
                 .andDo(print())
@@ -260,13 +238,6 @@ class UserSessionControllerIT extends IntegrationTest {
                 .getContentAsString();
 
         TestUtils.assertJsonEquals(result, TestUtils.readFileAsString("session/json/recommended-growth-result.json"));
-    }
-
-    private RecommendedGrowth createRecommendedGrowth(String area, String recommendation) {
-        var growth = new RecommendedGrowth();
-        growth.setArea(area);
-        growth.setRecommendation(recommendation);
-        return growth;
     }
 
     @Test
