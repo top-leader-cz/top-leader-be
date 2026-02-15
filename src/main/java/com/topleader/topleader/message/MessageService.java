@@ -3,8 +3,8 @@
  */
 package com.topleader.topleader.message;
 
-import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.TemplateService;
+import com.topleader.topleader.common.email.Emailing;
+import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.common.notification.Notification;
 import com.topleader.topleader.common.notification.NotificationService;
 import com.topleader.topleader.common.notification.context.MessageNotificationContext;
@@ -56,9 +56,9 @@ public class MessageService {
 
     private final UserRepository userRepository;
 
-    private final TemplateService velocityService;
+    private final Templating velocityService;
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
     @Value("${top-leader.app-url}")
     private String appUrl;

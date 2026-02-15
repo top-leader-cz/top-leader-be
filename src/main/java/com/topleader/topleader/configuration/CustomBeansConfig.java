@@ -42,15 +42,6 @@ public class CustomBeansConfig {
     }
 
     @Bean
-    RestClient restClient() {
-        return RestClient.builder()
-                .requestFactory(new JdkClientHttpRequestFactory(HttpClient.newBuilder()
-                        .connectTimeout(Duration.ofSeconds(30))
-                        .build()))
-                .build();
-    }
-
-    @Bean
     public ChatClient chatClient(OpenAiChatModel openAiChatModel) {
         return ChatClient.builder(openAiChatModel).build();
     }
@@ -70,6 +61,11 @@ public class CustomBeansConfig {
         mapper.registerModule(new JavaTimeModule());
         mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
         return mapper;
+    }
+
+    @Bean
+    RestClient restClient(RestClient.Builder builder) {
+        return builder.build();
     }
 
     @Bean

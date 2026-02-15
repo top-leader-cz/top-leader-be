@@ -1,0 +1,20 @@
+{
+  "id": "chatcmpl-test",
+  "object": "chat.completion",
+  "model": "gpt-5.2",
+  "choices": [
+    {
+      "index": 0,
+      "message": {
+        "role": "assistant",
+        "content": %s
+      },
+      "finish_reason": "%s"
+    }
+  ],
+  "usage": {
+    "prompt_tokens": 10,
+    "completion_tokens": 10,
+    "total_tokens": 20
+  }
+}

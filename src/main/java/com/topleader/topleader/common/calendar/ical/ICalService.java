@@ -1,6 +1,6 @@
 package com.topleader.topleader.common.calendar.ical;
 
-import com.topleader.topleader.common.email.TemplateService;
+import com.topleader.topleader.common.email.Templating;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Map;
@@ -20,7 +20,7 @@ public class ICalService {
     private static final String EVENT_TEMPLATE = "templates/ical/event.ics";
     private static final String PRIVATE_EVENT_TEMPLATE = "templates/ical/private-event.ics";
 
-    private final TemplateService templateService;
+    private final Templating templateService;
 
     @Value("${top-leader.default-from}")
     private String defaultFrom;

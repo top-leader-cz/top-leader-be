@@ -3,16 +3,13 @@
  */
 package com.topleader.topleader.user.session;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.common.ai.AiClient;
+import com.topleader.topleader.common.ai.McpToolsConfig;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeRepository;
-import com.topleader.topleader.user.session.domain.UserArticle;
-import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 
 import java.time.LocalDate;
@@ -20,23 +17,22 @@ import java.time.LocalDateTime;
 
 import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
-import com.topleader.topleader.common.util.common.JsonUtils;
+import okhttp3.mockwebserver.MockResponse;
+import okio.Buffer;
 import org.assertj.core.api.Assertions;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Function;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,14 +62,31 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     ArticleRepository articleRepository;
 
     @Autowired
-    AiClient aiClient;
+    @Qualifier("searchArticles")
+    Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles;
+
+    @Autowired
+    @Qualifier("searchVideos")
+    Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos;
 
 
     @Test
     @WithMockUser("user2")
     void setUserSessionReflectionData() throws Exception {
-        // Mock AI client response for user articles generation
-        var expectedArticlesJson = """
+        // Configure Tavily mocks to return search results
+        Mockito.when(mockSearchVideos.apply(Mockito.any())).thenReturn(List.of(
+                new McpToolsConfig.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video")
+        ));
+        Mockito.when(mockSearchArticles.apply(Mockito.any())).thenReturn(List.of(
+                new McpToolsConfig.TavilySearchResult("Article 1", "http://localhost:8060/article1", "Leadership communication"),
+                new McpToolsConfig.TavilySearchResult("Article 2", "http://localhost:8060/article2", "Team motivation")
+        ));
+
+        // Stub AI responses
+        stubAiResponse("test growth", "action-goal-response");
+        stubAiResponse("Translate the following text to English", "english goals");
+        stubAiResponse("test preview prompt", "[{\"title\":\"Test Preview\",\"url\":\"https://youtube.com/watch?v=test\",\"thumbnail\":\"http://localhost:8060/hqdefault\"}]");
+        stubAiResponse("test prompt", """
                 [
                     {
                         "title": "Effective Leadership Communication",
@@ -102,29 +115,13 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                         "date": "2023-10-02"
                     }
                 ]
-                """;
+                """);
 
-        // Mock findActionGoal on spy (now uses chatClient)
-        Mockito.doReturn("action-goal-response").when(aiClient)
-                .findActionGoal(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList(),
-                        ArgumentMatchers.anyList(), ArgumentMatchers.anyString(), ArgumentMatchers.anyList());
-
-        // Mock translateToEnglish
-        Mockito.doReturn("english goals").when(aiClient)
-                .translateToEnglish(ArgumentMatchers.anyString());
-
-        // Mock generateUserPreviews on spy (now uses chatClient)
-        var preview = new UserPreview();
-        preview.setTitle("Test Preview");
-        preview.setUrl("https://youtube.com/watch?v=test");
-        preview.setThumbnail("http://localhost:8060/hqdefault");
-        Mockito.doReturn(List.of(preview)).when(aiClient)
-                .generateUserPreviews(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString());
-
-        mockServer.stubFor(WireMock.get(urlEqualTo("/hqdefault")).willReturn(aResponse().withStatus(200).withBody("ok")));
-        mockServer.stubFor(WireMock.post(urlEqualTo("/image")).willReturn(aResponse().withStatus(200)
-                .withHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                .withBody("""
+        stubResponse("/hqdefault", () -> new MockResponse().setResponseCode(200).setBody("ok"));
+        stubResponse("/image", () -> new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", MediaType.APPLICATION_JSON_VALUE)
+                .setBody("""
                         {
                             "created": 1765729064,
                             "data": [
@@ -134,27 +131,27 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
                                 }
                             ]
                         }
-                                """)));
-        mockServer.stubFor(WireMock.get(urlEqualTo("/test-image.png")).willReturn(aResponse().withStatus(200)
-                .withHeader("Content-Type", "image/png")
-                .withBody(java.util.Base64.getDecoder().decode(
-                        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
-                ))));
+                                """));
+        stubResponse("/test-image.png", () -> {
+            var buffer = new Buffer();
+            buffer.write(java.util.Base64.getDecoder().decode(
+                    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
+            ));
+            return new MockResponse()
+                    .setResponseCode(200)
+                    .addHeader("Content-Type", "image/png")
+                    .setBody(buffer);
+        });
 
-        Mockito.doReturn(JsonUtils.fromJson(expectedArticlesJson, new ParameterizedTypeReference<List<UserArticle>>() {}))
-                .when(aiClient).generateUserArticles(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+        stubResponse("/article1", () -> new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "text/html")
+                .setBody("<html><body>Valid article content</body></html>"));
 
-        mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article1"))
-                .willReturn(WireMock.aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "text/html")
-                        .withBody("<html><body>Valid article content</body></html>")));
-
-        mockServer.stubFor(WireMock.get(WireMock.urlEqualTo("/article2"))
-                .willReturn(WireMock.aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "text/html")
-                        .withBody("<html><body>Another valid article</body></html>")));
+        stubResponse("/article2", () -> new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "text/html")
+                .setBody("<html><body>Another valid article</body></html>"));
 
         mvc.perform(post("/api/latest/user-sessions-reflection")
                         .contentType(MediaType.APPLICATION_JSON)

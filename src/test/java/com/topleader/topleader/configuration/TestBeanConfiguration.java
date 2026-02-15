@@ -1,25 +1,23 @@
 package com.topleader.topleader.configuration;
 
-import com.github.tomakehurst.wiremock.WireMockServer;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
-import com.topleader.topleader.common.ai.AiClient;
-import com.topleader.topleader.common.ai.AiPromptService;
 import com.topleader.topleader.common.ai.McpToolsConfig;
 import com.topleader.topleader.common.util.image.GcsLightweightClient;
+import okhttp3.mockwebserver.MockWebServer;
 import org.mockito.Mockito;
 
-
-import org.springframework.ai.chat.client.ChatClient;
-
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import java.io.IOException;
 import java.util.Base64;
-import java.util.Map;
+import java.util.List;
+import java.util.function.Function;
 
 @Configuration
 public class TestBeanConfiguration {
@@ -30,60 +28,73 @@ public class TestBeanConfiguration {
                 .withConfiguration(GreenMailConfiguration.aConfig().withDisabledAuthentication());
     }
 
+    @SuppressWarnings("unchecked")
     @Bean
-    public ChatClient chatClient() {
-        return Mockito.mock(ChatClient.class, Mockito.RETURNS_DEEP_STUBS);
+    @Primary
+    @Qualifier("searchArticles")
+    public Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles() {
+        var mock = (Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>>)
+                Mockito.mock(Function.class);
+        Mockito.when(mock.apply(Mockito.any())).thenReturn(List.of());
+        return mock;
     }
 
     @SuppressWarnings("unchecked")
     @Bean
     @Primary
-    public AiClient mockAiClient(
-            ChatClient chatClient,
-            AiPromptService aiPromptService,
-            dev.failsafe.RetryPolicy<Object> retryPolicy) {
-        var mockSearchArticles = (java.util.function.Function<McpToolsConfig.TavilySearchRequest, java.util.List<McpToolsConfig.TavilySearchResult>>)
-                Mockito.mock(java.util.function.Function.class);
-        var mockSearchVideos = (java.util.function.Function<McpToolsConfig.TavilySearchRequest, java.util.List<McpToolsConfig.TavilySearchResult>>)
-                Mockito.mock(java.util.function.Function.class);
-        Mockito.when(mockSearchArticles.apply(Mockito.any())).thenReturn(java.util.List.of());
-        Mockito.when(mockSearchVideos.apply(Mockito.any())).thenReturn(java.util.List.of());
-        return Mockito.spy(new AiClient(chatClient, aiPromptService, retryPolicy, mockSearchArticles, mockSearchVideos));
+    @Qualifier("searchVideos")
+    public Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos() {
+        var mock = (Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>>)
+                Mockito.mock(Function.class);
+        Mockito.when(mock.apply(Mockito.any())).thenReturn(List.of());
+        return mock;
     }
 
-    @Bean
-    public WireMockServer mockServer() {
-        return new WireMockServer(8060);
+    @Bean(destroyMethod = "close")
+    public MockWebServer mockServer() throws IOException {
+        var server = new MockWebServer();
+        server.start(8060);
+        return server;
     }
 
     @Bean
     @Primary
     public GcsLightweightClient mockGcsClient() {
-        GcsLightweightClient client = Mockito.mock(GcsLightweightClient.class);
-
-        // Create a simple 1x1 pixel PNG image in bytes
         byte[] testImageBytes = Base64.getDecoder().decode(
                 "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
         );
 
-        try {
-            // Mock upload to return a test URL
-            Mockito.when(client.uploadImage(Mockito.any(byte[].class), Mockito.anyString()))
-                    .thenReturn("gs://ai-images-top-leader/test_image.png");
+        return new GcsLightweightClient(null) {
+            @Override
+            public String uploadImage(byte[] image, String fileName) {
+                return "gs://ai-images-top-leader/test_image.png";
+            }
 
-            // Mock download to return test image bytes
-            Mockito.when(client.downloadImage("gs://ai-images-top-leader/test_image.png"))
-                    .thenReturn(testImageBytes);
+            @Override
+            public String uploadImage(byte[] image, String bucketName, String fileName) {
+                return "gs://ai-images-top-leader/test_image.png";
+            }
 
-            // Mock download for any GCS URL
-            Mockito.when(client.downloadImage(Mockito.anyString()))
-                    .thenReturn(testImageBytes);
+            @Override
+            public byte[] downloadImage(String gsUrl) {
+                return testImageBytes;
+            }
 
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to setup mock GCS client", e);
-        }
+            @Override
+            public byte[] downloadImage(String bucketName, String fileName) {
+                return testImageBytes;
+            }
 
-        return client;
+            @Override
+            public List<String> listObjects(String bucketName) {
+                return List.of();
+            }
+
+            @Override
+            public List<String> listObjects() {
+                return List.of();
+            }
+        };
     }
 
 }

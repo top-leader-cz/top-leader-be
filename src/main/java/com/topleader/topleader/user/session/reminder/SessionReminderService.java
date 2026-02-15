@@ -1,8 +1,8 @@
 package com.topleader.topleader.user.session.reminder;
 
 
-import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.TemplateService;
+import com.topleader.topleader.common.email.Emailing;
+import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.user.session.UserActionStep;
 import com.topleader.topleader.user.session.UserActionStepRepository;
 import java.util.Optional;
@@ -30,9 +30,9 @@ public class SessionReminderService {
         "fr", "Votre chemin vers le développement vous attend, %s %s!"
     );
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
-    private final TemplateService velocityService;
+    private final Templating velocityService;
 
     @Value("${top-leader.app-url}")
     private String appUrl;

@@ -19,7 +19,7 @@ import org.springframework.test.context.ContextConfigurationAttributes;
 import org.springframework.test.context.ContextCustomizer;
 import org.springframework.test.context.ContextCustomizerFactory;
 import org.springframework.test.context.MergedContextConfiguration;
-import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
 
@@ -53,7 +53,7 @@ public class EnablePostgresTestContainerContextCustomizerFactory implements Cont
 
         @Override
         public void customizeContext(ConfigurableApplicationContext context, MergedContextConfiguration mergedConfig) {
-            var postgresContainer = new PostgreSQLContainer<>(image);
+            var postgresContainer = new PostgreSQLContainer(image);
             postgresContainer.start();
             var properties = Map.<String, Object>of(
                 "spring.datasource.url", postgresContainer.getJdbcUrl(),

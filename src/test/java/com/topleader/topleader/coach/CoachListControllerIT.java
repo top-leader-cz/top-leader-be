@@ -3,7 +3,6 @@
  */
 package com.topleader.topleader.coach;
 
-import com.github.tomakehurst.wiremock.client.WireMock;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.TestUtils;
@@ -21,6 +20,7 @@ import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalAdjusters;
 
 import lombok.SneakyThrows;
+import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -30,13 +30,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.*;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.hamcrest.Matchers.*;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -80,36 +77,30 @@ class CoachListControllerIT extends IntegrationTest {
     public void setUp() {
         super.setUp();
 
-        mockServer.stubFor(WireMock.get(urlMatching("/scheduled_events\\?user=.*"))
-                .withHeader(AUTHORIZATION, equalTo("Bearer accessToken"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(String.format("""
+        stubResponse("/scheduled_events", () -> new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "application/json")
+                .setBody(String.format("""
+                        {
+                            "collection": [
                                 {
-                                    "collection": [
-                                        {
-                                            "id": "event1",
-                                            "start_time": "%s",
-                                            "end_time": "%s"
-                                        },
-                                        {
-                                            "id": "event2",
-                                            "start_time": "2023-08-14T13:00:00Z",
-                                            "end_time": "2023-08-14T14:00:00Z"
-                                        }
-                                    ]
+                                    "id": "event1",
+                                    "start_time": "%s",
+                                    "end_time": "%s"
+                                },
+                                {
+                                    "id": "event2",
+                                    "start_time": "2023-08-14T13:00:00Z",
+                                    "end_time": "2023-08-14T14:00:00Z"
                                 }
-                                """, startTime, endTime))));
+                            ]
+                        }
+                        """, startTime, endTime)));
 
-
-        mockServer.stubFor(WireMock.post(urlEqualTo("/oauth/token"))
-                .withHeader(AUTHORIZATION, equalTo("Basic Ti1LWEROQTQ3Q19hRnYtdWxIZjRCRnNyaDd0T0F6RFNBY1J0S3VNRERYSToyUVJEVGkyME5XV0FCTlpMczQxYmk4cFBGMVI3NEJCTnFPbUxDUzRDRnJz"))
-                .withRequestBody(equalTo("grant_type=refresh_token&refresh_token=token&redirect_uri=http%3A%2F%2Flocalhost%3A8080%2Flogin%2Fcalendly"))
-                .willReturn(aResponse()
-                        .withStatus(200)
-                        .withHeader("Content-Type", "application/json")
-                        .withBody(TestUtils.readFileAsString("json/coach/calendly-token-response.json"))));
+        stubResponse("/oauth/token", () -> new MockResponse()
+                .setResponseCode(200)
+                .addHeader("Content-Type", "application/json")
+                .setBody(TestUtils.readFileAsString("json/coach/calendly-token-response.json")));
     }
 
     @Test

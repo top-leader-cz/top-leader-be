@@ -3,7 +3,7 @@
  */
 package com.topleader.topleader.hr;
 
-import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.hr.domain.*;
@@ -49,7 +49,7 @@ public class HrController {
 
     private final TransactionService transactionService;
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
     private final HrService hrService;
 

@@ -1,7 +1,7 @@
 package com.topleader.topleader.feedback.feedback_notification;
 
-import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.TemplateService;
+import com.topleader.topleader.common.email.Emailing;
+import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.feedback.repository.FeedbackFormRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
@@ -50,9 +50,9 @@ public class FeedbackNotificationService {
 
     private final TransactionService transactionService;
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
-    private final TemplateService velocityService;
+    private final Templating velocityService;
 
     private final UserRepository userRepository;
 

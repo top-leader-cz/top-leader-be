@@ -1,6 +1,6 @@
 package com.topleader.topleader.user.credit;
 
-import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.hr.domain.CreditRequestDto;
 import com.topleader.topleader.user.UserDetailService;
@@ -24,7 +24,7 @@ public class UserCreditController {
 
     private final TransactionService transactionService;
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
     @Secured({"USER"})
     @GetMapping

@@ -1,13 +1,12 @@
 package com.topleader.topleader.message;
 
-import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.TemplateService;
+import com.topleader.topleader.common.email.Emailing;
+import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -32,16 +31,16 @@ class MessageServiceTest {
     private UserRepository userRepository;
 
     @Mock
-    private TemplateService velocityService;
+    private Templating velocityService;
 
     @Mock
-    private EmailService emailService;
+    private Emailing emailService;
 
-    @InjectMocks
     private MessageService messageService;
 
     @BeforeEach
     void setUp() {
+        messageService = new MessageService(messageRepository, null, null, null, userRepository, velocityService, emailService);
         ReflectionTestUtils.setField(messageService, "appUrl", "https://test.com");
         ReflectionTestUtils.setField(messageService, "defaultLocale", "en");
         ReflectionTestUtils.setField(messageService, "supportedInvitations", List.of("en", "cs"));

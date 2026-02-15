@@ -33,7 +33,7 @@ configurations {
 dependencyManagement {
     imports {
         mavenBom("org.springframework.ai:spring-ai-bom:2.0.0-M2")
-        mavenBom("org.testcontainers:testcontainers-bom:1.21.4")
+        mavenBom("org.testcontainers:testcontainers-bom:2.0.3")
         mavenBom("org.springframework.modulith:spring-modulith-bom:2.0.2")
     }
 }
@@ -91,14 +91,19 @@ dependencies {
     aotOnly("com.h2database:h2")
 
     // Test
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(group = "org.mockito", module = "mockito-core")
+        exclude(group = "org.mockito", module = "mockito-junit-jupiter")
+    }
+    testImplementation("org.mockito:mockito-proxy:5.21.0")
+    testImplementation("org.mockito:mockito-junit-jupiter:5.21.0")
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
-    testImplementation("org.testcontainers:postgresql")
-    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:testcontainers-postgresql")
+    testImplementation("org.testcontainers:testcontainers-junit-jupiter")
     testImplementation("org.springframework.security:spring-security-test")
     testImplementation("com.icegreen:greenmail:2.1.8")
-    testImplementation("net.javacrumbs.json-unit:json-unit-assertj:3.2.7")
-    testImplementation("org.wiremock:wiremock-standalone:3.10.0")
+    testImplementation("net.javacrumbs.json-unit:json-unit-assertj:5.1.0")
+    testImplementation("com.squareup.okhttp3:mockwebserver:5.3.2")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
 }
 

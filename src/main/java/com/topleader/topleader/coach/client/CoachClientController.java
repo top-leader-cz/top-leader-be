@@ -1,7 +1,7 @@
 package com.topleader.topleader.coach.client;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
-import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.common.notification.Notification;
 import com.topleader.topleader.common.notification.NotificationService;
 import com.topleader.topleader.common.notification.context.CoachUnlinkedNotificationContext;
@@ -52,7 +52,7 @@ public class CoachClientController {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
     @Secured("COACH")
     @GetMapping

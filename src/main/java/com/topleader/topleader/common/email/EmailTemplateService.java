@@ -58,9 +58,9 @@ public class EmailTemplateService {
 
     private final UserRepository userRepository;
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
-    private final TemplateService velocityService;
+    private final Templating velocityService;
 
     private final ICalService iCalService;
 

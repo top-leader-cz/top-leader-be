@@ -1,7 +1,7 @@
 package com.topleader.topleader.user;
 
-import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.TemplateService;
+import com.topleader.topleader.common.email.Emailing;
+import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.user.token.Token;
 import com.topleader.topleader.user.token.TokenService;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +20,9 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class InvitationService {
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
-    private final TemplateService velocityService;
+    private final Templating velocityService;
 
     private final TokenService tokenService;
 

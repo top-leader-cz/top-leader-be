@@ -2,8 +2,6 @@ package com.topleader.topleader.user.userinfo;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
-import com.topleader.topleader.common.ai.AiPrompt;
-import com.topleader.topleader.common.ai.AiPromptService;
 import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
@@ -23,13 +21,10 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
-import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.user.userinsight.UserInsightRepository;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -69,9 +64,6 @@ class UserInfoControllerIT extends IntegrationTest {
 
     @Autowired
     private UserAllocationRepository userAllocationRepository;
-
-    @Autowired
-    AiClient aiClient;
 
     @Autowired
     UserInsightRepository userInsightRepository;
@@ -531,12 +523,9 @@ class UserInfoControllerIT extends IntegrationTest {
     @Sql(scripts = {"/user_insight/user-insight_user-info.sql", "/user_insight/ai-prompt.sql"})
     void setUserValues() throws Exception {
 
-        Mockito.doReturn("leadership-response").when(aiClient)
-                .findLeaderShipStyle(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
-        Mockito.doReturn("animal-response").when(aiClient)
-                .findAnimalSpirit(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
-        Mockito.doReturn("world-leader-response").when(aiClient)
-                .findLeaderPersona(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
+        stubAiResponse("test leadership", "leadership-response");
+        stubAiResponse("test animal", "animal-response");
+        stubAiResponse("test persona", "world-leader-response");
 
         mvc.perform(post("/api/latest/user-info/values")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -560,12 +549,9 @@ class UserInfoControllerIT extends IntegrationTest {
     @Sql(scripts = {"/user_insight/user-insight_user-info.sql", "/user_insight/ai-prompt.sql"})
     void setUserStrength() throws Exception {
 
-        Mockito.doReturn("leadership-response").when(aiClient)
-                .findLeaderShipStyle(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
-        Mockito.doReturn("animal-response").when(aiClient)
-                .findAnimalSpirit(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
-        Mockito.doReturn("world-leader-response").when(aiClient)
-                .findLeaderPersona(ArgumentMatchers.anyString(), ArgumentMatchers.anyList(), ArgumentMatchers.anyList());
+        stubAiResponse("test leadership", "leadership-response");
+        stubAiResponse("test animal", "animal-response");
+        stubAiResponse("test persona", "world-leader-response");
 
         mvc.perform(post("/api/latest/user-info/strengths")
                         .contentType(MediaType.APPLICATION_JSON)

@@ -1,7 +1,7 @@
 package com.topleader.topleader.user.token;
 
-import com.topleader.topleader.common.email.EmailService;
-import com.topleader.topleader.common.email.TemplateService;
+import com.topleader.topleader.common.email.Emailing;
+import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.user.UserRepository;
 import jakarta.validation.Valid;
@@ -36,9 +36,9 @@ public class TokenController {
 
     private final TokenService tokenService;
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
-    private final TemplateService velocityService;
+    private final Templating velocityService;
 
     @Value("${top-leader.app-url}")
     private String appUrl;

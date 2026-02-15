@@ -1,6 +1,6 @@
 package com.topleader.topleader.feedback;
 
-import com.topleader.topleader.common.email.EmailService;
+import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.feedback.api.FeedbackFormDto;
 import com.topleader.topleader.feedback.api.FeedbackFormOptions;
 import com.topleader.topleader.feedback.api.FeedbackSubmitRequest;
@@ -30,7 +30,7 @@ public class PublicFeedbackController {
 
     private final UserDetailService userDetailService;
 
-    private final EmailService emailService;
+    private final Emailing emailService;
 
     @GetMapping("/options")
     public FeedbackFormOptions getOptions() {
