@@ -37,13 +37,13 @@ public record JsonbValue(String json) {
     // Static methods that handle null JsonbValue safely
     public static List<String> toStringList(JsonbValue value) {
         return value != null && !value.isNull()
-                ? JsonUtils.fromJsonString(value.json(), new TypeReference<>() {})
+                ? JsonUtils.fromJsonString(value.json(), new TypeReference<List<String>>() {})
                 : List.of();
     }
 
     public static Set<String> toStringSet(JsonbValue value) {
         return value != null && !value.isNull()
-                ? JsonUtils.fromJsonString(value.json(), new TypeReference<>() {})
+                ? JsonUtils.fromJsonString(value.json(), new TypeReference<Set<String>>() {})
                 : Set.of();
     }
 

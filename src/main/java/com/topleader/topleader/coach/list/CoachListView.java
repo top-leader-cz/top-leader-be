@@ -66,7 +66,7 @@ public class CoachListView {
 
     public Set<String> getLanguagesSet() {
         if (languages == null || languages.isBlank()) return Set.of();
-        return JsonUtils.fromJsonString(languages, new TypeReference<>() {});
+        return JsonUtils.fromJsonString(languages, new TypeReference<Set<String>>() {});
     }
 
     public CoachListView setLanguagesSet(Set<String> v) {
@@ -76,7 +76,7 @@ public class CoachListView {
 
     public Set<String> getFieldsSet() {
         if (fields == null || fields.isBlank()) return Set.of();
-        return JsonUtils.fromJsonString(fields, new TypeReference<>() {});
+        return JsonUtils.fromJsonString(fields, new TypeReference<Set<String>>() {});
     }
 
     public CoachListView setFieldsSet(Set<String> v) {
@@ -86,7 +86,7 @@ public class CoachListView {
 
     public Set<Coach.PrimaryRole> getPrimaryRolesSet() {
         if (primaryRoles == null || primaryRoles.isBlank()) return Set.of();
-        return JsonUtils.fromJsonString(primaryRoles, new TypeReference<>() {});
+        return JsonUtils.fromJsonString(primaryRoles, new TypeReference<Set<Coach.PrimaryRole>>() {});
     }
 
     public CoachListView setPrimaryRolesSet(Set<Coach.PrimaryRole> v) {
@@ -96,7 +96,7 @@ public class CoachListView {
 
     public Set<String> getCertificateSet() {
         if (certificate == null || certificate.isBlank()) return Set.of();
-        return JsonUtils.fromJsonString(certificate, new TypeReference<>() {});
+        return JsonUtils.fromJsonString(certificate, new TypeReference<Set<String>>() {});
     }
 
     public CoachListView setCertificateSet(Set<String> v) {
