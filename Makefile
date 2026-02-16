@@ -41,7 +41,7 @@ openapi:
 
 # Build application locally
 build:
-	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle build -x processTestAot --parallel --build-cache
+	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle build -x processTestAot -x compileAotTestJava --parallel --build-cache
 
 # Testing commands
 # Run all tests
