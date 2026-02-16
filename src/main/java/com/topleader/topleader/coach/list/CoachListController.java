@@ -219,8 +219,7 @@ public class CoachListController {
     private Set<String> getAllowedRates(User user) {
         var userRates = userRepository.findAllowedCoachRates(user.getUsername());
         return Optional.ofNullable(userRates)
-            .filter(not(List::isEmpty))
-            .map(Set::copyOf)
+            .filter(not(Set::isEmpty))
             .or(() -> Optional.ofNullable(user.getCompanyId())
                 .flatMap(companyRepository::findById)
                 .map(Company::getAllowedCoachRates)
