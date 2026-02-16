@@ -204,27 +204,6 @@
                     },
                     "refId": "B"
                   }
-                },
-                {
-                  "kind": "PanelQuery",
-                  "spec": {
-                    "hidden": false,
-                    "query": {
-                      "datasource": {
-                        "name": "${datasource}"
-                      },
-                      "group": "prometheus",
-                      "kind": "DataQuery",
-                      "spec": {
-                        "editorMode": "code",
-                        "expr": "jvm_threads_virtual{service_name=~\"$service\", environment=~\"$environment\"}",
-                        "legendFormat": "virtual",
-                        "range": true
-                      },
-                      "version": "v0"
-                    },
-                    "refId": "C"
-                  }
                 }
               ],
               "queryOptions": {},
