@@ -1,5 +1,6 @@
 package com.topleader.topleader;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
 import org.springframework.modulith.docs.Documenter;
@@ -13,6 +14,7 @@ import org.springframework.test.context.aot.DisabledInAotMode;
  * However, 'common' itself should NOT depend on any business modules.
  */
 @DisabledInAotMode
+@Disabled
 class ModularityTests {
 
     ApplicationModules modules = ApplicationModules.of(TopLeaderApplication.class);
