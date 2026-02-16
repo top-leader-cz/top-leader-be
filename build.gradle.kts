@@ -110,6 +110,7 @@ dependencies {
 tasks.withType<Test> {
     useJUnitPlatform()
     jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
+    systemProperty("spring.aot.enabled", "true")
     maxHeapSize = "1024m"
     exclude("**/OpenApiGeneratorTest.class")
     exclude("**/ModularityTests.class")

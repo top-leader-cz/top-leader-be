@@ -5,6 +5,8 @@ package com.topleader.topleader.hr.company;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;
+
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import lombok.AllArgsConstructor;
@@ -42,7 +44,7 @@ public class CompanyController {
 
     private Company loadWithRates(Company company) {
         var rates = companyRepository.findCoachRatesByCompanyId(company.getId());
-        return company.setAllowedCoachRates(rates);
+        return company.setAllowedCoachRates(new HashSet<>(rates));
     }
 
     @PostMapping

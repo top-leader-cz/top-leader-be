@@ -1,6 +1,7 @@
 package com.topleader.topleader.user;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -19,7 +20,11 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
      List<User> findAllByUsernameIn(Collection<String> usernames);
 
      @Query("SELECT rate_name FROM user_coach_rates WHERE username = :username")
-     List<String> findAllowedCoachRates(String username);
+     List<String> findAllowedCoachRatesList(String username);
+
+     default Set<String> findAllowedCoachRates(String username) {
+          return new HashSet<>(findAllowedCoachRatesList(username));
+     }
 
      @Modifying
      @Query("DELETE FROM user_coach_rates WHERE username = :username")

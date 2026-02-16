@@ -29,7 +29,7 @@ EXPOSE 8080
 
 # Run with optimizations for Cloud Run
 ENTRYPOINT ["/opt/java/bin/java", \
-    "-Dspring.aot.enabled=false", \
+    "-Dspring.aot.enabled=true", \
     "-XX:MaxRAMPercentage=75.0", \
     "-XX:InitialRAMPercentage=75.0", \
     "-XX:+UseG1GC", \
