@@ -19,7 +19,7 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
      List<User> findAllByUsernameIn(Collection<String> usernames);
 
      @Query("SELECT rate_name FROM user_coach_rates WHERE username = :username")
-     Set<String> findAllowedCoachRates(String username);
+     List<String> findAllowedCoachRates(String username);
 
      @Modifying
      @Query("DELETE FROM user_coach_rates WHERE username = :username")
