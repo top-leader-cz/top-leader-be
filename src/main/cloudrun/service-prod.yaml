@@ -12,7 +12,7 @@ spec:
       annotations:
         autoscaling.knative.dev/minScale: "1"
         autoscaling.knative.dev/maxScale: "4"
-        run.googleapis.com/cpu-throttling: "false"
+        run.googleapis.com/cpu-throttling: "true"
         run.googleapis.com/startup-cpu-boost: "true"
         run.googleapis.com/vpc-access-connector: projects/topleader-394306/locations/europe-west3/connectors/top-leader-vpc-connector
         run.googleapis.com/vpc-access-egress: private-ranges-only
