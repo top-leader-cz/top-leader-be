@@ -18,8 +18,8 @@ import java.util.function.Supplier;
 
 public class AiTestSettings {
 
-    private static final String CHAT_COMPLETION_TEMPLATE = TestUtils.readFileAsString("ai/chat-completion-template.txt");
-    private static final String TOOL_CALL_TEMPLATE = TestUtils.readFileAsString("ai/tool-call-template.txt");
+    private static final String CHAT_COMPLETION_TEMPLATE = TestUtils.readFileAsString("ai/chat-completion-template.json");
+    private static final String TOOL_CALL_TEMPLATE = TestUtils.readFileAsString("ai/tool-call-template.json");
 
     private final Map<String, Supplier<MockResponse>> stubResponses = new ConcurrentHashMap<>();
     private final List<AiStub> aiStubs = new CopyOnWriteArrayList<>();
