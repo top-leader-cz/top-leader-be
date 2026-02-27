@@ -11,7 +11,7 @@ ARTIFACT_REPO := cloud-run
 GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 
 # Google Cloud commands
-.PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux native-test native-test-db-start native-test-db-stop deploy-qa deploy-qa-native deploy-prod
+.PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux native-test native-test-quick native-test-db-start native-test-db-stop deploy-qa deploy-qa-native deploy-prod
 .PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
 .PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy
 .PHONY: threaddump-qa threaddump-prod
@@ -48,18 +48,16 @@ build:
 test:
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25 $(HOME)/.sdkman/candidates/gradle/current/bin/gradle test -x processTestAot
 
-# Run native tests (requires external PostgreSQL, see native-test-db-start)
-# NATIVE_DB_URL is used by build.gradle.kts to configure processTestAot and nativeTest
-# JVM :test task uses TestContainers (does NOT see TEST_DATASOURCE_URL)
-native-test: native-test-db-start
-	@echo "Running native tests (JVM tests + AOT + compile + native test)..."
+# Run only native test compile + execute (skip JVM tests, reuses previous test results)
+native-test-quick: native-test-db-start
+	@echo "Running native tests (skip JVM, reuse test results)..."
 	NATIVE_DB_URL=jdbc:postgresql://localhost:5444/topleader_test \
 	NATIVE_DB_USER=test NATIVE_DB_PASS=test \
 	JAVA_HOME=$(HOME)/.sdkman/candidates/java/25g $(GRADLE_HOME)/bin/gradle nativeTest \
-		--no-daemon --no-configuration-cache --no-build-cache || \
+		--no-daemon --no-configuration-cache --build-cache --parallel \
+		-x test || \
 		($(MAKE) native-test-db-stop && exit 1)
 	$(MAKE) native-test-db-stop
-	@echo "Native tests passed!"
 
 # Start PostgreSQL for native tests
 native-test-db-start:
@@ -125,14 +123,6 @@ deploy-prod: build
 	git tag "$$NEW_TAG"; \
 	git push origin "$$NEW_TAG"
 
-# Direct deploy to PROD (local Docker build + push + Cloud Run deploy, bypasses CI)
-deploy-prod-direct:
-	docker build --platform linux/amd64 -t $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):latest .
-	docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/$(IMAGE_NAME):latest
-	gcloud run services replace src/main/cloudrun/service-prod.yaml \
-		--region=$(REGION) \
-		--project=$(PROJECT_ID)
-
 # Build custom JRE image for linux/amd64
 jre-build:
 	docker build --platform linux/amd64 -f Dockerfile.jre -t $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/topleader-jre:latest .
@@ -165,50 +155,6 @@ threaddump-prod:
 db-proxy:
 	./misc/setup-cloud-sql-proxy.sh
 
-# --- Cloud Run Commands ---
-
-# Setup Cloud Run infrastructure (Artifact Registry, Service Account, IAM)
-setup-cloud-run-qa:
-	./scripts/setup-cloud-run-qa.sh
-
-# Show QA Cloud Run service information
-info-qa:
-	gcloud run services describe $(SERVICE_NAME) \
-		--region=$(REGION) \
-		--project=$(PROJECT_ID)
-
-# List Cloud Run revisions
-revisions-qa:
-	gcloud run revisions list \
-		--service=$(SERVICE_NAME) \
-		--region=$(REGION) \
-		--platform=managed \
-		--sort-by=~metadata.creationTimestamp \
-		--project=$(PROJECT_ID)
-
-# Redeploy QA Cloud Run (force new revision to pick up secret changes)
-redeploy-qa:
-	gcloud run services update $(SERVICE_NAME) \
-		--region=$(REGION) \
-		--project=$(PROJECT_ID) \
-		--update-env-vars="FORCE_REDEPLOY=$$(date +%s)"
-
-# Rollback to previous Cloud Run revision
-rollback-qa:
-	@echo "Available revisions for $(SERVICE_NAME):"
-	@gcloud run revisions list \
-		--service=$(SERVICE_NAME) \
-		--region=$(REGION) \
-		--platform=managed \
-		--format="table(metadata.name,status.traffic,status.conditions[0].status)" \
-		--project=$(PROJECT_ID)
-	@echo ""
-	@read -p "Enter revision name to rollback to: " REVISION; \
-	gcloud run services update-traffic $(SERVICE_NAME) \
-		--to-revisions=$$REVISION=100 \
-		--region=$(REGION) \
-		--platform=managed \
-		--project=$(PROJECT_ID)
 
 # --- PROD Cloud Run Commands ---
 

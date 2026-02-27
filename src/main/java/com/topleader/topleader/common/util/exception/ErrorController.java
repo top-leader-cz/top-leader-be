@@ -78,7 +78,7 @@ public class ErrorController {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(value = {NoResourceFoundException.class})
+    @ExceptionHandler(value = {NoResourceFoundException.class, NotFoundException.class})
     public List<ErrorDto> handleNotFoundException(Exception ex) {
         log.debug("Resource not found: {}", ex.getMessage());
         return List.of(
