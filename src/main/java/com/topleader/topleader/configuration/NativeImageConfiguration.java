@@ -176,12 +176,15 @@ public class NativeImageConfiguration {
                     "org.springframework.security.authentication.UsernamePasswordAuthenticationToken",
                     "org.springframework.security.core.authority.SimpleGrantedAuthority",
                     "org.springframework.security.core.userdetails.User",
+                    "org.springframework.security.core.userdetails.User$AuthorityComparator",
                     "org.springframework.security.web.authentication.WebAuthenticationDetails",
                     "java.util.Collections$UnmodifiableRandomAccessList",
                     "java.util.Collections$UnmodifiableSet",
+                    "java.util.Collections$UnmodifiableSortedSet",
                     "java.util.Collections$UnmodifiableMap",
                     "java.util.ArrayList",
-                    "java.util.HashSet"
+                    "java.util.HashSet",
+                    "java.util.TreeSet"
             ).forEach(className -> {
                 try {
                     hints.serialization().registerType(TypeReference.of(Class.forName(className)));
