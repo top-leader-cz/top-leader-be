@@ -30,6 +30,7 @@ public class ProgramParticipant {
     private String createdBy;
 
     public enum Status {
+        NOT_STARTED,
         ON_TRACK,
         AT_RISK,
         ON_HOLD

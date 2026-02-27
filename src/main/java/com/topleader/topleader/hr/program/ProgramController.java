@@ -22,6 +22,8 @@ import java.util.List;
 @Secured({"HR", "ADMIN"})
 public class ProgramController {
 
+    private static final double AT_RISK_GRACE_BUFFER = 0.8;
+
     private final ProgramRepository programRepository;
     private final UserDetailService userDetailService;
 
@@ -39,7 +41,7 @@ public class ProgramController {
         var program = programRepository.findByIdAndCompanyId(programId, companyId)
                 .orElseThrow(NotFoundException::new);
         var participants = programRepository.findParticipants(programId).stream()
-                .map(ParticipantDto::from)
+                .map(row -> ParticipantDto.from(row, program.validFrom(), program.milestoneDate()))
                 .toList();
         return ProgramDetailDto.from(program, ProgramStatsDto.from(participants), participants);
     }
@@ -50,7 +52,7 @@ public class ProgramController {
                 .orElseThrow(NotFoundException::new);
     }
 
-    record ProgramSummaryDto(
+    public record ProgramSummaryDto(
             Long id,
             String name,
             String status,
@@ -76,7 +78,7 @@ public class ProgramController {
         }
     }
 
-    record ProgramDetailDto(
+    public record ProgramDetailDto(
             Long id,
             String name,
             String status,
@@ -102,7 +104,7 @@ public class ProgramController {
         }
     }
 
-    record ProgramStatsDto(int totalParticipants, int activeParticipants, int progressPercent) {
+    public record ProgramStatsDto(int totalParticipants, int activeParticipants, int progressPercent) {
         static ProgramStatsDto from(List<ParticipantDto> participants) {
             int total = participants.size();
             int active = (int) participants.stream()
@@ -115,7 +117,7 @@ public class ProgramController {
         }
     }
 
-    record ParticipantDto(
+    public record ParticipantDto(
             String username,
             String firstName,
             String lastName,
@@ -125,7 +127,7 @@ public class ProgramController {
             int sessionsAllocated,
             String status
     ) {
-        static ParticipantDto from(ProgramRepository.ParticipantRow row) {
+        static ParticipantDto from(ProgramRepository.ParticipantRow row, LocalDateTime validFrom, LocalDateTime milestoneDate) {
             return new ParticipantDto(
                     row.username(),
                     row.firstName(),
@@ -134,8 +136,27 @@ public class ProgramController {
                     row.lastLoginAt(),
                     row.consumedUnits(),
                     row.allocatedUnits(),
-                    row.participantStatus()
+                    computeStatus(row, validFrom, milestoneDate)
             );
+        }
+
+        private static String computeStatus(ProgramRepository.ParticipantRow row, LocalDateTime validFrom, LocalDateTime milestoneDate) {
+            if (ProgramParticipant.Status.ON_HOLD.name().equals(row.overrideStatus())) {
+                return ProgramParticipant.Status.ON_HOLD.name();
+            }
+            var totalDays = validFrom != null && milestoneDate != null
+                    ? ChronoUnit.DAYS.between(validFrom, milestoneDate)
+                    : 0L;
+            var daysElapsed = totalDays > 0
+                    ? Math.min(ChronoUnit.DAYS.between(validFrom, LocalDateTime.now()), totalDays)
+                    : 0L;
+            if (daysElapsed <= 0) {
+                return ProgramParticipant.Status.NOT_STARTED.name();
+            }
+            var threshold = row.allocatedUnits() * ((double) daysElapsed / totalDays) * AT_RISK_GRACE_BUFFER;
+            return row.consumedUnits() < threshold
+                    ? ProgramParticipant.Status.AT_RISK.name()
+                    : ProgramParticipant.Status.ON_TRACK.name();
         }
     }
 
