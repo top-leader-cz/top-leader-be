@@ -9,15 +9,16 @@ import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.common.util.common.user.UserUtils;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import com.topleader.topleader.common.util.common.JsonUtils;
 import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
@@ -27,20 +28,23 @@ import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
 @Component
 public class AiClient {
 
+    public record TavilySearchRequest(String query) {}
+    public record TavilySearchResult(String title, String url, String content) {}
+
     private final ChatClient chatClient;
     private final AiPromptService aiPromptService;
     private final RetryPolicy<Object> retryPolicy;
-    private final java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchArticles;
-    private final java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchVideos;
+    private final java.util.function.Function<TavilySearchRequest, List<TavilySearchResult>> searchArticles;
+    private final java.util.function.Function<TavilySearchRequest, List<TavilySearchResult>> searchVideos;
 
     public AiClient(
             ChatClient chatClient,
             AiPromptService aiPromptService,
             RetryPolicy<Object> retryPolicy,
-            @org.springframework.beans.factory.annotation.Qualifier("searchArticles")
-            java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchArticles,
-            @org.springframework.beans.factory.annotation.Qualifier("searchVideos")
-            java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchVideos
+            @Qualifier("searchArticles")
+            Function<TavilySearchRequest, List<TavilySearchResult>> searchArticles,
+            @Qualifier("searchVideos")
+            Function<TavilySearchRequest, List<TavilySearchResult>> searchVideos
     ) {
         this.chatClient = chatClient;
         this.aiPromptService = aiPromptService;
@@ -168,7 +172,7 @@ public class AiClient {
         var goalsText = String.join(", ", actionsSteps);
         var query = englishGoals + " " + goalsText + " TED talk leadership development";
         log.info("[TAVILY] Searching videos: {}", query);
-        var videoResults = searchVideos.apply(new McpToolsConfig.TavilySearchRequest(query));
+        var videoResults = searchVideos.apply(new TavilySearchRequest(query));
 
         if (videoResults.isEmpty()) {
             log.warn("No video results from Tavily for user [{}]", username);
@@ -215,7 +219,7 @@ public class AiClient {
         var goalsText = String.join(", ", actionGoals);
         var query = englishGoals + " " + goalsText + " article";
         log.info("[TAVILY] Searching articles: {}", query);
-        var articleResults = searchArticles.apply(new McpToolsConfig.TavilySearchRequest(query));
+        var articleResults = searchArticles.apply(new TavilySearchRequest(query));
 
         if (articleResults.isEmpty()) {
             log.warn("No article results from Tavily for user [{}]", username);
@@ -272,6 +276,63 @@ public class AiClient {
         return AiUtils.replaceNonJsonString(res);
     }
 
+    public record CoachRecommendation(String username, String firstName, String lastName, String reason) {}
+
+    public List<CoachRecommendation> recommendCoaches(String programGoal, List<String> focusAreas, String targetGroup, List<CoachProfile> coaches) {
+        log.info("Recommending coaches for program goal: {}, focusAreas: {}", programGoal, focusAreas);
+
+        var coachesText = coaches.stream()
+                .map(c -> """
+                        --- Coach: %s %s (username: %s) ---
+                        Bio: %s
+                        Primary roles: %s
+                        Fields: %s
+                        Topics: %s
+                        Priority: %d
+                        """.formatted(
+                        c.firstName(), c.lastName(), c.username(),
+                        c.bio(), c.primaryRoles(), c.fields(), c.topics(), c.priority()))
+                .collect(java.util.stream.Collectors.joining("\n"));
+
+        var systemPrompt = """
+                You are an expert at matching coaches to corporate programs.
+                Given a program's goal, focus areas, and target group, recommend exactly 3 coaches
+                from the provided list that would be the best fit.
+
+                Evaluate coaches based on:
+                - Bio and coaching philosophy alignment with program goal
+                - Fields and topics matching program focus areas
+                - Primary roles (COACH, MENTOR, THERAPIST) relevance
+                - Priority score (higher = more preferred by the platform)
+
+                Return a JSON array of exactly 3 objects with fields: username, firstName, lastName, reason.
+                The reason should be 1-2 sentences explaining why this coach is a good fit.
+                Return ONLY the JSON array, no other text.
+                """;
+
+        var userMessage = """
+                Program goal: %s
+                Focus areas: %s
+                Target group: %s
+
+                Available coaches:
+                %s
+                """.formatted(programGoal, String.join(", ", focusAreas), targetGroup, coachesText);
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
+                .user(userMessage)
+                .call()
+                .entity(new ParameterizedTypeReference<List<CoachRecommendation>>() {}));
+        log.info("Coach recommendations: {}", res);
+        return res != null ? res : List.of();
+    }
+
+    public record CoachProfile(
+            String username, String firstName, String lastName, String bio,
+            String primaryRoles, String fields, String topics, int priority
+    ) {}
+
     public String generateSuggestionWithMcp(String username, String userQuery, String language) {
         log.info("Generating MCP suggestion, user: [{}], language: {}", username, language);
 
@@ -309,5 +370,3 @@ public class AiClient {
         return res;
     }
 }
-
-

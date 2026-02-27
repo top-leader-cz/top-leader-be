@@ -1,4 +1,13 @@
 package com.topleader.topleader.feedback.api;
 
-public record Summary(String strongAreas, String areasOfImprovement) {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class Summary {
+    private String strongAreas;
+    private String areasOfImprovement;
 }

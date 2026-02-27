@@ -13,7 +13,7 @@ RUN ./gradlew dependencies --no-daemon || true
 
 # Copy source and build native image
 COPY src src
-RUN ./gradlew nativeCompile -x test --no-configuration-cache --no-daemon
+RUN ./gradlew nativeCompile -x test --no-configuration-cache --no-daemon -Pnative.march=x86-64-v3
 
 # Stage 2: Minimal runtime image
 FROM debian:bookworm-slim
