@@ -2,6 +2,7 @@ package com.topleader.topleader.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.topleader.topleader.hr.program.Program;
 import com.topleader.topleader.common.ai.AiPrompt;
 import com.topleader.topleader.common.notification.context.NotificationContext;
 import com.topleader.topleader.common.util.common.JsonbValue;
@@ -94,7 +95,9 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
                 new TimeToLocalTimeConverter(),
                 new LocalTimeToTimeConverter(),
                 new UserArticleReadingConverter(),
-                new UserArticleWritingConverter()
+                new UserArticleWritingConverter(),
+                new CoachAssignmentModelReadingConverter(),
+                new CoachAssignmentModelWritingConverter()
         ));
     }
 
@@ -575,6 +578,27 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
         public Time convert(LocalTime source) {
             return Optional.ofNullable(source)
                     .map(Time::valueOf)
+                    .orElse(null);
+        }
+    }
+
+    @ReadingConverter
+    static class CoachAssignmentModelReadingConverter implements Converter<String, Program.CoachAssignmentModel> {
+        @Override
+        public Program.CoachAssignmentModel convert(String source) {
+            return Optional.ofNullable(source)
+                    .filter(StringUtils::isNotBlank)
+                    .map(Program.CoachAssignmentModel::valueOf)
+                    .orElse(null);
+        }
+    }
+
+    @WritingConverter
+    static class CoachAssignmentModelWritingConverter implements Converter<Program.CoachAssignmentModel, String> {
+        @Override
+        public String convert(Program.CoachAssignmentModel source) {
+            return Optional.ofNullable(source)
+                    .map(Enum::name)
                     .orElse(null);
         }
     }
