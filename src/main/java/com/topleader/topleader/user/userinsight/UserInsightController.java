@@ -4,7 +4,7 @@ import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.user.util.UserUtils;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.session.UserSessionService;
-import com.topleader.topleader.user.session.domain.UserArticle;
+import com.topleader.topleader.common.ai.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;

@@ -28,7 +28,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import static com.topleader.topleader.common.util.user.UserDetailUtils.sendInvite;
+import static com.topleader.topleader.user.util.UserDetailUtils.sendInvite;
 
 
 /**

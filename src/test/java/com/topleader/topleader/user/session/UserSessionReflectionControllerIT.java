@@ -2,7 +2,8 @@ package com.topleader.topleader.user.session;
 
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.StubFunction;
-import com.topleader.topleader.common.ai.McpToolsConfig;
+import com.topleader.topleader.coach.ai.McpToolsConfig;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
@@ -59,11 +60,11 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
 
     @Autowired
     @Qualifier("searchArticles")
-    StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles;
+    StubFunction<AiClient.TavilySearchRequest, List<AiClient.TavilySearchResult>> mockSearchArticles;
 
     @Autowired
     @Qualifier("searchVideos")
-    StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos;
+    StubFunction<AiClient.TavilySearchRequest, List<AiClient.TavilySearchResult>> mockSearchVideos;
 
 
     @Test
@@ -71,11 +72,11 @@ class UserSessionReflectionControllerIT extends IntegrationTest {
     void setUserSessionReflectionData() throws Exception {
         // Configure Tavily stubs to return search results
         mockSearchVideos.returns(List.of(
-                new McpToolsConfig.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video")
+                new AiClient.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video")
         ));
         mockSearchArticles.returns(List.of(
-                new McpToolsConfig.TavilySearchResult("Article 1", "http://localhost:8060/article1", "Leadership communication"),
-                new McpToolsConfig.TavilySearchResult("Article 2", "http://localhost:8060/article2", "Team motivation")
+                new AiClient.TavilySearchResult("Article 1", "http://localhost:8060/article1", "Leadership communication"),
+                new AiClient.TavilySearchResult("Article 2", "http://localhost:8060/article2", "Team motivation")
         ));
 
         // Stub AI responses

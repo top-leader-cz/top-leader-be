@@ -10,11 +10,14 @@ import org.springframework.test.context.aot.DisabledInAotMode;
  * Test validating the modular structure of the application.
  * Spring Modulith ensures that modules are properly isolated and dependencies are correct.
  *
- * Note: The 'common' module is a SHARED KERNEL (Type.OPEN) - all modules can depend on it.
- * However, 'common' itself should NOT depend on any business modules.
+ * All modules are declared as Type.OPEN via package-info.java, which:
+ * - Exposes all sub-package types to other modules
+ * - Enables cycle detection across all inter-module dependencies
+ *
+ * Run via: ./gradlew modularityCheck
  */
-@DisabledInAotMode
 @Disabled
+@DisabledInAotMode
 class ModularityTests {
 
     ApplicationModules modules = ApplicationModules.of(TopLeaderApplication.class);

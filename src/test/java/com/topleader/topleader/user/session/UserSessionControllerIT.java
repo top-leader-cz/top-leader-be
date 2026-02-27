@@ -5,7 +5,7 @@ import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.history.data.UserSessionStoredData;
-import com.topleader.topleader.user.session.domain.RecommendedGrowth;
+import com.topleader.topleader.common.ai.RecommendedGrowth;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

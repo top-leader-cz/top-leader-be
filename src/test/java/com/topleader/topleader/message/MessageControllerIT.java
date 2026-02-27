@@ -215,7 +215,7 @@ class MessageControllerIT extends IntegrationTest {
                                 }
                                 """)
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().json("""
                     [
                       {
