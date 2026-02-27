@@ -1,0 +1,46 @@
+{
+  "id": 1,
+  "name": "Leadership Development 90d",
+  "status": "ACTIVE",
+  "stats": {
+    "totalParticipants": 4,
+    "progressPercent": 50
+  },
+  "participants": [
+    {
+      "username": "marketa.cerva",
+      "firstName": "Marketa",
+      "lastName": "Cerva",
+      "coachUsername": null,
+      "sessionsConsumed": 2,
+      "sessionsAllocated": 4
+    },
+    {
+      "username": "jana.dvorak",
+      "firstName": "Jana",
+      "lastName": "Dvorak",
+      "coachUsername": "coach1",
+      "sessionsConsumed": 3,
+      "sessionsAllocated": 4,
+      "status": "ON_TRACK"
+    },
+    {
+      "username": "tomas.novak",
+      "firstName": "Tomas",
+      "lastName": "Novak",
+      "coachUsername": "coach1",
+      "sessionsConsumed": 3,
+      "sessionsAllocated": 4,
+      "status": "ON_TRACK"
+    },
+    {
+      "username": "oleg.volkov",
+      "firstName": "Oleg",
+      "lastName": "Volkov",
+      "coachUsername": null,
+      "sessionsConsumed": 0,
+      "sessionsAllocated": 4,
+      "status": "AT_RISK"
+    }
+  ]
+}

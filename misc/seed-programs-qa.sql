@@ -36,17 +36,29 @@ BEGIN
         RETURNING id INTO v_pkg_id_2;
 
         -- ── Program 1 ──────────────────────────────────────────────────────
-        INSERT INTO program (coaching_package_id, name, milestone_date, created_at, created_by)
+        INSERT INTO program (coaching_package_id, name, goal, target_group, status, duration_days,
+                             focus_areas, milestone_date, created_at, created_by)
         VALUES (v_pkg_id_1,
                 v_company.name || ' – Leadership Program',
+                'Improve feedback culture & accountability',
+                'Team Leads',
+                'ACTIVE',
+                90,
+                '["fa.giving-feedback", "fa.delegation", "fa.strategic-thinking", "fa.team-motivation"]'::jsonb,
                 NOW() + INTERVAL '90 days',
                 NOW(), 'admin')
         RETURNING id INTO v_program_id_1;
 
         -- ── Program 2 ──────────────────────────────────────────────────────
-        INSERT INTO program (coaching_package_id, name, milestone_date, created_at, created_by)
+        INSERT INTO program (coaching_package_id, name, goal, target_group, status, duration_days,
+                             focus_areas, milestone_date, created_at, created_by)
         VALUES (v_pkg_id_2,
                 v_company.name || ' – Development Program',
+                'Build self-awareness and emotional intelligence',
+                'All employees',
+                'ACTIVE',
+                180,
+                '["fa.self-awareness", "fa.emotional-intelligence", "fa.communication", "fa.time-management"]'::jsonb,
                 NOW() + INTERVAL '180 days',
                 NOW(), 'admin')
         RETURNING id INTO v_program_id_2;
@@ -71,13 +83,13 @@ BEGIN
             ON CONFLICT (package_id, username) DO NOTHING;
 
             -- Add to program_participant (program 1)
-            INSERT INTO program_participant (program_id, username, coach_username, status, created_by, created_at)
-            VALUES (v_program_id_1, v_user.username, v_user.coach, 'ON_TRACK', 'admin', NOW())
+            INSERT INTO program_participant (program_id, username, coach_username, created_by, created_at)
+            VALUES (v_program_id_1, v_user.username, v_user.coach, 'admin', NOW())
             ON CONFLICT (program_id, username) DO NOTHING;
 
             -- Add to program_participant (program 2)
-            INSERT INTO program_participant (program_id, username, coach_username, status, created_by, created_at)
-            VALUES (v_program_id_2, v_user.username, v_user.coach, 'ON_TRACK', 'admin', NOW())
+            INSERT INTO program_participant (program_id, username, coach_username, created_by, created_at)
+            VALUES (v_program_id_2, v_user.username, v_user.coach, 'admin', NOW())
             ON CONFLICT (program_id, username) DO NOTHING;
         END LOOP;
 
