@@ -70,6 +70,7 @@ class PublicFeedbackControllerIT extends IntegrationTest {
     @Sql(scripts = {"/feedback/sql/feedback.sql", "/feedback/sql/submit-feedback.sql", "/user_insight/ai-prompt.sql"})
     void submitForm() throws Exception {
         stubAiResponse("What is your name", "{\"strongAreas\":\"strong areas\",\"areasOfImprovement\":\"areas of improvement\"}");
+        stubAiResponse("question.key", "{\"strongAreas\":\"strong areas\",\"areasOfImprovement\":\"areas of improvement\"}");
 
          mvc.perform(post("/api/public/latest/feedback/1/pepa@cerny.cz/token")
                         .contentType(MediaType.APPLICATION_JSON)

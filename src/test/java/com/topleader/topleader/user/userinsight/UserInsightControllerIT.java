@@ -11,6 +11,7 @@ import okhttp3.mockwebserver.MockResponse;
 import org.assertj.core.api.Assertions;
 import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.DisabledInNativeImage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.MediaType;
@@ -226,6 +227,7 @@ class UserInsightControllerIT extends IntegrationTest {
     }
 
     @Test
+    @DisabledInNativeImage
     @WithMockUser(username = "user", authorities = "USER")
     @Sql(scripts = {"/user_insight/dashboard-data.sql"})
     void dashboardWithMcp() throws Exception {

@@ -9,7 +9,6 @@ import com.topleader.topleader.user.session.domain.UserPreview;
 import com.topleader.topleader.common.util.common.user.UserUtils;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;

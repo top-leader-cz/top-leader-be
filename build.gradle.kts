@@ -186,10 +186,11 @@ graalvmNative {
             imageName.set("top-leader")
             mainClass.set("com.topleader.topleader.TopLeaderApplication")
 
+            val march = project.findProperty("native.march")?.toString() ?: "native"
             buildArgs.addAll(listOf(
                 "-J-Xmx10g",
                 "-H:+ReportExceptionStackTraces",
-                "-march=native",
+                "-march=$march",
                 listOf(
                     "org.slf4j",
                     "org.apache.logging.slf4j",
