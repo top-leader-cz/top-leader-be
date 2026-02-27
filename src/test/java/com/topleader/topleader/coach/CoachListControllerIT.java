@@ -223,7 +223,7 @@ class CoachListControllerIT extends IntegrationTest {
                                 }
                                 """, scheduleTime))
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().json("""
                         [
                           {
@@ -609,7 +609,7 @@ class CoachListControllerIT extends IntegrationTest {
                                 }
                                 """, scheduleTime))
                 )
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(content().json("""
                         [
                           {

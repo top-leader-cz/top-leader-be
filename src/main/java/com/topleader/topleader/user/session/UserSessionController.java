@@ -5,7 +5,7 @@ import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
-import com.topleader.topleader.user.session.domain.RecommendedGrowth;
+import com.topleader.topleader.common.ai.RecommendedGrowth;
 import com.topleader.topleader.user.session.feedback.SessionFeedback;
 import com.topleader.topleader.user.session.feedback.SessionFeedbackRepository;
 import com.topleader.topleader.user.userinfo.UserInfoService;

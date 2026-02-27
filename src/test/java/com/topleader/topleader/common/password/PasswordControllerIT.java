@@ -37,7 +37,7 @@ class PasswordControllerIT extends IntegrationTest {
                     {}
                     """)
             )
-            .andExpect(status().isBadRequest())
+            .andExpect(status().isUnprocessableEntity())
             .andExpect(content().json("""
                 [
                   {
@@ -78,7 +78,7 @@ class PasswordControllerIT extends IntegrationTest {
                     }
                     """)
             )
-            .andExpect(status().isBadRequest())
+            .andExpect(status().isUnprocessableEntity())
             .andExpect(content().json("""
                 [
                   {

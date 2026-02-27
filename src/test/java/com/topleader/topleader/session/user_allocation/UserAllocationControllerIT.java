@@ -91,7 +91,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                     "allocatedUnits": 80
                                 }
                                 """))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andDo(print());
     }
 
@@ -106,7 +106,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                     "allocatedUnits": 5
                                 }
                                 """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -147,7 +147,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                     ]
                                 }
                                 """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -193,7 +193,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                     "allocatedUnits": 3
                                 }
                                 """))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andDo(print())
                 .andExpect(jsonPath("$[0].errorCode").value("allocation.below.consumed"));
     }
@@ -241,7 +241,7 @@ class UserAllocationControllerIT extends IntegrationTest {
 
         // Now try to consume another unit - should fail
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user1:consume"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andDo(print())
                 .andExpect(jsonPath("$[0].errorCode").value("no.units.available"));
     }
@@ -256,7 +256,7 @@ class UserAllocationControllerIT extends IntegrationTest {
         });
 
         mvc.perform(post("/api/latest/coaching-packages/1/allocations/user1:consume"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andDo(print())
                 .andExpect(jsonPath("$[0].errorCode").value("package.inactive"));
     }
@@ -274,7 +274,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                     ]
                                 }
                                 """))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andDo(print())
                 .andExpect(jsonPath("$[0].errorCode").value("allocation.below.consumed"));
     }
@@ -324,7 +324,7 @@ class UserAllocationControllerIT extends IntegrationTest {
                                     "allocatedUnits": 90
                                 }
                                 """))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andDo(print())
                 .andExpect(jsonPath("$[0].errorCode").value("capacity.exceeded"));
 

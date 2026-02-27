@@ -1,6 +1,7 @@
 package com.topleader.topleader.feedback;
 
 import com.topleader.topleader.common.ai.AiClient;
+import com.topleader.topleader.common.ai.FeedbackSummary;
 import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.common.exception.ApiValidationException;
@@ -211,7 +212,7 @@ public class FeedbackService {
         if (formDto.allowSummary(summaryLimit)) {
             var summary = CommonUtils.tryGetOrElse(
                     () -> aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions),
-                    new Summary(null, null),
+                    new FeedbackSummary(null, null),
                     "Failed to generate summary for form: [" + formId + "]");
             form.setSummary(summary);
             feedbackFormRepository.save(form);

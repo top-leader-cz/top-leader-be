@@ -1,6 +1,6 @@
 package com.topleader.topleader.user.userinsight.article;
 
-import com.topleader.topleader.user.session.domain.UserArticle;
+import com.topleader.topleader.common.ai.UserArticle;
 import lombok.*;
 import lombok.experimental.Accessors;
 import org.springframework.data.annotation.Id;
