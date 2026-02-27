@@ -6,7 +6,7 @@ package com.topleader.topleader.configuration;
 import com.topleader.topleader.common.metrics.MetricsService;
 import com.topleader.topleader.common.ratelimit.LoginAttemptService;
 import com.topleader.topleader.common.ratelimit.LoginRateLimitFilter;
-import com.topleader.topleader.common.util.user.UserDetailUtils;
+import com.topleader.topleader.user.util.UserDetailUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

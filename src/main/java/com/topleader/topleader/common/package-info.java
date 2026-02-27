@@ -14,7 +14,9 @@
  * - Common utilities (JSON, images, transactions, etc.)
  *
  * Architecture rule: Common is a SHARED KERNEL - all modules can use it, but it should NOT depend on them.
- *
- * Note: Spring Modulith annotations are defined in test configuration only.
+ * Type.OPEN exposes all sub-packages so that modules can use utilities from common.exception, common.util, etc.
  */
+@ApplicationModule(type = ApplicationModule.Type.OPEN)
 package com.topleader.topleader.common;
+
+import org.springframework.modulith.ApplicationModule;
