@@ -1,0 +1,53 @@
+{
+  "fa.giving-feedback": "Giving feedback",
+  "fa.delegation": "Delegation",
+  "fa.self-awareness": "Self-awareness",
+  "fa.strategic-thinking": "Strategic thinking",
+  "fa.team-motivation": "Team motivation",
+  "fa.communication": "Communication",
+  "fa.conflict-resolution": "Conflict resolution",
+  "fa.time-management": "Time management",
+  "fa.emotional-intelligence": "Emotional intelligence",
+  "fa.decision-making": "Decision making",
+
+  "template.leadership-90d": "Leadership 90d",
+  "template.leadership-90d.description": "Feedback, delegation, accountability",
+  "template.leadership-90d.goal": "Improve feedback culture & accountability for Team Leads",
+
+  "template.stress-resilience-90d": "Stress Resilience 90d",
+  "template.stress-resilience-90d.description": "Burnout prevention, coping strategies",
+  "template.stress-resilience-90d.goal": "Build stress resilience and prevent burnout through self-awareness and coping strategies",
+
+  "template.new-manager-90d": "New Manager 90d",
+  "template.new-manager-90d.description": "First 90 days in role",
+  "template.new-manager-90d.goal": "Accelerate new manager effectiveness through feedback, delegation, and team motivation skills",
+
+  "opt.hr.session-attendance": "Session attendance & utilization",
+  "opt.hr.goal-completion": "Goal completion status",
+  "opt.hr.micro-action-rate": "Micro-action completion rate",
+  "opt.hr.checkpoint-responses": "Checkpoint self-reflection responses",
+  "opt.hr.assessment-results": "Individual assessment results",
+
+  "opt.mgr.enrollment-status": "Enrollment status (name + program)",
+  "opt.mgr.focus-area-goal": "Personal focus area & goal",
+  "opt.mgr.session-attendance": "Session attendance (yes/no, not content)",
+  "opt.mgr.goal-progress": "Goal progress (on track / at risk)",
+
+  "program.goal.required": "Program goal is required for launch",
+  "program.coach.model.required": "Coach assignment model is required for launch",
+  "program.participants.required": "At least one participant is required for launch",
+  "not.part.of.company": "User is not part of any company",
+
+  "program.status.DRAFT": "Draft",
+  "program.status.CREATED": "Created",
+  "program.status.ACTIVE": "Active",
+  "program.status.COMPLETED": "Completed",
+
+  "program.coach-model.PARTICIPANT_CHOOSES": "Participant chooses",
+  "program.coach-model.HR_ASSIGNS": "HR assigns",
+  "program.coach-model.HR_SHORTLIST": "HR shortlist",
+
+  "program.participant-status.NOT_STARTED": "Not started",
+  "program.participant-status.ON_TRACK": "On track",
+  "program.participant-status.AT_RISK": "At risk"
+}

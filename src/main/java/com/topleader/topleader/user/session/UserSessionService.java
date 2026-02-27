@@ -16,15 +16,15 @@ import com.topleader.topleader.hr.company.CompanyRepository;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.badge.Badge;
 import com.topleader.topleader.user.badge.BadgeService;
-import com.topleader.topleader.user.session.domain.RecommendedGrowth;
-import com.topleader.topleader.user.session.domain.UserPreview;
-import com.topleader.topleader.user.session.domain.UserArticle;
+import com.topleader.topleader.common.ai.RecommendedGrowth;
+import com.topleader.topleader.common.ai.UserPreview;
+import com.topleader.topleader.common.ai.UserArticle;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.UserInsightService;
 import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
-import com.topleader.topleader.common.util.common.user.UserUtils;
+import com.topleader.topleader.user.util.UserUtils;
 import com.topleader.topleader.common.util.image.ArticleImageService;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.exception.NotFoundException;
@@ -344,7 +344,7 @@ public class UserSessionService {
             return null;
         }
         return CommonUtils.tryGetOrNull(
-                () -> aiClient.generateRecommendedGrowths(user, businessStrategy, position, aspiredCompetency),
+                () -> aiClient.generateRecommendedGrowths(username, UserUtils.localeToLanguage(user.getLocale()), businessStrategy, position, aspiredCompetency),
                 "Failed to generate recommended growths");
     }
 

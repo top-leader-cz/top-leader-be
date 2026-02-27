@@ -28,7 +28,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Service;
 
-import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toMap;
 

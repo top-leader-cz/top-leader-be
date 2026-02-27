@@ -1,7 +1,4 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
-package com.topleader.topleader.common.util.user;
+package com.topleader.topleader.user.util;
 
 import com.topleader.topleader.user.User;
 import lombok.experimental.UtilityClass;
@@ -15,13 +12,8 @@ import java.util.Optional;
 import static com.topleader.topleader.user.User.Authority.ADMIN;
 import static com.topleader.topleader.user.User.Authority.HR;
 
-
-/**
- * @author Daniel Slavik
- */
 @UtilityClass
 public final class UserDetailUtils {
-
 
     public static boolean isHr(final UserDetails user) {
         return user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(HR.name()::equalsIgnoreCase);

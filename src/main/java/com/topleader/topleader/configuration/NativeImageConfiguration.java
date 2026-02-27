@@ -1,8 +1,9 @@
 package com.topleader.topleader.configuration;
 
 import com.topleader.topleader.admin.AdminViewController;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.ai.AiPrompt;
-import com.topleader.topleader.common.ai.McpToolsConfig;
+import com.topleader.topleader.coach.ai.McpToolsConfig;
 import com.topleader.topleader.common.calendar.calendly.CalendlyProperties;
 import com.topleader.topleader.common.calendar.calendly.domain.TokenResponse;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
@@ -17,7 +18,7 @@ import com.topleader.topleader.common.util.common.Translation;
 import com.topleader.topleader.common.util.image.DaliResponse;
 import com.topleader.topleader.common.util.image.GcsLightweightClient;
 import com.topleader.topleader.coach.Coach;
-import com.topleader.topleader.feedback.api.Summary;
+import com.topleader.topleader.common.ai.FeedbackSummary;
 import com.topleader.topleader.feedback.feedback_notification.FeedbackNotification;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.data.StoredData;
@@ -25,14 +26,17 @@ import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.history.data.ValuesStoredData;
 import com.topleader.topleader.feedback.api.QuestionType;
+import com.topleader.topleader.hr.program.ProgramController;
+import com.topleader.topleader.hr.program.Program;
+import com.topleader.topleader.hr.program.ProgramRepository;
 import com.topleader.topleader.session.coaching_package.CoachingPackage;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.user_allocation.UserAllocation;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.badge.Badge;
-import com.topleader.topleader.user.session.domain.RecommendedGrowth;
-import com.topleader.topleader.user.session.domain.UserArticle;
-import com.topleader.topleader.user.session.domain.UserPreview;
+import com.topleader.topleader.common.ai.RecommendedGrowth;
+import com.topleader.topleader.common.ai.UserArticle;
+import com.topleader.topleader.common.ai.UserPreview;
 import com.topleader.topleader.user.session.reminder.SessionReminderView;
 import com.topleader.topleader.user.token.Token;
 import java.util.stream.Stream;
@@ -92,7 +96,7 @@ public class NativeImageConfiguration {
             registerForJsonSerialization(hints, UserSessionStoredData.ActionStepData.class);
 
             // DTOs and entities with JSON serialization
-            registerForJsonSerialization(hints, Summary.class);
+            registerForJsonSerialization(hints, FeedbackSummary.class);
             registerForJsonSerialization(hints, UserArticle.class);
             registerForJsonSerialization(hints, UserPreview.class);
             registerForJsonSerialization(hints, RecommendedGrowth.class);
@@ -122,6 +126,8 @@ public class NativeImageConfiguration {
             registerForJsonSerialization(hints, McpToolsConfig.CoachSearchRequest.class);
             registerForJsonSerialization(hints, McpToolsConfig.CoachByNameRequest.class);
             registerForJsonSerialization(hints, McpToolsConfig.CoachResponse.class);
+            registerForJsonSerialization(hints, AiClient.TavilySearchRequest.class);
+            registerForJsonSerialization(hints, AiClient.TavilySearchResult.class);
 
             // Configuration properties
             registerForJsonSerialization(hints, CalendlyProperties.class);
@@ -154,6 +160,16 @@ public class NativeImageConfiguration {
             registerEnum(hints, Badge.AchievementType.class);
             registerEnum(hints, QuestionType.class);
             registerEnum(hints, SessionReminderView.ReminderInterval.class);
+            registerEnum(hints, Program.Status.class);
+
+            // Program API - repository projection records and controller DTOs
+            registerForJsonSerialization(hints, ProgramRepository.ProgramSummaryRow.class);
+            registerForJsonSerialization(hints, ProgramRepository.ProgramRow.class);
+            registerForJsonSerialization(hints, ProgramRepository.ParticipantRow.class);
+            registerForJsonSerialization(hints, ProgramController.ProgramSummaryDto.class);
+            registerForJsonSerialization(hints, ProgramController.ProgramDetailDto.class);
+            registerForJsonSerialization(hints, ProgramController.ProgramStatsDto.class);
+            registerForJsonSerialization(hints, ProgramController.ParticipantDto.class);
         }
 
         private void registerForJsonSerialization(RuntimeHints hints, Class<?> clazz) {
@@ -176,12 +192,15 @@ public class NativeImageConfiguration {
                     "org.springframework.security.authentication.UsernamePasswordAuthenticationToken",
                     "org.springframework.security.core.authority.SimpleGrantedAuthority",
                     "org.springframework.security.core.userdetails.User",
+                    "org.springframework.security.core.userdetails.User$AuthorityComparator",
                     "org.springframework.security.web.authentication.WebAuthenticationDetails",
                     "java.util.Collections$UnmodifiableRandomAccessList",
                     "java.util.Collections$UnmodifiableSet",
+                    "java.util.Collections$UnmodifiableSortedSet",
                     "java.util.Collections$UnmodifiableMap",
                     "java.util.ArrayList",
-                    "java.util.HashSet"
+                    "java.util.HashSet",
+                    "java.util.TreeSet"
             ).forEach(className -> {
                 try {
                     hints.serialization().registerType(TypeReference.of(Class.forName(className)));

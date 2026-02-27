@@ -5,7 +5,8 @@ import com.icegreen.greenmail.util.GreenMail;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.topleader.topleader.ResetDatabaseAfterTestMethodListener;
 import com.topleader.topleader.StubFunction;
-import com.topleader.topleader.common.ai.McpToolsConfig;
+import com.topleader.topleader.coach.ai.McpToolsConfig;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.util.image.GcsLightweightClient;
 import okhttp3.mockwebserver.MockWebServer;
 
@@ -100,14 +101,14 @@ public class TestBeanConfiguration {
     @Bean
     @Primary
     @Qualifier("searchArticles")
-    public StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles() {
+    public StubFunction<AiClient.TavilySearchRequest, List<AiClient.TavilySearchResult>> mockSearchArticles() {
         return new StubFunction<>(request -> List.of());
     }
 
     @Bean
     @Primary
     @Qualifier("searchVideos")
-    public StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos() {
+    public StubFunction<AiClient.TavilySearchRequest, List<AiClient.TavilySearchResult>> mockSearchVideos() {
         return new StubFunction<>(request -> List.of());
     }
 

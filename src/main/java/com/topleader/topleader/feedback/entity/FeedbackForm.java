@@ -1,7 +1,7 @@
 package com.topleader.topleader.feedback.entity;
 
 
-import com.topleader.topleader.feedback.api.Summary;
+import com.topleader.topleader.common.ai.FeedbackSummary;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -33,7 +33,7 @@ public class FeedbackForm {
 
     private boolean draft;
 
-    private Summary summary;
+    private FeedbackSummary summary;
 
     private String username;
 

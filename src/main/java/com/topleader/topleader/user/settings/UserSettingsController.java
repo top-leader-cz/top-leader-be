@@ -26,7 +26,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
-import static com.topleader.topleader.common.util.user.UserDetailUtils.isHr;
+import static com.topleader.topleader.user.util.UserDetailUtils.isHr;
 
 
 @Slf4j

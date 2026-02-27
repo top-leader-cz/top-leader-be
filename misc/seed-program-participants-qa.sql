@@ -4,12 +4,11 @@
 -- Run after seed-programs-qa.sql was already executed.
 -- =============================================================================
 
-INSERT INTO program_participant (program_id, username, coach_username, status, created_by, created_at)
+INSERT INTO program_participant (program_id, username, coach_username, created_by, created_at)
 SELECT
     p.id          AS program_id,
     ua.username,
     u.coach       AS coach_username,
-    'ON_TRACK'    AS status,
     'admin'       AS created_by,
     NOW()         AS created_at
 FROM program p

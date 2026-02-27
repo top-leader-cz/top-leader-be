@@ -1,4 +1,4 @@
-package com.topleader.topleader.common.util.common.user;
+package com.topleader.topleader.user.util;
 
 import com.topleader.topleader.user.User;
 import java.time.ZoneId;

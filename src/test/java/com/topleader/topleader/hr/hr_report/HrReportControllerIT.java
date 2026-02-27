@@ -94,7 +94,7 @@ class HrReportControllerIT extends IntegrationTest {
     void getHrReport_deniedForOtherCompany() throws Exception {
         // Package 3 belongs to company 2
         mvc.perform(get("/api/latest/coaching-packages/3/hr-report"))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
