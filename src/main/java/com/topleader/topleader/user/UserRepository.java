@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 
+import java.time.LocalDateTime;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
@@ -31,6 +32,10 @@ public interface UserRepository extends ListCrudRepository<User, Long> {
 
      @Query("SELECT * FROM users WHERE username = :username OR email = :username")
      Optional<User> findByUsernameOrEmail(String username);
+
+     @Modifying
+     @Query("UPDATE users SET last_login_at = :lastLoginAt WHERE username = :username")
+     void updateLastLoginAt(String username, LocalDateTime lastLoginAt);
 
      @Query("""
              SELECT * FROM users u

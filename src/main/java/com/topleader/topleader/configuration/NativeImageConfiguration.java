@@ -25,6 +25,9 @@ import com.topleader.topleader.history.data.StrengthStoredData;
 import com.topleader.topleader.history.data.UserSessionStoredData;
 import com.topleader.topleader.history.data.ValuesStoredData;
 import com.topleader.topleader.feedback.api.QuestionType;
+import com.topleader.topleader.hr.program.ProgramController;
+import com.topleader.topleader.hr.program.ProgramParticipant;
+import com.topleader.topleader.hr.program.ProgramRepository;
 import com.topleader.topleader.session.coaching_package.CoachingPackage;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.user_allocation.UserAllocation;
@@ -154,6 +157,16 @@ public class NativeImageConfiguration {
             registerEnum(hints, Badge.AchievementType.class);
             registerEnum(hints, QuestionType.class);
             registerEnum(hints, SessionReminderView.ReminderInterval.class);
+            registerEnum(hints, ProgramParticipant.Status.class);
+
+            // Program API - repository projection records and controller DTOs
+            registerForJsonSerialization(hints, ProgramRepository.ProgramSummaryRow.class);
+            registerForJsonSerialization(hints, ProgramRepository.ProgramRow.class);
+            registerForJsonSerialization(hints, ProgramRepository.ParticipantRow.class);
+            registerForJsonSerialization(hints, ProgramController.ProgramSummaryDto.class);
+            registerForJsonSerialization(hints, ProgramController.ProgramDetailDto.class);
+            registerForJsonSerialization(hints, ProgramController.ProgramStatsDto.class);
+            registerForJsonSerialization(hints, ProgramController.ParticipantDto.class);
         }
 
         private void registerForJsonSerialization(RuntimeHints hints, Class<?> clazz) {
