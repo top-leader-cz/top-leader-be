@@ -43,6 +43,10 @@ public final class ErrorCodeConstants {
     public static final String SESSION_CANCEL_TOO_LATE = "session.cancel.too.late";
     public static final String INVALID_PARAMETER = "invalid.parameter";
 
-
+    public static final String PROGRAM_GOAL_REQUIRED = "program.goal.required";
+    public static final String COACH_MODEL_REQUIRED = "program.coach.model.required";
+    public static final String PARTICIPANTS_REQUIRED = "program.participants.required";
+    public static final String PARTICIPANTS_NOT_FOUND = "program.participants.not.found";
+    public static final String PARTICIPANT_ALREADY_IN_PROGRAM = "program.participant.already.in.program";
 
 }

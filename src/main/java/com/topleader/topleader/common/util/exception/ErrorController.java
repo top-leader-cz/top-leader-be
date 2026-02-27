@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import com.topleader.topleader.common.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.validation.FieldError;
@@ -31,12 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class ErrorController {
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public List<ErrorDto> handleValidationExceptions(
+    public ResponseEntity<List<ErrorDto>> handleValidationExceptions(
         MethodArgumentNotValidException ex
     ) {
-        return ex.getBindingResult().getAllErrors().stream()
+        var errors = ex.getBindingResult().getAllErrors().stream()
             .map(e -> {
                 String fieldName = ((FieldError) e).getField();
                 return new ErrorDto(
@@ -46,14 +46,14 @@ public class ErrorController {
                 );
             })
             .toList();
+        return ResponseEntity.unprocessableContent().body(errors);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = ApiValidationException.class)
-    public List<ErrorDto> handleApiValidationExceptions(
+    public ResponseEntity<List<ErrorDto>> handleApiValidationExceptions(
         ApiValidationException ex
     ) {
-        return List.of(
+        var errors = List.of(
             new ErrorDto(
                 Optional.ofNullable(ex.getError()).map(ApiValidationException.Error::code).orElse(null),
                 Optional.ofNullable(ex.getError()).map(ApiValidationException.Error::files).orElse(List.of()).stream()
@@ -62,6 +62,7 @@ public class ErrorController {
                 ex.getMessage()
             )
         );
+        return ResponseEntity.unprocessableContent().body(errors);
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
@@ -78,7 +79,7 @@ public class ErrorController {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(value = {NoResourceFoundException.class})
+    @ExceptionHandler(value = {NoResourceFoundException.class, NotFoundException.class})
     public List<ErrorDto> handleNotFoundException(Exception ex) {
         log.debug("Resource not found: {}", ex.getMessage());
         return List.of(

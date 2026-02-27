@@ -31,7 +31,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.FIELD_OUTSIDE_OF_FRAME;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.MORE_THEN_24_EVENT;
-import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 
 
 /**

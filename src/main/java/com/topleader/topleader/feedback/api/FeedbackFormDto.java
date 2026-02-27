@@ -2,6 +2,7 @@ package com.topleader.topleader.feedback.api;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.topleader.topleader.common.ai.FeedbackSummary;
 import com.topleader.topleader.feedback.entity.FeedbackForm;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -35,7 +36,7 @@ public class FeedbackFormDto {
 
     private List<RecipientDto> recipients;
 
-    private Summary summary;
+    private FeedbackSummary summary;
 
     private boolean draft;
 

@@ -16,7 +16,7 @@ spring:
       api-key: ${OPENAI_API_KEY:dummy-api-key}
       chat:
         options:
-          model: gpt-4o
+          model: gpt-5.2
   datasource:
     url: jdbc:postgresql://localhost:5432/top_leader
     username: root
@@ -83,6 +83,9 @@ top-leader:
     redirect-uri: http://localhost:8080/login/calendly
     base-api-url: https://api.calendly.com
     base-auth-url: https://auth.calendly.com
+  coach-pool:
+    min-size: 8
+    max-size: 15
   rate-limit:
     login:
       max-attempts: 3

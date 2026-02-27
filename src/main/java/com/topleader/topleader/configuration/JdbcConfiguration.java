@@ -2,10 +2,11 @@ package com.topleader.topleader.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.topleader.topleader.hr.program.Program;
 import com.topleader.topleader.common.ai.AiPrompt;
 import com.topleader.topleader.common.notification.context.NotificationContext;
 import com.topleader.topleader.common.util.common.JsonbValue;
-import com.topleader.topleader.feedback.api.Summary;
+import com.topleader.topleader.common.ai.FeedbackSummary;
 import com.topleader.topleader.feedback.feedback_notification.FeedbackNotification;
 import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
@@ -14,7 +15,7 @@ import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.data.StoredData;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.user.User;
-import com.topleader.topleader.user.session.domain.UserArticle;
+import com.topleader.topleader.common.ai.UserArticle;
 import org.apache.commons.lang3.StringUtils;
 import org.postgresql.util.PGobject;
 import org.springframework.context.annotation.Configuration;
@@ -94,7 +95,9 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
                 new TimeToLocalTimeConverter(),
                 new LocalTimeToTimeConverter(),
                 new UserArticleReadingConverter(),
-                new UserArticleWritingConverter()
+                new UserArticleWritingConverter(),
+                new CoachAssignmentModelReadingConverter(),
+                new CoachAssignmentModelWritingConverter()
         ));
     }
 
@@ -242,20 +245,20 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
     }
 
     @ReadingConverter
-    static class SummaryReadingConverter implements Converter<String, Summary> {
+    static class SummaryReadingConverter implements Converter<String, FeedbackSummary> {
         @Override
-        public Summary convert(String source) {
+        public FeedbackSummary convert(String source) {
             return Optional.ofNullable(source)
                     .filter(StringUtils::isNotBlank)
-                    .map(json -> readJson(json, Summary.class))
+                    .map(json -> readJson(json, FeedbackSummary.class))
                     .orElse(null);
         }
     }
 
     @WritingConverter
-    static class SummaryWritingConverter implements Converter<Summary, String> {
+    static class SummaryWritingConverter implements Converter<FeedbackSummary, String> {
         @Override
-        public String convert(Summary source) {
+        public String convert(FeedbackSummary source) {
             return Optional.ofNullable(source)
                     .map(JdbcConfiguration::writeJsonToString)
                     .orElse(null);
@@ -575,6 +578,27 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
         public Time convert(LocalTime source) {
             return Optional.ofNullable(source)
                     .map(Time::valueOf)
+                    .orElse(null);
+        }
+    }
+
+    @ReadingConverter
+    static class CoachAssignmentModelReadingConverter implements Converter<String, Program.CoachAssignmentModel> {
+        @Override
+        public Program.CoachAssignmentModel convert(String source) {
+            return Optional.ofNullable(source)
+                    .filter(StringUtils::isNotBlank)
+                    .map(Program.CoachAssignmentModel::valueOf)
+                    .orElse(null);
+        }
+    }
+
+    @WritingConverter
+    static class CoachAssignmentModelWritingConverter implements Converter<Program.CoachAssignmentModel, String> {
+        @Override
+        public String convert(Program.CoachAssignmentModel source) {
+            return Optional.ofNullable(source)
+                    .map(Enum::name)
                     .orElse(null);
         }
     }

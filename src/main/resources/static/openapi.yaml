@@ -28,6 +28,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -63,6 +71,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -105,6 +121,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -158,6 +182,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -195,6 +227,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -249,6 +289,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -285,6 +333,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -335,6 +391,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -367,6 +431,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -416,6 +488,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -480,6 +560,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -535,6 +623,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -567,6 +663,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -593,6 +697,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -635,6 +747,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -667,6 +787,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -693,6 +821,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -740,6 +876,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -776,6 +920,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -826,6 +978,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -870,6 +1030,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -906,6 +1074,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -957,6 +1133,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -989,6 +1173,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1037,6 +1229,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1073,6 +1273,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1121,6 +1329,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1151,6 +1367,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1192,6 +1416,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1240,6 +1472,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1282,6 +1522,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1312,6 +1560,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1359,6 +1615,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1389,6 +1653,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1428,6 +1700,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1482,6 +1762,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1524,6 +1812,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1556,6 +1852,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1582,6 +1886,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1631,6 +1943,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1641,6 +1961,204 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "200":
           description: OK
+  /api/latest/hr/programs:
+    get:
+      tags:
+      - program-controller
+      operationId: listPrograms
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgramSummaryDto"
+    post:
+      tags:
+      - program-controller
+      operationId: saveDraft
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveProgramRequest"
+        required: true
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProgramDraftDto"
+  /api/latest/hr/programs/{programId}/launch:
+    post:
+      tags:
+      - program-controller
+      operationId: launchProgram
+      parameters:
+      - name: programId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProgramDraftDto"
+  /api/latest/hr/programs/recommend-coaches:
+    post:
+      tags:
+      - program-controller
+      operationId: recommendCoaches
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecommendCoachesRequest"
+        required: true
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RecommendedCoachDto"
   /api/latest/hr-users:
     get:
       tags:
@@ -1657,6 +2175,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1700,6 +2226,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1754,6 +2288,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1790,6 +2332,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1839,6 +2389,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -1869,6 +2427,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1912,6 +2478,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -1966,6 +2540,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2003,6 +2585,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2059,6 +2649,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2102,6 +2700,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2162,6 +2768,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2210,6 +2824,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2246,6 +2868,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2300,6 +2930,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2332,6 +2970,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2375,6 +3021,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2428,6 +3082,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2466,6 +3128,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2513,6 +3183,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2543,6 +3221,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2590,6 +3276,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2620,6 +3314,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2673,6 +3375,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2699,6 +3409,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2750,6 +3468,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2776,6 +3502,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2825,6 +3559,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2855,6 +3597,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2906,6 +3656,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -2938,6 +3696,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -2987,6 +3753,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3030,6 +3804,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3065,6 +3847,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3115,6 +3905,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3146,6 +3944,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3196,6 +4002,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3229,6 +4043,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3283,6 +4105,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3313,6 +4143,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3354,6 +4192,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3405,6 +4251,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3446,6 +4300,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3501,6 +4363,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3537,6 +4407,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3567,6 +4445,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3611,6 +4497,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3649,6 +4543,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3681,6 +4583,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3726,6 +4636,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3762,6 +4680,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3792,6 +4718,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3836,6 +4770,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3866,6 +4808,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3908,6 +4858,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -3937,6 +4895,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -3981,6 +4947,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4017,6 +4991,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -4070,6 +5052,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4084,6 +5074,253 @@ paths:
             '*/*':
               schema:
                 $ref: "#/components/schemas/PageMessageDto"
+  /api/latest/hr/programs/{programId}:
+    get:
+      tags:
+      - program-controller
+      operationId: getProgram
+      parameters:
+      - name: programId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/ProgramDetailDto"
+  /api/latest/hr/programs/users:
+    get:
+      tags:
+      - program-controller
+      operationId: getCompanyUsers
+      parameters:
+      - name: programId
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgramUserDto"
+  /api/latest/hr/programs/options:
+    get:
+      tags:
+      - program-controller
+      operationId: getOptions_1
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProgramOptionDto"
+  /api/latest/hr/program-templates:
+    get:
+      tags:
+      - program-template-controller
+      operationId: list
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TemplateDto"
+  /api/latest/hr/program-templates/{templateId}:
+    get:
+      tags:
+      - program-template-controller
+      operationId: detail
+      parameters:
+      - name: templateId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        "400":
+          description: Bad Request
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "403":
+          description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "500":
+          description: Internal Server Error
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "200":
+          description: OK
+          content:
+            '*/*':
+              schema:
+                $ref: "#/components/schemas/TemplateDto"
   /api/latest/hr-users/managers:
     get:
       tags:
@@ -4100,6 +5337,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -4154,6 +5399,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4186,6 +5439,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -4234,6 +5495,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4273,6 +5542,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -4334,6 +5611,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4371,6 +5656,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -4421,6 +5714,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4457,6 +5758,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -4518,6 +5827,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4551,6 +5868,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -4595,6 +5920,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4633,6 +5966,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4665,6 +6006,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -4714,6 +6063,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4740,6 +6097,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -4785,6 +6150,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4823,6 +6196,14 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
         "500":
           description: Internal Server Error
           content:
@@ -4855,6 +6236,14 @@ paths:
                   $ref: "#/components/schemas/ErrorDto"
         "403":
           description: Forbidden
+          content:
+            '*/*':
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorDto"
+        "404":
+          description: Not Found
           content:
             '*/*':
               schema:
@@ -5129,10 +6518,10 @@ components:
           items:
             $ref: "#/components/schemas/RecipientDto"
         summary:
-          $ref: "#/components/schemas/Summary"
+          $ref: "#/components/schemas/FeedbackSummary"
         draft:
           type: boolean
-    Summary:
+    FeedbackSummary:
       type: object
       properties:
         strongAreas:
@@ -5481,6 +6870,142 @@ components:
           type: string
       required:
       - userTo
+    SaveProgramRequest:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+          minLength: 1
+        goal:
+          type: string
+        targetGroup:
+          type: string
+        durationDays:
+          type: integer
+          format: int32
+        startDate:
+          type: string
+          format: date-time
+        milestoneDate:
+          type: string
+          format: date-time
+        focusAreas:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        participants:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        sessionsPerParticipant:
+          type: integer
+          format: int32
+        recommendedCadence:
+          type: string
+        coachAssignmentModel:
+          type: string
+          enum:
+          - PARTICIPANT_CHOOSES
+          - HR_ASSIGNS
+          - HR_SHORTLIST
+        shortlistedCoaches:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        microActionsEnabled:
+          type: boolean
+        enabledOptions:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+      required:
+      - enabledOptions
+      - focusAreas
+      - name
+      - participants
+      - shortlistedCoaches
+    ProgramDraftDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        goal:
+          type: string
+        targetGroup:
+          type: string
+        status:
+          type: string
+        durationDays:
+          type: integer
+          format: int32
+        milestoneDate:
+          type: string
+          format: date-time
+        focusAreas:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        sessionsPerParticipant:
+          type: integer
+          format: int32
+        recommendedCadence:
+          type: string
+        coachAssignmentModel:
+          type: string
+          enum:
+          - PARTICIPANT_CHOOSES
+          - HR_ASSIGNS
+          - HR_SHORTLIST
+        shortlistedCoaches:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        microActionsEnabled:
+          type: boolean
+        enabledOptions:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+    RecommendCoachesRequest:
+      type: object
+      properties:
+        goal:
+          type: string
+          minLength: 1
+        focusAreas:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
+        targetGroup:
+          type: string
+      required:
+      - focusAreas
+      - goal
+    RecommendedCoachDto:
+      type: object
+      properties:
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        reason:
+          type: string
     AddUserRequest:
       type: object
       properties:
@@ -5947,9 +7472,9 @@ components:
     SortObject:
       type: object
       properties:
-        unsorted:
-          type: boolean
         sorted:
+          type: boolean
+        unsorted:
           type: boolean
         empty:
           type: boolean
@@ -6617,11 +8142,11 @@ components:
     Environment:
       type: object
       properties:
-        defaultProfiles:
+        activeProfiles:
           type: array
           items:
             type: string
-        activeProfiles:
+        defaultProfiles:
           type: array
           items:
             type: string
@@ -6715,15 +8240,15 @@ components:
     HttpStatusCode:
       type: object
       properties:
-        is4xxClientError:
-          type: boolean
-        is3xxRedirection:
-          type: boolean
         is5xxServerError:
           type: boolean
         is1xxInformational:
           type: boolean
         is2xxSuccessful:
+          type: boolean
+        is4xxClientError:
+          type: boolean
+        is3xxRedirection:
           type: boolean
         error:
           type: boolean
@@ -6759,17 +8284,17 @@ components:
           type: array
           items:
             type: string
+        errorOnUndeclaredNamespace:
+          type: string
         defaultContentType:
           type: string
         errorOnELNotFound:
           type: string
+        scriptingInvalid:
+          type: string
         deferredSyntaxAllowedAsLiteral:
           type: string
-        errorOnUndeclaredNamespace:
-          type: string
         trimDirectiveWhitespaces:
-          type: string
-        scriptingInvalid:
           type: string
         buffer:
           type: string
@@ -6847,6 +8372,7 @@ components:
     ServletContext:
       type: object
       properties:
+        attributeNames: {}
         contextPath:
           type: string
         serverInfo:
@@ -6854,7 +8380,7 @@ components:
         sessionTimeout:
           type: integer
           format: int32
-        attributeNames: {}
+        initParameterNames: {}
         effectiveMajorVersion:
           type: integer
           format: int32
@@ -6909,7 +8435,6 @@ components:
           type: string
         responseCharacterEncoding:
           type: string
-        initParameterNames: {}
         classLoader:
           type: object
           properties:
@@ -7049,12 +8574,12 @@ components:
     ServletRegistration:
       type: object
       properties:
+        runAsRole:
+          type: string
         mappings:
           type: array
           items:
             type: string
-        runAsRole:
-          type: string
         initParameters:
           type: object
           additionalProperties:
@@ -7066,6 +8591,8 @@ components:
     SessionCookieConfig:
       type: object
       properties:
+        httpOnly:
+          type: boolean
         maxAge:
           type: integer
           format: int32
@@ -7073,8 +8600,6 @@ components:
           type: string
         domain:
           type: string
-        httpOnly:
-          type: boolean
         secure:
           type: boolean
         name:
@@ -7464,6 +8989,143 @@ components:
           format: int32
         empty:
           type: boolean
+    ProgramSummaryDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        status:
+          type: string
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+        milestoneDate:
+          type: string
+          format: date-time
+        daysUntilMilestone:
+          type: integer
+          format: int64
+        totalParticipants:
+          type: integer
+          format: int32
+        activeParticipants:
+          type: integer
+          format: int32
+    ParticipantDto:
+      type: object
+      properties:
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        coachUsername:
+          type: string
+        lastActiveAt:
+          type: string
+          format: date-time
+        sessionsConsumed:
+          type: integer
+          format: int32
+        sessionsAllocated:
+          type: integer
+          format: int32
+        status:
+          type: string
+          enum:
+          - NOT_STARTED
+          - ON_TRACK
+          - AT_RISK
+    ProgramDetailDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        status:
+          type: string
+        validFrom:
+          type: string
+          format: date-time
+        validTo:
+          type: string
+          format: date-time
+        milestoneDate:
+          type: string
+          format: date-time
+        daysUntilMilestone:
+          type: integer
+          format: int64
+        stats:
+          $ref: "#/components/schemas/ProgramStatsDto"
+        participants:
+          type: array
+          items:
+            $ref: "#/components/schemas/ParticipantDto"
+    ProgramStatsDto:
+      type: object
+      properties:
+        totalParticipants:
+          type: integer
+          format: int32
+        progressPercent:
+          type: integer
+          format: int32
+    ProgramUserDto:
+      type: object
+      properties:
+        username:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        added:
+          type: boolean
+    ProgramOptionDto:
+      type: object
+      properties:
+        key:
+          type: string
+        category:
+          type: string
+        alwaysOn:
+          type: boolean
+    TemplateDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        description:
+          type: string
+        goal:
+          type: string
+        targetGroup:
+          type: string
+        durationDays:
+          type: integer
+          format: int32
+        custom:
+          type: boolean
+        focusAreas:
+          type: array
+          items:
+            type: string
+          uniqueItems: true
     ActionStepData:
       type: object
       properties:
@@ -7612,6 +9274,36 @@ components:
           enum:
           - ACTIVE
           - INACTIVE
+    Summary:
+      type: object
+      properties:
+        totalUnits:
+          type: integer
+          format: int32
+        allocatedUnits:
+          type: integer
+          format: int32
+        plannedSessions:
+          type: integer
+          format: int32
+        pendingSessions:
+          type: integer
+          format: int32
+        completedSessions:
+          type: integer
+          format: int32
+        consumedUnits:
+          type: integer
+          format: int32
+        remainingUnits:
+          type: integer
+          format: int32
+        unallocatedUnits:
+          type: integer
+          format: int32
+        noShowClientSessions:
+          type: integer
+          format: int32
     UserRow:
       type: object
       properties:

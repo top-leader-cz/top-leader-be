@@ -463,7 +463,7 @@ class UserInfoControllerIT extends IntegrationTest {
         ).getId();
 
         mvc.perform(delete("/api/latest/user-info/upcoming-sessions/" + id))
-            .andExpect(status().isBadRequest())
+            .andExpect(status().isUnprocessableEntity())
             .andExpect(jsonPath("$[0].errorCode").value("session.cancel.too.late"));
 
         // Session should still exist with original status
