@@ -74,7 +74,7 @@ class UserInsightControllerIT extends IntegrationTest {
                     "isPending": false
                   },
                   "userArticles": {
-                    "text": "[{\\"url\\":\\"https://hbr.org/2018/04/better-brainstorming\\",\\"perex\\":\\"perex\\",\\"title\\":\\"title\\",\\"author\\":\\"Scott Berinato\\",\\"source\\":\\"Harvard Business Review\\",\\"language\\":\\"en\\",\\"readTime\\":\\"6 min read\\",\\"imageData\\":\\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==\\",\\"application\\":\\"application\\",\\"imagePrompt\\":\\"prompt\\",\\"summaryText\\":\\"summary\\",\\"id\\":1,\\"date\\":\\"2025-08-25\\",\\"imageUrl\\":\\"gs://ai-images-top-leader/test_image.png\\",\\"keyTakeaways\\":null,\\"originalTitle\\":null,\\"relevanceScore\\":null,\\"sourceLanguage\\":null}]",
+                    "text": "[{\\"url\\":\\"https://hbr.org/2018/04/better-brainstorming\\",\\"perex\\":\\"perex\\",\\"title\\":\\"title\\",\\"author\\":\\"Scott Berinato\\",\\"source\\":\\"Harvard Business Review\\",\\"language\\":\\"en\\",\\"readTime\\":\\"6 min read\\",\\"imageData\\":\\"https://storage.googleapis.com/ai-images-top-leader/test_image.png\\",\\"application\\":\\"application\\",\\"imagePrompt\\":\\"prompt\\",\\"summaryText\\":\\"summary\\",\\"id\\":1,\\"date\\":\\"2025-08-25\\",\\"imageUrl\\":\\"gs://ai-images-top-leader/test_image.png\\",\\"keyTakeaways\\":null,\\"originalTitle\\":null,\\"relevanceScore\\":null,\\"sourceLanguage\\":null}]",
                     "isPending": false
                   },
                   "userPreviews": {
@@ -127,7 +127,7 @@ class UserInsightControllerIT extends IntegrationTest {
                               "source": "Harvard Business Review",
                               "language": "en",
                               "readTime": "6 min read",
-                              "imageData": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==",
+                              "imageData": "https://storage.googleapis.com/ai-images-top-leader/test_image.png",
                               "application": "application",
                               "imagePrompt": "prompt",
                               "summaryText": "summary",

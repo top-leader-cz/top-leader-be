@@ -36,7 +36,14 @@ resource "google_storage_bucket" "ai_images" {
   uniform_bucket_level_access = true
 }
 
-# Public access IAM is managed outside Terraform (already configured in GCP)
+# Public read access for AI images bucket (non-sensitive generated illustrations)
+resource "google_storage_bucket_iam_member" "ai_images_public" {
+  bucket = google_storage_bucket.ai_images.name
+  role   = "roles/storage.objectViewer"
+  member = "allUsers"
+}
+
+# Public access IAM for frontend buckets is managed outside Terraform (already configured in GCP)
 
 # Backend Bucket for QA with CDN
 resource "google_compute_backend_bucket" "frontend_qa" {
@@ -44,7 +51,7 @@ resource "google_compute_backend_bucket" "frontend_qa" {
   project          = var.project_id
   bucket_name      = google_storage_bucket.frontend_qa.name
   enable_cdn       = true
-  compression_mode = "DISABLED"
+  compression_mode = "AUTOMATIC"
 
   cdn_policy {
     cache_mode        = "CACHE_ALL_STATIC"

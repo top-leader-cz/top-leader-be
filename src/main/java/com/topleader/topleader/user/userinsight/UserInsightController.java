@@ -49,7 +49,7 @@ public class UserInsightController {
                 .map(article -> {
                     var content = article.getContent();
                     content.setId(article.getId());
-                    content.setImageData(articleImageService.getImageAsBase64(content.getImageUrl()));
+                    content.setImageData(articleImageService.getImagePublicUrl(content.getImageUrl()));
                     return content;
                 })
                 .toList();
@@ -81,7 +81,7 @@ public class UserInsightController {
         return articlesRepository.findById(articleId)
                 .map(article -> {
                     article.getContent().setId(article.getId());
-                    article.getContent().setImageData(articleImageService.getImageAsBase64(article.getContent().getImageUrl()));
+                    article.getContent().setImageData(articleImageService.getImagePublicUrl(article.getContent().getImageUrl()));
                     return article.getContent();
                 })
                 .orElseThrow(NotFoundException::new);
