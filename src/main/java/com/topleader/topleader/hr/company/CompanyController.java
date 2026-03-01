@@ -6,9 +6,9 @@ package com.topleader.topleader.hr.company;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
@@ -36,15 +36,15 @@ public class CompanyController {
     @GetMapping
     @Secured("ADMIN")
     public List<CompanyDto> listCompanies() {
+        var ratesByCompanyId = companyRepository.findAllCoachRates().stream()
+            .collect(Collectors.groupingBy(
+                CompanyCoachRate::companyId,
+                Collectors.mapping(CompanyCoachRate::rateName, Collectors.toSet())
+            ));
         return companyRepository.findAll().stream()
-            .map(this::loadWithRates)
+            .map(c -> c.setAllowedCoachRates(ratesByCompanyId.getOrDefault(c.getId(), Set.of())))
             .map(CompanyDto::from)
             .toList();
-    }
-
-    private Company loadWithRates(Company company) {
-        var rates = new HashSet<>(companyRepository.findCoachRatesByCompanyId(company.getId()));
-        return company.setAllowedCoachRates(rates);
     }
 
     @PostMapping

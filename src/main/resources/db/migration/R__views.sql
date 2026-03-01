@@ -200,7 +200,7 @@ select distinct ROW_NUMBER() OVER (ORDER BY u.username, s.time) AS id,
 from users u
          left join scheduled_session s on s.username = u.username
 where u.status != 'CANCELED' and company_id is not null
-
+CREATE INDEX IF NOT EXISTS users_coach_idx ON users(coach);
 
 
 

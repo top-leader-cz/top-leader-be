@@ -10,6 +10,8 @@ import org.springframework.data.repository.ListCrudRepository;
 import java.util.List;
 import java.util.Optional;
 
+record CompanyCoachRate(long companyId, String rateName) {}
+
 public interface CompanyRepository extends ListCrudRepository<Company, Long> {
 
     Optional<Company> findByName(String name);
@@ -20,6 +22,9 @@ public interface CompanyRepository extends ListCrudRepository<Company, Long> {
 
     @Query("SELECT rate_name FROM company_coach_rates WHERE company_id = :companyId")
     List<String> findCoachRatesByCompanyId(long companyId);
+
+    @Query("SELECT company_id, rate_name FROM company_coach_rates")
+    List<CompanyCoachRate> findAllCoachRates();
 
     @Modifying
     @Query("DELETE FROM company_coach_rates WHERE company_id = :companyId")

@@ -5919,11 +5919,11 @@ components:
         number:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     PageableObject:
@@ -6054,11 +6054,11 @@ components:
         number:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     CoachDto:
@@ -6461,13 +6461,13 @@ components:
           type: string
         displayName:
           type: string
-        autowireCapableBeanFactory:
-          $ref: "#/components/schemas/AutowireCapableBeanFactory"
         applicationName:
           type: string
         startupDate:
           type: integer
           format: int64
+        autowireCapableBeanFactory:
+          $ref: "#/components/schemas/AutowireCapableBeanFactory"
         environment:
           $ref: "#/components/schemas/Environment"
         beanDefinitionCount:
@@ -6723,37 +6723,25 @@ components:
           type: boolean
         is2xxSuccessful:
           type: boolean
-        is3xxRedirection:
-          type: boolean
         is4xxClientError:
+          type: boolean
+        is3xxRedirection:
           type: boolean
     JspConfigDescriptor:
       type: object
       properties:
-        jspPropertyGroups:
-          type: array
-          items:
-            $ref: "#/components/schemas/JspPropertyGroupDescriptor"
         taglibs:
           type: array
           items:
             $ref: "#/components/schemas/TaglibDescriptor"
+        jspPropertyGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/JspPropertyGroupDescriptor"
     JspPropertyGroupDescriptor:
       type: object
       properties:
         buffer:
-          type: string
-        defaultContentType:
-          type: string
-        errorOnELNotFound:
-          type: string
-        scriptingInvalid:
-          type: string
-        deferredSyntaxAllowedAsLiteral:
-          type: string
-        trimDirectiveWhitespaces:
-          type: string
-        errorOnUndeclaredNamespace:
           type: string
         urlPatterns:
           type: array
@@ -6773,6 +6761,18 @@ components:
           type: array
           items:
             type: string
+        errorOnUndeclaredNamespace:
+          type: string
+        trimDirectiveWhitespaces:
+          type: string
+        deferredSyntaxAllowedAsLiteral:
+          type: string
+        scriptingInvalid:
+          type: string
+        errorOnELNotFound:
+          type: string
+        defaultContentType:
+          type: string
     RedirectView:
       type: object
       properties:
@@ -6829,9 +6829,9 @@ components:
           type: array
           items:
             type: string
-        propagateQueryProperties:
-          type: boolean
         redirectView:
+          type: boolean
+        propagateQueryProperties:
           type: boolean
         attributes:
           type: object
@@ -6983,6 +6983,14 @@ components:
         minorVersion:
           type: integer
           format: int32
+        serverInfo:
+          type: string
+        sessionTimeout:
+          type: integer
+          format: int32
+        contextPath:
+          type: string
+        attributeNames: {}
         initParameterNames: {}
         effectiveMajorVersion:
           type: integer
@@ -7038,14 +7046,6 @@ components:
           type: string
         responseCharacterEncoding:
           type: string
-        serverInfo:
-          type: string
-        sessionTimeout:
-          type: integer
-          format: int32
-        attributeNames: {}
-        contextPath:
-          type: string
     ServletRegistration:
       type: object
       properties:
@@ -7066,15 +7066,15 @@ components:
     SessionCookieConfig:
       type: object
       properties:
+        httpOnly:
+          type: boolean
+        path:
+          type: string
         maxAge:
           type: integer
           format: int32
         domain:
           type: string
-        path:
-          type: string
-        httpOnly:
-          type: boolean
         name:
           type: string
         attributes:
@@ -7322,11 +7322,11 @@ components:
         number:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     MyTeamViewDto:
@@ -7391,11 +7391,11 @@ components:
         number:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     UserChatInfoDto:
@@ -7457,11 +7457,11 @@ components:
         number:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
     ActionStepData:
@@ -7837,10 +7837,10 @@ components:
         number:
           type: integer
           format: int32
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         empty:
           type: boolean
