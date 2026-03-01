@@ -125,21 +125,23 @@ jobs:
 
           # 1. Delete old QA tagged images (keep 2 newest)
           OLD_QA=$(echo "$ALL_IMAGES" | grep 'qa-' | tail -n +3 | cut -d',' -f1)
-          for DIGEST in $OLD_QA; do
+          while IFS= read -r DIGEST; do
+            [ -z "$DIGEST" ] && continue
             echo "Deleting old QA image: ${DIGEST}"
-            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
               --project=${{ env.PROJECT_ID }} \
               --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done
+          done <<< "$OLD_QA"
 
           # 2. Delete all untagged images (orphaned platform manifests)
           UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
-          for DIGEST in $UNTAGGED; do
+          while IFS= read -r DIGEST; do
+            [ -z "$DIGEST" ] && continue
             echo "Deleting untagged: ${DIGEST}"
-            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
               --project=${{ env.PROJECT_ID }} \
               --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done
+          done <<< "$UNTAGGED"
 
   deploy-qa-native:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-native')
@@ -243,21 +245,23 @@ jobs:
 
           # Delete old native tagged images (keep 2 newest)
           OLD_NATIVE=$(echo "$ALL_IMAGES" | grep 'native-' | tail -n +3 | cut -d',' -f1)
-          for DIGEST in $OLD_NATIVE; do
+          while IFS= read -r DIGEST; do
+            [ -z "$DIGEST" ] && continue
             echo "Deleting old native image: ${DIGEST}"
-            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
               --project=${{ env.PROJECT_ID }} \
               --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done
+          done <<< "$OLD_NATIVE"
 
           # Delete all untagged images (orphaned platform manifests)
           UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
-          for DIGEST in $UNTAGGED; do
+          while IFS= read -r DIGEST; do
+            [ -z "$DIGEST" ] && continue
             echo "Deleting untagged: ${DIGEST}"
-            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
               --project=${{ env.PROJECT_ID }} \
               --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done
+          done <<< "$UNTAGGED"
 
   deploy-prod:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/release-v')
@@ -362,21 +366,23 @@ jobs:
 
           # 1. Delete old PROD versioned images (keep 3 newest)
           OLD_VERSIONS=$(echo "$ALL_IMAGES" | grep -E '[0-9]+\.[0-9]+\.[0-9]+' | tail -n +4 | cut -d',' -f1)
-          for DIGEST in $OLD_VERSIONS; do
+          while IFS= read -r DIGEST; do
+            [ -z "$DIGEST" ] && continue
             echo "Deleting old version: ${DIGEST}"
-            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
               --project=${{ env.PROJECT_ID }} \
               --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done
+          done <<< "$OLD_VERSIONS"
 
           # 2. Delete all untagged images (orphaned platform manifests)
           UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
-          for DIGEST in $UNTAGGED; do
+          while IFS= read -r DIGEST; do
+            [ -z "$DIGEST" ] && continue
             echo "Deleting untagged: ${DIGEST}"
-            gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
+            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
               --project=${{ env.PROJECT_ID }} \
               --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done
+          done <<< "$UNTAGGED"
 
       - name: Create GitHub Release with changelog
         env:
