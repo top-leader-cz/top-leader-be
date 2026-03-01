@@ -1,8 +1,9 @@
 package com.topleader.topleader.configuration;
 
 import com.topleader.topleader.admin.AdminViewController;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.ai.AiPrompt;
-import com.topleader.topleader.common.ai.McpToolsConfig;
+import com.topleader.topleader.coach.ai.McpToolsConfig;
 import com.topleader.topleader.common.calendar.calendly.CalendlyProperties;
 import com.topleader.topleader.common.calendar.calendly.domain.TokenResponse;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
@@ -125,6 +126,8 @@ public class NativeImageConfiguration {
             registerForJsonSerialization(hints, McpToolsConfig.CoachSearchRequest.class);
             registerForJsonSerialization(hints, McpToolsConfig.CoachByNameRequest.class);
             registerForJsonSerialization(hints, McpToolsConfig.CoachResponse.class);
+            registerForJsonSerialization(hints, AiClient.TavilySearchRequest.class);
+            registerForJsonSerialization(hints, AiClient.TavilySearchResult.class);
 
             // Configuration properties
             registerForJsonSerialization(hints, CalendlyProperties.class);

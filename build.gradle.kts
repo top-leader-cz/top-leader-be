@@ -102,6 +102,7 @@ dependencies {
     testImplementation("com.icegreen:greenmail:2.1.8")
     testImplementation("net.javacrumbs.json-unit:json-unit-assertj:5.1.0")
     testImplementation("com.squareup.okhttp3:mockwebserver:5.3.2")
+    implementation("org.springframework.modulith:spring-modulith-core")
     testImplementation("org.springframework.modulith:spring-modulith-starter-test")
 }
 
@@ -112,6 +113,15 @@ tasks.withType<Test> {
     exclude("**/OpenApiGeneratorTest.class")
     exclude("**/ModularityTests.class")
     finalizedBy(tasks.jacocoTestReport) // Generate coverage report after tests
+}
+
+tasks.register<Test>("modularityCheck") {
+    dependsOn(tasks.compileTestJava)
+    useJUnitPlatform()
+    jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
+    testClassesDirs = files("build/classes/java/test")
+    classpath = sourceSets["test"].runtimeClasspath
+    include("**/ModularityTests.class")
 }
 
 // JaCoCo configuration
