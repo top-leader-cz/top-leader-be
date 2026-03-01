@@ -117,7 +117,7 @@ resource "google_project_service" "servicenetworking" {
 resource "google_project_service" "vpcaccess" {
   project            = var.project_id
   service            = "vpcaccess.googleapis.com"
-  disable_on_destroy = false
+  disable_on_destroy = true
 }
 
 # -----------------------------------------------------------------------------

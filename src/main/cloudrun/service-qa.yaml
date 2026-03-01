@@ -14,7 +14,7 @@ spec:
         autoscaling.knative.dev/maxScale: "1"
         run.googleapis.com/cpu-throttling: "true"
         run.googleapis.com/startup-cpu-boost: "true"
-        run.googleapis.com/vpc-access-connector: projects/topleader-394306/locations/europe-west3/connectors/top-leader-vpc-connector
+        run.googleapis.com/network-interfaces: '[{"network":"top-leader-vpc","subnetwork":"top-leader-vpc"}]'
         run.googleapis.com/vpc-access-egress: private-ranges-only
         run.googleapis.com/sessionAffinity: "true"
     spec:
