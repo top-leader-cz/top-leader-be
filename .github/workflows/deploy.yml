@@ -117,14 +117,14 @@ jobs:
           IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
           echo "Cleaning up old images..."
 
-          # 1. Delete old QA tagged images first (keep 2 newest by creation time)
-          OLD_QA=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+          ALL_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
             --include-tags \
-            --sort-by=~CREATE_TIME \
-            --format="csv[no-heading](DIGEST,TAGS)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
-            grep 'qa-' | tail -n +3 | cut -d',' -f1)
+            --sort-by=~createTime \
+            --format="csv[no-heading](version,tags)" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null)
 
+          # 1. Delete old QA tagged images (keep 2 newest)
+          OLD_QA=$(echo "$ALL_IMAGES" | grep 'qa-' | tail -n +3 | cut -d',' -f1)
           for DIGEST in $OLD_QA; do
             echo "Deleting old QA image: ${DIGEST}"
             gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
@@ -133,12 +133,7 @@ jobs:
           done
 
           # 2. Delete all untagged images (orphaned platform manifests)
-          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --include-tags \
-            --format="get(DIGEST)" \
-            --filter="tags=''" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null)
-
+          UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
           for DIGEST in $UNTAGGED; do
             echo "Deleting untagged: ${DIGEST}"
             gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
@@ -238,13 +233,14 @@ jobs:
         run: |
           IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
 
-          OLD_NATIVE=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+          ALL_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
             --include-tags \
-            --sort-by=~CREATE_TIME \
-            --format="csv[no-heading](DIGEST,TAGS)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
-            grep 'native-' | tail -n +3 | cut -d',' -f1)
+            --sort-by=~createTime \
+            --format="csv[no-heading](version,tags)" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null)
 
+          # Delete old native tagged images (keep 2 newest)
+          OLD_NATIVE=$(echo "$ALL_IMAGES" | grep 'native-' | tail -n +3 | cut -d',' -f1)
           for DIGEST in $OLD_NATIVE; do
             echo "Deleting old native image: ${DIGEST}"
             gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
@@ -252,12 +248,8 @@ jobs:
               --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
           done
 
-          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --include-tags \
-            --format="get(DIGEST)" \
-            --filter="tags=''" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null)
-
+          # Delete all untagged images (orphaned platform manifests)
+          UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
           for DIGEST in $UNTAGGED; do
             echo "Deleting untagged: ${DIGEST}"
             gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
@@ -360,14 +352,14 @@ jobs:
           IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
           echo "Cleaning up old images..."
 
-          # 1. Delete old PROD versioned images (keep 3 newest by creation time)
-          OLD_VERSIONS=$(gcloud artifacts docker images list ${IMAGE_PATH} \
+          ALL_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
             --include-tags \
-            --sort-by=~CREATE_TIME \
-            --format="csv[no-heading](DIGEST,TAGS)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null | \
-            grep -E '[0-9]+\.[0-9]+\.[0-9]+' | tail -n +4 | cut -d',' -f1)
+            --sort-by=~createTime \
+            --format="csv[no-heading](version,tags)" \
+            --project=${{ env.PROJECT_ID }} 2>/dev/null)
 
+          # 1. Delete old PROD versioned images (keep 3 newest)
+          OLD_VERSIONS=$(echo "$ALL_IMAGES" | grep -E '[0-9]+\.[0-9]+\.[0-9]+' | tail -n +4 | cut -d',' -f1)
           for DIGEST in $OLD_VERSIONS; do
             echo "Deleting old version: ${DIGEST}"
             gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
@@ -376,12 +368,7 @@ jobs:
           done
 
           # 2. Delete all untagged images (orphaned platform manifests)
-          UNTAGGED=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --include-tags \
-            --format="get(DIGEST)" \
-            --filter="tags=''" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null)
-
+          UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
           for DIGEST in $UNTAGGED; do
             echo "Deleting untagged: ${DIGEST}"
             gcloud artifacts docker images delete ${IMAGE_PATH}@${DIGEST} \
