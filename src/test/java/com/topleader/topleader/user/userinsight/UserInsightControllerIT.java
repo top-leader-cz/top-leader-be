@@ -3,7 +3,8 @@ package com.topleader.topleader.user.userinsight;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.StubFunction;
 import com.topleader.topleader.TestUtils;
-import com.topleader.topleader.common.ai.McpToolsConfig;
+import com.topleader.topleader.coach.ai.McpToolsConfig;
+import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
 import com.topleader.topleader.common.util.common.JsonUtils;
@@ -52,11 +53,11 @@ class UserInsightControllerIT extends IntegrationTest {
 
     @Autowired
     @Qualifier("searchArticles")
-    StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchArticles;
+    StubFunction<AiClient.TavilySearchRequest, List<AiClient.TavilySearchResult>> mockSearchArticles;
 
     @Autowired
     @Qualifier("searchVideos")
-    StubFunction<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> mockSearchVideos;
+    StubFunction<AiClient.TavilySearchRequest, List<AiClient.TavilySearchResult>> mockSearchVideos;
 
 
     @Test
@@ -179,10 +180,10 @@ class UserInsightControllerIT extends IntegrationTest {
 
         // Configure Tavily stubs to return search results
         mockSearchVideos.returns(List.of(
-                new McpToolsConfig.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video about leadership")
+                new AiClient.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video about leadership")
         ));
         mockSearchArticles.returns(List.of(
-                new McpToolsConfig.TavilySearchResult("Leadership Article", "https://example.com/articles/leadership-principles", "Article about leadership principles")
+                new AiClient.TavilySearchResult("Leadership Article", "https://example.com/articles/leadership-principles", "Article about leadership principles")
         ));
 
         // Stub AI responses
@@ -267,10 +268,10 @@ class UserInsightControllerIT extends IntegrationTest {
 
         // Configure Tavily stubs to return search results
         mockSearchVideos.returns(List.of(
-                new McpToolsConfig.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video")
+                new AiClient.TavilySearchResult("Test Video", "https://youtube.com/watch?v=test", "A test video")
         ));
         mockSearchArticles.returns(List.of(
-                new McpToolsConfig.TavilySearchResult("Leadership Article", "https://example.com/articles/leadership-principles", "Article about leadership")
+                new AiClient.TavilySearchResult("Leadership Article", "https://example.com/articles/leadership-principles", "Article about leadership")
         ));
 
         // Stub AI responses

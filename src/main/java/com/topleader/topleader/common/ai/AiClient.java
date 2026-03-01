@@ -12,11 +12,13 @@ import dev.failsafe.RetryPolicy;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import com.topleader.topleader.common.util.common.JsonUtils;
 import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
@@ -26,20 +28,23 @@ import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
 @Component
 public class AiClient {
 
+    public record TavilySearchRequest(String query) {}
+    public record TavilySearchResult(String title, String url, String content) {}
+
     private final ChatClient chatClient;
     private final AiPromptService aiPromptService;
     private final RetryPolicy<Object> retryPolicy;
-    private final java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchArticles;
-    private final java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchVideos;
+    private final java.util.function.Function<TavilySearchRequest, List<TavilySearchResult>> searchArticles;
+    private final java.util.function.Function<TavilySearchRequest, List<TavilySearchResult>> searchVideos;
 
     public AiClient(
             ChatClient chatClient,
             AiPromptService aiPromptService,
             RetryPolicy<Object> retryPolicy,
-            @org.springframework.beans.factory.annotation.Qualifier("searchArticles")
-            java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchArticles,
-            @org.springframework.beans.factory.annotation.Qualifier("searchVideos")
-            java.util.function.Function<McpToolsConfig.TavilySearchRequest, List<McpToolsConfig.TavilySearchResult>> searchVideos
+            @Qualifier("searchArticles")
+            Function<TavilySearchRequest, List<TavilySearchResult>> searchArticles,
+            @Qualifier("searchVideos")
+            Function<TavilySearchRequest, List<TavilySearchResult>> searchVideos
     ) {
         this.chatClient = chatClient;
         this.aiPromptService = aiPromptService;
@@ -167,7 +172,7 @@ public class AiClient {
         var goalsText = String.join(", ", actionsSteps);
         var query = englishGoals + " " + goalsText + " TED talk leadership development";
         log.info("[TAVILY] Searching videos: {}", query);
-        var videoResults = searchVideos.apply(new McpToolsConfig.TavilySearchRequest(query));
+        var videoResults = searchVideos.apply(new TavilySearchRequest(query));
 
         if (videoResults.isEmpty()) {
             log.warn("No video results from Tavily for user [{}]", username);
@@ -214,7 +219,7 @@ public class AiClient {
         var goalsText = String.join(", ", actionGoals);
         var query = englishGoals + " " + goalsText + " article";
         log.info("[TAVILY] Searching articles: {}", query);
-        var articleResults = searchArticles.apply(new McpToolsConfig.TavilySearchRequest(query));
+        var articleResults = searchArticles.apply(new TavilySearchRequest(query));
 
         if (articleResults.isEmpty()) {
             log.warn("No article results from Tavily for user [{}]", username);
@@ -308,5 +313,3 @@ public class AiClient {
         return res;
     }
 }
-
-
