@@ -1,4 +1,20 @@
 # =============================================================================
+# STATIC IP ADDRESSES
+# =============================================================================
+
+# Static IP for QA Load Balancer (HTTP + HTTPS share same IP)
+resource "google_compute_global_address" "qa_lb_ip" {
+  name    = "qa-lb-ip"
+  project = var.project_id
+}
+
+# Static IP for PROD Load Balancer (HTTP + HTTPS share same IP)
+resource "google_compute_global_address" "prod_lb_ip" {
+  name    = "prod-lb-ip"
+  project = var.project_id
+}
+
+# =============================================================================
 # QA ENVIRONMENT LOAD BALANCER
 # =============================================================================
 
@@ -25,14 +41,14 @@ resource "google_compute_backend_service" "qa_backend" {
   }
 }
 
-# URL Map for QA
+# URL Map for QA HTTPS traffic
 resource "google_compute_url_map" "qa" {
   name            = "topleader-qa-lbc"
   project         = var.project_id
   default_service = google_compute_backend_bucket.frontend_qa.id
 
   host_rule {
-    hosts        = ["qa.topleaderplatform.io", "www.qa.topleaderplatform.io", "34.36.149.115", "34.160.238.170"]
+    hosts        = ["qa.topleaderplatform.io", "www.qa.topleaderplatform.io"]
     path_matcher = "path-matcher-1"
   }
 
@@ -47,13 +63,6 @@ resource "google_compute_url_map" "qa" {
   }
 }
 
-# HTTP Target Proxy for QA (redirects to HTTPS)
-resource "google_compute_target_http_proxy" "qa" {
-  name    = "topleader-qa-lbc-target-proxy"
-  project = var.project_id
-  url_map = google_compute_url_map.qa.id
-}
-
 # Managed SSL Certificate for QA
 resource "google_compute_managed_ssl_certificate" "qa" {
   name    = "qa-topleaderplatform-io-cert2"
@@ -64,6 +73,25 @@ resource "google_compute_managed_ssl_certificate" "qa" {
   }
 }
 
+# URL Map for QA HTTP → HTTPS redirect
+resource "google_compute_url_map" "qa_http_redirect" {
+  name    = "topleader-qa-http-redirect"
+  project = var.project_id
+
+  default_url_redirect {
+    https_redirect         = true
+    redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
+    strip_query            = false
+  }
+}
+
+# HTTP Target Proxy for QA (redirects to HTTPS)
+resource "google_compute_target_http_proxy" "qa" {
+  name    = "topleader-qa-lbc-target-proxy"
+  project = var.project_id
+  url_map = google_compute_url_map.qa_http_redirect.id
+}
+
 # HTTPS Target Proxy for QA
 resource "google_compute_target_https_proxy" "qa" {
   name             = "topleader-qa-lbc-target-proxy-2"
@@ -72,13 +100,12 @@ resource "google_compute_target_https_proxy" "qa" {
   ssl_certificates = [google_compute_managed_ssl_certificate.qa.id]
 }
 
-# HTTP Forwarding Rule for QA
+# HTTP Forwarding Rule for QA (redirects to HTTPS)
 resource "google_compute_global_forwarding_rule" "qa_http" {
-  name                  = "topleader-qa-lbc-forwarding-rule"
+  name                  = "topleader-qa-lbc-forwarding-rule-http"
   project               = var.project_id
   target                = google_compute_target_http_proxy.qa.id
-  ip_address            = "34.36.149.115"
-  ip_version            = "IPV4"
+  ip_address            = google_compute_global_address.qa_lb_ip.address
   port_range            = "80"
   load_balancing_scheme = "EXTERNAL_MANAGED"
   ip_protocol           = "TCP"
@@ -89,8 +116,7 @@ resource "google_compute_global_forwarding_rule" "qa_https" {
   name                  = "topleader-qa-lbc-forwarding-rule-2"
   project               = var.project_id
   target                = google_compute_target_https_proxy.qa.id
-  ip_address            = "34.160.238.170"
-  ip_version            = "IPV4"
+  ip_address            = google_compute_global_address.qa_lb_ip.address
   port_range            = "443"
   load_balancing_scheme = "EXTERNAL_MANAGED"
   ip_protocol           = "TCP"
@@ -123,14 +149,14 @@ resource "google_compute_backend_service" "prod_backend" {
   }
 }
 
-# URL Map for PROD
+# URL Map for PROD HTTPS traffic
 resource "google_compute_url_map" "prod" {
   name            = "topleader-prod-lob"
   project         = var.project_id
   default_service = google_compute_backend_bucket.frontend_prod.id
 
   host_rule {
-    hosts        = ["topleaderplatform.io", "www.topleaderplatform.io", "34.144.216.127", "34.128.134.109"]
+    hosts        = ["topleaderplatform.io", "www.topleaderplatform.io"]
     path_matcher = "path-matcher-1"
   }
 
@@ -145,14 +171,26 @@ resource "google_compute_url_map" "prod" {
   }
 }
 
-# HTTP Target Proxy for PROD
+# URL Map for PROD HTTP → HTTPS redirect
+resource "google_compute_url_map" "prod_http_redirect" {
+  name    = "topleader-prod-http-redirect"
+  project = var.project_id
+
+  default_url_redirect {
+    https_redirect         = true
+    redirect_response_code = "MOVED_PERMANENTLY_DEFAULT"
+    strip_query            = false
+  }
+}
+
+# HTTP Target Proxy for PROD (redirects to HTTPS)
 resource "google_compute_target_http_proxy" "prod" {
   name    = "topleader-prod-lob-target-proxy"
   project = var.project_id
-  url_map = google_compute_url_map.prod.id
+  url_map = google_compute_url_map.prod_http_redirect.id
 }
 
-# Managed SSL Certificate for PROD (only topleaderplatform.io - www is separate)
+# Managed SSL Certificate for PROD
 resource "google_compute_managed_ssl_certificate" "prod" {
   name    = "topleaderplatform-io-cert"
   project = var.project_id
@@ -170,13 +208,12 @@ resource "google_compute_target_https_proxy" "prod" {
   ssl_certificates = [google_compute_managed_ssl_certificate.prod.id]
 }
 
-# HTTP Forwarding Rule for PROD
+# HTTP Forwarding Rule for PROD (redirects to HTTPS)
 resource "google_compute_global_forwarding_rule" "prod_http" {
   name                  = "prod-rule-http"
   project               = var.project_id
   target                = google_compute_target_http_proxy.prod.id
-  ip_address            = "34.144.216.127"
-  ip_version            = "IPV4"
+  ip_address            = google_compute_global_address.prod_lb_ip.address
   port_range            = "80"
   load_balancing_scheme = "EXTERNAL_MANAGED"
   ip_protocol           = "TCP"
@@ -187,9 +224,9 @@ resource "google_compute_global_forwarding_rule" "prod_https" {
   name                  = "prod-rule-https"
   project               = var.project_id
   target                = google_compute_target_https_proxy.prod.id
-  ip_address            = "34.128.134.109"
-  ip_version            = "IPV4"
+  ip_address            = google_compute_global_address.prod_lb_ip.address
   port_range            = "443"
   load_balancing_scheme = "EXTERNAL_MANAGED"
   ip_protocol           = "TCP"
 }
+

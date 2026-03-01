@@ -76,5 +76,5 @@ resource "google_dns_record_set" "qa_cloudrun" {
   managed_zone = google_dns_managed_zone.topleaderplatform.name
   project      = var.project_id
 
-  rrdatas = ["34.160.238.170"]
+  rrdatas = [google_compute_global_address.qa_lb_ip.address]
 }
