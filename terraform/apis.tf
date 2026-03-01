@@ -64,11 +64,6 @@ resource "google_project_service" "artifactregistry" {
   disable_on_destroy = false
 }
 
-resource "google_project_service" "containerregistry" {
-  project            = var.project_id
-  service            = "containerregistry.googleapis.com"
-  disable_on_destroy = false
-}
 
 # -----------------------------------------------------------------------------
 # Security & IAM APIs
@@ -114,12 +109,6 @@ resource "google_project_service" "servicenetworking" {
   disable_on_destroy = false
 }
 
-resource "google_project_service" "vpcaccess" {
-  project            = var.project_id
-  service            = "vpcaccess.googleapis.com"
-  disable_on_destroy = true
-}
-
 # -----------------------------------------------------------------------------
 # Scheduling APIs
 # -----------------------------------------------------------------------------
@@ -134,11 +123,6 @@ resource "google_project_service" "scheduler" {
 # Build & Deploy APIs
 # -----------------------------------------------------------------------------
 
-resource "google_project_service" "cloudbuild" {
-  project            = var.project_id
-  service            = "cloudbuild.googleapis.com"
-  disable_on_destroy = false
-}
 
 # -----------------------------------------------------------------------------
 # Monitoring & Logging APIs
@@ -192,11 +176,6 @@ resource "google_project_service" "cloudresourcemanager" {
 # Firebase APIs
 # -----------------------------------------------------------------------------
 
-resource "google_project_service" "firebase" {
-  project            = var.project_id
-  service            = "firebase.googleapis.com"
-  disable_on_destroy = false
-}
 
 # -----------------------------------------------------------------------------
 # Billing API

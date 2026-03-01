@@ -5934,6 +5934,8 @@ components:
         offset:
           type: integer
           format: int64
+        unpaged:
+          type: boolean
         paged:
           type: boolean
         pageNumber:
@@ -5942,8 +5944,6 @@ components:
         pageSize:
           type: integer
           format: int32
-        unpaged:
-          type: boolean
     SortObject:
       type: object
       properties:
@@ -6717,15 +6717,15 @@ components:
       properties:
         error:
           type: boolean
-        is4xxClientError:
-          type: boolean
-        is3xxRedirection:
-          type: boolean
         is5xxServerError:
           type: boolean
         is1xxInformational:
           type: boolean
         is2xxSuccessful:
+          type: boolean
+        is3xxRedirection:
+          type: boolean
+        is4xxClientError:
           type: boolean
     JspConfigDescriptor:
       type: object
@@ -6743,6 +6743,8 @@ components:
       properties:
         buffer:
           type: string
+        defaultContentType:
+          type: string
         errorOnELNotFound:
           type: string
         scriptingInvalid:
@@ -6753,8 +6755,10 @@ components:
           type: string
         errorOnUndeclaredNamespace:
           type: string
-        defaultContentType:
-          type: string
+        urlPatterns:
+          type: array
+          items:
+            type: string
         elIgnored:
           type: string
         pageEncoding:
@@ -6766,10 +6770,6 @@ components:
           items:
             type: string
         includeCodas:
-          type: array
-          items:
-            type: string
-        urlPatterns:
           type: array
           items:
             type: string
@@ -6838,12 +6838,12 @@ components:
           additionalProperties:
             type: string
           writeOnly: true
-        attributesCSV:
-          type: string
-          writeOnly: true
         attributesMap:
           type: object
           additionalProperties: {}
+        attributesCSV:
+          type: string
+          writeOnly: true
     ServletContext:
       type: object
       properties:
@@ -7038,23 +7038,23 @@ components:
           type: string
         responseCharacterEncoding:
           type: string
-        contextPath:
-          type: string
         serverInfo:
           type: string
         sessionTimeout:
           type: integer
           format: int32
         attributeNames: {}
+        contextPath:
+          type: string
     ServletRegistration:
       type: object
       properties:
+        runAsRole:
+          type: string
         mappings:
           type: array
           items:
             type: string
-        runAsRole:
-          type: string
         name:
           type: string
         className:
@@ -7066,15 +7066,15 @@ components:
     SessionCookieConfig:
       type: object
       properties:
-        path:
-          type: string
         maxAge:
           type: integer
           format: int32
-        httpOnly:
-          type: boolean
         domain:
           type: string
+        path:
+          type: string
+        httpOnly:
+          type: boolean
         name:
           type: string
         attributes:
