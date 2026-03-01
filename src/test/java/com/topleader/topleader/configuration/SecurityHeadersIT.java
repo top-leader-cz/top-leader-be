@@ -50,7 +50,7 @@ class SecurityHeadersIT extends IntegrationTest {
     void shouldReturnFrameOptionsHeader() throws Exception {
         mvc.perform(get("/api/latest/user-sessions"))
             .andExpect(status().isOk())
-            .andExpect(header().string("X-Frame-Options", "SAMEORIGIN"));
+            .andExpect(header().string("X-Frame-Options", "DENY"));
     }
 
     @Test

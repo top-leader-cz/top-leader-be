@@ -24,6 +24,7 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
+import org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter;
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
 
@@ -127,7 +128,14 @@ public class WebSecurityConfig {
                 )
                 .xssProtection(xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
                 .contentTypeOptions(Customizer.withDefaults())
-                .frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)
+                .frameOptions(HeadersConfigurer.FrameOptionsConfig::deny)
+                .httpStrictTransportSecurity(hsts -> hsts
+                    .maxAgeInSeconds(31536000)
+                    .includeSubDomains(true)
+                )
+                .crossOriginOpenerPolicy(coop -> coop
+                    .policy(CrossOriginOpenerPolicyHeaderWriter.CrossOriginOpenerPolicy.SAME_ORIGIN_ALLOW_POPUPS)
+                )
             )
             // CSRF: safe to disable — SPA sends JSON (Content-Type: application/json) which
             // requires CORS preflight for cross-origin requests, and SameSite=Lax cookie

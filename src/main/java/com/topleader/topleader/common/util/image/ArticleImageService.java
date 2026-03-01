@@ -288,6 +288,14 @@ public class ArticleImageService {
         return String.format("%s.png", sanitizedPrompt);
     }
 
+    public String getImagePublicUrl(String gcpUrl) {
+        if (StringUtils.isBlank(gcpUrl) || !gcpUrl.startsWith("gs://")) {
+            return null;
+        }
+        var withoutPrefix = gcpUrl.substring("gs://".length());
+        return "https://storage.googleapis.com/" + withoutPrefix;
+    }
+
     public String getImageAsBase64(String gcpUrl) {
         try {
             if (gcsClient == null || StringUtils.isBlank(gcpUrl) || !gcpUrl.startsWith("gs://")) {
