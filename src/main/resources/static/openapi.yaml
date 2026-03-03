@@ -5909,6 +5909,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        numberOfElements:
+          type: integer
+          format: int32
         size:
           type: integer
           format: int32
@@ -5919,11 +5924,6 @@ components:
         number:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
-        numberOfElements:
-          type: integer
-          format: int32
         empty:
           type: boolean
     PageableObject:
@@ -5931,9 +5931,6 @@ components:
       properties:
         sort:
           $ref: "#/components/schemas/SortObject"
-        offset:
-          type: integer
-          format: int64
         unpaged:
           type: boolean
         paged:
@@ -5944,14 +5941,17 @@ components:
         pageSize:
           type: integer
           format: int32
+        offset:
+          type: integer
+          format: int64
     SortObject:
       type: object
       properties:
-        empty:
-          type: boolean
         unsorted:
           type: boolean
         sorted:
+          type: boolean
+        empty:
           type: boolean
     ScheduleSessionRequest:
       type: object
@@ -6044,6 +6044,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        numberOfElements:
+          type: integer
+          format: int32
         size:
           type: integer
           format: int32
@@ -6052,11 +6057,6 @@ components:
           items:
             $ref: "#/components/schemas/CoachSessionViewDto"
         number:
-          type: integer
-          format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
-        numberOfElements:
           type: integer
           format: int32
         empty:
@@ -6455,12 +6455,6 @@ components:
     ApplicationContext:
       type: object
       properties:
-        parent:
-          $ref: "#/components/schemas/ApplicationContext"
-        id:
-          type: string
-        displayName:
-          type: string
         applicationName:
           type: string
         startupDate:
@@ -6468,6 +6462,12 @@ components:
           format: int64
         autowireCapableBeanFactory:
           $ref: "#/components/schemas/AutowireCapableBeanFactory"
+        parent:
+          $ref: "#/components/schemas/ApplicationContext"
+        id:
+          type: string
+        displayName:
+          type: string
         environment:
           $ref: "#/components/schemas/Environment"
         beanDefinitionCount:
@@ -6617,11 +6617,11 @@ components:
     Environment:
       type: object
       properties:
-        activeProfiles:
+        defaultProfiles:
           type: array
           items:
             type: string
-        defaultProfiles:
+        activeProfiles:
           type: array
           items:
             type: string
@@ -6636,14 +6636,14 @@ components:
           type: array
           items:
             type: string
-        name:
-          type: string
-        className:
-          type: string
         initParameters:
           type: object
           additionalProperties:
             type: string
+        name:
+          type: string
+        className:
+          type: string
     HttpStatus:
       allOf:
       - $ref: "#/components/schemas/HttpStatusCode"
@@ -6715,7 +6715,9 @@ components:
     HttpStatusCode:
       type: object
       properties:
-        error:
+        is4xxClientError:
+          type: boolean
+        is3xxRedirection:
           type: boolean
         is5xxServerError:
           type: boolean
@@ -6723,9 +6725,7 @@ components:
           type: boolean
         is2xxSuccessful:
           type: boolean
-        is4xxClientError:
-          type: boolean
-        is3xxRedirection:
+        error:
           type: boolean
     JspConfigDescriptor:
       type: object
@@ -6741,12 +6741,6 @@ components:
     JspPropertyGroupDescriptor:
       type: object
       properties:
-        buffer:
-          type: string
-        urlPatterns:
-          type: array
-          items:
-            type: string
         elIgnored:
           type: string
         pageEncoding:
@@ -6761,17 +6755,23 @@ components:
           type: array
           items:
             type: string
+        urlPatterns:
+          type: array
+          items:
+            type: string
+        defaultContentType:
+          type: string
+        errorOnELNotFound:
+          type: string
+        deferredSyntaxAllowedAsLiteral:
+          type: string
         errorOnUndeclaredNamespace:
           type: string
         trimDirectiveWhitespaces:
           type: string
-        deferredSyntaxAllowedAsLiteral:
-          type: string
         scriptingInvalid:
           type: string
-        errorOnELNotFound:
-          type: string
-        defaultContentType:
+        buffer:
           type: string
     RedirectView:
       type: object
@@ -6838,15 +6838,78 @@ components:
           additionalProperties:
             type: string
           writeOnly: true
-        attributesMap:
-          type: object
-          additionalProperties: {}
         attributesCSV:
           type: string
           writeOnly: true
+        attributesMap:
+          type: object
+          additionalProperties: {}
     ServletContext:
       type: object
       properties:
+        contextPath:
+          type: string
+        serverInfo:
+          type: string
+        sessionTimeout:
+          type: integer
+          format: int32
+        attributeNames: {}
+        effectiveMajorVersion:
+          type: integer
+          format: int32
+        effectiveMinorVersion:
+          type: integer
+          format: int32
+        servletContextName:
+          type: string
+        servletRegistrations:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ServletRegistration"
+        filterRegistrations:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/FilterRegistration"
+        sessionCookieConfig:
+          $ref: "#/components/schemas/SessionCookieConfig"
+        sessionTrackingModes:
+          type: array
+          items:
+            type: string
+            enum:
+            - COOKIE
+            - URL
+            - SSL
+          uniqueItems: true
+          writeOnly: true
+        defaultSessionTrackingModes:
+          type: array
+          items:
+            type: string
+            enum:
+            - COOKIE
+            - URL
+            - SSL
+          uniqueItems: true
+        effectiveSessionTrackingModes:
+          type: array
+          items:
+            type: string
+            enum:
+            - COOKIE
+            - URL
+            - SSL
+          uniqueItems: true
+        jspConfigDescriptor:
+          $ref: "#/components/schemas/JspConfigDescriptor"
+        virtualServerName:
+          type: string
+        requestCharacterEncoding:
+          type: string
+        responseCharacterEncoding:
+          type: string
+        initParameterNames: {}
         classLoader:
           type: object
           properties:
@@ -6983,98 +7046,37 @@ components:
         minorVersion:
           type: integer
           format: int32
-        serverInfo:
-          type: string
-        sessionTimeout:
-          type: integer
-          format: int32
-        contextPath:
-          type: string
-        attributeNames: {}
-        initParameterNames: {}
-        effectiveMajorVersion:
-          type: integer
-          format: int32
-        effectiveMinorVersion:
-          type: integer
-          format: int32
-        servletContextName:
-          type: string
-        servletRegistrations:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/ServletRegistration"
-        filterRegistrations:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/FilterRegistration"
-        sessionCookieConfig:
-          $ref: "#/components/schemas/SessionCookieConfig"
-        sessionTrackingModes:
-          type: array
-          items:
-            type: string
-            enum:
-            - COOKIE
-            - URL
-            - SSL
-          uniqueItems: true
-          writeOnly: true
-        defaultSessionTrackingModes:
-          type: array
-          items:
-            type: string
-            enum:
-            - COOKIE
-            - URL
-            - SSL
-          uniqueItems: true
-        effectiveSessionTrackingModes:
-          type: array
-          items:
-            type: string
-            enum:
-            - COOKIE
-            - URL
-            - SSL
-          uniqueItems: true
-        jspConfigDescriptor:
-          $ref: "#/components/schemas/JspConfigDescriptor"
-        virtualServerName:
-          type: string
-        requestCharacterEncoding:
-          type: string
-        responseCharacterEncoding:
-          type: string
     ServletRegistration:
       type: object
       properties:
-        runAsRole:
-          type: string
         mappings:
           type: array
           items:
             type: string
-        name:
-          type: string
-        className:
+        runAsRole:
           type: string
         initParameters:
           type: object
           additionalProperties:
             type: string
+        name:
+          type: string
+        className:
+          type: string
     SessionCookieConfig:
       type: object
       properties:
-        httpOnly:
-          type: boolean
-        path:
-          type: string
         maxAge:
           type: integer
           format: int32
+        path:
+          type: string
         domain:
           type: string
+        httpOnly:
+          type: boolean
+        secure:
+          type: boolean
         name:
           type: string
         attributes:
@@ -7084,8 +7086,6 @@ components:
         comment:
           type: string
           deprecated: true
-        secure:
-          type: boolean
     TaglibDescriptor:
       type: object
       properties:
@@ -7312,6 +7312,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        numberOfElements:
+          type: integer
+          format: int32
         size:
           type: integer
           format: int32
@@ -7320,11 +7325,6 @@ components:
           items:
             $ref: "#/components/schemas/NotificationDto"
         number:
-          type: integer
-          format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
-        numberOfElements:
           type: integer
           format: int32
         empty:
@@ -7381,6 +7381,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        numberOfElements:
+          type: integer
+          format: int32
         size:
           type: integer
           format: int32
@@ -7389,11 +7394,6 @@ components:
           items:
             $ref: "#/components/schemas/MyTeamViewDto"
         number:
-          type: integer
-          format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
-        numberOfElements:
           type: integer
           format: int32
         empty:
@@ -7447,6 +7447,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        numberOfElements:
+          type: integer
+          format: int32
         size:
           type: integer
           format: int32
@@ -7455,11 +7460,6 @@ components:
           items:
             $ref: "#/components/schemas/MessageDto"
         number:
-          type: integer
-          format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
-        numberOfElements:
           type: integer
           format: int32
         empty:
@@ -7827,6 +7827,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
+        numberOfElements:
+          type: integer
+          format: int32
         size:
           type: integer
           format: int32
@@ -7835,11 +7840,6 @@ components:
           items:
             $ref: "#/components/schemas/AdminView"
         number:
-          type: integer
-          format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
-        numberOfElements:
           type: integer
           format: int32
         empty:

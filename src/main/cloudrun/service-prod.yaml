@@ -20,7 +20,7 @@ spec:
     spec:
       containerConcurrency: 80
       timeoutSeconds: 300
-      serviceAccountName: topleader-394306@appspot.gserviceaccount.com
+      serviceAccountName: top-leader-prod-sa@topleader-394306.iam.gserviceaccount.com
       containers:
         - image: europe-west3-docker.pkg.dev/topleader-394306/top-leader/top-leader-be:latest
           ports:

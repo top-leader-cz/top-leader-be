@@ -30,6 +30,8 @@ resource "google_compute_backend_service" "qa_backend" {
   locality_lb_policy              = "ROUND_ROBIN"
   enable_cdn                      = false
 
+  custom_response_headers = ["Server: topleader"]
+
   backend {
     group           = google_compute_region_network_endpoint_group.cloudrun_qa.id
     balancing_mode  = "UTILIZATION"
@@ -137,6 +139,8 @@ resource "google_compute_backend_service" "prod_backend" {
   load_balancing_scheme           = "EXTERNAL_MANAGED"
   locality_lb_policy              = "ROUND_ROBIN"
   enable_cdn                      = false
+
+  custom_response_headers = ["Server: topleader"]
 
   backend {
     group           = google_compute_region_network_endpoint_group.cloudrun_prod.id
