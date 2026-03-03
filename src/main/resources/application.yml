@@ -3,10 +3,6 @@ server:
   servlet:
     session:
       timeout: 15m
-      cookie:
-        same-site: lax
-        secure: false
-        http-only: true
 
 spring:
 
@@ -88,6 +84,10 @@ top-leader:
     redirect-uri: http://localhost:8080/login/calendly
     base-api-url: https://api.calendly.com
     base-auth-url: https://auth.calendly.com
+  rate-limit:
+    login:
+      max-attempts: 3
+      block-duration-minutes: 15
   job-trigger:
     password: ${JOB_TRIGGER_PASSWORD:default-dev-password}
 

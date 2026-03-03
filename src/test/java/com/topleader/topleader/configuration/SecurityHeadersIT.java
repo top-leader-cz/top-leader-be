@@ -2,15 +2,27 @@ package com.topleader.topleader.configuration;
 
 import com.topleader.topleader.IntegrationTest;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.session.web.http.CookieSerializer;
+import org.springframework.session.web.http.DefaultCookieSerializer;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.web.client.RestClient;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Sql(scripts = "/sql/user_info/session/user-session.sql")
 class SecurityHeadersIT extends IntegrationTest {
+
+    @Autowired
+    private CookieSerializer cookieSerializer;
+
+    @LocalServerPort
+    private int port;
 
     @Test
     @WithMockUser(username = "user2", authorities = "USER")
@@ -62,6 +74,30 @@ class SecurityHeadersIT extends IntegrationTest {
             .andExpect(header().exists("X-XSS-Protection"))
             .andExpect(header().exists("X-Content-Type-Options"))
             .andExpect(header().exists("X-Frame-Options"));
+    }
+
+    @Test
+    void shouldConfigureSecureCookieSerializer() {
+        assertThat(cookieSerializer).isInstanceOf(DefaultCookieSerializer.class);
+    }
+
+    @Test
+    void shouldSetSessionCookieWithHttpOnlyAndSameSite() {
+        var response = RestClient.create("http://localhost:" + port)
+            .get()
+            .uri("/api/latest/user-info")
+            .exchange((req, res) -> res);
+
+        var cookies = response.getHeaders().get("Set-Cookie");
+        assertThat(cookies).isNotNull();
+
+        var sessionCookie = cookies.stream()
+            .filter(c -> c.startsWith("SESSION="))
+            .findFirst();
+
+        assertThat(sessionCookie).isPresent();
+        assertThat(sessionCookie.get()).contains("HttpOnly");
+        assertThat(sessionCookie.get()).contains("SameSite=Lax");
     }
 
 }

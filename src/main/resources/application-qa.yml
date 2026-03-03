@@ -4,9 +4,6 @@ server:
     session:
       cookie:
         path: /
-        same-site: lax
-        secure: true
-        http-only: true
 
 spring:
   ai:
@@ -35,6 +32,12 @@ google:
 gcp:
   storage:
     enabled: true
+
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
 
 management:
   opentelemetry:
