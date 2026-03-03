@@ -4,6 +4,8 @@
 package com.topleader.topleader.configuration;
 
 import com.topleader.topleader.common.metrics.MetricsService;
+import com.topleader.topleader.common.ratelimit.LoginAttemptService;
+import com.topleader.topleader.common.ratelimit.LoginRateLimitFilter;
 import com.topleader.topleader.common.util.user.UserDetailUtils;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
@@ -21,12 +23,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
-import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.header.writers.CrossOriginOpenerPolicyHeaderWriter;
 import org.springframework.security.web.header.writers.XXssProtectionHeaderWriter;
 import org.springframework.session.jdbc.config.annotation.web.http.EnableJdbcHttpSession;
+import org.springframework.session.web.http.CookieSerializer;
+import org.springframework.session.web.http.DefaultCookieSerializer;
 
 
 /**
@@ -42,6 +45,16 @@ public class WebSecurityConfig {
     @Value("${top-leader.job-trigger.password}")
     private String jobTriggerPassword;
 
+
+    @Bean
+    public CookieSerializer cookieSerializer() {
+        var serializer = new DefaultCookieSerializer();
+        serializer.setSameSite("Lax");
+        serializer.setUseSecureCookie(true);
+        serializer.setUseHttpOnlyCookie(true);
+        serializer.setCookiePath("/");
+        return serializer;
+    }
 
     @Bean
     @Order(1)
@@ -74,7 +87,7 @@ public class WebSecurityConfig {
 
     @Bean
     @Order(2)
-    public SecurityFilterChain filterChain(HttpSecurity http, MetricsService metrics) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, MetricsService metrics, LoginAttemptService loginAttemptService) throws Exception {
         http.addFilterAfter((request, response, filterChain) -> {
             try {
                 var username = UserDetailUtils.getLoggedUsername();
@@ -105,10 +118,16 @@ public class WebSecurityConfig {
             .formLogin(f -> f
                 .loginProcessingUrl("/login")
                 .successHandler((req, res, auth) -> {
+                    loginAttemptService.resetAttempts(LoginRateLimitFilter.resolveIp(req));
                     metrics.incrementLogin();
                     res.setStatus(HttpStatus.NO_CONTENT.value());
                 })
-                .failureHandler(new SimpleUrlAuthenticationFailureHandler())
+                .failureHandler((req, res, exception) -> {
+                    loginAttemptService.recordFailedAttempt(LoginRateLimitFilter.resolveIp(req));
+                    res.setStatus(HttpStatus.UNAUTHORIZED.value());
+                    res.setContentType("application/json");
+                    res.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Bad credentials\"}");
+                })
             )
             .logout(l ->
                 l.logoutSuccessHandler(new HttpStatusReturningLogoutSuccessHandler(HttpStatus.NO_CONTENT))

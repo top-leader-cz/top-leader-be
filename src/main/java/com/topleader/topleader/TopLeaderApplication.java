@@ -4,6 +4,7 @@ import java.time.ZoneOffset;
 import java.util.TimeZone;
 
 import com.topleader.topleader.common.calendar.calendly.CalendlyProperties;
+import com.topleader.topleader.common.ratelimit.RateLimitProperties;
 import com.topleader.topleader.common.upload.UploadProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.SpringApplication;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
-@EnableConfigurationProperties({CalendlyProperties.class, UploadProperties.class})
+@EnableConfigurationProperties({CalendlyProperties.class, UploadProperties.class, RateLimitProperties.class})
 @EnableMethodSecurity(
     securedEnabled = true,
     jsr250Enabled = true)
