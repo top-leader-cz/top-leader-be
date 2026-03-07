@@ -26,7 +26,8 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
         var ip = resolveIp(request);
 
         if (loginAttemptService.isBlocked(ip)) {
-            log.warn("Blocked login attempt from IP: {}", ip);
+            var username = request.getParameter("username");
+            log.warn("Blocked login attempt from IP: {} for user: {}", ip, username);
             response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
             response.setContentType(MediaType.APPLICATION_JSON_VALUE);
             response.getWriter().write("{\"error\":\"Too Many Requests\",\"message\":\"Too many failed login attempts. Please try again later.\"}");

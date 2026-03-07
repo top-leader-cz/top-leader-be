@@ -19,26 +19,26 @@ class LoginAttemptServiceTest {
 
     @Test
     void shouldNotBlockBeforeMaxAttempts() {
-        service.recordFailedAttempt("1.2.3.4");
-        service.recordFailedAttempt("1.2.3.4");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
 
         assertThat(service.isBlocked("1.2.3.4")).isFalse();
     }
 
     @Test
     void shouldBlockAfterMaxAttempts() {
-        service.recordFailedAttempt("1.2.3.4");
-        service.recordFailedAttempt("1.2.3.4");
-        service.recordFailedAttempt("1.2.3.4");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
 
         assertThat(service.isBlocked("1.2.3.4")).isTrue();
     }
 
     @Test
     void shouldIsolateDifferentIps() {
-        service.recordFailedAttempt("1.2.3.4");
-        service.recordFailedAttempt("1.2.3.4");
-        service.recordFailedAttempt("1.2.3.4");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
 
         assertThat(service.isBlocked("1.2.3.4")).isTrue();
         assertThat(service.isBlocked("5.6.7.8")).isFalse();
@@ -46,9 +46,9 @@ class LoginAttemptServiceTest {
 
     @Test
     void shouldResetAttempts() {
-        service.recordFailedAttempt("1.2.3.4");
-        service.recordFailedAttempt("1.2.3.4");
-        service.recordFailedAttempt("1.2.3.4");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
+        service.recordFailedAttempt("1.2.3.4", "user@test.com");
 
         assertThat(service.isBlocked("1.2.3.4")).isTrue();
 

@@ -22,13 +22,13 @@ public class LoginAttemptService {
         this.blockDuration = Duration.ofMinutes(properties.getBlockDurationMinutes());
     }
 
-    public void recordFailedAttempt(String ip) {
+    public void recordFailedAttempt(String ip, String username) {
         var now = Instant.now();
-        attempts.compute(ip, (key, existing) ->
+        var attempt = attempts.compute(ip, (key, existing) ->
                 existing == null || isExpired(existing, now)
                         ? new Attempt(1, now)
                         : new Attempt(existing.count() + 1, existing.firstAttempt()));
-        log.info("Failed login attempt for IP: {}", ip);
+        log.warn("Failed login attempt [{}/{}] from IP: {} for user: {}", attempt.count(), maxAttempts, ip, username);
     }
 
     public boolean isBlocked(String ip) {

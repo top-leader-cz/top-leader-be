@@ -123,7 +123,9 @@ public class WebSecurityConfig {
                     res.setStatus(HttpStatus.NO_CONTENT.value());
                 })
                 .failureHandler((req, res, exception) -> {
-                    loginAttemptService.recordFailedAttempt(LoginRateLimitFilter.resolveIp(req));
+                    var ip = LoginRateLimitFilter.resolveIp(req);
+                    var username = req.getParameter("username");
+                    loginAttemptService.recordFailedAttempt(ip, username);
                     res.setStatus(HttpStatus.UNAUTHORIZED.value());
                     res.setContentType("application/json");
                     res.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Bad credentials\"}");
