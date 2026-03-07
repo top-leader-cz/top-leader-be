@@ -76,7 +76,6 @@ top-leader:
       - image/png
       - image/gif
       - image/webp
-      - image/svg+xml
     max-image-size-bytes: 10485760
   calendly:
     client-id: client-id
