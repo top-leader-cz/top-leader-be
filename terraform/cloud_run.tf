@@ -4,7 +4,7 @@
 
 # App Engine Application (cannot be deleted once created)
 # No longer used for serving - all traffic goes through Cloud Run.
-# Kept because: 1) Can't be deleted  2) Its default service account is used by Cloud Run.
+# Kept because: 1) Can't be deleted  2) Required for project setup
 resource "google_app_engine_application" "app" {
   project       = var.project_id
   location_id   = var.region

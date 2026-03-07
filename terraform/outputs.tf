@@ -6,14 +6,14 @@
 # IAM
 # -----------------------------------------------------------------------------
 
-output "appengine_service_account" {
-  value       = data.google_app_engine_default_service_account.default.email
-  description = "App Engine default service account email (used by Cloud Run)"
+output "qa_service_account" {
+  value       = google_service_account.qa.email
+  description = "QA Cloud Run service account email"
 }
 
-output "cloudrun_compute_service_account" {
-  value       = data.google_compute_default_service_account.default.email
-  description = "Cloud Run compute service account email"
+output "prod_service_account" {
+  value       = google_service_account.prod.email
+  description = "PROD Cloud Run service account email"
 }
 
 output "scheduler_service_account" {

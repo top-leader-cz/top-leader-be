@@ -4,20 +4,6 @@
 # This file manages IAM bindings and service account permissions.
 
 # -----------------------------------------------------------------------------
-# Service Account Data Sources (legacy — kept for backward compatibility)
-# -----------------------------------------------------------------------------
-
-# App Engine default service account
-data "google_app_engine_default_service_account" "default" {
-  project = var.project_id
-}
-
-# Cloud Run compute service account
-data "google_compute_default_service_account" "default" {
-  project = var.project_id
-}
-
-# -----------------------------------------------------------------------------
 # Dedicated Service Accounts for Cloud Run
 # -----------------------------------------------------------------------------
 
@@ -38,24 +24,6 @@ resource "google_service_account" "prod" {
 # -----------------------------------------------------------------------------
 # Secret Manager Access
 # -----------------------------------------------------------------------------
-
-# Grant Secret Manager access to App Engine service account (legacy — remove after migration verified)
-resource "google_project_iam_member" "appengine_secretmanager" {
-  project = var.project_id
-  role    = "roles/secretmanager.secretAccessor"
-  member  = "serviceAccount:${data.google_app_engine_default_service_account.default.email}"
-
-  depends_on = [google_project_service.secretmanager]
-}
-
-# Grant Secret Manager access to Cloud Run compute service account (legacy — remove after migration verified)
-resource "google_project_iam_member" "cloudrun_secretmanager" {
-  project = var.project_id
-  role    = "roles/secretmanager.secretAccessor"
-  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
-
-  depends_on = [google_project_service.secretmanager]
-}
 
 # Grant Secret Manager access to QA service account
 resource "google_project_iam_member" "qa_secretmanager" {
@@ -78,24 +46,6 @@ resource "google_project_iam_member" "prod_secretmanager" {
 # -----------------------------------------------------------------------------
 # Cloud SQL Access
 # -----------------------------------------------------------------------------
-
-# Grant Cloud SQL Client role to App Engine service account (legacy — remove after migration verified)
-resource "google_project_iam_member" "appengine_cloudsql" {
-  project = var.project_id
-  role    = "roles/cloudsql.client"
-  member  = "serviceAccount:${data.google_app_engine_default_service_account.default.email}"
-
-  depends_on = [google_project_service.sqladmin]
-}
-
-# Grant Cloud SQL Client role to Cloud Run compute service account (legacy — remove after migration verified)
-resource "google_project_iam_member" "cloudrun_cloudsql" {
-  project = var.project_id
-  role    = "roles/cloudsql.client"
-  member  = "serviceAccount:${data.google_compute_default_service_account.default.email}"
-
-  depends_on = [google_project_service.sqladmin]
-}
 
 # Grant Cloud SQL Client role to QA service account
 resource "google_project_iam_member" "qa_cloudsql" {
