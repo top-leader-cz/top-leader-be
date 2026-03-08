@@ -15,10 +15,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.INVALID_PASSWORD;
 
-
-/**
- * @author Daniel Slavik
- */
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/latest/password")
@@ -30,23 +26,17 @@ public class PasswordController {
 
     @PostMapping
     public void changeUserPassword(@AuthenticationPrincipal UserDetails user, @Valid @RequestBody ChangePasswordRequestDto request) {
-        final var dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow();
+        var dbUser = userRepository.findByUsername(user.getUsername()).orElseThrow();
 
         if (!passwordEncoder.matches(request.oldPassword(), dbUser.getPassword())) {
             throw new ApiValidationException(INVALID_PASSWORD, "oldPassword", null, "Invalid password");
         }
 
-        userRepository.save(dbUser
-            .setPassword(passwordEncoder.encode(request.newPassword())
-            )
-        );
-
-
+        userRepository.save(dbUser.setPassword(passwordEncoder.encode(request.newPassword())));
     }
 
     public record ChangePasswordRequestDto(
         @NotEmpty String oldPassword,
         @NotEmpty String newPassword
-    ) {
-    }
+    ) {}
 }
