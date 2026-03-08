@@ -1,6 +1,7 @@
 package com.topleader.topleader.feedback;
 
 import com.topleader.topleader.common.ai.AiClient;
+import com.topleader.topleader.common.ai.FeedbackSummary;
 import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.common.exception.ApiValidationException;
@@ -18,7 +19,7 @@ import com.topleader.topleader.feedback.repository.RecipientRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.common.TranslationUtils;
-import com.topleader.topleader.common.util.common.user.UserUtils;
+import com.topleader.topleader.user.util.UserUtils;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.exception.NotFoundException;
 import org.springframework.transaction.annotation.Transactional;
@@ -211,7 +212,7 @@ public class FeedbackService {
         if (formDto.allowSummary(summaryLimit)) {
             var summary = CommonUtils.tryGetOrElse(
                     () -> aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions),
-                    new Summary(null, null),
+                    new FeedbackSummary(null, null),
                     "Failed to generate summary for form: [" + formId + "]");
             form.setSummary(summary);
             feedbackFormRepository.save(form);

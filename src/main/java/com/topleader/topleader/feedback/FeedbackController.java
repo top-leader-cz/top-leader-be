@@ -9,7 +9,7 @@ import com.topleader.topleader.feedback.entity.Question;
 import com.topleader.topleader.feedback.entity.Recipient;
 import com.topleader.topleader.feedback.repository.FeedbackFormQuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
-import com.topleader.topleader.common.util.user.UserDetailUtils;
+import com.topleader.topleader.user.util.UserDetailUtils;
 import com.topleader.topleader.user.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 import jakarta.validation.Valid;

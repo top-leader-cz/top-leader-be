@@ -1,4 +1,4 @@
-package com.topleader.topleader.user.session.domain;
+package com.topleader.topleader.common.ai;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -31,5 +31,4 @@ public class UserArticle {
     private String date;
     private List<String> keyTakeaways;
     private Integer relevanceScore;
-
 }
