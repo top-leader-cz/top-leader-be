@@ -49,7 +49,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
-import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
 import static org.springframework.util.StringUtils.hasText;

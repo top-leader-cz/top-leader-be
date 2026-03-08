@@ -18,7 +18,7 @@ import com.topleader.topleader.common.util.common.Translation;
 import com.topleader.topleader.common.util.image.DaliResponse;
 import com.topleader.topleader.common.util.image.GcsLightweightClient;
 import com.topleader.topleader.coach.Coach;
-import com.topleader.topleader.feedback.api.Summary;
+import com.topleader.topleader.common.ai.FeedbackSummary;
 import com.topleader.topleader.feedback.feedback_notification.FeedbackNotification;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.data.StoredData;
@@ -34,9 +34,9 @@ import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.user_allocation.UserAllocation;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.badge.Badge;
-import com.topleader.topleader.user.session.domain.RecommendedGrowth;
-import com.topleader.topleader.user.session.domain.UserArticle;
-import com.topleader.topleader.user.session.domain.UserPreview;
+import com.topleader.topleader.common.ai.RecommendedGrowth;
+import com.topleader.topleader.common.ai.UserArticle;
+import com.topleader.topleader.common.ai.UserPreview;
 import com.topleader.topleader.user.session.reminder.SessionReminderView;
 import com.topleader.topleader.user.token.Token;
 import java.util.stream.Stream;
@@ -96,7 +96,7 @@ public class NativeImageConfiguration {
             registerForJsonSerialization(hints, UserSessionStoredData.ActionStepData.class);
 
             // DTOs and entities with JSON serialization
-            registerForJsonSerialization(hints, Summary.class);
+            registerForJsonSerialization(hints, FeedbackSummary.class);
             registerForJsonSerialization(hints, UserArticle.class);
             registerForJsonSerialization(hints, UserPreview.class);
             registerForJsonSerialization(hints, RecommendedGrowth.class);

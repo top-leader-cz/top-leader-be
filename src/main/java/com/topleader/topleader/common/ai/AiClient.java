@@ -1,12 +1,6 @@
 package com.topleader.topleader.common.ai;
 
 
-import com.topleader.topleader.feedback.api.Summary;
-import com.topleader.topleader.user.User;
-import com.topleader.topleader.user.session.domain.RecommendedGrowth;
-import com.topleader.topleader.user.session.domain.UserArticle;
-import com.topleader.topleader.user.session.domain.UserPreview;
-import com.topleader.topleader.common.util.common.user.UserUtils;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import lombok.SneakyThrows;
@@ -151,7 +145,7 @@ public class AiClient {
     }
 
     @SneakyThrows
-    public Summary generateSummary(String locale, Map<String, List<String>> results) {
+    public FeedbackSummary generateSummary(String locale, Map<String, List<String>> results) {
         log.info("Generating feedback summary, locale: {}", locale);
         var resultJson = MAPPER.writeValueAsString(results);
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.FEEDBACK_SUMMARY,
@@ -160,7 +154,7 @@ public class AiClient {
 
         var res = Failsafe.with(retryPolicy).get(() -> {
             var content = chatClient.prompt(prompt).call().content();
-            return JsonUtils.fromJsonString(content, Summary.class);
+            return JsonUtils.fromJsonString(content, FeedbackSummary.class);
         });
         log.info("Feedback summary response: {}", res);
         return res;
@@ -197,19 +191,19 @@ public class AiClient {
         return res;
     }
 
-    public List<RecommendedGrowth> generateRecommendedGrowths(User user, String businessStrategy, String position, String competency) {
-        log.info("Generating recommended growths, user: [{}]", user.getUsername());
+    public List<RecommendedGrowth> generateRecommendedGrowths(String username, String language, String businessStrategy, String position, String competency) {
+        log.info("Generating recommended growths, user: [{}]", username);
         var prompt = aiPromptService.prompt(AiPrompt.PromptType.RECOMMENDED_GROWTH,
                 Map.of("businessStrategy", businessStrategy,
                         "position", position,
                         "competency", competency,
-                        "language", UserUtils.localeToLanguage(user.getLocale())));
-        log.info("Recommended growths query: {} User:[{}]", prompt.getContents(), user.getUsername());
+                        "language", language));
+        log.info("Recommended growths query: {} User:[{}]", prompt.getContents(), username);
 
         var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
                 .call()
                 .entity(new ParameterizedTypeReference<List<RecommendedGrowth>>() {}));
-        log.info("Recommended growths response: {} User:[{}]", res, user.getUsername());
+        log.info("Recommended growths response: {} User:[{}]", res, username);
         return res;
     }
 
