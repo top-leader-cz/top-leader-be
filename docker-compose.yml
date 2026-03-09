@@ -18,7 +18,9 @@ services:
       retries: 5
 
   app:
-    image: top-test:latest
+    build:
+      context: .
+      dockerfile: Dockerfile.local
     container_name: top-leader-app
     restart: always
     depends_on:
