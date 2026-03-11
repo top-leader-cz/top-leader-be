@@ -70,7 +70,12 @@ VALUES
     -- Multi-role user
     ('multi@local.dev', 'multi@local.dev',
      '$2b$10$PCZwb1nrn/MQhD8u6cCtyubEnOYyH0pOsy1JI45lcwEIy380DFBHq',
-     'Max', 'Multi', '["USER", "COACH", "MANAGER"]', 'AUTHORIZED', 'UTC', 1, 'en', 10, 0, 0, 0, 0)
+     'Max', 'Multi', '["USER", "COACH", "MANAGER"]', 'AUTHORIZED', 'UTC', 1, 'en', 10, 0, 0, 0, 0),
+
+    -- E2E HR user (dedicated, no manual data conflicts)
+    ('hr-e2e@local.dev', 'hr-e2e@local.dev',
+     '$2b$10$PCZwb1nrn/MQhD8u6cCtyubEnOYyH0pOsy1JI45lcwEIy380DFBHq',
+     'E2E', 'HrTest', '["USER", "HR"]', 'AUTHORIZED', 'UTC', 1, 'en', 0, 0, 0, 0, 0)
 ON CONFLICT (username) DO NOTHING;
 
 -- Assign coaches to users
