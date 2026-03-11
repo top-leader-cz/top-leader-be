@@ -6518,10 +6518,10 @@ components:
           items:
             $ref: "#/components/schemas/RecipientDto"
         summary:
-          $ref: "#/components/schemas/Summary"
+          $ref: "#/components/schemas/FeedbackSummary"
         draft:
           type: boolean
-    Summary:
+    FeedbackSummary:
       type: object
       properties:
         strongAreas:
@@ -7434,11 +7434,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         size:
           type: integer
           format: int32
@@ -7456,6 +7456,8 @@ components:
       properties:
         sort:
           $ref: "#/components/schemas/SortObject"
+        unpaged:
+          type: boolean
         paged:
           type: boolean
         pageNumber:
@@ -7464,8 +7466,6 @@ components:
         pageSize:
           type: integer
           format: int32
-        unpaged:
-          type: boolean
         offset:
           type: integer
           format: int64
@@ -7569,11 +7569,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         size:
           type: integer
           format: int32
@@ -7980,13 +7980,13 @@ components:
     ApplicationContext:
       type: object
       properties:
-        autowireCapableBeanFactory:
-          $ref: "#/components/schemas/AutowireCapableBeanFactory"
         applicationName:
           type: string
         startupDate:
           type: integer
           format: int64
+        autowireCapableBeanFactory:
+          $ref: "#/components/schemas/AutowireCapableBeanFactory"
         parent:
           $ref: "#/components/schemas/ApplicationContext"
         id:
@@ -8142,22 +8142,22 @@ components:
     Environment:
       type: object
       properties:
-        defaultProfiles:
+        activeProfiles:
           type: array
           items:
             type: string
-        activeProfiles:
+        defaultProfiles:
           type: array
           items:
             type: string
     FilterRegistration:
       type: object
       properties:
-        urlPatternMappings:
+        servletNameMappings:
           type: array
           items:
             type: string
-        servletNameMappings:
+        urlPatternMappings:
           type: array
           items:
             type: string
@@ -8246,42 +8246,26 @@ components:
           type: boolean
         is2xxSuccessful:
           type: boolean
-        is3xxRedirection:
-          type: boolean
         is4xxClientError:
+          type: boolean
+        is3xxRedirection:
           type: boolean
         error:
           type: boolean
     JspConfigDescriptor:
       type: object
       properties:
-        jspPropertyGroups:
-          type: array
-          items:
-            $ref: "#/components/schemas/JspPropertyGroupDescriptor"
         taglibs:
           type: array
           items:
             $ref: "#/components/schemas/TaglibDescriptor"
+        jspPropertyGroups:
+          type: array
+          items:
+            $ref: "#/components/schemas/JspPropertyGroupDescriptor"
     JspPropertyGroupDescriptor:
       type: object
       properties:
-        errorOnELNotFound:
-          type: string
-        scriptingInvalid:
-          type: string
-        deferredSyntaxAllowedAsLiteral:
-          type: string
-        trimDirectiveWhitespaces:
-          type: string
-        errorOnUndeclaredNamespace:
-          type: string
-        defaultContentType:
-          type: string
-        urlPatterns:
-          type: array
-          items:
-            type: string
         elIgnored:
           type: string
         pageEncoding:
@@ -8296,6 +8280,22 @@ components:
           type: array
           items:
             type: string
+        urlPatterns:
+          type: array
+          items:
+            type: string
+        errorOnUndeclaredNamespace:
+          type: string
+        defaultContentType:
+          type: string
+        errorOnELNotFound:
+          type: string
+        scriptingInvalid:
+          type: string
+        deferredSyntaxAllowedAsLiteral:
+          type: string
+        trimDirectiveWhitespaces:
+          type: string
         buffer:
           type: string
     RedirectView:
@@ -8354,24 +8354,33 @@ components:
           type: array
           items:
             type: string
-        propagateQueryProperties:
-          type: boolean
         redirectView:
+          type: boolean
+        propagateQueryProperties:
           type: boolean
         attributes:
           type: object
           additionalProperties:
             type: string
           writeOnly: true
-        attributesMap:
-          type: object
-          additionalProperties: {}
         attributesCSV:
           type: string
           writeOnly: true
+        attributesMap:
+          type: object
+          additionalProperties: {}
     ServletContext:
       type: object
       properties:
+        attributeNames: {}
+        contextPath:
+          type: string
+        serverInfo:
+          type: string
+        sessionTimeout:
+          type: integer
+          format: int32
+        initParameterNames: {}
         effectiveMajorVersion:
           type: integer
           format: int32
@@ -8425,15 +8434,6 @@ components:
         requestCharacterEncoding:
           type: string
         responseCharacterEncoding:
-          type: string
-        initParameterNames: {}
-        attributeNames: {}
-        serverInfo:
-          type: string
-        sessionTimeout:
-          type: integer
-          format: int32
-        contextPath:
           type: string
         classLoader:
           type: object
@@ -8591,11 +8591,11 @@ components:
     SessionCookieConfig:
       type: object
       properties:
+        httpOnly:
+          type: boolean
         maxAge:
           type: integer
           format: int32
-        httpOnly:
-          type: boolean
         path:
           type: string
         domain:
@@ -8837,11 +8837,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         size:
           type: integer
           format: int32
@@ -8906,11 +8906,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         size:
           type: integer
           format: int32
@@ -8972,11 +8972,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         size:
           type: integer
           format: int32
@@ -9274,6 +9274,36 @@ components:
           enum:
           - ACTIVE
           - INACTIVE
+    Summary:
+      type: object
+      properties:
+        totalUnits:
+          type: integer
+          format: int32
+        allocatedUnits:
+          type: integer
+          format: int32
+        plannedSessions:
+          type: integer
+          format: int32
+        pendingSessions:
+          type: integer
+          format: int32
+        completedSessions:
+          type: integer
+          format: int32
+        consumedUnits:
+          type: integer
+          format: int32
+        remainingUnits:
+          type: integer
+          format: int32
+        unallocatedUnits:
+          type: integer
+          format: int32
+        noShowClientSessions:
+          type: integer
+          format: int32
     UserRow:
       type: object
       properties:
@@ -9489,11 +9519,11 @@ components:
           type: boolean
         sort:
           $ref: "#/components/schemas/SortObject"
+        pageable:
+          $ref: "#/components/schemas/PageableObject"
         numberOfElements:
           type: integer
           format: int32
-        pageable:
-          $ref: "#/components/schemas/PageableObject"
         size:
           type: integer
           format: int32
