@@ -13,7 +13,7 @@ GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 # Google Cloud commands
 .PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux native-test native-test-quick native-test-db-start native-test-db-stop deploy-qa deploy-qa-native deploy-prod
 .PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
-.PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy
+.PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy db-seed db-clear db-proxy-sync db-sync-qa
 .PHONY: threaddump-qa threaddump-prod
 
 # Login to Google Cloud and set project
@@ -155,6 +155,66 @@ threaddump-prod:
 db-proxy:
 	./misc/setup-cloud-sql-proxy.sh
 
+# Clear all data from local DB (keeps schema)
+db-clear:
+	docker exec -i my-postgres-db psql -U root -d top_leader < misc/clear-local.sql
+
+# Seed local DB with predefined test data (all passwords: parole1)
+db-seed:
+	docker exec -i my-postgres-db psql -U root -d top_leader < misc/seed-local.sql
+
+# Start Cloud SQL proxy on port 15432 (for sync, avoids conflict with local DB)
+db-proxy-sync:
+	./misc/setup-cloud-sql-proxy.sh 15432
+
+# Sync full dataset from QA into local DB (requires db-proxy-sync running in another terminal)
+db-sync-qa:
+	./misc/sync-from-qa.sh
+
+# --- Cloud Run Commands ---
+
+# Setup Cloud Run infrastructure (Artifact Registry, Service Account, IAM)
+setup-cloud-run-qa:
+	./scripts/setup-cloud-run-qa.sh
+
+# Show QA Cloud Run service information
+info-qa:
+	gcloud run services describe $(SERVICE_NAME) \
+		--region=$(REGION) \
+		--project=$(PROJECT_ID)
+
+# List Cloud Run revisions
+revisions-qa:
+	gcloud run revisions list \
+		--service=$(SERVICE_NAME) \
+		--region=$(REGION) \
+		--platform=managed \
+		--sort-by=~metadata.creationTimestamp \
+		--project=$(PROJECT_ID)
+
+# Redeploy QA Cloud Run (force new revision to pick up secret changes)
+redeploy-qa:
+	gcloud run services update $(SERVICE_NAME) \
+		--region=$(REGION) \
+		--project=$(PROJECT_ID) \
+		--update-env-vars="FORCE_REDEPLOY=$$(date +%s)"
+
+# Rollback to previous Cloud Run revision
+rollback-qa:
+	@echo "Available revisions for $(SERVICE_NAME):"
+	@gcloud run revisions list \
+		--service=$(SERVICE_NAME) \
+		--region=$(REGION) \
+		--platform=managed \
+		--format="table(metadata.name,status.traffic,status.conditions[0].status)" \
+		--project=$(PROJECT_ID)
+	@echo ""
+	@read -p "Enter revision name to rollback to: " REVISION; \
+	gcloud run services update-traffic $(SERVICE_NAME) \
+		--to-revisions=$$REVISION=100 \
+		--region=$(REGION) \
+		--platform=managed \
+		--project=$(PROJECT_ID)
 
 # --- PROD Cloud Run Commands ---
 
