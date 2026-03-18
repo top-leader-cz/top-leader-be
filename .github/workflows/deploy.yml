@@ -1,4 +1,3 @@
-# This workflow will build a Java project with Gradle, and cache/restore any dependencies to improve the workflow execution time
 name: Build/Deploy top-leader-be
 
 on:
@@ -6,7 +5,6 @@ on:
     tags:
       - 'qa-deploy'
       - 'qa-deploy-*'
-      - 'qa-native-*'
       - 'release-v*.*.*'
   pull_request:
     branches: [ "develop", "main" ]
@@ -16,370 +14,61 @@ jobs:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Set up JDK 25
-      uses: actions/setup-java@v4
-      with:
-        java-version: '25'
-        distribution: 'corretto'
-        cache: gradle
-
-    - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
-      with:
-        cache-read-only: ${{ github.ref != 'refs/heads/main' }}
-
-    - name: Build and verify coverage (min 80%)
-      run: gradle build jacocoTestReport jacocoTestCoverageVerification --parallel --build-cache
-
+      - name: Run Dagger build pipeline
+        uses: dagger/dagger-for-github@v7
+        with:
+          version: "latest"
+          module: ./ci
+          call: --src=.. build
+        env:
+          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
 
   deploy-qa:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-deploy')
     runs-on: ubuntu-latest
-    env:
-      REGION: europe-west3
-      SERVICE_NAME: top-leader-qa
-      PROJECT_ID: topleader-394306
-      IMAGE_NAME: top-leader-be
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cloud Authentication
-        uses: google-github-actions/auth@v2
+      - name: Run Dagger QA deploy
+        uses: dagger/dagger-for-github@v7
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev,gcr.io
-
-      - name: Build and push Docker image
-        run: |
-          IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          SHORT_SHA=$(git rev-parse --short HEAD)
-          docker build -t ${IMAGE_URL}:latest -t ${IMAGE_URL}:qa-${SHORT_SHA} .
-          docker push ${IMAGE_URL}:latest
-          docker push ${IMAGE_URL}:qa-${SHORT_SHA}
-
-          # Get the pushed image digest to force new Cloud Run revision
-          DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:latest --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})
-          echo "IMAGE_WITH_DIGEST=${IMAGE_URL}@${DIGEST}" >> $GITHUB_ENV
-
-      - name: Deploy to Cloud Run QA
-        run: |
-          # Replace :latest with exact digest to force new revision
-          sed -i "s|image:.*|image: ${{ env.IMAGE_WITH_DIGEST }}|" src/main/cloudrun/service-qa.yaml
-
-          gcloud run services replace src/main/cloudrun/service-qa.yaml \
-            --region=${{ env.REGION }} \
-            --project=${{ env.PROJECT_ID }}
-
-          # Allow unauthenticated access
-          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --member="allUsers" \
-            --role="roles/run.invoker" \
-            --project=${{ env.PROJECT_ID }}
-
-      - name: Cleanup old revisions (keep last 2)
-        run: |
-          echo "Fetching QA revisions..."
-          REVISIONS=$(gcloud run revisions list \
-            --service=${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --platform=managed \
-            --sort-by=~metadata.creationTimestamp \
-            --format="value(metadata.name)" \
-            --project=${{ env.PROJECT_ID }} | tail -n +3)
-
-          if [ -z "$REVISIONS" ]; then
-            echo "No old revisions to delete"
-          else
-            echo "Deleting old revisions: $REVISIONS"
-            for REVISION in $REVISIONS; do
-              gcloud run revisions delete $REVISION \
-                --region=${{ env.REGION }} \
-                --platform=managed \
-                --project=${{ env.PROJECT_ID }} \
-                --quiet || echo "Failed to delete $REVISION"
-            done
-          fi
-
-      - name: Cleanup old images (keep latest + 1 previous QA)
-        run: |
-          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          echo "Cleaning up old images..."
-
-          ALL_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --include-tags \
-            --sort-by=~createTime \
-            --format="csv[no-heading](version,tags)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null)
-
-          # 1. Delete old QA tagged images (keep 2 newest)
-          OLD_QA=$(echo "$ALL_IMAGES" | grep 'qa-' | tail -n +3 | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting old QA image: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$OLD_QA"
-
-          # 2. Delete all untagged images (orphaned platform manifests)
-          UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting untagged: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$UNTAGGED"
-
-  deploy-qa-native:
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-native')
-    runs-on: ubuntu-latest
-    env:
-      REGION: europe-west3
-      SERVICE_NAME: top-leader-qa
-      PROJECT_ID: topleader-394306
-      IMAGE_NAME: top-leader-be
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Cloud Authentication
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev,gcr.io
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build native Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: Dockerfile.native
-          platforms: linux/amd64
-          push: false
-          load: true
-          provenance: false
-          sbom: false
-          tags: |
-            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}:native-latest
-            ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}:native-${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Push native Docker image
-        run: |
-          IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          docker push ${IMAGE_URL}:native-latest
-          docker push ${IMAGE_URL}:native-${{ github.sha }}
-
-      - name: Get image digest
-        run: |
-          IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:native-latest \
-            --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})
-          echo "IMAGE_WITH_DIGEST=${IMAGE_URL}@${DIGEST}" >> $GITHUB_ENV
-
-      - name: Deploy to Cloud Run QA
-        run: |
-          sed -i "s|image:.*|image: ${{ env.IMAGE_WITH_DIGEST }}|" src/main/cloudrun/service-qa.yaml
-
-          gcloud run services replace src/main/cloudrun/service-qa.yaml \
-            --region=${{ env.REGION }} \
-            --project=${{ env.PROJECT_ID }}
-
-          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --member="allUsers" \
-            --role="roles/run.invoker" \
-            --project=${{ env.PROJECT_ID }}
-
-      - name: Cleanup old revisions (keep last 2)
-        run: |
-          REVISIONS=$(gcloud run revisions list \
-            --service=${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --platform=managed \
-            --sort-by=~metadata.creationTimestamp \
-            --format="value(metadata.name)" \
-            --project=${{ env.PROJECT_ID }} | tail -n +3)
-
-          if [ -z "$REVISIONS" ]; then
-            echo "No old revisions to delete"
-          else
-            echo "Deleting old revisions: $REVISIONS"
-            for REVISION in $REVISIONS; do
-              gcloud run revisions delete $REVISION \
-                --region=${{ env.REGION }} \
-                --platform=managed \
-                --project=${{ env.PROJECT_ID }} \
-                --quiet || echo "Failed to delete $REVISION"
-            done
-          fi
-
-      - name: Cleanup old native images (keep 2 newest)
-        run: |
-          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-
-          ALL_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --include-tags \
-            --sort-by=~createTime \
-            --format="csv[no-heading](version,tags)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null)
-
-          # Delete old native tagged images (keep 2 newest)
-          OLD_NATIVE=$(echo "$ALL_IMAGES" | grep 'native-' | tail -n +3 | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting old native image: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$OLD_NATIVE"
-
-          # Delete all untagged images (orphaned platform manifests)
-          UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting untagged: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$UNTAGGED"
+          version: "latest"
+          module: ./ci
+          call: >-
+            --src=..
+            deploy-qa
+            --gcp-credentials=env:GCP_CREDENTIALS
+            --short-sha=${{ github.sha }}
+        env:
+          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
 
   deploy-prod:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/release-v')
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      REGION: europe-west3
-      SERVICE_NAME: top-leader-prod
-      PROJECT_ID: topleader-394306
-      IMAGE_NAME: top-leader-be
     steps:
       - uses: actions/checkout@v4
 
-      - name: Cloud Authentication
-        uses: google-github-actions/auth@v2
+      - name: Set release version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/release-v}" >> $GITHUB_ENV
+
+      - name: Run Dagger PROD deploy
+        uses: dagger/dagger-for-github@v7
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
-      - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker for Artifact Registry
-        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev,gcr.io
-
-      - name: Build and push Docker image
-        run: |
-          VERSION="${GITHUB_REF#refs/tags/release-v}"
-          IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          docker build -t ${IMAGE_URL}:${VERSION} .
-          docker push ${IMAGE_URL}:${VERSION}
-
-          # Get the pushed image digest for deploy verification
-          DIGEST=$(gcloud artifacts docker images describe ${IMAGE_URL}:${VERSION} --format='get(image_summary.digest)' --project=${{ env.PROJECT_ID }})
-          echo "IMAGE_WITH_DIGEST=${IMAGE_URL}@${DIGEST}" >> $GITHUB_ENV
-
-      - name: Deploy to Cloud Run PROD
-        run: |
-          # Replace image with exact digest to guarantee correct version
-          sed -i "s|image:.*|image: ${{ env.IMAGE_WITH_DIGEST }}|" src/main/cloudrun/service-prod.yaml
-
-          # Deploy using service YAML
-          gcloud run services replace src/main/cloudrun/service-prod.yaml \
-            --region=${{ env.REGION }} \
-            --project=${{ env.PROJECT_ID }}
-
-          # Allow unauthenticated access
-          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --member="allUsers" \
-            --role="roles/run.invoker" \
-            --project=${{ env.PROJECT_ID }}
-
-      - name: Verify deployment
-        run: |
-          RUNNING_IMAGE=$(gcloud run services describe ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --project=${{ env.PROJECT_ID }} \
-            --format='get(spec.template.spec.containers[0].image)')
-          echo "Running image: ${RUNNING_IMAGE}"
-          echo "Expected image: ${{ env.IMAGE_WITH_DIGEST }}"
-          if [ "${RUNNING_IMAGE}" != "${{ env.IMAGE_WITH_DIGEST }}" ]; then
-            echo "ERROR: Deployed image does not match expected image!"
-            exit 1
-          fi
-          echo "Deployment verified successfully"
-
-      - name: Cleanup old revisions (keep last 3)
-        run: |
-          echo "Fetching PROD revisions..."
-          REVISIONS=$(gcloud run revisions list \
-            --service=${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --platform=managed \
-            --sort-by=~metadata.creationTimestamp \
-            --format="value(metadata.name)" \
-            --project=${{ env.PROJECT_ID }} | tail -n +4)
-
-          if [ -z "$REVISIONS" ]; then
-            echo "No old revisions to delete"
-          else
-            echo "Deleting old revisions: $REVISIONS"
-            for REVISION in $REVISIONS; do
-              gcloud run revisions delete $REVISION \
-                --region=${{ env.REGION }} \
-                --platform=managed \
-                --project=${{ env.PROJECT_ID }} \
-                --quiet || echo "Failed to delete $REVISION"
-            done
-          fi
-
-      - name: Cleanup old images (keep last 3 versions)
-        run: |
-          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          echo "Cleaning up old images..."
-
-          ALL_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --include-tags \
-            --sort-by=~createTime \
-            --format="csv[no-heading](version,tags)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null)
-
-          # 1. Delete old PROD versioned images (keep 3 newest)
-          OLD_VERSIONS=$(echo "$ALL_IMAGES" | grep -E '[0-9]+\.[0-9]+\.[0-9]+' | tail -n +4 | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting old version: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$OLD_VERSIONS"
-
-          # 2. Delete all untagged images (orphaned platform manifests)
-          UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting untagged: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$UNTAGGED"
+          version: "latest"
+          module: ./ci
+          call: >-
+            --src=..
+            deploy-prod
+            --gcp-credentials=env:GCP_CREDENTIALS
+            --version=${{ env.VERSION }}
+        env:
+          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
 
       - name: Create GitHub Release with changelog
         env:

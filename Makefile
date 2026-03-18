@@ -15,6 +15,7 @@ GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 .PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
 .PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy
 .PHONY: threaddump-qa threaddump-prod
+.PHONY: dagger-build dagger-deploy-qa dagger-deploy-prod
 
 # Login to Google Cloud and set project
 login:
@@ -38,6 +39,28 @@ logs-prod:
 # Generate OpenAPI spec
 openapi:
 	$(HOME)/.sdkman/candidates/gradle/current/bin/gradle generateOpenApi
+
+# --- Dagger CI/CD ---
+
+# Run full build pipeline (tests + coverage) via Dagger
+dagger-build:
+	cd ci && dagger call build --src=..
+
+# Deploy to QA via Dagger (requires GCP_CREDENTIALS env var with service account JSON)
+dagger-deploy-qa:
+	$(eval SHORT_SHA := $(shell git rev-parse --short HEAD))
+	cd ci && dagger call deploy-qa \
+		--src=.. \
+		--gcp-credentials=env:GCP_CREDENTIALS \
+		--short-sha=$(SHORT_SHA)
+
+# Deploy to PROD via Dagger (requires GCP_CREDENTIALS env var with service account JSON)
+dagger-deploy-prod:
+	$(eval VERSION := $(shell git tag -l "release-v*.*.*" | sort -V | tail -n1 | sed 's/release-v//'))
+	cd ci && dagger call deploy-prod \
+		--src=.. \
+		--gcp-credentials=env:GCP_CREDENTIALS \
+		--version=$(VERSION)
 
 # Build application locally
 build:
