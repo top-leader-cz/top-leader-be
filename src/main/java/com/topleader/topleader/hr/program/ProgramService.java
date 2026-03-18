@@ -203,9 +203,20 @@ public class ProgramService {
                             .ifPresent(allocationRepository::delete);
                 });
 
-        requestedUsernames.stream()
+        var newUsernames = requestedUsernames.stream()
                 .filter(u -> !existingUsernames.contains(u))
-                .forEach(participantUsername -> {
+                .collect(Collectors.toSet());
+        var existingDbUsernames = userRepository.findAllByUsernameIn(newUsernames).stream()
+                .map(User::getUsername)
+                .collect(Collectors.toSet());
+        var invalidUsernames = newUsernames.stream()
+                .filter(u -> !existingDbUsernames.contains(u))
+                .collect(Collectors.toSet());
+        if (!invalidUsernames.isEmpty()) {
+            throw new ApiValidationException(PARTICIPANTS_NOT_FOUND, "participants", invalidUsernames.toString(), "Some participants do not exist: " + invalidUsernames);
+        }
+
+        newUsernames.forEach(participantUsername -> {
                     participantRepository.save(new ProgramParticipant()
                             .setProgramId(programId)
                             .setUsername(participantUsername)
