@@ -152,7 +152,7 @@ class ProgramControllerIT extends IntegrationTest {
                                     "enabledOptions": []
                                 }
                                 """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // ==================== POST / (update draft) ====================
@@ -261,7 +261,7 @@ class ProgramControllerIT extends IntegrationTest {
     @WithMockUser(username = "hr_prog", authorities = "HR")
     void launchProgram_failsWithoutGoal() throws Exception {
         mvc.perform(post("/api/latest/hr/programs/2/launch"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$[0].errorCode").value("program.goal.required"));
     }
 
@@ -270,7 +270,7 @@ class ProgramControllerIT extends IntegrationTest {
     @WithMockUser(username = "hr_prog", authorities = "HR")
     void launchProgram_failsWithoutParticipants() throws Exception {
         mvc.perform(post("/api/latest/hr/programs/3/launch"))
-                .andExpect(status().isBadRequest())
+                .andExpect(status().isUnprocessableEntity())
                 .andExpect(jsonPath("$[0].errorCode").value("program.participants.required"));
     }
 
@@ -313,7 +313,7 @@ class ProgramControllerIT extends IntegrationTest {
                                     "focusAreas": ["fa.giving-feedback"]
                                 }
                                 """))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // ==================== Security ====================
