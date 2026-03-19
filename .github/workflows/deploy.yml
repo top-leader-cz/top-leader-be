@@ -37,6 +37,9 @@ jobs:
   deploy-qa:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-deploy')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     env:
       REGION: europe-west3
       SERVICE_NAME: top-leader-qa
@@ -48,7 +51,8 @@ jobs:
       - name: Cloud Authentication
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: deploy-service@topleader-394306.iam.gserviceaccount.com
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -142,6 +146,9 @@ jobs:
   deploy-qa-native:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-native')
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     env:
       REGION: europe-west3
       SERVICE_NAME: top-leader-qa
@@ -153,7 +160,8 @@ jobs:
       - name: Cloud Authentication
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: deploy-service@topleader-394306.iam.gserviceaccount.com
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -265,6 +273,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      id-token: write
     env:
       REGION: europe-west3
       SERVICE_NAME: top-leader-prod
@@ -276,7 +285,8 @@ jobs:
       - name: Cloud Authentication
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: deploy-service@topleader-394306.iam.gserviceaccount.com
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
