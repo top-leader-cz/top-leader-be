@@ -23,14 +23,32 @@ const (
 type TopleaderCi struct{}
 
 // Build runs Gradle build with tests and coverage verification (min 80%).
+// Build runs Gradle build with tests and coverage verification (min 80%).
+// Spins up a PostgreSQL service so TestContainers tests don't need Docker socket.
 func (m *TopleaderCi) Build(ctx context.Context, src *dagger.Directory) error {
+	pg := m.postgresService()
 	_, err := m.gradleContainer(src).
+		WithServiceBinding("postgres", pg).
+		WithEnvVariable("TEST_DATASOURCE_URL", "jdbc:postgresql://postgres:5432/topleader_test").
+		WithEnvVariable("TEST_DATASOURCE_USERNAME", "test").
+		WithEnvVariable("TEST_DATASOURCE_PASSWORD", "test").
 		WithExec([]string{
 			"./gradlew", "build", "jacocoTestReport", "jacocoTestCoverageVerification",
-			"--parallel", "--build-cache",
+			"--parallel", "--build-cache", "--no-configuration-cache",
 		}).
 		Sync(ctx)
 	return err
+}
+
+// postgresService returns a PostgreSQL 15 container as a Dagger service for tests.
+func (m *TopleaderCi) postgresService() *dagger.Service {
+	return dag.Container().
+		From("postgres:15-alpine").
+		WithEnvVariable("POSTGRES_DB", "topleader_test").
+		WithEnvVariable("POSTGRES_USER", "test").
+		WithEnvVariable("POSTGRES_PASSWORD", "test").
+		WithExposedPort(5432).
+		AsService()
 }
 
 // DeployQa builds a Docker image tagged as qa-<shortSha> and deploys to Cloud Run QA.
@@ -153,10 +171,12 @@ func (m *TopleaderCi) deployToCloudRun(
 }
 
 // gradleContainer returns a Gradle build container with the source mounted and caches configured.
+// Excludes local build/ directory to avoid stale compiled classes polluting the container build.
 func (m *TopleaderCi) gradleContainer(src *dagger.Directory) *dagger.Container {
+	clean := src.WithoutDirectory("build")
 	return dag.Container().
 		From("eclipse-temurin:25-jdk").
-		WithDirectory("/app", src).
+		WithDirectory("/app", clean).
 		WithWorkdir("/app").
 		WithMountedCache("/root/.gradle", dag.CacheVolume("gradle-deps")).
 		WithMountedCache("/app/.gradle", dag.CacheVolume("gradle-project"))
