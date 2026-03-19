@@ -22,8 +22,6 @@ jobs:
           version: "latest"
           module: ./ci
           call: --src=.. build
-        env:
-          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
 
   deploy-qa:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-deploy')
@@ -43,7 +41,6 @@ jobs:
             --short-sha=${{ github.sha }}
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
 
   deploy-prod:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/release-v')
@@ -68,7 +65,6 @@ jobs:
             --version=${{ env.VERSION }}
         env:
           GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-          DAGGER_CLOUD_TOKEN: ${{ secrets.DAGGER_CLOUD_TOKEN }}
 
       - name: Create GitHub Release with changelog
         env:
