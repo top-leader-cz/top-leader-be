@@ -1,6 +1,6 @@
 # ADR-003: Native Image Strategy
 
-**Status:** In Progress
+**Status:** Paused — blocked by session serialization
 **Date:** 2025-10-15
 **Decision Makers:** Development Team
 
@@ -78,14 +78,19 @@ Spring Data JDBC is significantly better for native images:
 - [x] **iCal4j** - heavy reflection iCalendar library, replaced with template-based `ICalService` using `TemplateService` and `.ics` templates
 - [x] **Hibernate/JPA** - heavy reflection ORM framework, replaced with **Spring Data JDBC** for minimal reflection and native image compatibility
 
-### In Progress
+### Paused
 - [ ] Add GraalVM reachability metadata where needed
 - [ ] Test native compilation in CI pipeline
 - [ ] Validate Spring AI components for native support
+- [ ] Resolve session serialization blocker (see Active Blockers)
 
 ### Blockers Removed
 - ~~**Hibernate 7**~~ - ✅ Migrated to Spring Data JDBC (minimal reflection)
 - **Some Spring AI components** - waiting for native support (non-critical)
+
+### Active Blockers
+- **Session serialization** - Spring Session JDBC serializes session objects into the database using Java serialization. GraalVM native image does not support Java serialization without extensive reflection hints for every class stored in the session. This is the primary reason native image is not currently used in production.
+  - Potential solutions: switch to JSON-based session serialization, or drop Spring Session JDBC in favor of stateless JWT (requires auth redesign)
 
 ## Consequences
 
@@ -106,18 +111,24 @@ Spring Data JDBC is significantly better for native images:
 - Use Spring Boot's AOT processing
 - Gradual migration, not big bang
 
-## Migration Path
+## Current Deployment
+
+Native image is **not used in production**. Both QA and Production run on JVM with Spring AOT processing enabled:
+- **Production:** JVM + AOT, 600Mi memory
+- **QA:** JVM + AOT, same approach
+
+## Migration Path (if session blocker is resolved)
 
 ```
-Phase 1 (Current): Prepare codebase
+Phase 1 (Done): Prepare codebase
 ├── Remove reflection-heavy code
 ├── Use native-compatible libraries
 └── Pre-generate runtime artifacts
 
-Phase 2: Test native compilation
-├── Add native-maven-plugin / native-gradle-plugin
+Phase 2 (Blocked): Test native compilation
+├── Resolve session serialization (JSON session or JWT)
 ├── Run tests in native mode
-└── Fix reflection issues with hints
+└── Fix remaining reflection issues with hints
 
 Phase 3: Production deployment
 ├── Build native image in CI

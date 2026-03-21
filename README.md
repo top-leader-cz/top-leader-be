@@ -128,7 +128,11 @@ We deploy on **Google Cloud Platform**:
 
 > See [ADR-003](docs/adr/003-native-image-strategy.md)
 
-The codebase is native-image ready (minimal reflection, no heavy ORM). Native image + Cloud Run = instant cold starts and minimal costs.
+The codebase has been prepared for native image (minimal reflection, Spring Data JDBC instead of JPA, no heavy proxy-based libraries). However, **native image is currently not used in production** due to session serialization issues — Spring Session JDBC serializes session objects into the database, and GraalVM native image does not handle Java serialization well without extensive reflection hints.
+
+**Current deployment:**
+- **Production:** JVM + Spring AOT (600Mi memory, ~5s startup)
+- **QA:** JVM + Spring AOT (same approach for consistency)
 
 ## Getting Started
 
