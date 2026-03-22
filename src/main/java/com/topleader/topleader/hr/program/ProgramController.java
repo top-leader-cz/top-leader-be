@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -93,17 +94,15 @@ public class ProgramController {
             return List.of();
         }
         var cycle = Optional.ofNullable(cycleLengthDays).filter(c -> c > 0).orElse(durationDays);
-        var checkpoints = new java.util.ArrayList<CheckpointDto>();
+        var mid = cycle / 2;
+        var checkpoints = new ArrayList<CheckpointDto>();
         checkpoints.add(new CheckpointDto("Enrollment", 0));
-        var midDay = cycle / 2;
-        if (midDay > 0 && midDay < durationDays) {
-            checkpoints.add(new CheckpointDto("Mid-cycle", midDay));
-        }
-        for (int day = cycle; day < durationDays; day += cycle) {
-            checkpoints.add(new CheckpointDto("Cycle review", day));
-            var nextMid = day + cycle / 2;
-            if (nextMid < durationDays) {
-                checkpoints.add(new CheckpointDto("Mid-cycle", nextMid));
+        for (int day = 0; day < durationDays; day += cycle) {
+            if (mid > 0 && day + mid < durationDays) {
+                checkpoints.add(new CheckpointDto("Mid-cycle", day + mid));
+            }
+            if (day + cycle < durationDays) {
+                checkpoints.add(new CheckpointDto("Cycle review", day + cycle));
             }
         }
         checkpoints.add(new CheckpointDto("Final review", durationDays));
