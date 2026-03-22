@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   db:
     image: postgres:15
@@ -17,6 +17,13 @@ services:
       timeout: 5s
       retries: 5
 
+  mailpit:
+    image: axllent/mailpit
+    container_name: top-leader-mailpit
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
   app:
     build:
       context: .
@@ -30,5 +37,13 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/top_leader
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_MAIL_HOST: mailpit
+      SPRING_MAIL_PORT: 1025
+      SPRING_MAIL_USERNAME: ""
+      SPRING_MAIL_PASSWORD: ""
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH: false
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE: false
+      SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_REQUIRED: false
+      TOP_LEADER_APP_URL: http://localhost:3000
     ports:
       - "8080:8080"
