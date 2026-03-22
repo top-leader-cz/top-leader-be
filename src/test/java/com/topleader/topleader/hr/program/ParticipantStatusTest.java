@@ -9,7 +9,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ParticipantStatusTest {
 
     private static ProgramRepository.ParticipantRow row(int consumed, int allocated) {
-        return new ProgramRepository.ParticipantRow("user1", "John", "Doe", null, null, consumed, allocated);
+        return new ProgramRepository.ParticipantRow("user1", "John", "Doe", null, null, null, consumed, allocated);
     }
 
     @Test

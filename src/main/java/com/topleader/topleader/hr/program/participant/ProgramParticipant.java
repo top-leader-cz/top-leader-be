@@ -23,6 +23,8 @@ public class ProgramParticipant {
 
     private String coachUsername;
 
+    private String managerUsername;
+
     private LocalDateTime createdAt;
 
     private String createdBy;

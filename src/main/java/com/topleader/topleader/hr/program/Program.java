@@ -30,6 +30,8 @@ public class Program {
 
     private Integer durationDays;
 
+    private Integer cycleLengthDays;
+
     private Set<String> focusAreas = Set.of();
 
     private Integer sessionsPerParticipant;

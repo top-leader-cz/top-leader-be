@@ -83,6 +83,7 @@ public class ProgramService {
                 .setGoal(request.goal())
                 .setTargetGroup(request.targetGroup())
                 .setDurationDays(request.durationDays())
+                .setCycleLengthDays(request.cycleLengthDays())
                 .setFocusAreas(request.focusAreas())
                 .setMilestoneDate(request.milestoneDate())
                 .setSessionsPerParticipant(request.sessionsPerParticipant())
@@ -192,11 +193,13 @@ public class ProgramService {
         return programRepository.save(program);
     }
 
-    private void syncParticipants(Program program, Set<String> requestedUsernames, Long companyId, String username, LocalDateTime now) {
+    private void syncParticipants(Program program, List<ProgramController.ParticipantAssignment> assignments, Long companyId, String username, LocalDateTime now) {
         var programId = program.getId();
         var packageId = program.getCoachingPackageId();
         var existing = participantRepository.findByProgramId(programId);
-        var existingUsernames = existing.stream().map(ProgramParticipant::getUsername).collect(Collectors.toSet());
+        var existingByUsername = existing.stream().collect(toMap(ProgramParticipant::getUsername, p -> p));
+        var assignmentMap = assignments.stream().collect(toMap(ProgramController.ParticipantAssignment::username, a -> a));
+        var requestedUsernames = assignmentMap.keySet();
 
         existing.stream()
                 .filter(p -> !requestedUsernames.contains(p.getUsername()))
@@ -206,8 +209,18 @@ public class ProgramService {
                             .ifPresent(allocationRepository::delete);
                 });
 
+        // Update manager for existing participants
+        existing.stream()
+                .filter(p -> requestedUsernames.contains(p.getUsername()))
+                .forEach(p -> {
+                    var assignment = assignmentMap.get(p.getUsername());
+                    if (!Objects.equals(p.getManagerUsername(), assignment.managerUsername())) {
+                        participantRepository.save(p.setManagerUsername(assignment.managerUsername()));
+                    }
+                });
+
         var newUsernames = requestedUsernames.stream()
-                .filter(u -> !existingUsernames.contains(u))
+                .filter(u -> !existingByUsername.containsKey(u))
                 .collect(Collectors.toSet());
         if (!newUsernames.isEmpty()) {
             var existingDbUsernames = userRepository.findAllByUsernameIn(newUsernames).stream()
@@ -219,12 +232,19 @@ public class ProgramService {
             if (!invalidUsernames.isEmpty()) {
                 throw new ApiValidationException(PARTICIPANTS_NOT_FOUND, "participants", invalidUsernames.toString(), "Some participants do not exist: " + invalidUsernames);
             }
+
+            var alreadyInProgram = participantRepository.findUsernamesInActivePrograms(newUsernames, programId);
+            if (!alreadyInProgram.isEmpty()) {
+                throw new ApiValidationException(PARTICIPANT_ALREADY_IN_PROGRAM, "participants", alreadyInProgram.toString(), "Participants already in an active program: " + alreadyInProgram);
+            }
         }
 
         newUsernames.forEach(participantUsername -> {
+                    var assignment = assignmentMap.get(participantUsername);
                     participantRepository.save(new ProgramParticipant()
                             .setProgramId(programId)
                             .setUsername(participantUsername)
+                            .setManagerUsername(assignment.managerUsername())
                             .setCreatedAt(now)
                             .setCreatedBy(username));
                     if (allocationRepository.findByPackageIdAndUsername(packageId, participantUsername).isEmpty()) {

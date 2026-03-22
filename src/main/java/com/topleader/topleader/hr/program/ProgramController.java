@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @RestController
@@ -74,6 +75,8 @@ public class ProgramController {
                 program.getTargetGroup(),
                 program.getStatus().name(),
                 program.getDurationDays(),
+                program.getCycleLengthDays(),
+                computeCheckpoints(program.getDurationDays(), program.getCycleLengthDays()),
                 program.getMilestoneDate(),
                 program.getFocusAreas(),
                 program.getSessionsPerParticipant(),
@@ -85,6 +88,28 @@ public class ProgramController {
         );
     }
 
+    static List<CheckpointDto> computeCheckpoints(Integer durationDays, Integer cycleLengthDays) {
+        if (durationDays == null || durationDays <= 0) {
+            return List.of();
+        }
+        var cycle = Optional.ofNullable(cycleLengthDays).filter(c -> c > 0).orElse(durationDays);
+        var checkpoints = new java.util.ArrayList<CheckpointDto>();
+        checkpoints.add(new CheckpointDto("Enrollment", 0));
+        var midDay = cycle / 2;
+        if (midDay > 0 && midDay < durationDays) {
+            checkpoints.add(new CheckpointDto("Mid-cycle", midDay));
+        }
+        for (int day = cycle; day < durationDays; day += cycle) {
+            checkpoints.add(new CheckpointDto("Cycle review", day));
+            var nextMid = day + cycle / 2;
+            if (nextMid < durationDays) {
+                checkpoints.add(new CheckpointDto("Mid-cycle", nextMid));
+            }
+        }
+        checkpoints.add(new CheckpointDto("Final review", durationDays));
+        return List.copyOf(checkpoints);
+    }
+
     static Long daysUntil(LocalDateTime date) {
         if (date == null) return null;
         return ChronoUnit.DAYS.between(LocalDateTime.now(), date);
@@ -92,16 +117,19 @@ public class ProgramController {
 
     // --- DTOs ---
 
+    public record ParticipantAssignment(String username, String managerUsername) {}
+
     public record SaveProgramRequest(
             Long id,
             @NotBlank String name,
             String goal,
             String targetGroup,
             int durationDays,
+            Integer cycleLengthDays,
             LocalDateTime startDate,
             LocalDateTime milestoneDate,
             @NotNull Set<String> focusAreas,
-            @NotNull Set<String> participants,
+            @NotNull List<ParticipantAssignment> participants,
             int sessionsPerParticipant,
             String recommendedCadence,
             Program.CoachAssignmentModel coachAssignmentModel,
@@ -117,6 +145,8 @@ public class ProgramController {
             String targetGroup,
             String status,
             Integer durationDays,
+            Integer cycleLengthDays,
+            List<CheckpointDto> checkpoints,
             LocalDateTime milestoneDate,
             Set<String> focusAreas,
             Integer sessionsPerParticipant,
@@ -126,6 +156,8 @@ public class ProgramController {
             boolean microActionsEnabled,
             Set<String> enabledOptions
     ) {}
+
+    public record CheckpointDto(String name, int day) {}
 
     public record ProgramSummaryDto(
             Long id,
@@ -198,6 +230,7 @@ public class ProgramController {
             String firstName,
             String lastName,
             String coachUsername,
+            String managerUsername,
             LocalDateTime lastActiveAt,
             int sessionsConsumed,
             int sessionsAllocated,
@@ -209,6 +242,7 @@ public class ProgramController {
                     row.firstName(),
                     row.lastName(),
                     row.coachUsername(),
+                    row.managerUsername(),
                     row.lastLoginAt(),
                     row.consumedUnits(),
                     row.allocatedUnits(),

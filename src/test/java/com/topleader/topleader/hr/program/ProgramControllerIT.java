@@ -96,7 +96,7 @@ class ProgramControllerIT extends IntegrationTest {
                                     "startDate": "2026-06-01T00:00:00",
                                     "milestoneDate": "2026-08-15T00:00:00",
                                     "focusAreas": ["fa.giving-feedback", "fa.delegation"],
-                                    "participants": ["user1@test.cz"],
+                                    "participants": [{"username": "user1@test.cz", "managerUsername": null}],
                                     "sessionsPerParticipant": 5,
                                     "recommendedCadence": "Every 2-3 weeks",
                                     "coachAssignmentModel": "PARTICIPANT_CHOOSES",
@@ -178,7 +178,7 @@ class ProgramControllerIT extends IntegrationTest {
                                     "durationDays": 120,
                                     "milestoneDate": "2026-09-01T00:00:00",
                                     "focusAreas": ["fa.communication"],
-                                    "participants": ["user1@test.cz", "user2@test.cz"],
+                                    "participants": [{"username": "user1@test.cz", "managerUsername": null}, {"username": "user2@test.cz", "managerUsername": "hr_prog"}],
                                     "sessionsPerParticipant": 8,
                                     "recommendedCadence": "Weekly",
                                     "coachAssignmentModel": "HR_ASSIGNS",
@@ -216,6 +216,85 @@ class ProgramControllerIT extends IntegrationTest {
                                 }
                                 """))
                 .andExpect(status().isNotFound());
+    }
+
+    // ==================== Multi-program validation ====================
+
+    @Test
+    @Sql("/sql/hr/program-draft-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void createDraft_failsWhenParticipantInActiveProgram() throws Exception {
+        // First launch program 1 (has user1@test.cz)
+        mvc.perform(post("/api/latest/hr/programs/1/launch"))
+                .andExpect(status().isOk());
+
+        // Try to create new draft with same participant
+        mvc.perform(post("/api/latest/hr/programs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "name": "Another Program",
+                                    "focusAreas": [],
+                                    "participants": [{"username": "user1@test.cz", "managerUsername": null}],
+                                    "shortlistedCoaches": [],
+                                    "enabledOptions": []
+                                }
+                                """))
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$[0].errorCode").value("program.participant.already.in.program"));
+    }
+
+    @Test
+    @Sql("/sql/hr/program-draft-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void createDraft_withManagerAssignment() throws Exception {
+        mvc.perform(post("/api/latest/hr/programs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "name": "Program With Managers",
+                                    "focusAreas": [],
+                                    "participants": [
+                                        {"username": "user1@test.cz", "managerUsername": "hr_prog"},
+                                        {"username": "user2@test.cz", "managerUsername": null}
+                                    ],
+                                    "shortlistedCoaches": [],
+                                    "enabledOptions": []
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Program With Managers"))
+                .andExpect(jsonPath("$.status").value("DRAFT"));
+    }
+
+    @Test
+    @Sql("/sql/hr/program-draft-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void createDraft_withCycleLengthDays() throws Exception {
+        mvc.perform(post("/api/latest/hr/programs")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                    "name": "Cycle Program",
+                                    "durationDays": 90,
+                                    "cycleLengthDays": 30,
+                                    "focusAreas": [],
+                                    "participants": [],
+                                    "shortlistedCoaches": [],
+                                    "enabledOptions": []
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.cycleLengthDays").value(30))
+                .andExpect(jsonPath("$.checkpoints", hasSize(7)))
+                .andExpect(jsonPath("$.checkpoints[0].name").value("Enrollment"))
+                .andExpect(jsonPath("$.checkpoints[0].day").value(0))
+                .andExpect(jsonPath("$.checkpoints[1].name").value("Mid-cycle"))
+                .andExpect(jsonPath("$.checkpoints[1].day").value(15))
+                .andExpect(jsonPath("$.checkpoints[2].name").value("Cycle review"))
+                .andExpect(jsonPath("$.checkpoints[2].day").value(30))
+                .andExpect(jsonPath("$.checkpoints[6].name").value("Final review"))
+                .andExpect(jsonPath("$.checkpoints[6].day").value(90));
     }
 
     // ==================== GET /users ====================

@@ -12,6 +12,7 @@
       "firstName": "Marketa",
       "lastName": "Cerva",
       "coachUsername": null,
+      "managerUsername": null,
       "sessionsConsumed": 2,
       "sessionsAllocated": 4
     },
@@ -20,6 +21,7 @@
       "firstName": "Jana",
       "lastName": "Dvorak",
       "coachUsername": "coach1",
+      "managerUsername": null,
       "sessionsConsumed": 3,
       "sessionsAllocated": 4,
       "status": "ON_TRACK"
@@ -29,6 +31,7 @@
       "firstName": "Tomas",
       "lastName": "Novak",
       "coachUsername": "coach1",
+      "managerUsername": null,
       "sessionsConsumed": 3,
       "sessionsAllocated": 4,
       "status": "ON_TRACK"
@@ -38,6 +41,7 @@
       "firstName": "Oleg",
       "lastName": "Volkov",
       "coachUsername": null,
+      "managerUsername": null,
       "sessionsConsumed": 0,
       "sessionsAllocated": 4,
       "status": "AT_RISK"

@@ -51,6 +51,7 @@ public interface ProgramRepository extends ListCrudRepository<Program, Long> {
                 u.last_name,
                 u.last_login_at,
                 COALESCE(pp.coach_username, u.coach) AS coach_username,
+                pp.manager_username,
                 ua.consumed_units,
                 ua.allocated_units
             FROM program p
@@ -109,6 +110,7 @@ public interface ProgramRepository extends ListCrudRepository<Program, Long> {
             String lastName,
             LocalDateTime lastLoginAt,
             String coachUsername,
+            String managerUsername,
             int consumedUnits,
             int allocatedUnits
     ) {}
