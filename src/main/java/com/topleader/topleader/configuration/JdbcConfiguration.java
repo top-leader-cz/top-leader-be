@@ -7,7 +7,6 @@ import com.topleader.topleader.common.notification.context.NotificationContext;
 import com.topleader.topleader.common.util.common.JsonbValue;
 import com.topleader.topleader.feedback.api.Summary;
 import com.topleader.topleader.feedback.feedback_notification.FeedbackNotification;
-import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.common.notification.Notification;
 import com.topleader.topleader.history.DataHistory;
@@ -51,10 +50,7 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
     @Override
     public JdbcCustomConversions jdbcCustomConversions() {
         return new JdbcCustomConversions(List.of(
-                new IntegerToBooleanConverter(),
                 new PGobjectToStringConverter(),
-                new AuthoritiesReadingConverter(),
-                new AuthoritiesWritingConverter(),
                 new JsonbValueReadingConverter(),
                 new JsonbValueWritingConverter(),
                 new ScheduledSessionStatusReadingConverter(),
@@ -71,16 +67,10 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
                 new DataHistoryTypeWritingConverter(),
                 new StoredDataReadingConverter(),
                 new StoredDataWritingConverter(),
-                new StringListFromPGobjectConverter(),
                 new StringListFromStringConverter(),
-                new StringListWritingConverter(),
-                new StringSetFromPGobjectConverter(),
-                new PrimaryRoleSetFromPGobjectConverter(),
                 new UserStatusReadingConverter(),
                 new UserStatusWritingConverter(),
                 new StringToAuthoritiesReadingConverter(),
-                new StringSetFromStringConverter(),
-                new PrimaryRoleSetFromStringConverter(),
                 new CalendarSyncInfoStatusReadingConverter(),
                 new CalendarSyncInfoStatusWritingConverter(),
                 new CalendarSyncInfoSyncTypeReadingConverter(),
@@ -96,14 +86,6 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
                 new UserArticleReadingConverter(),
                 new UserArticleWritingConverter()
         ));
-    }
-
-    @ReadingConverter
-    static class IntegerToBooleanConverter implements Converter<Integer, Boolean> {
-        @Override
-        public Boolean convert(Integer source) {
-            return source != null && source != 0;
-        }
     }
 
     @ReadingConverter
@@ -148,32 +130,6 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
             return pgObject;
         } catch (SQLException e) {
             throw new IllegalStateException("Failed to create JSONB PGobject", e);
-        }
-    }
-
-    private static PGobject toPGobject(Object source) {
-        return Optional.ofNullable(source)
-                .map(obj -> createJsonbPGobject(writeJsonToString(obj)))
-                .orElse(null);
-    }
-
-    @ReadingConverter
-    static class AuthoritiesReadingConverter implements Converter<PGobject, Set<User.Authority>> {
-        @Override
-        public Set<User.Authority> convert(PGobject source) {
-            return Optional.ofNullable(source)
-                    .map(PGobject::getValue)
-                    .filter(StringUtils::isNotBlank)
-                    .map(v -> readJson(v, new TypeReference<Set<User.Authority>>() {}))
-                    .orElse(Set.of(User.Authority.USER));
-        }
-    }
-
-    @WritingConverter
-    static class AuthoritiesWritingConverter implements Converter<Set<User.Authority>, PGobject> {
-        @Override
-        public PGobject convert(Set<User.Authority> source) {
-            return toPGobject(source);
         }
     }
 
@@ -345,18 +301,6 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
     }
 
     @ReadingConverter
-    static class StringListFromPGobjectConverter implements Converter<PGobject, List<String>> {
-        @Override
-        public List<String> convert(PGobject source) {
-            return Optional.ofNullable(source)
-                    .map(PGobject::getValue)
-                    .filter(StringUtils::isNotBlank)
-                    .map(v -> readJson(v, new TypeReference<List<String>>() {}))
-                    .orElse(List.of());
-        }
-    }
-
-    @ReadingConverter
     static class StringListFromStringConverter implements Converter<String, List<String>> {
         @Override
         public List<String> convert(String source) {
@@ -364,14 +308,6 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
                     .filter(StringUtils::isNotBlank)
                     .map(v -> readJson(v, new TypeReference<List<String>>() {}))
                     .orElse(List.of());
-        }
-    }
-
-    @WritingConverter
-    static class StringListWritingConverter implements Converter<List<String>, PGobject> {
-        @Override
-        public PGobject convert(List<String> source) {
-            return toPGobject(source);
         }
     }
 
@@ -417,29 +353,6 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
         }
     }
 
-    @ReadingConverter
-    static class StringSetFromPGobjectConverter implements Converter<PGobject, Set<String>> {
-        @Override
-        public Set<String> convert(PGobject source) {
-            return Optional.ofNullable(source)
-                    .map(PGobject::getValue)
-                    .filter(StringUtils::isNotBlank)
-                    .map(v -> readJson(v, new TypeReference<Set<String>>() {}))
-                    .orElse(Set.of());
-        }
-    }
-
-    @ReadingConverter
-    static class PrimaryRoleSetFromPGobjectConverter implements Converter<PGobject, Set<Coach.PrimaryRole>> {
-        @Override
-        public Set<Coach.PrimaryRole> convert(PGobject source) {
-            return Optional.ofNullable(source)
-                    .map(PGobject::getValue)
-                    .filter(StringUtils::isNotBlank)
-                    .map(v -> readJson(v, new TypeReference<Set<Coach.PrimaryRole>>() {}))
-                    .orElse(Set.of());
-        }
-    }
 
     @ReadingConverter
     static class UserStatusReadingConverter implements Converter<String, User.Status> {
@@ -473,27 +386,6 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
         }
     }
 
-    @ReadingConverter
-    static class StringSetFromStringConverter implements Converter<String, Set<String>> {
-        @Override
-        public Set<String> convert(String source) {
-            return Optional.ofNullable(source)
-                    .filter(StringUtils::isNotBlank)
-                    .map(v -> readJson(v, new TypeReference<Set<String>>() {}))
-                    .orElse(Set.of());
-        }
-    }
-
-    @ReadingConverter
-    static class PrimaryRoleSetFromStringConverter implements Converter<String, Set<Coach.PrimaryRole>> {
-        @Override
-        public Set<Coach.PrimaryRole> convert(String source) {
-            return Optional.ofNullable(source)
-                    .filter(StringUtils::isNotBlank)
-                    .map(v -> readJson(v, new TypeReference<Set<Coach.PrimaryRole>>() {}))
-                    .orElse(Set.of());
-        }
-    }
 
     @ReadingConverter
     static class CalendarSyncInfoStatusReadingConverter implements Converter<String, CalendarSyncInfo.Status> {

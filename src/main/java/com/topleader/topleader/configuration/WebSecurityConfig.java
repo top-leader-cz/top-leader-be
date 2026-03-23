@@ -42,12 +42,15 @@ public class WebSecurityConfig {
     @Value("${top-leader.job-trigger.password}")
     private String jobTriggerPassword;
 
+    @Value("${top-leader.cookie.secure:true}")
+    private boolean useSecureCookie;
+
 
     @Bean
     public CookieSerializer cookieSerializer() {
         var serializer = new DefaultCookieSerializer();
         serializer.setSameSite("Lax");
-        serializer.setUseSecureCookie(true);
+        serializer.setUseSecureCookie(useSecureCookie);
         serializer.setUseHttpOnlyCookie(true);
         serializer.setCookiePath("/");
         return serializer;

@@ -1,0 +1,7 @@
+top-leader:
+  cookie:
+    secure: false
+  rate-limit:
+    login:
+      max-attempts: 50
+      block-duration-minutes: 1
