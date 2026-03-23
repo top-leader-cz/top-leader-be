@@ -3,7 +3,11 @@
  */
 package com.topleader.topleader.admin;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.topleader.topleader.coach.Coach;
+import com.topleader.topleader.common.util.common.JsonbValue;
 import com.topleader.topleader.user.User;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -65,9 +69,25 @@ public class AdminView {
 
     private String rate;
 
-    private Set<String> certificate;
+    @JsonIgnore
+    private JsonbValue certificate;
 
     private Integer internalRate;
 
-    private Set<Coach.PrimaryRole> primaryRoles;
+    @JsonIgnore
+    private JsonbValue primaryRoles;
+
+    private static final TypeReference<Set<Coach.PrimaryRole>> PRIMARY_ROLES_TYPE = new TypeReference<>() {};
+
+    @JsonProperty("certificate")
+    public Set<String> getCertificateSet() {
+        return certificate != null && !certificate.isNull() ? JsonbValue.toStringSet(certificate) : null;
+    }
+    public AdminView setCertificateSet(Set<String> v) { this.certificate = JsonbValue.fromSet(v); return this; }
+
+    @JsonProperty("primaryRoles")
+    public Set<Coach.PrimaryRole> getPrimaryRolesSet() {
+        return primaryRoles != null && !primaryRoles.isNull() ? JsonbValue.toSet(primaryRoles, PRIMARY_ROLES_TYPE) : null;
+    }
+    public AdminView setPrimaryRolesSet(Set<Coach.PrimaryRole> v) { this.primaryRoles = JsonbValue.fromSet(v); return this; }
 }

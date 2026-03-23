@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -49,6 +50,7 @@ public class TokenController {
     @Value("${top-leader.default-locale}")
     private String defaultLocale;
 
+    @Transactional
     @PostMapping("/set-password/{token}")
     public void setPassword(@PathVariable String token,  @Valid @RequestBody TokenController.SetPasswordRequestRequest request) {
         log.info("User set-password start");
