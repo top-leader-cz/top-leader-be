@@ -1,7 +1,7 @@
 package com.topleader.topleader.user.manager;
 
 
-import com.topleader.topleader.hr.domain.UserRequest;
+import com.topleader.topleader.common.domain.UserRequest;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import lombok.RequiredArgsConstructor;

@@ -3,6 +3,8 @@ package com.topleader.topleader.hr;
 import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;
+import com.topleader.topleader.common.domain.CreditRequestDto;
+import com.topleader.topleader.common.domain.ManagerDto;
 import com.topleader.topleader.hr.domain.*;
 import com.topleader.topleader.user.*;
 import com.topleader.topleader.user.manager.ManagerService;
@@ -27,8 +29,8 @@ import org.springframework.web.bind.annotation.*;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.EMAIL_USED;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
 import static com.topleader.topleader.user.User.Status.PENDING;
-import static com.topleader.topleader.user.util.UserDetailUtils.isHr;
-import static com.topleader.topleader.user.util.UserDetailUtils.sendInvite;
+import static com.topleader.topleader.common.util.user.UserDetailUtils.isHr;
+import static com.topleader.topleader.user.util.UserUtils.shouldSendInvite;
 
 
 /**
@@ -132,7 +134,7 @@ public class HrController {
         }
 
         var saved = managerService.processUser(user, request);
-        if (sendInvite(PENDING, request.status())) {
+        if (shouldSendInvite(PENDING, request.status())) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, request.locale()));
         }
         if (PENDING == request.status()) {
@@ -174,7 +176,7 @@ public class HrController {
 
         var updatedUser = managerService.processUser(user, request);
 
-        if (sendInvite(oldStatus, request.status())) {
+        if (shouldSendInvite(oldStatus, request.status())) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, request.locale()));
         }
 

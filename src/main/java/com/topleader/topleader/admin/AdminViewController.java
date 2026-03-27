@@ -28,7 +28,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import static com.topleader.topleader.user.util.UserDetailUtils.sendInvite;
+import static com.topleader.topleader.user.util.UserUtils.shouldSendInvite;
 
 
 /**
@@ -135,7 +135,7 @@ public class AdminViewController {
     public void createUser(@AuthenticationPrincipal UserDetails u, @RequestBody @Valid CreateUserRequestDto userRequest) {
         final var user = userDetailService.save(userRequest.toUser(u.getUsername()));
         userRequest.toCoach().ifPresent(coachRepository::save);
-        if (sendInvite(User.Status.PENDING, userRequest.status)) {
+        if (shouldSendInvite(User.Status.PENDING, userRequest.status)) {
             invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(user, userRequest.locale()));
         }
     }
@@ -148,7 +148,7 @@ public class AdminViewController {
             .map(user -> {
                 var oldStatus = user.getStatus();
                 var updatedUser = userRequest.updateUser(user);
-                if (sendInvite(oldStatus, userRequest.status())) {
+                if (shouldSendInvite(oldStatus, userRequest.status())) {
                     invitationService.sendInvite(InvitationService.UserInvitationRequestDto.from(updatedUser, userRequest.locale()));
                 }
                 return user;
