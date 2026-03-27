@@ -24,6 +24,8 @@ public class Company {
 
     private String businessStrategy;
 
+    private boolean programsEnabled;
+
     @Transient
     private Set<String> allowedCoachRates = new HashSet<>();
 

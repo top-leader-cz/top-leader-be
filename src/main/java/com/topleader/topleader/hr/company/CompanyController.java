@@ -9,6 +9,8 @@ import com.topleader.topleader.common.exception.NotFoundException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
@@ -18,6 +20,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.validation.Valid;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.ALREADY_EXISTING;
 
@@ -49,7 +53,7 @@ public class CompanyController {
 
     @PostMapping
     @Secured("ADMIN")
-    public CompanyDto createCompany(@RequestBody CreateCompanyRequest request) {
+    public CompanyDto createCompany(@Valid @RequestBody CreateCompanyRequest request) {
 
         final var existingCompany = companyRepository.findByName(request.name());
 
@@ -70,7 +74,7 @@ public class CompanyController {
     @Secured("ADMIN")
     public CompanyDto updateCompany(
         @PathVariable String company,
-        @RequestBody UpdateCompanyRequest request
+        @Valid @RequestBody UpdateCompanyRequest request
     ) {
 
         final var existingCompany = companyRepository.findByName(company)
@@ -81,18 +85,23 @@ public class CompanyController {
             companyRepository.insertCoachRate(existingCompany.getId(), rate)
         );
 
+        if (request.programsEnabled() != null) {
+            companyRepository.updateProgramsEnabled(existingCompany.getId(), request.programsEnabled());
+            existingCompany.setProgramsEnabled(request.programsEnabled());
+        }
+
         return CompanyDto.from(existingCompany.setAllowedCoachRates(request.defaultAllowedCoachRate()));
     }
 
-    public record CreateCompanyRequest(String name) {
+    public record CreateCompanyRequest(@NotBlank String name) {
     }
 
-    public record UpdateCompanyRequest(Set<String> defaultAllowedCoachRate) {
+    public record UpdateCompanyRequest(Set<String> defaultAllowedCoachRate, Boolean programsEnabled) {
     }
 
-    public record CompanyDto(Long id, String name, Set<String> defaultAllowedCoachRate) {
+    public record CompanyDto(Long id, String name, Set<String> defaultAllowedCoachRate, boolean programsEnabled) {
         public static CompanyDto from(Company c) {
-            return new CompanyDto(c.getId(), c.getName(), c.getAllowedCoachRates());
+            return new CompanyDto(c.getId(), c.getName(), c.getAllowedCoachRates(), c.isProgramsEnabled());
         }
     }
 }
