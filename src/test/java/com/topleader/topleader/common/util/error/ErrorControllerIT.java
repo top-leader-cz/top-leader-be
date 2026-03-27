@@ -2,40 +2,14 @@ package com.topleader.topleader.common.util.error;
 
 import com.topleader.topleader.IntegrationTest;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@Import(ErrorControllerIT.TestApi.class)
 class ErrorControllerIT extends IntegrationTest {
-
-    @TestConfiguration
-    static class TestApi {
-        @RestController
-        @RequestMapping("/api/test/error-controller")
-        @Secured("ROLE_USER")
-        static class TestController {
-            record Item(String name, List<Entry> entries) {}
-            record Entry(String value) {}
-
-            @PostMapping
-            Item echo(@RequestBody Item item) {
-                return item;
-            }
-        }
-    }
 
     @Test
     @WithMockUser

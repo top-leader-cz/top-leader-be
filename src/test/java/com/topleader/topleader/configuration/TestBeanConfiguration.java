@@ -9,6 +9,11 @@ import com.topleader.topleader.coach.ai.McpToolsConfig;
 import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.util.image.GcsLightweightClient;
 import okhttp3.mockwebserver.MockWebServer;
+import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import org.springframework.aot.hint.MemberCategory;
 import org.springframework.aot.hint.RuntimeHints;
@@ -117,6 +122,19 @@ public class TestBeanConfiguration {
         var server = new MockWebServer();
         server.start(8060);
         return server;
+    }
+
+    @RestController
+    @RequestMapping("/api/test/error-controller")
+    @Secured("ROLE_USER")
+    static class ErrorTestController {
+        record Item(String name, List<Entry> entries) {}
+        record Entry(String value) {}
+
+        @PostMapping
+        Item echo(@RequestBody Item item) {
+            return item;
+        }
     }
 
     @Bean
