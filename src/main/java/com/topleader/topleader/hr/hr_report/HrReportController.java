@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.hr.hr_report;
 
 import com.topleader.topleader.common.exception.ApiValidationException;

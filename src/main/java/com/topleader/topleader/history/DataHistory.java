@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.history;
 
 import com.topleader.topleader.history.data.StoredData;

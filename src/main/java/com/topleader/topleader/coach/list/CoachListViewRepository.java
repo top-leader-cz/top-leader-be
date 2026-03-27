@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.coach.list;
 
 import org.springframework.data.jdbc.repository.query.Query;
