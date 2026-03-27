@@ -12,7 +12,9 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
+import org.apache.commons.lang3.StringUtils;
 
 import com.topleader.topleader.common.util.common.JsonUtils;
 import static com.topleader.topleader.common.util.common.JsonUtils.MAPPER;
@@ -376,6 +378,20 @@ public class AiClient {
                 .call()
                 .entity(new ParameterizedTypeReference<List<CoachRecommendation>>() {}));
         log.info("Coach ranking results: {} coaches ranked", res != null ? res.size() : 0);
+        return res != null ? res : List.of();
+    }
+
+    public List<String> generateWeeklyPractices(String focusArea, String personalGoal, String programGoal, String language) {
+        log.info("Generating weekly practices, focusArea: {}, language: {}", focusArea, language);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.WEEKLY_PRACTICE,
+                Map.of("focusArea", focusArea,
+                        "personalGoal", Optional.ofNullable(personalGoal).orElse(StringUtils.EMPTY),
+                        "programGoal", Optional.ofNullable(programGoal).orElse(StringUtils.EMPTY),
+                        "language", language));
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                .call()
+                .entity(new ParameterizedTypeReference<List<String>>() {}));
+        log.info("Weekly practices generated: {}", res);
         return res != null ? res : List.of();
     }
 

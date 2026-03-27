@@ -117,11 +117,12 @@ tasks.withType<Test> {
 
 tasks.register<Test>("modularityCheck") {
     dependsOn(tasks.compileTestJava)
-    useJUnitPlatform()
-    jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
-    testClassesDirs = files("build/classes/java/test")
+    testClassesDirs = sourceSets["test"].output.classesDirs
     classpath = sourceSets["test"].runtimeClasspath
-    include("**/ModularityTests.class")
+    setExcludes(emptySet<String>())
+    filter {
+        includeTestsMatching("com.topleader.topleader.ModularityTests")
+    }
 }
 
 // JaCoCo configuration

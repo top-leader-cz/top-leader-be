@@ -27,6 +27,7 @@ public class AiPrompt {
         USER_ARTICLES,
         SUGGESTION,
         IMAGE_MATCH,
+        WEEKLY_PRACTICE,
     }
 
 }
