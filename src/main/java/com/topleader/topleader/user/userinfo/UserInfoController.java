@@ -367,7 +367,8 @@ public class UserInfoController {
         String coach,
         String locale,
         Set<String> allowedCoachRates,
-        Long companyId
+        Long companyId,
+        boolean programsEnabled
     ) {
         public static UserInfoDto from(UserInfo info, User user, Optional<Company> company) {
             return new UserInfoDto(
@@ -384,7 +385,8 @@ public class UserInfoController {
                 Optional.ofNullable(user.getAllowedCoachRates())
                     .filter(not(CollectionUtils::isEmpty))
                     .orElse(company.map(Company::getAllowedCoachRates).orElse(null)),
-                user.getCompanyId()
+                user.getCompanyId(),
+                company.map(Company::isProgramsEnabled).orElse(false)
             );
         }
     }

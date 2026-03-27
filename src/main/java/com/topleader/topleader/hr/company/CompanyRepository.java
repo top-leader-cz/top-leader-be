@@ -17,6 +17,10 @@ public interface CompanyRepository extends ListCrudRepository<Company, Long> {
     @Query("UPDATE company SET business_strategy = :strategy WHERE id = :companyId")
     void updateStrategy(long companyId, String strategy);
 
+    @Modifying
+    @Query("UPDATE company SET programs_enabled = :enabled WHERE id = :companyId")
+    void updateProgramsEnabled(long companyId, boolean enabled);
+
     @Query("SELECT rate_name FROM company_coach_rates WHERE company_id = :companyId")
     List<String> findCoachRatesByCompanyId(long companyId);
 
