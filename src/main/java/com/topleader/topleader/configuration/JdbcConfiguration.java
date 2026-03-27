@@ -2,7 +2,10 @@ package com.topleader.topleader.configuration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.topleader.topleader.hr.program.Program;
+import com.topleader.topleader.program.Program;
+import com.topleader.topleader.program.participant.ProgramParticipant;
+import com.topleader.topleader.program.participant.practice.WeeklyPractice;
+import com.topleader.topleader.program.participant.assessment.AssessmentResponse;
 import com.topleader.topleader.common.ai.AiPrompt;
 import com.topleader.topleader.common.notification.context.NotificationContext;
 import com.topleader.topleader.common.util.common.JsonbValue;
@@ -89,7 +92,15 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
                 new UserArticleReadingConverter(),
                 new UserArticleWritingConverter(),
                 new CoachAssignmentModelReadingConverter(),
-                new CoachAssignmentModelWritingConverter()
+                new CoachAssignmentModelWritingConverter(),
+                new ParticipantStatusReadingConverter(),
+                new ParticipantStatusWritingConverter(),
+                new WeeklyPracticeSourceReadingConverter(),
+                new WeeklyPracticeSourceWritingConverter(),
+                new WeeklyPracticeFridayResponseReadingConverter(),
+                new WeeklyPracticeFridayResponseWritingConverter(),
+                new AssessmentResponseTypeReadingConverter(),
+                new AssessmentResponseTypeWritingConverter()
         ));
     }
 
@@ -516,6 +527,82 @@ public class JdbcConfiguration extends AbstractJdbcConfiguration {
             return Optional.ofNullable(source)
                     .map(Enum::name)
                     .orElse(null);
+        }
+    }
+
+    @ReadingConverter
+    static class ParticipantStatusReadingConverter implements Converter<String, ProgramParticipant.Status> {
+        @Override
+        public ProgramParticipant.Status convert(String source) {
+            return Optional.ofNullable(source)
+                    .filter(StringUtils::isNotBlank)
+                    .map(ProgramParticipant.Status::valueOf)
+                    .orElse(null);
+        }
+    }
+
+    @WritingConverter
+    static class ParticipantStatusWritingConverter implements Converter<ProgramParticipant.Status, String> {
+        @Override
+        public String convert(ProgramParticipant.Status source) {
+            return Optional.ofNullable(source).map(Enum::name).orElse(null);
+        }
+    }
+
+    @ReadingConverter
+    static class WeeklyPracticeSourceReadingConverter implements Converter<String, WeeklyPractice.Source> {
+        @Override
+        public WeeklyPractice.Source convert(String source) {
+            return Optional.ofNullable(source)
+                    .filter(StringUtils::isNotBlank)
+                    .map(WeeklyPractice.Source::valueOf)
+                    .orElse(null);
+        }
+    }
+
+    @WritingConverter
+    static class WeeklyPracticeSourceWritingConverter implements Converter<WeeklyPractice.Source, String> {
+        @Override
+        public String convert(WeeklyPractice.Source source) {
+            return Optional.ofNullable(source).map(Enum::name).orElse(null);
+        }
+    }
+
+    @ReadingConverter
+    static class WeeklyPracticeFridayResponseReadingConverter implements Converter<String, WeeklyPractice.FridayResponse> {
+        @Override
+        public WeeklyPractice.FridayResponse convert(String source) {
+            return Optional.ofNullable(source)
+                    .filter(StringUtils::isNotBlank)
+                    .map(WeeklyPractice.FridayResponse::valueOf)
+                    .orElse(null);
+        }
+    }
+
+    @WritingConverter
+    static class WeeklyPracticeFridayResponseWritingConverter implements Converter<WeeklyPractice.FridayResponse, String> {
+        @Override
+        public String convert(WeeklyPractice.FridayResponse source) {
+            return Optional.ofNullable(source).map(Enum::name).orElse(null);
+        }
+    }
+
+    @ReadingConverter
+    static class AssessmentResponseTypeReadingConverter implements Converter<String, AssessmentResponse.Type> {
+        @Override
+        public AssessmentResponse.Type convert(String source) {
+            return Optional.ofNullable(source)
+                    .filter(StringUtils::isNotBlank)
+                    .map(AssessmentResponse.Type::valueOf)
+                    .orElse(null);
+        }
+    }
+
+    @WritingConverter
+    static class AssessmentResponseTypeWritingConverter implements Converter<AssessmentResponse.Type, String> {
+        @Override
+        public String convert(AssessmentResponse.Type source) {
+            return Optional.ofNullable(source).map(Enum::name).orElse(null);
         }
     }
 

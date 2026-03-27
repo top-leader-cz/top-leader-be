@@ -2,6 +2,7 @@ package com.topleader.topleader.user.userinfo;
 
 import com.icegreen.greenmail.util.GreenMailUtil;
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.TestUtils;
 import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
 import com.topleader.topleader.history.DataHistory;
 import com.topleader.topleader.history.DataHistoryRepository;
@@ -29,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.SqlMergeMode;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -87,40 +89,63 @@ class UserInfoControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(username = "user", authorities = "USER")
     void getEmptyDetailTest() throws Exception {
-
-        mvc.perform(get("/api/latest/user-info"))
+        var result = mvc.perform(get("/api/latest/user-info"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.username", is("user")))
-            .andExpect(jsonPath("$.firstName", is("Some")))
-            .andExpect(jsonPath("$.lastName", is("Dude")))
-            .andExpect(jsonPath("$.timeZone", is("UTC")))
-            .andExpect(jsonPath("$.userRoles", hasSize(1)))
-            .andExpect(jsonPath("$.userRoles", hasItems("USER")))
-            .andExpect(jsonPath("$.strengths", hasSize(2)))
-            .andExpect(jsonPath("$.values", hasSize(2)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
-            .andExpect(jsonPath("$.locale",is("en")))
-            .andExpect(jsonPath("$.companyId", is(100)))
-        ;
+            .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+            {
+              "username": "user",
+              "firstName": "Some",
+              "lastName": "Dude",
+              "userRoles": ["USER"],
+              "timeZone": "UTC",
+              "strengths": ["ss1", "ss2"],
+              "values": ["vv1", "vv2"],
+              "areaOfDevelopment": ["aa1", "aa2"],
+              "locale": "en",
+              "companyId": 100,
+              "programsEnabled": false
+            }
+            """);
     }
 
     @Test
     @WithMockUser(username = "user2", authorities = "USER")
     void getNotEmptyDetailTest() throws Exception {
-
-        mvc.perform(get("/api/latest/user-info"))
+        var result = mvc.perform(get("/api/latest/user-info"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.username", is("user2")))
-            .andExpect(jsonPath("$.timeZone", is("UTC")))
-            .andExpect(jsonPath("$.strengths", hasSize(2)))
-            .andExpect(jsonPath("$.strengths", hasItems("s1", "s2")))
-            .andExpect(jsonPath("$.values", hasSize(2)))
-            .andExpect(jsonPath("$.values", hasItems("v1", "v2")))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasSize(2)))
-            .andExpect(jsonPath("$.areaOfDevelopment", hasItems("a1", "a2")))
-            .andExpect(jsonPath("$.locale", is("en")))
-            .andExpect(jsonPath("$.companyId", nullValue()))
-        ;
+            .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+            {
+              "username": "user2",
+              "timeZone": "UTC",
+              "strengths": ["s1", "s2"],
+              "values": ["v1", "v2"],
+              "areaOfDevelopment": ["a1", "a2"],
+              "locale": "en",
+              "companyId": null,
+              "programsEnabled": false
+            }
+            """);
+    }
+
+    @Test
+    @WithMockUser(username = "user", authorities = "USER")
+    @SqlMergeMode(SqlMergeMode.MergeMode.MERGE)
+    @Sql(statements = "UPDATE company SET programs_enabled = true WHERE id = 100")
+    void getProgramsEnabledTest() throws Exception {
+        var result = mvc.perform(get("/api/latest/user-info"))
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+            {
+              "companyId": 100,
+              "programsEnabled": true
+            }
+            """);
     }
 
     @Test

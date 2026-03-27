@@ -14,4 +14,7 @@ public record SessionEmailData(
     String meetLink,
     String meetProviderLabel
 ) {
+    public SessionEmailData(Long id, String username, String coachUsername, LocalDateTime time) {
+        this(id, username, coachUsername, time, null, null);
+    }
 }

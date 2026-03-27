@@ -2,8 +2,7 @@ package com.topleader.topleader.session.user_allocation;
 
 import com.topleader.topleader.session.coaching_package.CoachingPackageService;
 import com.topleader.topleader.session.user_allocation.dto.*;
-import com.topleader.topleader.user.User;
-import com.topleader.topleader.user.UserDetailService;
+import com.topleader.topleader.common.util.company.CompanyIdResolver;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 
-import static com.topleader.topleader.user.util.UserDetailUtils.isAdmin;
+import static com.topleader.topleader.common.util.user.UserDetailUtils.isAdmin;
 
 @Slf4j
 @RestController
@@ -25,7 +24,7 @@ public class UserAllocationController {
 
     private final UserAllocationService userAllocationService;
     private final CoachingPackageService coachingPackageService;
-    private final UserDetailService userDetailService;
+    private final CompanyIdResolver companyIdResolver;
 
     @PostMapping("/api/latest/coaching-packages/{packageId}/allocations/{userId}")
     @Secured({"HR", "ADMIN"})
@@ -94,9 +93,7 @@ public class UserAllocationController {
             return;
         }
 
-        var userCompanyId = userDetailService.getUser(user.getUsername())
-                .map(User::getCompanyId)
-                .orElse(null);
+        var userCompanyId = companyIdResolver.getCompanyId(user.getUsername()).orElse(null);
 
         if (!Objects.equals(userCompanyId, companyId)) {
             log.error("User {} attempted to access company {} but belongs to company {}",

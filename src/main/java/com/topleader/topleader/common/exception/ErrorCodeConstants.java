@@ -46,4 +46,17 @@ public final class ErrorCodeConstants {
     public static final String PARTICIPANTS_NOT_FOUND = "program.participants.not.found";
     public static final String PARTICIPANT_ALREADY_IN_PROGRAM = "program.participant.already.in.program";
 
+    public static final String PARTICIPANT_ENROLL_INVALID_STATUS = "participant.enroll.invalid.status";
+    public static final String PARTICIPANT_ENROLL_FOCUS_AREA_INVALID = "participant.enroll.focus.area.invalid";
+    public static final String PARTICIPANT_BASELINE_INVALID_STATUS = "participant.baseline.invalid.status";
+    public static final String PARTICIPANT_CHECKIN_INVALID_STATUS = "participant.checkin.invalid.status";
+    public static final String PARTICIPANT_MID_CYCLE_NOT_DUE = "participant.mid.cycle.not.due";
+    public static final String PARTICIPANT_MID_CYCLE_ALREADY_COMPLETED = "participant.mid.cycle.already.completed";
+    public static final String PARTICIPANT_MID_CYCLE_NO_BASELINE = "participant.mid.cycle.no.baseline";
+    public static final String PARTICIPANT_FINAL_INVALID_STATUS = "participant.final.invalid.status";
+    public static final String PARTICIPANT_FINAL_NOT_DUE = "participant.final.not.due";
+    public static final String PARTICIPANT_FINAL_ALREADY_COMPLETED = "participant.final.already.completed";
+    public static final String PARTICIPANT_FINAL_NPS_REQUIRED = "participant.final.nps.required";
+    public static final String ASSESSMENT_QUESTIONS_INCOMPLETE = "assessment.questions.incomplete";
+
 }

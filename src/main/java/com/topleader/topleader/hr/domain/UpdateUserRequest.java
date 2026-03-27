@@ -1,5 +1,6 @@
 package com.topleader.topleader.hr.domain;
 
+import com.topleader.topleader.common.domain.UserRequest;
 import com.topleader.topleader.user.User;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

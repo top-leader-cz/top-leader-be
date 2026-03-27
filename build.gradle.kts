@@ -1,7 +1,7 @@
 plugins {
     java
     jacoco
-    id("org.springframework.boot") version "4.0.2"
+    id("org.springframework.boot") version "4.0.5"
     id("io.spring.dependency-management") version "1.1.7"
     id("io.freefair.lombok") version "9.2.0"
     id("org.graalvm.buildtools.native") version "0.11.1"
@@ -32,7 +32,7 @@ configurations {
 
 dependencyManagement {
     imports {
-        mavenBom("org.springframework.ai:spring-ai-bom:2.0.0-M2")
+        mavenBom("org.springframework.ai:spring-ai-bom:2.0.0-M4")
         mavenBom("org.testcontainers:testcontainers-bom:2.0.3")
         mavenBom("org.springframework.modulith:spring-modulith-bom:2.0.2")
     }
@@ -117,11 +117,12 @@ tasks.withType<Test> {
 
 tasks.register<Test>("modularityCheck") {
     dependsOn(tasks.compileTestJava)
-    useJUnitPlatform()
-    jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
-    testClassesDirs = files("build/classes/java/test")
+    testClassesDirs = sourceSets["test"].output.classesDirs
     classpath = sourceSets["test"].runtimeClasspath
-    include("**/ModularityTests.class")
+    setExcludes(emptySet<String>())
+    filter {
+        includeTestsMatching("com.topleader.topleader.ModularityTests")
+    }
 }
 
 // JaCoCo configuration
