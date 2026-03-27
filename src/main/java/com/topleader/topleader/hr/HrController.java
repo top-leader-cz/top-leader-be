@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.hr;
 
 import com.topleader.topleader.common.email.Emailing;

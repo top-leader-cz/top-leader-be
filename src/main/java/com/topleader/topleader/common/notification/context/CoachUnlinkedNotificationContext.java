@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.common.notification.context;
 
 import com.fasterxml.jackson.annotation.JsonInclude;

@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.session.coaching_package.dto;
 
 import com.topleader.topleader.session.coaching_package.CoachingPackage;

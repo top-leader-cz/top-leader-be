@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.coach.client;
 
 import com.icegreen.greenmail.util.GreenMailUtil;

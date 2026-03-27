@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.session.user_allocation;
 
 import com.topleader.topleader.common.exception.ApiValidationException;

@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2023 Price f(x), s.r.o.
- */
 package com.topleader.topleader.common.util.common;
 
 import com.fasterxml.jackson.core.type.TypeReference;
