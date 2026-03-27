@@ -44,6 +44,14 @@ public class UserUtils {
         }
     }
 
+    public String defaultLocale() {
+        return Languages.en.name();
+    }
+
+    public String defaultLanguage() {
+        return Languages.en.language;
+    }
+
     public enum Languages {
         fr("French"),
         cs("Czech"),
@@ -59,5 +67,9 @@ public class UserUtils {
 
     public static String getUserCalendlyUuid(String ownerUrl) {
         return ownerUrl.substring(ownerUrl.lastIndexOf("/") + 1);
+    }
+
+    public static boolean shouldSendInvite(User.Status oldStatus, User.Status newStatus) {
+        return User.Status.PENDING == oldStatus && (User.Status.AUTHORIZED == newStatus || User.Status.PAID == newStatus);
     }
 }

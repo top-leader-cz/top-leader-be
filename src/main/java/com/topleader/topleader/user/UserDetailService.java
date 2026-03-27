@@ -4,6 +4,7 @@ package com.topleader.topleader.user;
 import java.util.Locale;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
+import com.topleader.topleader.common.util.company.CompanyIdResolver;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.User;
@@ -20,7 +21,7 @@ import static com.topleader.topleader.common.exception.ErrorCodeConstants.UNABLE
 @Slf4j
 @Service
 @AllArgsConstructor
-public class UserDetailService implements UserDetailsService {
+public class UserDetailService implements UserDetailsService, CompanyIdResolver {
 
     private static final String FIELD_USERNAME = "username";
 
@@ -45,6 +46,11 @@ public class UserDetailService implements UserDetailsService {
 
     public Optional<com.topleader.topleader.user.User> getUser(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    @Override
+    public Optional<Long> getCompanyId(String username) {
+        return getUser(username).map(com.topleader.topleader.user.User::getCompanyId);
     }
 
     public Optional<com.topleader.topleader.user.User> getUserByEmail(String email) {

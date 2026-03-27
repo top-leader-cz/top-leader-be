@@ -1,8 +1,8 @@
 package com.topleader.topleader.user.settings;
 
 
-import com.topleader.topleader.hr.company.Company;
-import com.topleader.topleader.hr.company.CompanyRepository;
+import com.topleader.topleader.common.company.Company;
+import com.topleader.topleader.common.company.CompanyRepository;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.manager.UserManagerRepository;
 import com.topleader.topleader.user.manager.UsersManagers;

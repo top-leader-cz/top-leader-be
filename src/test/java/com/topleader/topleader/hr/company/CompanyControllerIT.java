@@ -1,6 +1,7 @@
 package com.topleader.topleader.hr.company;
 
 import com.topleader.topleader.IntegrationTest;
+import com.topleader.topleader.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -22,74 +23,49 @@ class CompanyControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void listCompanies() throws Exception {
-        mvc.perform(get("/api/latest/companies"))
+        var result = mvc.perform(get("/api/latest/companies"))
             .andExpect(status().isOk())
-            .andExpect(content().json(
-                """
-                    [
-                      {
-                        "id": 1,
-                        "name": "company1",
-                        "defaultAllowedCoachRate": ["$$$"]
-                      },
-                      {
-                        "id": 2,
-                        "name": "company2",
-                        "defaultAllowedCoachRate": ["$$"]
-                      }
-                    ]
-                    """
-            ))
-            .andDo(print());
+            .andDo(print())
+            .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+            [
+              {"id": 1, "name": "company1", "defaultAllowedCoachRate": ["$$$"], "programsEnabled": false},
+              {"id": 2, "name": "company2", "defaultAllowedCoachRate": ["$$"], "programsEnabled": false}
+            ]
+            """);
     }
 
     @Test
     @WithMockUser(authorities = "ADMIN")
     void createCompanyTest() throws Exception {
-        mvc.perform(post("/api/latest/companies")
+        var result = mvc.perform(post("/api/latest/companies")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {
-                        "name": "company3"
-                    }
+                    {"name": "company3"}
                     """)
             )
             .andExpect(status().isOk())
-            .andExpect(content().json(
-                """
-                    {
-                        "id": 3,
-                        "name": "company3"
-                      }
-                    """
-            ));
+            .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+            {"id": 3, "name": "company3", "programsEnabled": false}
+            """);
     }
+
     @Test
     @WithMockUser(authorities = "ADMIN")
     void createCompany_nameAlreadyUsedTest() throws Exception {
         mvc.perform(post("/api/latest/companies")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {
-                        "name": "company1"
-                    }
+                    {"name": "company1"}
                     """)
             )
             .andExpect(status().isUnprocessableEntity())
             .andExpect(content().json(
                 """
-                    [
-                      {
-                        "errorCode": "already.existing",
-                        "fields": [
-                          {
-                            "name": "name",
-                            "value": "company1"
-                          }
-                        ],
-                        "errorMessage": "Company with this name already exists"
-                      }
-                    ]
+                    [{"errorCode": "already.existing", "fields": [{"name": "name", "value": "company1"}], "errorMessage": "Company with this name already exists"}]
                     """
             ));
     }
@@ -97,23 +73,34 @@ class CompanyControllerIT extends IntegrationTest {
     @Test
     @WithMockUser(authorities = "ADMIN")
     void updateCompanyTest() throws Exception {
-        mvc.perform(post("/api/latest/companies/company1")
+        var result = mvc.perform(post("/api/latest/companies/company1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
-                    {
-                        "defaultAllowedCoachRate": ["$"]
-                    }
+                    {"defaultAllowedCoachRate": ["$"]}
                     """)
             )
             .andExpect(status().isOk())
-            .andExpect(content().json(
-                """
-                    {
-                        "id": 1,
-                        "name": "company1",
-                        "defaultAllowedCoachRate": ["$"]
-                      }
-                    """
-            ));
+            .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+            {"id": 1, "name": "company1", "defaultAllowedCoachRate": ["$"], "programsEnabled": false}
+            """);
+    }
+
+    @Test
+    @WithMockUser(authorities = "ADMIN")
+    void updateCompanyProgramsEnabledTest() throws Exception {
+        var result = mvc.perform(post("/api/latest/companies/company1")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {"defaultAllowedCoachRate": ["$$$"], "programsEnabled": true}
+                    """)
+            )
+            .andExpect(status().isOk())
+            .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+            {"id": 1, "name": "company1", "defaultAllowedCoachRate": ["$$$"], "programsEnabled": true}
+            """);
     }
 }

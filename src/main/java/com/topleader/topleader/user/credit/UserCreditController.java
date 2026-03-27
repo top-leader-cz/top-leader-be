@@ -2,7 +2,7 @@ package com.topleader.topleader.user.credit;
 
 import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.common.exception.NotFoundException;
-import com.topleader.topleader.hr.domain.CreditRequestDto;
+import com.topleader.topleader.common.domain.CreditRequestDto;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.common.util.transaction.TransactionService;
 import lombok.AllArgsConstructor;
