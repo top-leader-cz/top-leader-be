@@ -1,6 +1,5 @@
 package com.topleader.topleader.common.util.user;
 
-import com.topleader.topleader.user.User;
 import lombok.experimental.UtilityClass;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -8,9 +7,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Optional;
-
-import static com.topleader.topleader.user.User.Authority.ADMIN;
-import static com.topleader.topleader.user.User.Authority.HR;
 
 
 /**
@@ -21,15 +17,11 @@ public final class UserDetailUtils {
 
 
     public static boolean isHr(final UserDetails user) {
-        return user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(HR.name()::equalsIgnoreCase);
+        return user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch("HR"::equalsIgnoreCase);
     }
 
     public static boolean isAdmin(final UserDetails user) {
-        return user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch(ADMIN.name()::equalsIgnoreCase);
-    }
-
-    public static boolean sendInvite(User.Status oldStatus, User.Status newStatus) {
-        return User.Status.PENDING == oldStatus && (User.Status.AUTHORIZED == newStatus || User.Status.PAID == newStatus);
+        return user.getAuthorities().stream().map(GrantedAuthority::getAuthority).anyMatch("ADMIN"::equalsIgnoreCase);
     }
 
     public static String getLoggedUsername() {

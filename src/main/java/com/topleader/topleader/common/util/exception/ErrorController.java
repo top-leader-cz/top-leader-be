@@ -3,12 +3,14 @@ package com.topleader.topleader.common.util.error;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.exc.MismatchedInputException;
 import com.topleader.topleader.common.exception.ApiValidationException;
+import com.topleader.topleader.common.exception.NotFoundException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
@@ -30,12 +32,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(produces = MediaType.APPLICATION_JSON_VALUE)
 public class ErrorController {
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = MethodArgumentNotValidException.class)
-    public List<ErrorDto> handleValidationExceptions(
+    public ResponseEntity<List<ErrorDto>> handleValidationExceptions(
         MethodArgumentNotValidException ex
     ) {
-        return ex.getBindingResult().getAllErrors().stream()
+        var errors = ex.getBindingResult().getAllErrors().stream()
             .map(e -> {
                 String fieldName = ((FieldError) e).getField();
                 return new ErrorDto(
@@ -45,14 +46,14 @@ public class ErrorController {
                 );
             })
             .toList();
+        return ResponseEntity.unprocessableEntity().body(errors);
     }
 
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(value = ApiValidationException.class)
-    public List<ErrorDto> handleApiValidationExceptions(
+    public ResponseEntity<List<ErrorDto>> handleApiValidationExceptions(
         ApiValidationException ex
     ) {
-        return List.of(
+        var body = List.of(
             new ErrorDto(
                 Optional.ofNullable(ex.getError()).map(ApiValidationException.Error::code).orElse(null),
                 Optional.ofNullable(ex.getError()).map(ApiValidationException.Error::files).orElse(List.of()).stream()
@@ -61,6 +62,13 @@ public class ErrorController {
                 ex.getMessage()
             )
         );
+        return ResponseEntity.unprocessableEntity().body(body);
+    }
+
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(value = NotFoundException.class)
+    public List<ErrorDto> handleNotFoundException(NotFoundException ex) {
+        return List.of(new ErrorDto("NOT_FOUND", List.of(), "Not Found"));
     }
 
     @ResponseStatus(HttpStatus.FORBIDDEN)
