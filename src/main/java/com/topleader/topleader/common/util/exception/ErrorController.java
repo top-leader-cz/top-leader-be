@@ -1,13 +1,15 @@
 package com.topleader.topleader.common.util.error;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.exc.MismatchedInputException;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
-import com.topleader.topleader.common.exception.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.validation.FieldError;
@@ -85,6 +87,31 @@ public class ErrorController {
                     ex.getMessage() != null ? ex.getMessage() : "Resource not found"
             )
         );
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(value = HttpMessageNotReadableException.class)
+    public List<ErrorDto> handleHttpMessageNotReadable(HttpMessageNotReadableException ex) {
+        var cause = ex.getCause();
+        // Traverse cause chain to find JsonMappingException with path info
+        while (cause != null && !(cause instanceof JacksonException jme && !jme.getPath().isEmpty())) {
+            cause = cause.getCause();
+        }
+        if (cause instanceof JacksonException jme && !jme.getPath().isEmpty()) {
+            var path = jme.getPath().stream()
+                .map(ref -> ref.getPropertyName() != null ? ref.getPropertyName() : "[" + ref.getIndex() + "]")
+                .reduce((a, b) -> b.startsWith("[") ? a + b : a + "." + b)
+                .orElse("unknown");
+            var targetType = jme instanceof MismatchedInputException mie
+                ? Optional.ofNullable(mie.getTargetType()).map(Class::getSimpleName).orElse("unknown")
+                : "unknown";
+            return List.of(new ErrorDto(
+                "INVALID_INPUT",
+                List.of(new ErrorCodeFieldDto(path, null)),
+                "Cannot parse field '" + path + "': expected " + targetType
+            ));
+        }
+        return List.of(new ErrorDto("INVALID_INPUT", List.of(), ex.getMessage()));
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
