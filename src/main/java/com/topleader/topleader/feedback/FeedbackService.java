@@ -18,7 +18,7 @@ import com.topleader.topleader.feedback.repository.RecipientRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.common.util.common.TranslationUtils;
-import com.topleader.topleader.common.util.common.user.UserUtils;
+import com.topleader.topleader.user.util.UserUtils;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.exception.NotFoundException;
 import org.springframework.transaction.annotation.Transactional;

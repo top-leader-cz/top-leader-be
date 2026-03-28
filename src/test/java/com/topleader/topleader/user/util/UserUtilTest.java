@@ -1,6 +1,6 @@
-package com.topleader.topleader.common.util.user;
+package com.topleader.topleader.user.util;
 
-import com.topleader.topleader.common.util.common.user.UserUtils;
+import com.topleader.topleader.user.util.UserUtils;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 

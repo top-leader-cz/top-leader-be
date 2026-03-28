@@ -25,7 +25,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import static com.topleader.topleader.common.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
-import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 
 
 /**

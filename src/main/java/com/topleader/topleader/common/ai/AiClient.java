@@ -6,7 +6,7 @@ import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.session.domain.UserArticle;
 import com.topleader.topleader.user.session.domain.UserPreview;
-import com.topleader.topleader.common.util.common.user.UserUtils;
+import com.topleader.topleader.user.util.UserUtils;
 import dev.failsafe.Failsafe;
 import dev.failsafe.RetryPolicy;
 import lombok.RequiredArgsConstructor;
