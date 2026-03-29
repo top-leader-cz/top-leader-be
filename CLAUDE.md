@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> For project-level context (auth, seeded users, API patterns, roles), see [`../CLAUDE.md`](../CLAUDE.md).
+
 This file provides guidance to Claude Code when working with code in this repository.
 
 ## Project Overview
@@ -188,6 +190,8 @@ static class MyConverter implements Converter<String, MyType> {
 
 ### Common Commands
 ```bash
+docker compose up   # Start BE + PostgreSQL (local dev)
+make db-seed        # Seed database with test data
 make build          # Build the application
 make test           # Run tests
 make test-coverage  # Run tests with coverage report

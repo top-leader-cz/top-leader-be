@@ -13,7 +13,7 @@ GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 # Google Cloud commands
 .PHONY: login logs-qa logs-qa-ai logs-prod openapi build native native-linux native-test native-test-db-start native-test-db-stop deploy-qa deploy-qa-native deploy-prod
 .PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
-.PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy
+.PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy db-seed db-clear db-proxy-sync db-sync-qa
 .PHONY: threaddump-qa threaddump-prod
 
 # Login to Google Cloud and set project
@@ -164,6 +164,22 @@ threaddump-prod:
 # Start Cloud SQL Auth Proxy (connect to DB from IDEA/psql via localhost:5432)
 db-proxy:
 	./misc/setup-cloud-sql-proxy.sh
+
+# Clear all data from local DB (keeps schema)
+db-clear:
+	docker exec -i my-postgres-db psql -U root -d top_leader < misc/clear-local.sql
+
+# Seed local DB with predefined test data (all passwords: parole1)
+db-seed:
+	docker exec -i my-postgres-db psql -U root -d top_leader < misc/seed-local.sql
+
+# Start Cloud SQL proxy on port 15432 (for sync, avoids conflict with local DB)
+db-proxy-sync:
+	./misc/setup-cloud-sql-proxy.sh 15432
+
+# Sync full dataset from QA into local DB (requires db-proxy-sync running in another terminal)
+db-sync-qa:
+	./misc/sync-from-qa.sh
 
 # --- Cloud Run Commands ---
 
