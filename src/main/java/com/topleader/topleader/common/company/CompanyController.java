@@ -1,4 +1,4 @@
-package com.topleader.topleader.hr.company;
+package com.topleader.topleader.common.company;
 
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;

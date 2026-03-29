@@ -3,6 +3,8 @@ package com.topleader.topleader.hr;
 import com.topleader.topleader.common.email.Emailing;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;
+import com.topleader.topleader.common.domain.CreditRequestDto;
+import com.topleader.topleader.common.domain.ManagerDto;
 import com.topleader.topleader.hr.domain.*;
 import com.topleader.topleader.user.*;
 import com.topleader.topleader.user.manager.ManagerService;

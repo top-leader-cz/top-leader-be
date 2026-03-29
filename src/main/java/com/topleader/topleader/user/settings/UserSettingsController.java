@@ -2,8 +2,8 @@ package com.topleader.topleader.user.settings;
 
 
 
-import com.topleader.topleader.hr.company.CompanyService;
-import com.topleader.topleader.hr.domain.ManagerDto;
+import com.topleader.topleader.common.company.CompanyService;
+import com.topleader.topleader.common.domain.ManagerDto;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.manager.ManagerService;

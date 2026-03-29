@@ -3,7 +3,7 @@ package com.topleader.topleader.session.coaching_package;
 
 
 import com.topleader.topleader.common.exception.NotFoundException;
-import com.topleader.topleader.hr.company.CompanyRepository;
+import com.topleader.topleader.common.company.CompanyRepository;
 import com.topleader.topleader.session.coaching_package.dto.CoachingPackageDto;
 import com.topleader.topleader.session.coaching_package.dto.CoachingPackageMetricsDto;
 import com.topleader.topleader.session.coaching_package.dto.CreateCoachingPackageRequest;
