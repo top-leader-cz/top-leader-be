@@ -15,7 +15,8 @@ public record ParticipantDto(
         LocalDateTime lastActiveAt,
         int sessionsConsumed,
         int sessionsAllocated,
-        ParticipantStatus status
+        ParticipantStatus status,
+        String enrollmentStatus
 ) {
     public enum ParticipantStatus {
         NOT_STARTED, ON_TRACK, AT_RISK
@@ -31,7 +32,8 @@ public record ParticipantDto(
                 row.lastLoginAt(),
                 row.consumedUnits(),
                 row.allocatedUnits(),
-                computeStatus(row, validFrom, milestoneDate)
+                computeStatus(row, validFrom, milestoneDate),
+                row.enrollmentStatus()
         );
     }
 

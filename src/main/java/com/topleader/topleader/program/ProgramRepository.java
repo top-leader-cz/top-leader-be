@@ -53,7 +53,8 @@ public interface ProgramRepository extends ListCrudRepository<Program, Long> {
                 COALESCE(pp.coach_username, u.coach) AS coach_username,
                 pp.manager_username,
                 ua.consumed_units,
-                ua.allocated_units
+                ua.allocated_units,
+                pp.status AS enrollment_status
             FROM program p
             JOIN coaching_package cp ON cp.id = p.coaching_package_id
             JOIN user_allocation ua ON ua.package_id = cp.id
@@ -112,7 +113,8 @@ public interface ProgramRepository extends ListCrudRepository<Program, Long> {
             String coachUsername,
             String managerUsername,
             int consumedUnits,
-            int allocatedUnits
+            int allocatedUnits,
+            String enrollmentStatus
     ) {}
 
     record CompanyUserRow(
