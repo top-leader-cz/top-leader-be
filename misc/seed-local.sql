@@ -215,6 +215,21 @@ FROM coaching_package cp WHERE cp.company_id = 2 AND cp.pool_type = 'MASTER'
 ON CONFLICT DO NOTHING;
 
 -- =====================
+-- Assessment questions (5 per focus area, Likert scale)
+-- =====================
+INSERT INTO assessment_question (focus_area_key, question_order, question_text)
+SELECT fa.key, q.ord, q.txt
+FROM focus_area fa
+CROSS JOIN (VALUES
+    (1, 'I feel confident in my ability in this area'),
+    (2, 'I regularly apply skills related to this area'),
+    (3, 'I seek feedback from others on this topic'),
+    (4, 'I can identify specific areas for improvement'),
+    (5, 'I have a clear plan to develop further in this area')
+) AS q(ord, txt)
+ON CONFLICT DO NOTHING;
+
+-- =====================
 -- Done
 -- =====================
 -- Login with any user above using password: parole1
