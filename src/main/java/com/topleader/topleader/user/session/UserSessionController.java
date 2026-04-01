@@ -9,7 +9,7 @@ import com.topleader.topleader.user.session.domain.RecommendedGrowth;
 import com.topleader.topleader.user.session.feedback.SessionFeedback;
 import com.topleader.topleader.user.session.feedback.SessionFeedbackRepository;
 import com.topleader.topleader.user.userinfo.UserInfoService;
-import com.topleader.topleader.common.util.common.user.UserUtils;
+import com.topleader.topleader.user.util.UserUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

@@ -59,6 +59,18 @@ top-leader:
     base-api-url: http://localhost:8060
     base-auth-url: http://localhost:8060
 
+google:
+  oauth:
+    token-url: http://localhost:8060/token
+  calendar:
+    events-url: http://localhost:8060/calendar/v3/calendars/primary/events
+
+zoom:
+  api-url: http://localhost:8060/zoom/v2
+  oauth:
+    token-url: http://localhost:8060/zoom/oauth/token
+  redirect-uri: http://localhost:8080/login/zoom
+
 openai:
   image:
     url: http://localhost:8060/image

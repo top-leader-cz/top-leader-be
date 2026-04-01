@@ -4,6 +4,7 @@ import com.topleader.topleader.coach.Coach;
 import com.topleader.topleader.coach.CoachImageRepository;
 import com.topleader.topleader.coach.availability.CoachAvailabilityService;
 import com.topleader.topleader.common.email.SessionEmailData;
+import com.topleader.topleader.common.meeting.MeetingService;
 import com.topleader.topleader.hr.company.Company;
 import com.topleader.topleader.hr.company.CompanyRepository;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
@@ -46,7 +47,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
-import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
 import static org.springframework.util.StringUtils.hasText;
@@ -74,6 +75,8 @@ public class CoachListController {
     private final EmailTemplateService emailTemplateService;
 
     private final CompanyRepository companyRepository;
+
+    private final MeetingService meetingService;
 
     @PostMapping("/{username}/schedule")
     public void scheduleSession(
@@ -137,12 +140,17 @@ public class CoachListController {
             clientName
         );
 
+        final var meetResult = meetingService.generateMeetLinkIfEnabled(
+                session.getId(), coachName, shiftedTime, user.getFirstName() + " " + user.getLastName());
+
         emailTemplateService.sendBookingAlertEmail(
             new SessionEmailData(
                 session.getId(),
                 session.getUsername(),
                 session.getCoachUsername(),
-                session.getTime()
+                session.getTime(),
+                meetResult.map(MeetingService.MeetLinkResult::link).orElse(null),
+                meetResult.map(MeetingService.MeetLinkResult::providerLabel).orElse(null)
             )
         );
     }

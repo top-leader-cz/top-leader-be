@@ -102,7 +102,7 @@ public class WebSecurityConfig {
             .authorizeHttpRequests((requests) -> requests
                 .requestMatchers("/_ah/start", "/api/public/**", "/login", "/swagger-ui/**",
                         "/v3/api-docs/**", "/_ah/start",
-                        "/login/google", "/login/calendly").permitAll()
+                        "/login/google", "/login/calendly", "/login/google-meet", "/login/zoom").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(e -> e

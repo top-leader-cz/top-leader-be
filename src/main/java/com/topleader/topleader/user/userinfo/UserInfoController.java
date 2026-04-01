@@ -39,7 +39,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.SESSION_CANCEL_TOO_LATE;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.SESSION_IN_PAST;
-import static com.topleader.topleader.common.util.common.user.UserUtils.getUserTimeZoneId;
+import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.nonNull;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toMap;
@@ -259,7 +259,9 @@ public class UserInfoController {
                 session.getId(),
                 session.getUsername(),
                 session.getCoachUsername(),
-                session.getTime()
+                session.getTime(),
+                null,
+                null
             )
         );
 
@@ -286,7 +288,9 @@ public class UserInfoController {
             session.getId(),
             session.getUsername(),
             session.getCoachUsername(),
-            session.getTime()
+            session.getTime(),
+            null,
+            null
         );
         if (session.isPrivate()) {
             emailTemplateService.sendCancelAlertPrivateSessionEmail(sessionData);

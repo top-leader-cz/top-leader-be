@@ -95,7 +95,12 @@ google:
     client-id: client-id
     client-secret: client-id
     redirectUri: http://localhost:8080/login/google
+    meetRedirectUri: http://localhost:8080/login/google-meet
 
+zoom:
+  client-id: ${ZOOM_CLIENT_ID:}
+  client-secret: ${ZOOM_CLIENT_SECRET:}
+  redirect-uri: http://localhost:8080/login/zoom
 
 openai:
   image:

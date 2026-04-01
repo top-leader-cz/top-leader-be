@@ -35,6 +35,7 @@ public class Notification {
     public enum Type {
         MESSAGE,
         COACH_UNLINKED,
-        COACH_LINKED
+        COACH_LINKED,
+        MEET_LINK_FAILED
     }
 }

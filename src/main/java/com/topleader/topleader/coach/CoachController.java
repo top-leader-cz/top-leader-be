@@ -1,6 +1,7 @@
 package com.topleader.topleader.coach;
 
 import com.topleader.topleader.common.email.EmailTemplateService;
+import com.topleader.topleader.common.email.SessionEmailData;
 import com.topleader.topleader.common.exception.NotFoundException;
 import com.topleader.topleader.common.util.image.ImageValidation;
 import com.topleader.topleader.session.scheduled_session.ScheduledSession;
@@ -143,11 +144,13 @@ public class CoachController {
             .orElseThrow(NotFoundException::new);
 
         emailTemplateService.sendCancelAlertEmail(
-            new com.topleader.topleader.common.email.SessionEmailData(
+            new SessionEmailData(
                 session.getId(),
                 session.getUsername(),
                 session.getCoachUsername(),
-                session.getTime()
+                session.getTime(),
+                null,
+                null
             )
         );
         sessionService.cancelSessionByCoach(sessionId, user.getUsername());

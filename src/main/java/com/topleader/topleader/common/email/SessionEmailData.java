@@ -10,6 +10,8 @@ public record SessionEmailData(
     Long id,
     String username,
     String coachUsername,
-    LocalDateTime time
+    LocalDateTime time,
+    String meetLink,
+    String meetProviderLabel
 ) {
 }

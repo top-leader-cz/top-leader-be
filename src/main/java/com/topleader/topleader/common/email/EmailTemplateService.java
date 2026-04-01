@@ -10,11 +10,14 @@ import com.topleader.topleader.user.UserRepository;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.util.HtmlUtils;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.USER_NOT_FOUND;
 
@@ -76,8 +79,7 @@ public class EmailTemplateService {
 
         emailService.sendEmail(
             user.getEmail(),
-            subjectUserInvitations.getOrDefault(user.getLocale(),
-                defaultLocale),
+            resolveSubject(subjectUserInvitations, user.getLocale()),
             velocityService.getMessage(
                 new HashMap<>(
                     Map.of(
@@ -108,19 +110,18 @@ public class EmailTemplateService {
             .orElseThrow(() -> new ApiValidationException(USER_NOT_FOUND, "username", session.time().toString(), "Coach not found " + session.coachUsername()));
 
         final var eventId = "session-" + session.id();
+        final var meetLinkSection = buildMeetLinkSection(session.meetLink(), session.meetProviderLabel());
+
+        var coachParams = new HashMap<>(Map.<String, Object>of(
+                "firstName", coach.getFirstName(),
+                "lastName", coach.getLastName(),
+                "link", appUrl,
+                "meetLinkSection", meetLinkSection));
 
         emailService.sendEmail(
                 coach.getEmail(),
-            subjects.getOrDefault(coach.getLocale(),
-                defaultLocale),
-            velocityService.getMessage(
-                new HashMap<>(
-                    Map.of(
-                        "firstName", coach.getFirstName(),
-                        "lastName", coach.getLastName(),
-                        "link", appUrl)
-                ),
-                parseCoachTemplateName(coach.getLocale())),
+            resolveSubject(subjects, coach.getLocale()),
+            velocityService.getMessage(coachParams, parseCoachTemplateName(coach.getLocale())),
             iCalService.createCalendarEvent(
                 session.time(),
                 session.time().plusHours(1),
@@ -129,24 +130,22 @@ public class EmailTemplateService {
                 user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 "Session with " + user.getFirstName() + " " + user.getLastName(),
-                eventId
+                eventId,
+                session.meetLink()
             )
         );
 
+        var userParams = new HashMap<>(Map.<String, Object>of(
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "time", session.time().toString(),
+                "link", appUrl,
+                "meetLinkSection", meetLinkSection));
+
         emailService.sendEmail(
              user.getEmail(),
-            subjectUserInvitations.getOrDefault(user.getLocale(),
-                defaultLocale),
-            velocityService.getMessage(
-                new HashMap<>(
-                    Map.of(
-                        "firstName", user.getFirstName(),
-                        "lastName", user.getLastName(),
-                        "time", session.time().toString(),
-                        "link", appUrl)
-                ),
-                parseUserTemplateName(user.getLocale())
-            ),
+            resolveSubject(subjectUserInvitations, user.getLocale()),
+            velocityService.getMessage(userParams, parseUserTemplateName(user.getLocale())),
             iCalService.createCalendarEvent(
                 session.time(),
                 session.time().plusHours(1),
@@ -155,9 +154,23 @@ public class EmailTemplateService {
                 user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(),
                 "Session with " + coach.getFirstName() + " " + coach.getLastName(),
-                eventId
+                eventId,
+                session.meetLink()
             )
         );
+    }
+
+    private String buildMeetLinkSection(String meetLink, String providerLabel) {
+        return Optional.ofNullable(meetLink)
+                .filter(StringUtils::isNotBlank)
+                .map(link -> {
+                    var escaped = HtmlUtils.htmlEscape(link);
+                    var label = Optional.ofNullable(providerLabel)
+                            .filter(StringUtils::isNotBlank)
+                            .orElse("Video Call");
+                    return "<p>Join via " + HtmlUtils.htmlEscape(label) + ": <a href=\"" + escaped + "\" target=\"_blank\">" + escaped + "</a></p>";
+                })
+                .orElse(StringUtils.EMPTY);
     }
 
 
@@ -173,8 +186,7 @@ public class EmailTemplateService {
 
         emailService.sendEmail(
             coach.getEmail(),
-            subjects.getOrDefault(coach.getLocale(),
-                defaultLocale),
+            resolveSubject(subjects, coach.getLocale()),
             velocityService.getMessage(
                 new HashMap<>(
                     Map.of(
@@ -197,8 +209,7 @@ public class EmailTemplateService {
 
         emailService.sendEmail(
             user.getEmail(),
-            subjects.getOrDefault(user.getLocale(),
-                defaultLocale),
+            resolveSubject(subjects, user.getLocale()),
             velocityService.getMessage(
                 new HashMap<>(
                     Map.of(
@@ -232,8 +243,7 @@ public class EmailTemplateService {
 
         emailService.sendEmail(
             user.getEmail(),
-            subjects.getOrDefault(user.getLocale(),
-                defaultLocale),
+            resolveSubject(subjects, user.getLocale()),
             velocityService.getMessage(
                 new HashMap<>(
                     Map.of(
@@ -263,7 +273,7 @@ public class EmailTemplateService {
 
         emailService.sendEmail(
                 user.getEmail(),
-                pickedCoachSubjects.getOrDefault(user.getLocale(), defaultLocale),
+                resolveSubject(pickedCoachSubjects, user.getLocale()),
                 velocityService.getMessage(
                         new HashMap<>(
                                 Map.of(
@@ -273,6 +283,12 @@ public class EmailTemplateService {
                         ),
                         parsePickedCoachTemplateName(user.getLocale()))
                );
+    }
+
+    private String resolveSubject(Map<String, String> subjectMap, String locale) {
+        return Optional.ofNullable(locale)
+                .map(subjectMap::get)
+                .orElse(subjectMap.getOrDefault(defaultLocale, "New Booking Alert on TopLeader"));
     }
 
     private String parseCoachTemplateName(String locale) {

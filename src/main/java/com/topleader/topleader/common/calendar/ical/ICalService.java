@@ -3,9 +3,11 @@ package com.topleader.topleader.common.calendar.ical;
 import com.topleader.topleader.common.email.Templating;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +37,21 @@ public class ICalService {
         String eventName,
         String eventId
     ) {
-        var event = buildCalendarEvent(start, end, coach, coachName, client, clientName, eventName, eventId, METHOD_REQUEST);
+        return createCalendarEvent(start, end, coach, coachName, client, clientName, eventName, eventId, null);
+    }
+
+    public ICalEvent createCalendarEvent(
+        LocalDateTime start,
+        LocalDateTime end,
+        String coach,
+        String coachName,
+        String client,
+        String clientName,
+        String eventName,
+        String eventId,
+        String meetLink
+    ) {
+        var event = buildCalendarEvent(start, end, coach, coachName, client, clientName, eventName, eventId, METHOD_REQUEST, meetLink);
         log.debug(event.toString());
         return event;
     }
@@ -50,7 +66,7 @@ public class ICalService {
         String eventName,
         String eventId
     ) {
-        return buildCalendarEvent(start, end, coach, coachName, client, clientName, eventName, eventId, METHOD_CANCEL);
+        return buildCalendarEvent(start, end, coach, coachName, client, clientName, eventName, eventId, METHOD_CANCEL, null);
     }
 
     public ICalEvent createCalendarPrivateEvent(
@@ -86,9 +102,10 @@ public class ICalService {
         String clientName,
         String eventName,
         String eventId,
-        String method
+        String method,
+        String meetLink
     ) {
-        var params = Map.<String, Object>of(
+        var params = new HashMap<String, Object>(Map.of(
             "method", method,
             "startDate", start.format(ICAL_DATE_FORMAT),
             "endDate", end.format(ICAL_DATE_FORMAT),
@@ -99,7 +116,15 @@ public class ICalService {
             "coachName", escapeText(coachName),
             "client", client,
             "clientName", escapeText(clientName)
-        );
+        ));
+
+        params.put("location", StringUtils.isNotBlank(meetLink)
+                ? "LOCATION:" + escapeText(meetLink) + "\n"
+                : StringUtils.EMPTY);
+        params.put("eventDescription", StringUtils.isNotBlank(meetLink)
+                ? escapeText(eventName) + "\\nJoin: " + escapeText(meetLink)
+                : escapeText(eventName));
+
         var content = templateService.getMessage(params, EVENT_TEMPLATE);
         return new ICalEvent(content);
     }

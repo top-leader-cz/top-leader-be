@@ -29,6 +29,10 @@ top-leader:
 google:
   client:
     redirectUri: https://topleaderplatform.io/login/google
+    meetRedirectUri: https://topleaderplatform.io/login/google-meet
+
+zoom:
+  redirect-uri: https://topleaderplatform.io/login/zoom
 
 gcp:
   storage:

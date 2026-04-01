@@ -5,6 +5,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,7 +20,9 @@ import org.springframework.web.client.RestClient;
 @RequiredArgsConstructor
 public class GoogleCalendarApiClientFactory {
 
-    private static final String TOKEN_URL = "https://oauth2.googleapis.com/token";
+    @Value("${google.oauth.token-url:https://oauth2.googleapis.com/token}")
+    private String tokenUrl;
+
     private static final String FREEBUSY_URL = "https://www.googleapis.com/calendar/v3/freeBusy";
 
     private final RestClient restClient;
@@ -39,7 +42,22 @@ public class GoogleCalendarApiClientFactory {
         params.add("grant_type", "authorization_code");
 
         return restClient.post()
-                .uri(TOKEN_URL)
+                .uri(tokenUrl)
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .body(params)
+                .retrieve()
+                .body(TokenResponse.class);
+    }
+
+    public TokenResponse refreshToken(String refreshToken) {
+        var params = new LinkedMultiValueMap<String, String>();
+        params.add("refresh_token", refreshToken);
+        params.add("client_id", clientId);
+        params.add("client_secret", clientSecret);
+        params.add("grant_type", "refresh_token");
+
+        return restClient.post()
+                .uri(tokenUrl)
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .body(params)
                 .retrieve()
@@ -47,20 +65,9 @@ public class GoogleCalendarApiClientFactory {
     }
 
     public String refreshAccessToken(String refreshToken) {
-        var params = new LinkedMultiValueMap<String, String>();
-        params.add("refresh_token", refreshToken);
-        params.add("client_id", clientId);
-        params.add("client_secret", clientSecret);
-        params.add("grant_type", "refresh_token");
-
-        var response = restClient.post()
-                .uri(TOKEN_URL)
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .body(params)
-                .retrieve()
-                .body(TokenResponse.class);
-
-        return response != null ? response.accessToken() : null;
+        return Optional.ofNullable(refreshToken(refreshToken))
+                .map(TokenResponse::accessToken)
+                .orElse(null);
     }
 
     public FreeBusyResponse queryFreeBusy(String refreshToken, LocalDateTime from, LocalDateTime to) {

@@ -5,8 +5,10 @@ package com.topleader.topleader.common.calendar.google;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.UUID;
 
+import com.topleader.topleader.common.email.Templating;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +39,8 @@ public class GoogleCalendarController {
     private final GoogleCalendarApiClientFactory clientFactory;
 
     private final GoogleCalendarService calendarService;
+
+    private final Templating templating;
 
     @Value("${google.client.redirectUri}")
     private String redirectUri;
@@ -78,17 +82,9 @@ public class GoogleCalendarController {
         var response = clientFactory.exchangeCode(code, redirectUri);
         calendarService.storeTokenInfo(u.getUsername(), response);
 
-        var redirectUrl = appUrl + "/#/sync-success?provider=gcal";
-        var html = """
-            <!DOCTYPE html>
-            <html>
-            <head><meta charset="UTF-8"><title>Redirecting...</title></head>
-            <body>
-            <script>window.location.href = "%s";</script>
-            <noscript><a href="%s">Click here to continue</a></noscript>
-            </body>
-            </html>
-            """.formatted(redirectUrl, redirectUrl);
+        var html = templating.getMessage(
+                Map.of("redirectUrl", appUrl + "/#/sync-success?provider=gcal"),
+                "templates/oauth/redirect.html");
 
         return ResponseEntity.ok()
             .contentType(MediaType.TEXT_HTML)
