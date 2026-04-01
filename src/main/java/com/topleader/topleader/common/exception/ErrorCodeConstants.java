@@ -57,6 +57,7 @@ public final class ErrorCodeConstants {
     public static final String PARTICIPANT_FINAL_NOT_DUE = "participant.final.not.due";
     public static final String PARTICIPANT_FINAL_ALREADY_COMPLETED = "participant.final.already.completed";
     public static final String PARTICIPANT_FINAL_NPS_REQUIRED = "participant.final.nps.required";
+    public static final String PARTICIPANT_GOAL_INVALID_STATUS = "participant.goal.invalid.status";
     public static final String ASSESSMENT_QUESTIONS_INCOMPLETE = "assessment.questions.incomplete";
 
 }
