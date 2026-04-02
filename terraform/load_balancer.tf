@@ -59,7 +59,7 @@ resource "google_compute_url_map" "qa" {
     default_service = google_compute_backend_bucket.frontend_qa.id
 
     path_rule {
-      paths   = ["/api/*", "/login", "/swagger-ui/*", "/v3/api-docs/*", "/v3/*", "/login/google", "/login/calendly", "/actuator/*"]
+      paths   = ["/api/*", "/login", "/swagger-ui/*", "/v3/api-docs/*", "/v3/*", "/login/google", "/login/calendly", "/login/google-meet", "/login/zoom", "/actuator/*"]
       service = google_compute_backend_service.qa_backend.id
     }
   }
@@ -169,7 +169,7 @@ resource "google_compute_url_map" "prod" {
     default_service = google_compute_backend_bucket.frontend_prod.id
 
     path_rule {
-      paths   = ["/api/*", "/login", "/login/google", "/login/calendly"]
+      paths   = ["/api/*", "/login", "/login/google", "/login/calendly", "/login/google-meet", "/login/zoom"]
       service = google_compute_backend_service.prod_backend.id
     }
   }

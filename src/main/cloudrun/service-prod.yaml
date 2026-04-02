@@ -90,3 +90,10 @@ spec:
                 secretKeyRef:
                   name: TAVILY_API_KEY
                   key: latest
+            - name: ZOOM_CLIENT_ID
+              value: "BXRjAUx3RXWMZW0mYlqTlg"
+            - name: ZOOM_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: zoom-client-secret
+                  key: latest
