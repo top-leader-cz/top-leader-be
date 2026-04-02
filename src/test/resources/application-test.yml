@@ -78,3 +78,6 @@ openai:
 
 thumbmail: http://localhost:8060/hqdefault
 
+token:
+  encryption-key: YEabtzsT9k6w2k8atBY+TKbEL1wZiszYXmILruxfehk=
+
