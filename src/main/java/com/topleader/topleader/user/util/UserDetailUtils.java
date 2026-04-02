@@ -1,4 +1,4 @@
-package com.topleader.topleader.common.util.user;
+package com.topleader.topleader.user.util;
 
 import lombok.experimental.UtilityClass;
 import org.springframework.security.core.Authentication;

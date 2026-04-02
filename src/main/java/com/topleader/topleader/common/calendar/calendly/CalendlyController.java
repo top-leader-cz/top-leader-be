@@ -4,6 +4,8 @@ package com.topleader.topleader.common.calendar.calendly;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,7 +23,16 @@ public class CalendlyController {
     private final CalendlyService calendlyService;
 
     @GetMapping("/login/calendly")
-    public RedirectView cal(@RequestParam String code, @RequestParam String username) {
+    public RedirectView cal(
+            @RequestParam String code,
+            @RequestParam String username,
+            @AuthenticationPrincipal UserDetails user
+    ) {
+        if (!user.getUsername().equals(username)) {
+            log.warn("Calendly OAuth username mismatch: authenticated={}, param={}", user.getUsername(), username);
+            return new RedirectView("/#/sync-error?provider=calendly&error=auth.mismatch");
+        }
+
         CalendarSyncInfo info;
         try {
             var tokens = calendlyService.fetchTokens(code, username);

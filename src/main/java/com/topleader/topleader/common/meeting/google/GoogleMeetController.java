@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -54,13 +53,10 @@ public class GoogleMeetController {
     private String appUrl;
 
     @GetMapping("/login/google-meet")
-    public Object initiateOAuth(
+    public RedirectView initiateOAuth(
             @AuthenticationPrincipal UserDetails u,
             HttpSession session
     ) {
-        if (u == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Authentication required");
-        }
         var state = UUID.randomUUID().toString();
         session.setAttribute(OAUTH_STATE_ATTR, state);
         return new RedirectView(buildAuthUrl(state));
@@ -73,11 +69,6 @@ public class GoogleMeetController {
             @AuthenticationPrincipal UserDetails u,
             HttpSession session
     ) {
-        if (u == null) {
-            log.warn("OAuth callback with expired session");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Session expired. Please log in and try again.");
-        }
-
         var expectedState = (String) session.getAttribute(OAUTH_STATE_ATTR);
         session.removeAttribute(OAUTH_STATE_ATTR);
 

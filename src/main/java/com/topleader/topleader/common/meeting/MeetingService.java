@@ -13,6 +13,7 @@ import com.topleader.topleader.common.meeting.zoom.ZoomApiClient;
 import com.topleader.topleader.common.notification.Notification;
 import com.topleader.topleader.common.notification.NotificationService;
 import com.topleader.topleader.common.notification.context.MeetLinkFailedNotificationContext;
+import com.topleader.topleader.common.util.crypto.TokenEncryptor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +25,8 @@ public class MeetingService {
 
     private final NotificationService notificationService;
 
+    private final TokenEncryptor tokenEncryptor;
+
     private final Map<MeetingInfo.Provider, MeetLinkGenerator> generators;
 
     public MeetingService(
@@ -31,19 +34,21 @@ public class MeetingService {
             GoogleCalendarApiClientFactory tokenFactory,
             GoogleMeetApiClient meetApiClient,
             ZoomApiClient zoomApiClient,
-            NotificationService notificationService
+            NotificationService notificationService,
+            TokenEncryptor tokenEncryptor
     ) {
         this.repository = repository;
         this.notificationService = notificationService;
+        this.tokenEncryptor = tokenEncryptor;
         this.generators = Map.of(
-                MeetingInfo.Provider.GOOGLE, new GoogleMeetLinkGenerator(tokenFactory, meetApiClient, repository),
-                MeetingInfo.Provider.ZOOM, new ZoomMeetLinkGenerator(zoomApiClient, repository)
+                MeetingInfo.Provider.GOOGLE, new GoogleMeetLinkGenerator(tokenFactory, meetApiClient, repository, tokenEncryptor),
+                MeetingInfo.Provider.ZOOM, new ZoomMeetLinkGenerator(zoomApiClient, repository, tokenEncryptor)
         );
     }
 
     public void storeConnection(String username, MeetingInfo.Provider provider, String refreshToken, String accessToken, String email) {
         log.info("Storing {} connection for user {}", provider, username);
-        repository.upsertConnection(username, provider.name(), refreshToken, accessToken, email);
+        repository.upsertConnection(username, provider.name(), tokenEncryptor.encrypt(refreshToken), tokenEncryptor.encrypt(accessToken), email);
         log.info("{} connection stored for user {}", provider, username);
     }
 
@@ -114,12 +119,13 @@ public class MeetingService {
     private record GoogleMeetLinkGenerator(
             GoogleCalendarApiClientFactory tokenFactory,
             GoogleMeetApiClient meetApiClient,
-            MeetingInfoRepository repository
+            MeetingInfoRepository repository,
+            TokenEncryptor encryptor
     ) implements MeetLinkGenerator {
 
         @Override
         public Optional<String> generate(MeetingInfo info, Long sessionId, LocalDateTime sessionTime, String clientName) {
-            return Optional.ofNullable(tokenFactory.refreshToken(info.getRefreshToken()))
+            return Optional.ofNullable(tokenFactory.refreshToken(encryptor.decrypt(info.getRefreshToken())))
                     .map(tokenResponse -> {
                         persistTokens(info.getUsername(), tokenResponse.refreshToken(), tokenResponse.accessToken());
                         return meetApiClient.createEventWithMeet(
@@ -135,18 +141,19 @@ public class MeetingService {
 
         private void persistTokens(String username, String refreshToken, String accessToken) {
             Optional.ofNullable(refreshToken)
-                    .ifPresent(rt -> repository.updateTokens(username, rt, accessToken));
+                    .ifPresent(rt -> repository.updateTokens(username, encryptor.encrypt(rt), encryptor.encrypt(accessToken)));
         }
     }
 
     private record ZoomMeetLinkGenerator(
             ZoomApiClient zoomApiClient,
-            MeetingInfoRepository repository
+            MeetingInfoRepository repository,
+            TokenEncryptor encryptor
     ) implements MeetLinkGenerator {
 
         @Override
         public Optional<String> generate(MeetingInfo info, Long sessionId, LocalDateTime sessionTime, String clientName) {
-            return Optional.ofNullable(zoomApiClient.refreshToken(info.getRefreshToken()))
+            return Optional.ofNullable(zoomApiClient.refreshToken(encryptor.decrypt(info.getRefreshToken())))
                     .map(tokenResponse -> {
                         persistTokens(info.getUsername(), tokenResponse.refreshToken(), tokenResponse.accessToken());
                         return zoomApiClient.createMeeting(
@@ -160,7 +167,7 @@ public class MeetingService {
 
         private void persistTokens(String username, String refreshToken, String accessToken) {
             Optional.ofNullable(refreshToken)
-                    .ifPresent(rt -> repository.updateTokens(username, rt, accessToken));
+                    .ifPresent(rt -> repository.updateTokens(username, encryptor.encrypt(rt), encryptor.encrypt(accessToken)));
         }
     }
 }

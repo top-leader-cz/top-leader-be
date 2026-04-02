@@ -65,12 +65,6 @@ public class ErrorController {
         return ResponseEntity.unprocessableEntity().body(body);
     }
 
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler(value = NotFoundException.class)
-    public List<ErrorDto> handleNotFoundException(NotFoundException ex) {
-        return List.of(new ErrorDto("NOT_FOUND", List.of(), "Not Found"));
-    }
-
     @ResponseStatus(HttpStatus.FORBIDDEN)
     @ExceptionHandler(value = AccessDeniedException.class)
     public List<ErrorDto> handleAccessDeniedException(AccessDeniedException ex) {

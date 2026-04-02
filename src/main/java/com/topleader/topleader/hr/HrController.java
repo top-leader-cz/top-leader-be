@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.*;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.EMAIL_USED;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.NOT_PART_OF_COMPANY;
 import static com.topleader.topleader.user.User.Status.PENDING;
-import static com.topleader.topleader.common.util.user.UserDetailUtils.isHr;
+import static com.topleader.topleader.user.util.UserDetailUtils.isHr;
 import static com.topleader.topleader.user.util.UserUtils.shouldSendInvite;
 
 
