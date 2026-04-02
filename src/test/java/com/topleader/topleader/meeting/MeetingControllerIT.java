@@ -98,7 +98,7 @@ class MeetingControllerIT extends IntegrationTest {
                         .content("""
                                 {"autoGenerate": true}
                                 """))
-                .andExpect(status().is5xxServerError());
+                .andExpect(status().isNotFound());
     }
 
     @Test
