@@ -97,7 +97,7 @@ VALUES
 
     ('multi@local.dev', 'Coach and manager with hands-on experience.',
      '2020-03-01', true, '$', 1, 110, true, 0,
-     '["COACH", "MANAGER"]', '["Team Building"]', '["en"]')
+     '["COACH", "MENTOR"]', '["Team Building"]', '["en"]')
 ON CONFLICT (username) DO NOTHING;
 
 -- =====================
