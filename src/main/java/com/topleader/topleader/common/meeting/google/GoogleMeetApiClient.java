@@ -22,13 +22,13 @@ public class GoogleMeetApiClient {
     @Value("${google.calendar.events-url:https://www.googleapis.com/calendar/v3/calendars/primary/events}")
     private String calendarEventsUrl;
 
-    public CalendarEventResponse createEventWithMeet(String accessToken, String summary, LocalDateTime start, LocalDateTime end, String requestId) {
+    public CalendarEventResponse createEventWithMeet(String accessToken, String summary, LocalDateTime start, LocalDateTime end, String requestId, List<String> attendeeEmails) {
         var body = new CalendarEventRequest(
                 summary,
                 new DateTimeEntry(formatUtc(start)),
                 new DateTimeEntry(formatUtc(end)),
                 new ConferenceData(new CreateRequest(requestId, new ConferenceSolutionKey("hangoutsMeet"))),
-                List.of()
+                attendeeEmails.stream().map(Attendee::new).toList()
         );
 
         return restClient.post()
@@ -49,8 +49,11 @@ public class GoogleMeetApiClient {
             DateTimeEntry start,
             DateTimeEntry end,
             ConferenceData conferenceData,
-            List<Object> attendees
+            List<Attendee> attendees
     ) {
+    }
+
+    record Attendee(String email) {
     }
 
     record DateTimeEntry(String dateTime, String timeZone) {

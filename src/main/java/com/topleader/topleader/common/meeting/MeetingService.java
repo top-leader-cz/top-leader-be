@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import com.topleader.topleader.common.calendar.google.GoogleCalendarApiClientFactory;
 import com.topleader.topleader.common.exception.NotFoundException;
@@ -66,18 +67,18 @@ public class MeetingService {
         repository.updateAutoGenerate(username, autoGenerate);
     }
 
-    public Optional<MeetLinkResult> generateMeetLinkIfEnabled(Long sessionId, String coachUsername, LocalDateTime sessionTime, String clientName) {
+    public Optional<MeetLinkResult> generateMeetLinkIfEnabled(Long sessionId, String coachUsername, LocalDateTime sessionTime, String clientName, String clientEmail) {
         return repository.findByUsername(coachUsername)
                 .filter(MeetingInfo::isAutoGenerate)
                 .filter(info -> info.getStatus() != MeetingInfo.Status.ERROR)
                 .flatMap(info -> Optional.ofNullable(generators.get(info.getProvider()))
-                        .flatMap(generator -> tryGenerate(generator, info, sessionId, coachUsername, sessionTime, clientName))
+                        .flatMap(generator -> tryGenerate(generator, info, sessionId, coachUsername, sessionTime, clientName, clientEmail))
                         .map(link -> new MeetLinkResult(link, info.getProvider())));
     }
 
-    private Optional<String> tryGenerate(MeetLinkGenerator generator, MeetingInfo info, Long sessionId, String coachUsername, LocalDateTime sessionTime, String clientName) {
+    private Optional<String> tryGenerate(MeetLinkGenerator generator, MeetingInfo info, Long sessionId, String coachUsername, LocalDateTime sessionTime, String clientName, String clientEmail) {
         try {
-            return generator.generate(info, sessionId, sessionTime, clientName);
+            return generator.generate(info, sessionId, sessionTime, clientName, clientEmail);
         } catch (Exception e) {
             log.error("Failed to generate meeting link via {} for coach {}", info.getProvider(), coachUsername, e);
             handleMeetLinkFailure(info, coachUsername, clientName, sessionTime);
@@ -113,7 +114,7 @@ public class MeetingService {
 
     @FunctionalInterface
     interface MeetLinkGenerator {
-        Optional<String> generate(MeetingInfo info, Long sessionId, LocalDateTime sessionTime, String clientName);
+        Optional<String> generate(MeetingInfo info, Long sessionId, LocalDateTime sessionTime, String clientName, String clientEmail);
     }
 
     private record GoogleMeetLinkGenerator(
@@ -124,16 +125,20 @@ public class MeetingService {
     ) implements MeetLinkGenerator {
 
         @Override
-        public Optional<String> generate(MeetingInfo info, Long sessionId, LocalDateTime sessionTime, String clientName) {
+        public Optional<String> generate(MeetingInfo info, Long sessionId, LocalDateTime sessionTime, String clientName, String clientEmail) {
             return Optional.ofNullable(tokenFactory.refreshToken(encryptor.decrypt(info.getRefreshToken())))
                     .map(tokenResponse -> {
                         persistTokens(info.getUsername(), tokenResponse.refreshToken(), tokenResponse.accessToken());
+                        var attendeeEmails = Stream.of(info.getEmail(), clientEmail)
+                                .filter(Objects::nonNull)
+                                .toList();
                         return meetApiClient.createEventWithMeet(
                                 tokenResponse.accessToken(),
                                 "TopLeader Session - " + clientName,
                                 sessionTime,
                                 sessionTime.plusHours(1),
-                                "topleader-session-" + sessionId);
+                                "topleader-session-" + sessionId,
+                                attendeeEmails);
                     })
                     .map(GoogleMeetApiClient.CalendarEventResponse::hangoutLink)
                     .filter(Objects::nonNull);
@@ -152,7 +157,7 @@ public class MeetingService {
     ) implements MeetLinkGenerator {
 
         @Override
-        public Optional<String> generate(MeetingInfo info, Long sessionId, LocalDateTime sessionTime, String clientName) {
+        public Optional<String> generate(MeetingInfo info, Long sessionId, LocalDateTime sessionTime, String clientName, String clientEmail) {
             return Optional.ofNullable(zoomApiClient.refreshToken(encryptor.decrypt(info.getRefreshToken())))
                     .map(tokenResponse -> {
                         persistTokens(info.getUsername(), tokenResponse.refreshToken(), tokenResponse.accessToken());

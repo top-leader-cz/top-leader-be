@@ -141,7 +141,7 @@ public class CoachListController {
         );
 
         final var meetResult = meetingService.generateMeetLinkIfEnabled(
-                session.getId(), coachName, shiftedTime, user.getFirstName() + " " + user.getLastName());
+                session.getId(), coachName, shiftedTime, user.getFirstName() + " " + user.getLastName(), user.getEmail());
 
         emailTemplateService.sendBookingAlertEmail(
             new SessionEmailData(

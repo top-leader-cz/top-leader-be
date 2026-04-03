@@ -18,9 +18,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.jdbc.Sql;
 
+import okhttp3.mockwebserver.MockWebServer;
+import okhttp3.mockwebserver.RecordedRequest;
+
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Objects;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -110,6 +116,26 @@ class MeetingBookingIT extends IntegrationTest {
         var clientBody = GreenMailUtil.getBody(messages[1]);
         Assertions.assertThat(coachBody).contains("https://meet.google.com/abc-defg-hij");
         Assertions.assertThat(clientBody).contains("https://meet.google.com/abc-defg-hij");
+
+        // Verify attendees were sent in the Calendar API request
+        var calendarRequest = findRequest("/calendar/v3/calendars/primary/events");
+        var requestBody = calendarRequest.getBody().readUtf8();
+        Assertions.assertThat(requestBody).contains("meet-coach@gmail.com");
+        Assertions.assertThat(requestBody).contains("meet-client@example.com");
+    }
+
+    @SneakyThrows
+    private RecordedRequest findRequest(String pathPrefix) {
+        return Stream.generate(() -> takeRequestQuietly(mockServer))
+                .takeWhile(Objects::nonNull)
+                .filter(r -> r.getPath() != null && r.getPath().startsWith(pathPrefix))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No request found for path: " + pathPrefix));
+    }
+
+    @SneakyThrows
+    private static RecordedRequest takeRequestQuietly(MockWebServer server) {
+        return server.takeRequest(1, TimeUnit.SECONDS);
     }
 
     @Test
