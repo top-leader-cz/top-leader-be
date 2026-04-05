@@ -47,6 +47,7 @@ public class UserSettingsController {
 
     private final UserManagerRepository userManagerRepository;
 
+
     @Secured({"USER"})
     @GetMapping("/managers")
     public List<ManagerDto> listManagers(@AuthenticationPrincipal UserDetails user) {

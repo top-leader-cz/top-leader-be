@@ -56,6 +56,15 @@ public class ZoomController {
         return new RedirectView(buildAuthUrl(state));
     }
 
+    @GetMapping(value = "/login/zoom", params = "error")
+    public ResponseEntity<String> oauthError(
+            @RequestParam("error") String error,
+            @AuthenticationPrincipal UserDetails u
+    ) {
+        log.warn("Zoom OAuth error for user {}: {}", u.getUsername(), error);
+        return redirectToApp("/#/sync-error?provider=zoom&error=" + URLEncoder.encode(error, StandardCharsets.UTF_8));
+    }
+
     @GetMapping(value = "/login/zoom", params = {"code", "state"})
     public ResponseEntity<String> oauthCallback(
             @RequestParam("code") String code,
@@ -68,18 +77,24 @@ public class ZoomController {
 
         if (expectedState == null || !expectedState.equals(state)) {
             log.warn("Invalid OAuth state parameter for Zoom, user {}", u.getUsername());
-            return ResponseEntity.badRequest().body("Invalid OAuth state");
+            return redirectToApp("/#/sync-error?provider=zoom&error=invalid_state");
         }
 
-        var tokenResponse = zoomApiClient.exchangeCode(code, redirectUri);
-        var email = fetchZoomEmail(tokenResponse.accessToken());
+        try {
+            var tokenResponse = zoomApiClient.exchangeCode(code, redirectUri);
+            var email = fetchZoomEmail(tokenResponse.accessToken());
+            meetingService.storeConnection(u.getUsername(), MeetingInfo.Provider.ZOOM, tokenResponse.refreshToken(), tokenResponse.accessToken(), email);
+            return redirectToApp("/#/sync-success?provider=zoom");
+        } catch (Exception e) {
+            log.error("Zoom token exchange failed for user {}", u.getUsername(), e);
+            return redirectToApp("/#/sync-error?provider=zoom&error=token_exchange_failed");
+        }
+    }
 
-        meetingService.storeConnection(u.getUsername(), MeetingInfo.Provider.ZOOM, tokenResponse.refreshToken(), tokenResponse.accessToken(), email);
-
+    private ResponseEntity<String> redirectToApp(String path) {
         var html = templating.getMessage(
-                Map.of("redirectUrl", appUrl + "/#/sync-success?provider=zoom"),
+                Map.of("redirectUrl", appUrl + path),
                 "templates/oauth/redirect.html");
-
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);

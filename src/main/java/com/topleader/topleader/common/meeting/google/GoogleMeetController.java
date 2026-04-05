@@ -62,6 +62,15 @@ public class GoogleMeetController {
         return new RedirectView(buildAuthUrl(state));
     }
 
+    @GetMapping(value = "/login/google-meet", params = "error")
+    public ResponseEntity<String> oauthError(
+            @RequestParam("error") String error,
+            @AuthenticationPrincipal UserDetails u
+    ) {
+        log.warn("Google Meet OAuth error for user {}: {}", u.getUsername(), error);
+        return redirectToApp("/#/sync-error?provider=gmeet&error=" + URLEncoder.encode(error, StandardCharsets.UTF_8));
+    }
+
     @GetMapping(value = "/login/google-meet", params = {"code", "state"})
     public ResponseEntity<String> oauthCallback(
             @RequestParam("code") String code,
@@ -74,18 +83,24 @@ public class GoogleMeetController {
 
         if (expectedState == null || !expectedState.equals(state)) {
             log.warn("Invalid OAuth state parameter for Google Meet, user {}", u.getUsername());
-            return ResponseEntity.badRequest().body("Invalid OAuth state");
+            return redirectToApp("/#/sync-error?provider=gmeet&error=invalid_state");
         }
 
-        var tokenResponse = clientFactory.exchangeCode(code, redirectUri);
-        var email = fetchGoogleEmail(tokenResponse.accessToken());
+        try {
+            var tokenResponse = clientFactory.exchangeCode(code, redirectUri);
+            var email = fetchGoogleEmail(tokenResponse.accessToken());
+            meetingService.storeConnection(u.getUsername(), MeetingInfo.Provider.GOOGLE, tokenResponse.refreshToken(), tokenResponse.accessToken(), email);
+            return redirectToApp("/#/sync-success?provider=gmeet");
+        } catch (Exception e) {
+            log.error("Google Meet token exchange failed for user {}", u.getUsername(), e);
+            return redirectToApp("/#/sync-error?provider=gmeet&error=token_exchange_failed");
+        }
+    }
 
-        meetingService.storeConnection(u.getUsername(), MeetingInfo.Provider.GOOGLE, tokenResponse.refreshToken(), tokenResponse.accessToken(), email);
-
+    private ResponseEntity<String> redirectToApp(String path) {
         var html = templating.getMessage(
-                Map.of("redirectUrl", appUrl + "/#/sync-success?provider=gmeet"),
+                Map.of("redirectUrl", appUrl + path),
                 "templates/oauth/redirect.html");
-
         return ResponseEntity.ok()
                 .contentType(MediaType.TEXT_HTML)
                 .body(html);

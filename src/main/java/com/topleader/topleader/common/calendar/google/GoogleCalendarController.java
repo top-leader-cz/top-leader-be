@@ -64,6 +64,15 @@ public class GoogleCalendarController {
         return new RedirectView(authorize(state));
     }
 
+    @GetMapping(value = "/login/google", params = "error")
+    public ResponseEntity<String> oauth2Error(
+        @RequestParam("error") String error,
+        @AuthenticationPrincipal UserDetails u
+    ) {
+        log.warn("Google Calendar OAuth error for user {}: {}", u.getUsername(), error);
+        return redirectToApp("/#/sync-error?provider=google-calendar&error=" + URLEncoder.encode(error, StandardCharsets.UTF_8));
+    }
+
     @GetMapping(value = "/login/google", params = {"code", "state"})
     public ResponseEntity<String> oauth2Callback(
         @RequestParam(value = "code") String code,
@@ -76,19 +85,26 @@ public class GoogleCalendarController {
 
         if (expectedState == null || !expectedState.equals(state)) {
             log.warn("Invalid OAuth state parameter for user {}", u.getUsername());
-            return ResponseEntity.badRequest().body("Invalid OAuth state");
+            return redirectToApp("/#/sync-error?provider=google-calendar&error=invalid_state");
         }
 
-        var response = clientFactory.exchangeCode(code, redirectUri);
-        calendarService.storeTokenInfo(u.getUsername(), response);
+        try {
+            var response = clientFactory.exchangeCode(code, redirectUri);
+            calendarService.storeTokenInfo(u.getUsername(), response);
+            return redirectToApp("/#/sync-success?provider=google-calendar");
+        } catch (Exception e) {
+            log.error("Google Calendar token exchange failed for user {}", u.getUsername(), e);
+            return redirectToApp("/#/sync-error?provider=google-calendar&error=token_exchange_failed");
+        }
+    }
 
+    private ResponseEntity<String> redirectToApp(String path) {
         var html = templating.getMessage(
-                Map.of("redirectUrl", appUrl + "/#/sync-success?provider=gcal"),
+                Map.of("redirectUrl", appUrl + path),
                 "templates/oauth/redirect.html");
-
         return ResponseEntity.ok()
-            .contentType(MediaType.TEXT_HTML)
-            .body(html);
+                .contentType(MediaType.TEXT_HTML)
+                .body(html);
     }
 
     private String authorize(String state) {

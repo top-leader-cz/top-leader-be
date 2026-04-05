@@ -28,6 +28,10 @@ public interface MeetingInfoRepository extends CrudRepository<MeetingInfo, Long>
     void updateTokens(String username, String refreshToken, String accessToken);
 
     @Modifying
+    @Query("UPDATE meeting_info SET email = :email WHERE username = :username")
+    void updateEmail(String username, String email);
+
+    @Modifying
     @Query("""
             INSERT INTO meeting_info (username, provider, refresh_token, access_token, email, auto_generate, status, created_at)
             VALUES (:username, :provider, :refreshToken, :accessToken, :email, true, 'OK', now())
