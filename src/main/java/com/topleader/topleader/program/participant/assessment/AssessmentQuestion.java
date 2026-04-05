@@ -18,4 +18,6 @@ public class AssessmentQuestion {
     private int questionOrder;
 
     private String questionText;
+
+    private String facet;
 }
