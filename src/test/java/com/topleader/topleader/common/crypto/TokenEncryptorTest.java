@@ -6,6 +6,7 @@ import com.topleader.topleader.common.util.crypto.TokenEncryptor;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class TokenEncryptorTest {
 
@@ -43,17 +44,39 @@ class TokenEncryptorTest {
     }
 
     @Test
-    void disabledWhenNoKey() {
-        var disabled = new TokenEncryptor("");
-
-        assertThat(disabled.isEnabled()).isFalse();
-        assertThat(disabled.encrypt("plaintext")).isEqualTo("plaintext");
-        assertThat(disabled.decrypt("plaintext")).isEqualTo("plaintext");
+    void failsWithEmptyKey() {
+        assertThatThrownBy(() -> new TokenEncryptor(""))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void decryptPlaintextReturnAsIs() {
         var plaintext = "not-a-valid-encrypted-value";
         assertThat(encryptor.decrypt(plaintext)).isEqualTo(plaintext);
+    }
+
+    @Test
+    void decryptPlaintextGoogleRefreshToken() {
+        var plaintext = "1//0e2G5EXAMPLE_REFRESH_TOKEN_from_google";
+        assertThat(encryptor.decrypt(plaintext)).isEqualTo(plaintext);
+    }
+
+    @Test
+    void decryptPlaintextGoogleAccessToken() {
+        var plaintext = "ya29.a0AfH6SMBx_long_access_token_value";
+        assertThat(encryptor.decrypt(plaintext)).isEqualTo(plaintext);
+    }
+
+    @Test
+    void migrationFromPlaintextToEncrypted() {
+        var originalToken = "1//0e2G5_plaintext_refresh_token_in_db";
+
+        // plaintext token can be decrypted (returns as-is)
+        assertThat(encryptor.decrypt(originalToken)).isEqualTo(originalToken);
+
+        // after re-encryption, token is different but decrypts to original
+        var encrypted = encryptor.encrypt(originalToken);
+        assertThat(encrypted).isNotEqualTo(originalToken);
+        assertThat(encryptor.decrypt(encrypted)).isEqualTo(originalToken);
     }
 }

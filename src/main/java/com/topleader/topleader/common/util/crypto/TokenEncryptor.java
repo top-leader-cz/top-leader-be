@@ -11,7 +11,6 @@ import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -26,33 +25,20 @@ public class TokenEncryptor {
     private final SecretKeySpec secretKey;
     private final SecureRandom random = new SecureRandom();
 
-    public TokenEncryptor(@Value("${token.encryption-key:}") String base64Key) {
-        this.secretKey = Optional.ofNullable(base64Key)
-                .filter(StringUtils::isNotBlank)
-                .map(key -> new SecretKeySpec(Base64.getDecoder().decode(key), "AES"))
-                .orElse(null);
-
-        if (secretKey == null) {
-            log.warn("TOKEN_ENCRYPTION_KEY is not set — OAuth tokens will be stored in PLAINTEXT. Set the key for production use.");
-        }
+    public TokenEncryptor(@Value("${token.encryption-key}") String base64Key) {
+        this.secretKey = new SecretKeySpec(Base64.getDecoder().decode(base64Key), "AES");
     }
 
     public String encrypt(String plaintext) {
         return Optional.ofNullable(plaintext)
-                .filter(__ -> secretKey != null)
                 .map(this::doEncrypt)
-                .orElse(plaintext);
+                .orElse(null);
     }
 
     public String decrypt(String encrypted) {
         return Optional.ofNullable(encrypted)
-                .filter(__ -> secretKey != null)
                 .map(this::doDecrypt)
-                .orElse(encrypted);
-    }
-
-    public boolean isEnabled() {
-        return secretKey != null;
+                .orElse(null);
     }
 
     private String doEncrypt(String plaintext) {

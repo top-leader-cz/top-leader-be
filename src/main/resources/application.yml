@@ -96,7 +96,7 @@ top-leader:
 google:
   client:
     client-id: client-id
-    client-secret: client-id
+    client-secret: client-secret
     redirectUri: http://localhost:8080/login/google
     meetRedirectUri: http://localhost:8080/login/google-meet
 

@@ -8,6 +8,7 @@ import com.topleader.topleader.common.calendar.CalendarToErrorHandler;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
 import com.topleader.topleader.common.calendar.domain.SyncEvent;
 import com.topleader.topleader.common.calendar.settings.AvailabilitySettingRepository;
+import com.topleader.topleader.common.util.crypto.TokenEncryptor;
 import com.topleader.topleader.common.util.transaction.TransactionService;
 
 import java.time.LocalDateTime;
@@ -39,6 +40,8 @@ public class GoogleCalendarService {
 
     private final CalendarToErrorHandler errorHandler;
 
+    private final TokenEncryptor tokenEncryptor;
+
     public void storeTokenInfo(String username, GoogleCalendarApiClientFactory.TokenResponse tokenResponse) {
         log.info("Storing token info for user {}", username);
 
@@ -50,8 +53,8 @@ public class GoogleCalendarService {
                     .setUsername(username)
                     .setSyncType(CalendarSyncInfo.SyncType.GOOGLE)
                     .setStatus(CalendarSyncInfo.Status.OK)
-                    .setRefreshToken(tokenResponse.refreshToken())
-                    .setAccessToken(tokenResponse.accessToken())
+                    .setRefreshToken(tokenEncryptor.encrypt(tokenResponse.refreshToken()))
+                    .setAccessToken(tokenEncryptor.encrypt(tokenResponse.accessToken()))
                     .setLastSync(LocalDateTime.now());
             calendarSyncInfoRepository.save(info);
         });
@@ -65,7 +68,7 @@ public class GoogleCalendarService {
             return calendarSyncInfoRepository.findByUsernameAndSyncType(username, CalendarSyncInfo.SyncType.GOOGLE)
                     .map(info -> {
                         try {
-                            var response = clientFactory.queryFreeBusy(info.getRefreshToken(), startDate, endDate);
+                            var response = clientFactory.queryFreeBusy(tokenEncryptor.decrypt(info.getRefreshToken()), startDate, endDate);
                             return Optional.ofNullable(response.calendars())
                                     .map(calendars -> calendars.entrySet().stream()
                                             .peek(e -> Optional.ofNullable(e.getValue().errors()).orElse(List.of())
