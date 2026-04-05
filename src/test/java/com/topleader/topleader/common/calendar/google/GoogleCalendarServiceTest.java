@@ -3,6 +3,7 @@ package com.topleader.topleader.common.calendar.google;
 import com.topleader.topleader.IntegrationTest;
 import com.topleader.topleader.common.calendar.CalendarSyncInfoRepository;
 import com.topleader.topleader.common.calendar.domain.CalendarSyncInfo;
+import com.topleader.topleader.common.util.crypto.TokenEncryptor;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.jdbc.Sql;
@@ -17,6 +18,9 @@ class GoogleCalendarServiceTest extends IntegrationTest {
     @Autowired
     private CalendarSyncInfoRepository calendarSyncInfoRepository;
 
+    @Autowired
+    private TokenEncryptor tokenEncryptor;
+
     @Test
     @Sql("/sql/calendar/calendar-sync-info.sql")
     void storeTokenInfo_shouldReplaceExistingRecord() {
@@ -29,8 +33,8 @@ class GoogleCalendarServiceTest extends IntegrationTest {
         var saved = calendarSyncInfoRepository.findByUsernameAndSyncType(username, CalendarSyncInfo.SyncType.GOOGLE);
 
         assertThat(saved).isPresent();
-        assertThat(saved.get().getRefreshToken()).isEqualTo("new-refresh-token");
-        assertThat(saved.get().getAccessToken()).isEqualTo("new-access-token");
+        assertThat(tokenEncryptor.decrypt(saved.get().getRefreshToken())).isEqualTo("new-refresh-token");
+        assertThat(tokenEncryptor.decrypt(saved.get().getAccessToken())).isEqualTo("new-access-token");
         assertThat(saved.get().getStatus()).isEqualTo(CalendarSyncInfo.Status.OK);
     }
 
@@ -46,6 +50,6 @@ class GoogleCalendarServiceTest extends IntegrationTest {
         var saved = calendarSyncInfoRepository.findByUsernameAndSyncType(username, CalendarSyncInfo.SyncType.GOOGLE);
 
         assertThat(saved).isPresent();
-        assertThat(saved.get().getRefreshToken()).isEqualTo("refresh-token");
+        assertThat(tokenEncryptor.decrypt(saved.get().getRefreshToken())).isEqualTo("refresh-token");
     }
 }
