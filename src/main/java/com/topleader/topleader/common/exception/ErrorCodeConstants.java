@@ -59,4 +59,6 @@ public final class ErrorCodeConstants {
     public static final String PARTICIPANT_FINAL_NPS_REQUIRED = "participant.final.nps.required";
     public static final String ASSESSMENT_QUESTIONS_INCOMPLETE = "assessment.questions.incomplete";
 
+    public static final String ENROLLMENT_EMAIL_INVALID_STATUS = "enrollment.email.invalid.status";
+
 }

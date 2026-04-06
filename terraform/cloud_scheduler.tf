@@ -143,6 +143,35 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_qa" {
   depends_on = [google_project_service.scheduler, google_project_service.run]
 }
 
+resource "google_cloud_scheduler_job" "enrollment_emails_qa" {
+  name             = "enrollment-emails-qa"
+  description      = "Send pending enrollment emails to program participants QA"
+  schedule         = "0 0 1 1 *"
+  time_zone        = "Etc/UTC"
+  attempt_deadline = "320s"
+  region           = var.region
+  project          = var.project_id
+
+  retry_config {
+    retry_count          = 0
+    max_retry_duration   = "0s"
+    min_backoff_duration = "5s"
+    max_backoff_duration = "3600s"
+    max_doublings        = 5
+  }
+
+  http_target {
+    http_method = "POST"
+    uri         = "${var.cloud_run_url_qa}/api/protected/jobs/enrollment-emails"
+
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
+  }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
+}
+
 
 # ============================================================================
 # PROD Environment Jobs (Cloud Run)
@@ -255,6 +284,35 @@ resource "google_cloud_scheduler_job" "unscheduled_session_reminder_prod" {
   http_target {
     http_method = "POST"
     uri         = "${var.cloud_run_url_prod}/api/protected/jobs/remind-sessions"
+
+    headers = {
+      "Authorization" = local.job_auth_header
+    }
+  }
+
+  depends_on = [google_project_service.scheduler, google_project_service.run]
+}
+
+resource "google_cloud_scheduler_job" "enrollment_emails_prod" {
+  name             = "enrollment-emails-prod"
+  description      = "Send pending enrollment emails to program participants (PROD)"
+  schedule         = "0 7 * * *"
+  time_zone        = "Etc/UTC"
+  attempt_deadline = "320s"
+  region           = var.region
+  project          = var.project_id
+
+  retry_config {
+    retry_count          = 1
+    max_retry_duration   = "0s"
+    min_backoff_duration = "5s"
+    max_backoff_duration = "3600s"
+    max_doublings        = 5
+  }
+
+  http_target {
+    http_method = "POST"
+    uri         = "${var.cloud_run_url_prod}/api/protected/jobs/enrollment-emails"
 
     headers = {
       "Authorization" = local.job_auth_header

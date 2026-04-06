@@ -1,6 +1,7 @@
 package com.topleader.topleader.program;
 
 import com.topleader.topleader.program.dto.*;
+import com.topleader.topleader.program.enrollment.ProgramEnrollmentEmailService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
@@ -20,6 +21,7 @@ import java.util.Optional;
 public class ProgramController {
 
     private final ProgramService programService;
+    private final ProgramEnrollmentEmailService enrollmentEmailService;
 
     @GetMapping("/options")
     public List<ProgramOptionDto> getOptions() {
@@ -63,6 +65,16 @@ public class ProgramController {
     @PostMapping("/{programId}/launch")
     public ProgramDraftDto launchProgram(@AuthenticationPrincipal UserDetails user, @PathVariable Long programId) {
         return toDraftDto(programService.launchProgram(user.getUsername(), programId));
+    }
+
+    @PostMapping("/{programId}/participants/{username}/resend-enrollment")
+    public void resendEnrollmentEmail(
+            @AuthenticationPrincipal UserDetails user,
+            @PathVariable Long programId,
+            @PathVariable String username
+    ) {
+        programService.resolveCompanyId(user.getUsername());
+        enrollmentEmailService.resendEnrollmentEmail(programId, username);
     }
 
     @GetMapping("/coach-categories")
