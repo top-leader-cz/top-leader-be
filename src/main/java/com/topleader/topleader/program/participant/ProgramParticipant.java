@@ -39,6 +39,12 @@ public class ProgramParticipant {
 
     private LocalDateTime enrolledAt;
 
+    private LocalDateTime enrollmentEmailScheduledAt;
+
+    private LocalDateTime enrollmentEmailSentAt;
+
+    private boolean newUser;
+
     private LocalDateTime createdAt;
 
     private String createdBy;

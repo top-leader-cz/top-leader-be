@@ -21,9 +21,11 @@ import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.user.util.UserUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,6 +63,7 @@ public class ProgramService {
     private final ExpertiseCategoryRepository expertiseCategoryRepository;
     private final FocusAreaCategoryMappingRepository focusAreaCategoryMappingRepository;
     private final CoachRankingService coachRankingService;
+    private final PasswordEncoder passwordEncoder;
 
     public List<ProgramOption> findAllOptions() {
         return programOptionRepository.findAll();
@@ -335,29 +338,31 @@ public class ProgramService {
         var newUsernames = requestedUsernames.stream()
                 .filter(u -> !existingByUsername.containsKey(u))
                 .collect(Collectors.toSet());
+        var createdUsernames = Set.<String>of();
         if (!newUsernames.isEmpty()) {
             var existingDbUsernames = userRepository.findAllByUsernameIn(newUsernames).stream()
                     .map(User::getUsername)
                     .collect(Collectors.toSet());
-            var invalidUsernames = newUsernames.stream()
+            var alreadyInProgram = participantRepository.findUsernamesInActivePrograms(newUsernames, programId);
+            newUsernames.removeAll(alreadyInProgram);
+
+            createdUsernames = newUsernames.stream()
                     .filter(u -> !existingDbUsernames.contains(u))
                     .collect(Collectors.toSet());
-            if (!invalidUsernames.isEmpty()) {
-                throw new ApiValidationException(PARTICIPANTS_NOT_FOUND, "participants", invalidUsernames.toString(), "Some participants do not exist: " + invalidUsernames);
-            }
-
-            var alreadyInProgram = participantRepository.findUsernamesInActivePrograms(newUsernames, programId);
-            if (!alreadyInProgram.isEmpty()) {
-                throw new ApiValidationException(PARTICIPANT_ALREADY_IN_PROGRAM, "participants", alreadyInProgram.toString(), "Participants already in an active program: " + alreadyInProgram);
-            }
+            var creatorLocale = userDetailService.getUser(username)
+                    .map(User::getLocale)
+                    .orElse(UserUtils.defaultLanguage());
+            createdUsernames.forEach(email -> createProgramUser(email, companyId, creatorLocale));
         }
 
+        var newUsers = createdUsernames;
         newUsernames.forEach(participantUsername -> {
                     var assignment = assignmentMap.get(participantUsername);
                     participantRepository.save(new ProgramParticipant()
                             .setProgramId(programId)
                             .setUsername(participantUsername)
                             .setManagerUsername(assignment.managerUsername())
+                            .setNewUser(newUsers.contains(participantUsername))
                             .setCreatedAt(now)
                             .setCreatedBy(username));
                     if (allocationRepository.findByPackageIdAndUsername(packageId, participantUsername).isEmpty()) {
@@ -387,7 +392,23 @@ public class ProgramService {
 
     private void verifyProgramOwnership(Long programId, Long companyId) {
         programRepository.findByIdAndCompanyId(programId, companyId)
-                .orElseThrow(NotFoundException::new);
+                .orElseThrow(() -> new ApiValidationException(NOT_PART_OF_COMPANY, "programId",
+                        String.valueOf(programId), "Program does not belong to user's company"));
+    }
+
+    private void createProgramUser(String email, Long companyId, String locale) {
+        var normalized = email.toLowerCase(Locale.ROOT);
+        userRepository.save(new User()
+                .setPassword(passwordEncoder.encode(UUID.randomUUID().toString()))
+                .setUsername(normalized)
+                .setEmail(normalized)
+                .setFirstName(StringUtils.EMPTY)
+                .setLastName(StringUtils.EMPTY)
+                .setAuthorities(Set.of(User.Authority.USER))
+                .setStatus(User.Status.AUTHORIZED)
+                .setCompanyId(companyId)
+                .setCredit(0)
+                .setLocale(locale));
     }
 
     Long resolveCompanyId(String username) {

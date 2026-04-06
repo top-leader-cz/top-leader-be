@@ -108,7 +108,7 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
-    jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED")
+    jvmArgs("--add-opens", "java.base/java.time=ALL-UNNAMED", "-Duser.timezone=UTC")
     maxHeapSize = "1024m"
     exclude("**/OpenApiGeneratorTest.class")
     exclude("**/ModularityTests.class")

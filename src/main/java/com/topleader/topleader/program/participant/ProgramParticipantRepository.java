@@ -1,9 +1,11 @@
 package com.topleader.topleader.program.participant;
 
+import com.topleader.topleader.program.enrollment.PendingEnrollmentEmailRow;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -28,6 +30,35 @@ public interface ProgramParticipantRepository extends ListCrudRepository<Program
     @Modifying
     @Query("DELETE FROM program_participant WHERE program_id = :programId AND username = :username")
     void deleteByProgramIdAndUsername(Long programId, String username);
+
+    @Query("""
+            SELECT pp.id AS participant_id,
+                   pp.program_id,
+                   pp.username,
+                   pp.new_user,
+                   u.first_name,
+                   u.last_name,
+                   u.email,
+                   u.locale,
+                   p.name AS program_name,
+                   p.goal AS program_goal,
+                   p.duration_days,
+                   p.sessions_per_participant,
+                   p.created_by AS hr_username,
+                   cp.valid_from,
+                   hr.first_name AS hr_first_name,
+                   hr.last_name AS hr_last_name,
+                   hr.email AS hr_email
+            FROM program_participant pp
+            JOIN program p ON p.id = pp.program_id
+            JOIN coaching_package cp ON cp.id = p.coaching_package_id
+            JOIN users u ON u.username = pp.username
+            LEFT JOIN users hr ON hr.username = p.created_by
+            WHERE pp.enrollment_email_scheduled_at <= :now
+              AND pp.enrollment_email_sent_at IS NULL
+              AND p.status IN ('CREATED', 'ACTIVE')
+            """)
+    List<PendingEnrollmentEmailRow> findPendingEnrollmentEmails(LocalDateTime now);
 
     @Query("""
             SELECT pp.username

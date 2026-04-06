@@ -41,6 +41,10 @@ import static org.springframework.security.test.web.servlet.setup.SecurityMockMv
 @EnablePostgresTestContainerContextCustomizerFactory.EnabledPostgresTestContainer
 public abstract class IntegrationTest {
 
+    static {
+        TimeZone.setDefault(TimeZone.getTimeZone(ZoneOffset.UTC));
+    }
+
     protected MockMvc mvc;
 
     @Autowired

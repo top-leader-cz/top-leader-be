@@ -247,37 +247,7 @@ class ProgramControllerIT extends IntegrationTest {
                                     "coachCategories": []
                                 }
                                 """))
-                .andExpect(status().isNotFound());
-    }
-
-    // ==================== Multi-program validation ====================
-
-    @Test
-    @Sql("/sql/hr/program-draft-test.sql")
-    @WithMockUser(username = "hr_prog", authorities = "HR")
-    void createDraft_failsWhenParticipantInActiveProgram() throws Exception {
-        mvc.perform(post("/api/latest/hr/programs/1/launch"))
-                .andExpect(status().isOk());
-
-        var result = mvc.perform(post("/api/latest/hr/programs")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                {
-                                    "name": "Another Program",
-                                    "focusAreas": [],
-                                    "participants": [{"username": "user1@test.cz", "managerUsername": null}],
-                                    "shortlistedCoaches": [],
-                                    "enabledOptions": [],
-                                    "coachLanguages": [],
-                                    "coachCategories": []
-                                }
-                                """))
-                .andExpect(status().isUnprocessableEntity())
-                .andReturn().getResponse().getContentAsString();
-
-        TestUtils.assertJsonEquals(result, """
-                [{"errorCode": "program.participant.already.in.program"}]
-                """);
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -387,7 +357,7 @@ class ProgramControllerIT extends IntegrationTest {
     @WithMockUser(username = "hr_prog", authorities = "HR")
     void getCompanyUsers_invalidProgramId() throws Exception {
         mvc.perform(get("/api/latest/hr/programs/users").param("programId", "999"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // ==================== POST /{programId}/launch ====================
@@ -439,7 +409,7 @@ class ProgramControllerIT extends IntegrationTest {
     @WithMockUser(username = "hr_prog", authorities = "HR")
     void launchProgram_notFound() throws Exception {
         mvc.perform(post("/api/latest/hr/programs/999/launch"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     // ==================== POST /recommend-coaches ====================
