@@ -53,7 +53,7 @@ public class ProgramController {
             @RequestParam(required = false) Long programId
     ) {
         return programService.getCompanyUsers(user.getUsername(), programId).stream()
-                .map(r -> new ProgramUserDto(r.username(), r.firstName(), r.lastName(), r.email(), r.added()))
+                .map(r -> new ProgramUserDto(r.username(), r.firstName(), r.lastName(), r.email(), r.added(), r.activeProgramName()))
                 .toList();
     }
 

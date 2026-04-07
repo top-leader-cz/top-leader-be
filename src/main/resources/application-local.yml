@@ -1,7 +1,8 @@
 top-leader:
+  app-url: http://localhost:3100
   cookie:
     secure: false
   rate-limit:
     login:
-      max-attempts: 50
+      max-attempts: 1000
       block-duration-minutes: 1

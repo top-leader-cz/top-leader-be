@@ -51,6 +51,18 @@ VALUES (102, 100, 'CORE', 10, 'ACTIVE', NOW(), NOW() + INTERVAL '90 days', 'hr_p
 INSERT INTO program (id, coaching_package_id, name, goal, coach_assignment_model, status, duration_days, created_at, created_by, updated_at, updated_by)
 VALUES (3, 102, 'No Participants Program', 'Some goal', 'PARTICIPANT_CHOOSES', 'DRAFT', 90, NOW(), 'hr_prog', NOW(), 'hr_prog');
 
+-- CREATED program with user2 enrolled (for activeProgramName check)
+INSERT INTO coaching_package (id, company_id, pool_type, total_units, status, valid_from, valid_to, created_by, created_at)
+VALUES (103, 100, 'CORE', 10, 'ACTIVE', NOW(), NOW() + INTERVAL '90 days', 'hr_prog', NOW());
+
+INSERT INTO program (id, coaching_package_id, name, goal, coach_assignment_model, status, duration_days,
+                     sessions_per_participant, created_at, created_by, updated_at, updated_by)
+VALUES (4, 103, 'Leadership Q2', 'Lead better', 'PARTICIPANT_CHOOSES', 'CREATED', 90,
+        5, NOW(), 'hr_prog', NOW(), 'hr_prog');
+
+INSERT INTO program_participant (id, program_id, username, created_by, created_at)
+VALUES (4, 4, 'user2@test.cz', 'hr_prog', NOW());
+
 -- Advance sequences past inserted IDs
 ALTER SEQUENCE program_id_seq RESTART WITH 100;
 ALTER SEQUENCE program_participant_id_seq RESTART WITH 100;

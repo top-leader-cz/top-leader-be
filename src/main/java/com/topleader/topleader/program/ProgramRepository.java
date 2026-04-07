@@ -53,7 +53,8 @@ public interface ProgramRepository extends ListCrudRepository<Program, Long> {
                 COALESCE(pp.coach_username, u.coach) AS coach_username,
                 pp.manager_username,
                 ua.consumed_units,
-                ua.allocated_units
+                ua.allocated_units,
+                pp.status AS enrollment_status
             FROM program p
             JOIN coaching_package cp ON cp.id = p.coaching_package_id
             JOIN user_allocation ua ON ua.package_id = cp.id
@@ -93,10 +94,20 @@ public interface ProgramRepository extends ListCrudRepository<Program, Long> {
                 u.last_name,
                 u.email,
                 u.coach,
-                CASE WHEN pp.id IS NOT NULL THEN true ELSE false END AS added
+                CASE WHEN pp.id IS NOT NULL THEN true ELSE false END AS added,
+                ap.name AS active_program_name
             FROM users u
             LEFT JOIN program_participant pp ON pp.username = u.username
                 AND (CAST(:programId AS bigint) IS NOT NULL AND pp.program_id = :programId)
+            LEFT JOIN LATERAL (
+                SELECT p.name
+                FROM program_participant pp2
+                JOIN program p ON p.id = pp2.program_id
+                WHERE pp2.username = u.username
+                  AND p.status IN ('CREATED', 'ACTIVE')
+                  AND (CAST(:programId AS bigint) IS NULL OR p.id <> :programId)
+                LIMIT 1
+            ) ap ON true
             WHERE u.company_id = :companyId
               AND u.status != 'CANCELED'
               AND u.authorities::text LIKE '%USER%'
@@ -112,7 +123,8 @@ public interface ProgramRepository extends ListCrudRepository<Program, Long> {
             String coachUsername,
             String managerUsername,
             int consumedUnits,
-            int allocatedUnits
+            int allocatedUnits,
+            String enrollmentStatus
     ) {}
 
     record CompanyUserRow(
@@ -121,6 +133,7 @@ public interface ProgramRepository extends ListCrudRepository<Program, Long> {
             String lastName,
             String email,
             String coach,
-            boolean added
+            boolean added,
+            String activeProgramName
     ) {}
 }
