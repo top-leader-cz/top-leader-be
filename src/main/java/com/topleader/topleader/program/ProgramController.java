@@ -93,6 +93,11 @@ public class ProgramController {
         return programService.findMatchingExperts(request);
     }
 
+    @GetMapping("/coach-languages")
+    public List<String> getCoachLanguages() {
+        return programService.findAllCoachLanguages();
+    }
+
     @GetMapping("/focus-area-mappings")
     public Map<String, String> getFocusAreaMappings() {
         return programService.getFocusAreaCategoryMappings();

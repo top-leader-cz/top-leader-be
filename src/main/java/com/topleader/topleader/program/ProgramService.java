@@ -70,6 +70,10 @@ public class ProgramService {
         return programOptionRepository.findAll();
     }
 
+    public List<String> findAllCoachLanguages() {
+        return coachRepository.findDistinctLanguages();
+    }
+
     public List<ProgramRepository.ProgramSummaryRow> listPrograms(String username) {
         var companyId = resolveCompanyId(username);
         return programRepository.findSummariesByCompanyId(companyId);

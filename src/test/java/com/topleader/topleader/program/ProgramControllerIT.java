@@ -566,6 +566,21 @@ class ProgramControllerIT extends IntegrationTest {
                 """);
     }
 
+    // ==================== GET /coach-languages ====================
+
+    @Test
+    @Sql("/sql/hr/program-coach-preview-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void getCoachLanguages() throws Exception {
+        var result = mvc.perform(get("/api/latest/hr/programs/coach-languages"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+                ["cs", "de", "en"]
+                """);
+    }
+
     // ==================== GET /focus-area-mappings ====================
 
     @Test

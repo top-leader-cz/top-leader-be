@@ -2,6 +2,8 @@ package com.topleader.topleader.program.participant;
 
 import com.topleader.topleader.program.Program;
 import com.topleader.topleader.program.ProgramRepository;
+import com.topleader.topleader.program.recommendation.LearnMoreDto;
+import com.topleader.topleader.program.recommendation.ProgramRecommendationService;
 import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
@@ -77,6 +79,7 @@ public class ParticipantProgramController {
     private final UserAllocationRepository userAllocationRepository;
     private final UserRepository userRepository;
     private final AiClient aiClient;
+    private final ProgramRecommendationService recommendationService;
 
     @GetMapping("/status")
     public ProgramStatusDto getStatus(@AuthenticationPrincipal UserDetails user) {
@@ -106,7 +109,8 @@ public class ParticipantProgramController {
                 .orElse(null);
         var midCycleStatus = computeAssessmentStatus(participant, program, AssessmentResponse.Type.MID);
         var finalStatus = computeAssessmentStatus(participant, program, AssessmentResponse.Type.FINAL);
-        return DashboardDto.of(participant, program, practice, nextSession, allocation, midCycleStatus, finalStatus);
+        var learnMore = recommendationService.loadForParticipant(participant, resolveLocale(user.getUsername()));
+        return DashboardDto.of(participant, program, practice, nextSession, allocation, midCycleStatus, finalStatus, learnMore);
     }
 
     private AssessmentStatus computeAssessmentStatus(
@@ -197,16 +201,9 @@ public class ParticipantProgramController {
         participantRepository.save(participant);
 
         var language = resolveLanguage(user.getUsername());
-        var fallback = List.of(resolveFallbackPractice(user.getUsername()));
-        List<String> suggestions;
-        try {
-            suggestions = Optional.ofNullable(aiClient.generateWeeklyPractices(
-                    participant.getFocusArea(), participant.getPersonalGoal(), program.getGoal(), language))
-                    .filter(s -> !s.isEmpty())
-                    .orElse(fallback);
-        } catch (Exception e) {
-            suggestions = fallback;
-        }
+        var ai = aiClient.generateWeeklyPractices(
+                participant.getFocusArea(), participant.getPersonalGoal(), program.getGoal(), language);
+        var suggestions = ai.isEmpty() ? List.of(resolveFallbackPractice(user.getUsername())) : ai;
         weeklyPracticeRepository.save(new WeeklyPractice()
                 .setParticipantId(participant.getId())
                 .setCycle(participant.getCurrentCycle())
@@ -214,6 +211,7 @@ public class ParticipantProgramController {
                 .setText(suggestions.getFirst())
                 .setSource(WeeklyPractice.Source.AI)
                 .setCreatedAt(LocalDateTime.now()));
+        recommendationService.generateAsync(participant, language);
         return suggestions;
     }
 
@@ -227,6 +225,7 @@ public class ParticipantProgramController {
         requireStatus(participant, ACTIVE_STATUSES, PARTICIPANT_GOAL_INVALID_STATUS);
         participant.setPersonalGoal(request.goal());
         participantRepository.save(participant);
+        recommendationService.generateAsync(participant, resolveLanguage(user.getUsername()));
     }
 
     @PutMapping("/{programId}/practice")
@@ -494,7 +493,8 @@ public class ParticipantProgramController {
             int sessionsConsumed,
             int sessionsAllocated,
             AssessmentStatus midCycleStatus,
-            AssessmentStatus finalStatus
+            AssessmentStatus finalStatus,
+            LearnMoreDto learnMore
     ) {
         static DashboardDto of(
                 ProgramParticipant participant,
@@ -503,7 +503,8 @@ public class ParticipantProgramController {
                 ScheduledSession nextSession,
                 UserAllocation allocation,
                 AssessmentStatus midCycleStatus,
-                AssessmentStatus finalStatus) {
+                AssessmentStatus finalStatus,
+                LearnMoreDto learnMore) {
             return new DashboardDto(
                     program.getName(),
                     program.getGoal(),
@@ -516,7 +517,8 @@ public class ParticipantProgramController {
                     allocation != null ? Optional.ofNullable(allocation.getConsumedUnits()).orElse(0) : 0,
                     allocation != null ? Optional.ofNullable(allocation.getAllocatedUnits()).orElse(0) : 0,
                     midCycleStatus,
-                    finalStatus
+                    finalStatus,
+                    learnMore != null && !learnMore.isEmpty() ? learnMore : null
             );
         }
     }
@@ -532,9 +534,9 @@ public class ParticipantProgramController {
             String personalGoal
     ) {}
 
-    public record EnrollRequest(@NotBlank String focusArea, String personalGoal) {}
+    public record EnrollRequest(@NotBlank String focusArea, @Size(max = 500) String personalGoal) {}
 
-    public record GoalUpdateRequest(@NotBlank @Size(min = 10) String goal) {}
+    public record GoalUpdateRequest(@NotBlank @Size(min = 10, max = 2000) String goal) {}
 
     public record PracticeUpdateRequest(@NotNull @Min(1) Integer weekNumber, @NotBlank String text) {}
 
