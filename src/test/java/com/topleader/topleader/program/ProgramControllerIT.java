@@ -360,6 +360,105 @@ class ProgramControllerIT extends IntegrationTest {
                 .andExpect(status().isUnprocessableEntity());
     }
 
+    @Test
+    @Sql("/sql/hr/program-draft-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void getCompanyUsers_includesActiveProgramName_whenUserInOtherProgram() throws Exception {
+        // user2 is enrolled in program 4 (CREATED, "Leadership Q2") in fixture
+        var result = mvc.perform(get("/api/latest/hr/programs/users").param("programId", "1"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+                [
+                    {"username": "hr_prog", "added": false, "activeProgramName": null},
+                    {"username": "user1@test.cz", "added": true, "activeProgramName": null},
+                    {"username": "user2@test.cz", "added": false, "activeProgramName": "Leadership Q2"}
+                ]
+                """);
+    }
+
+    @Test
+    @Sql("/sql/hr/program-draft-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void getCompanyUsers_excludesCurrentProgramFromActiveProgramName() throws Exception {
+        // When viewing program 4 itself, user2's enrollment in program 4 should NOT count as "other active"
+        var result = mvc.perform(get("/api/latest/hr/programs/users").param("programId", "4"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+                [
+                    {"username": "hr_prog", "added": false, "activeProgramName": null},
+                    {"username": "user1@test.cz", "added": false, "activeProgramName": null},
+                    {"username": "user2@test.cz", "added": true, "activeProgramName": null}
+                ]
+                """);
+    }
+
+    @Test
+    @Sql("/sql/hr/program-draft-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void getCompanyUsers_filtersByManagerRole() throws Exception {
+        // fixture: hr_prog has HR+USER, user1/user2 are plain USER, none are MANAGER → empty list
+        var result = mvc.perform(get("/api/latest/hr/programs/users").param("role", "MANAGER"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, "[]");
+    }
+
+    @Test
+    @Sql("/sql/hr/program-draft-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void getCompanyUsers_filtersByHrRole() throws Exception {
+        var result = mvc.perform(get("/api/latest/hr/programs/users").param("role", "HR"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+                [
+                    {"username": "hr_prog"}
+                ]
+                """);
+    }
+
+    @Test
+    @Sql("/sql/hr/program-draft-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void getCompanyUsers_defaultsToUserRole_whenRoleOmitted() throws Exception {
+        // Unchanged default behavior: all users with USER role (incl. hr_prog which has ["HR","USER"])
+        var result = mvc.perform(get("/api/latest/hr/programs/users"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+                [
+                    {"username": "hr_prog"},
+                    {"username": "user1@test.cz"},
+                    {"username": "user2@test.cz"}
+                ]
+                """);
+    }
+
+    @Test
+    @Sql("/sql/hr/program-draft-test.sql")
+    @WithMockUser(username = "hr_prog", authorities = "HR")
+    void getCompanyUsers_activeProgramName_whenNoProgramId() throws Exception {
+        // No programId → all CREATED/ACTIVE programs are checked; user2 → "Leadership Q2"
+        var result = mvc.perform(get("/api/latest/hr/programs/users"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+                [
+                    {"username": "hr_prog", "activeProgramName": null},
+                    {"username": "user1@test.cz", "activeProgramName": null},
+                    {"username": "user2@test.cz", "activeProgramName": "Leadership Q2"}
+                ]
+                """);
+    }
+
     // ==================== POST /{programId}/launch ====================
 
     @Test

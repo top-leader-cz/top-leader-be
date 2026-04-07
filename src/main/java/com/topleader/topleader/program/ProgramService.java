@@ -56,6 +56,7 @@ public class ProgramService {
     private final UserAllocationRepository allocationRepository;
     private final CoachingPackageService coachingPackageService;
     private final UserDetailService userDetailService;
+    private final CompanyResolver companyResolver;
     private final CoachRepository coachRepository;
     private final UserRepository userRepository;
     private final AiClient aiClient;
@@ -134,12 +135,12 @@ public class ProgramService {
         return ProgramDetailDto.from(program, ProgramStatsDto.from(participants), participants);
     }
 
-    public List<ProgramRepository.CompanyUserRow> getCompanyUsers(String username, Long programId) {
+    public List<ProgramRepository.CompanyUserRow> getCompanyUsers(String username, Long programId, User.Authority role) {
         var companyId = resolveCompanyId(username);
         if (programId != null) {
             verifyProgramOwnership(programId, companyId);
         }
-        return programRepository.findCompanyUsersWithParticipation(programId, companyId);
+        return programRepository.findCompanyUsersWithParticipation(programId, companyId, role != null ? role.name() : null);
     }
 
     public List<RecommendedCoachDto> recommendCoaches(RecommendCoachesRequest request) {
@@ -412,8 +413,6 @@ public class ProgramService {
     }
 
     Long resolveCompanyId(String username) {
-        var user = userDetailService.getUser(username).orElseThrow(NotFoundException::new);
-        return Optional.ofNullable(user.getCompanyId())
-                .orElseThrow(() -> new ApiValidationException(NOT_PART_OF_COMPANY, "user", username, "User is not part of any company"));
+        return companyResolver.resolveCompanyId(username);
     }
 }

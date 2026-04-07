@@ -2,6 +2,7 @@ package com.topleader.topleader.program;
 
 import com.topleader.topleader.program.dto.*;
 import com.topleader.topleader.program.enrollment.ProgramEnrollmentEmailService;
+import com.topleader.topleader.user.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
@@ -50,10 +51,11 @@ public class ProgramController {
     @GetMapping("/users")
     public List<ProgramUserDto> getCompanyUsers(
             @AuthenticationPrincipal UserDetails user,
-            @RequestParam(required = false) Long programId
+            @RequestParam(required = false) Long programId,
+            @RequestParam(required = false) User.Authority role
     ) {
-        return programService.getCompanyUsers(user.getUsername(), programId).stream()
-                .map(r -> new ProgramUserDto(r.username(), r.firstName(), r.lastName(), r.email(), r.added()))
+        return programService.getCompanyUsers(user.getUsername(), programId, role).stream()
+                .map(r -> new ProgramUserDto(r.username(), r.firstName(), r.lastName(), r.email(), r.added(), r.activeProgramName()))
                 .toList();
     }
 

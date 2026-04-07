@@ -23,6 +23,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -214,6 +215,18 @@ public class ParticipantProgramController {
                 .setSource(WeeklyPractice.Source.AI)
                 .setCreatedAt(LocalDateTime.now()));
         return suggestions;
+    }
+
+    @PutMapping("/{programId}/goal")
+    public void updateGoal(
+            @PathVariable Long programId,
+            @RequestBody @Valid GoalUpdateRequest request,
+            @AuthenticationPrincipal UserDetails user) {
+        var participant = participantRepository.findByProgramIdAndUsername(programId, user.getUsername())
+                .orElseThrow(NotFoundException::new);
+        requireStatus(participant, ACTIVE_STATUSES, PARTICIPANT_GOAL_INVALID_STATUS);
+        participant.setPersonalGoal(request.goal());
+        participantRepository.save(participant);
     }
 
     @PutMapping("/{programId}/practice")
@@ -520,6 +533,8 @@ public class ParticipantProgramController {
     ) {}
 
     public record EnrollRequest(@NotBlank String focusArea, String personalGoal) {}
+
+    public record GoalUpdateRequest(@NotBlank @Size(min = 10) String goal) {}
 
     public record PracticeUpdateRequest(@NotNull @Min(1) Integer weekNumber, @NotBlank String text) {}
 

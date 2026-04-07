@@ -1,6 +1,7 @@
 package com.topleader.topleader.program.participant;
 
 import com.topleader.topleader.program.enrollment.PendingEnrollmentEmailRow;
+import com.topleader.topleader.program.manager.ManagerParticipantRow;
 import org.springframework.data.jdbc.repository.query.Modifying;
 import org.springframework.data.jdbc.repository.query.Query;
 import org.springframework.data.repository.ListCrudRepository;
@@ -93,4 +94,35 @@ public interface ProgramParticipantRepository extends ListCrudRepository<Program
             WHERE pp.program_id = :programId AND pp.username = :username
             """)
     Optional<JourneyProjection> findJourneyData(Long programId, String username, int cycle);
+
+    @Query("""
+            SELECT
+                p.id                            AS program_id,
+                p.name                          AS program_name,
+                pp.username                     AS username,
+                u.first_name                    AS first_name,
+                u.last_name                     AS last_name,
+                pp.status                       AS enrollment_status,
+                COALESCE(ua.consumed_units, 0)  AS attendance_count,
+                CASE
+                    WHEN wp_stats.total = 0 THEN 0
+                    ELSE wp_stats.responded::float / wp_stats.total
+                END                             AS practice_completion_rate
+            FROM program_participant pp
+            JOIN program p ON p.id = pp.program_id
+            JOIN coaching_package cp ON cp.id = p.coaching_package_id
+            JOIN users u ON u.username = pp.username
+            LEFT JOIN user_allocation ua ON ua.username = pp.username AND ua.package_id = cp.id
+            LEFT JOIN LATERAL (
+                SELECT
+                    COUNT(*)                                                 AS total,
+                    COUNT(*) FILTER (WHERE friday_response IS NOT NULL)      AS responded
+                FROM weekly_practice
+                WHERE participant_id = pp.id
+            ) wp_stats ON true
+            WHERE pp.manager_username = :managerUsername
+              AND cp.company_id = :companyId
+            ORDER BY p.name, u.last_name, u.first_name
+            """)
+    List<ManagerParticipantRow> findManagedParticipants(String managerUsername, Long companyId);
 }

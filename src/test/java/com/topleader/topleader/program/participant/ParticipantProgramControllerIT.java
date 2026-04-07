@@ -14,6 +14,7 @@ import com.topleader.topleader.program.participant.practice.WeeklyPracticeReposi
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @Sql("/sql/participant/participant-test.sql")
@@ -174,6 +175,72 @@ class ParticipantProgramControllerIT extends IntegrationTest {
                 .andReturn().getResponse().getContentAsString();
 
         assertThat(result).contains("participant.enroll.invalid.status");
+    }
+
+    // ==================== PUT /{programId}/goal ====================
+
+    @Test
+    @WithMockUser(username = "participant2", authorities = "USER")
+    void updateGoal_success() throws Exception {
+        mvc.perform(put("/api/latest/participant/programs/1/goal")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "goal": "Become a more empathetic leader for my team" }
+                                """))
+                .andExpect(status().isOk());
+
+        var participant = participantRepository.findById(2L).orElseThrow();
+        assertThat(participant.getPersonalGoal()).isEqualTo("Become a more empathetic leader for my team");
+    }
+
+    @Test
+    @WithMockUser(username = "participant2", authorities = "USER")
+    void updateGoal_fails_whenGoalBlank() throws Exception {
+        mvc.perform(put("/api/latest/participant/programs/1/goal")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "goal": "" }
+                                """))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @WithMockUser(username = "participant2", authorities = "USER")
+    void updateGoal_fails_whenGoalTooShort() throws Exception {
+        mvc.perform(put("/api/latest/participant/programs/1/goal")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "goal": "short" }
+                                """))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    @WithMockUser(username = "participant1", authorities = "USER")
+    void updateGoal_fails_whenInvitedStatus() throws Exception {
+        var result = mvc.perform(put("/api/latest/participant/programs/1/goal")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "goal": "Become a more empathetic leader" }
+                                """))
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(result).contains("participant.goal.invalid.status");
+
+        var participant = participantRepository.findById(1L).orElseThrow();
+        assertThat(participant.getPersonalGoal()).isNull();
+    }
+
+    @Test
+    @WithMockUser(username = "participant1", authorities = "USER")
+    void updateGoal_notFound_whenNotParticipant() throws Exception {
+        mvc.perform(put("/api/latest/participant/programs/999/goal")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "goal": "Become a more empathetic leader" }
+                                """))
+                .andExpect(status().isNotFound());
     }
 
     // ==================== GET /{programId}/assessment/baseline ====================

@@ -1,5 +1,7 @@
 # CLAUDE.md
 
+> For project-level context (auth, seeded users, API patterns, roles), see [`../CLAUDE.md`](../CLAUDE.md).
+
 This file provides guidance to Claude Code when working with code in this repository.
 
 ## Project Overview
@@ -44,6 +46,7 @@ Example: `SessionEmailData` DTO in `common/email/` instead of using `ScheduledSe
 ## Key Patterns for Code Generation
 
 ### Entity Pattern (JDBC)
+
 ```java
 @Data
 @Table("table_name")
@@ -57,6 +60,7 @@ public class MyEntity {
 ```
 
 ### Repository Pattern (JDBC)
+
 ```java
 public interface MyRepository extends ListCrudRepository<MyEntity, Long> {
 
@@ -77,6 +81,7 @@ public interface MyRepository extends ListCrudRepository<MyEntity, Long> {
 ```
 
 ### Nullable Parameters in @Query
+
 ```java
 // String parameters - use COALESCE
 @Query("""
@@ -96,6 +101,7 @@ List<MyEntity> findFiltered(LocalDateTime fromDate);
 ```
 
 ### Pagination with @Query
+
 ```java
 // Query method with Pageable
 @Query("SELECT * FROM table WHERE active = true")
@@ -112,11 +118,13 @@ return new PageImpl<>(content, pageable, total);
 ```
 
 ### Transaction Management
+
 - **AVOID `@Transactional` in most cases** - JDBC handles it automatically
 - **Only use `@Transactional` for multi-operation atomicity**
 - Never for single repository calls or read-only methods
 
 ### Controller Pattern
+
 ```java
 @RestController
 @RequestMapping("/api/latest/my-resource")
@@ -131,6 +139,7 @@ public class MyController {
 ```
 
 ### Exception Handling
+
 ```java
 // Use existing exceptions from common/exception/
 throw new NotFoundException();
@@ -138,6 +147,7 @@ throw new ApiValidationException(ERROR_CODE, "field", "value", "message");
 ```
 
 ### JDBC Custom Converters
+
 ```java
 // In JdbcConfiguration.java
 @ReadingConverter
@@ -159,6 +169,7 @@ static class MyConverter implements Converter<String, MyType> {
 - **No JavaDoc comments above methods**
 - **Prefer streams over for/while loops**
 - **Use Optional for null-safe operations**:
+
   ```java
   // Good
   return Optional.ofNullable(source)
@@ -170,6 +181,7 @@ static class MyConverter implements Converter<String, MyType> {
   var value = source != null ? source.getValue() : null;
   if (StringUtils.isBlank(value)) return defaultValue;
   ```
+
 - **NEVER use fully qualified class names** - always import and use simple names
 
 ## Database Migrations
@@ -181,13 +193,19 @@ static class MyConverter implements Converter<String, MyType> {
 ## Development Environment
 
 ### Build System
+
 - **Gradle** and **Java** are managed via **SDKMAN**
 - Gradle location: `~/.sdkman/candidates/gradle/current/bin/gradle`
 - Java location: `~/.sdkman/candidates/java/25`
 - Use `make` commands for common tasks (see `Makefile` for available commands)
 
 ### Common Commands
+
 ```bash
+docker compose up   # Start BE + PostgreSQL (local dev)
+make db-seed        # Seed test users into the DB (safe to re-run, uses ON CONFLICT DO NOTHING)
+make db-clear       # Clear user data; preserves Flyway-managed reference tables (focus_area, expertise_category, program_option, global program_template rows)
+make db-reset       # Full DB reset: wipe Docker volumes + restart (re-runs all Flyway migrations from scratch)
 make build          # Build the application
 make test           # Run tests
 make test-coverage  # Run tests with coverage report
@@ -195,6 +213,7 @@ make native         # Build GraalVM native image
 ```
 
 ### Testing
+
 - Tests use **PostgreSQL TestContainers** (not H2)
 - TestContainers configuration in `EnablePostgresTestContainerContextCustomizerFactory`
 - Test-specific datasource configuration in `application-test.yml` ensures Agroal works with TestContainers

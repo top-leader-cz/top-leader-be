@@ -41,6 +41,9 @@ build/
 *.tfvars
 !*.tfvars.example
 
+### Local dev files ###
+.local/
+
 ### Claude Code ###
 .claude
 .gradle/
