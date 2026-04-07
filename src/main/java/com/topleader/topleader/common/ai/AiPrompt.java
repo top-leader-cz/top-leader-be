@@ -28,6 +28,8 @@ public class AiPrompt {
         SUGGESTION,
         IMAGE_MATCH,
         WEEKLY_PRACTICE,
+        PROGRAM_ARTICLE,
+        PROGRAM_VIDEO,
     }
 
 }
