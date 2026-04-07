@@ -2,6 +2,8 @@ package com.topleader.topleader.program.participant;
 
 import com.topleader.topleader.program.Program;
 import com.topleader.topleader.program.ProgramRepository;
+import com.topleader.topleader.program.recommendation.LearnMoreDto;
+import com.topleader.topleader.program.recommendation.ProgramRecommendationService;
 import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
@@ -76,6 +78,7 @@ public class ParticipantProgramController {
     private final UserAllocationRepository userAllocationRepository;
     private final UserRepository userRepository;
     private final AiClient aiClient;
+    private final ProgramRecommendationService recommendationService;
 
     @GetMapping("/status")
     public ProgramStatusDto getStatus(@AuthenticationPrincipal UserDetails user) {
@@ -105,7 +108,9 @@ public class ParticipantProgramController {
                 .orElse(null);
         var midCycleStatus = computeAssessmentStatus(participant, program, AssessmentResponse.Type.MID);
         var finalStatus = computeAssessmentStatus(participant, program, AssessmentResponse.Type.FINAL);
-        return DashboardDto.of(participant, program, practice, nextSession, allocation, midCycleStatus, finalStatus);
+        var language = resolveLanguage(user.getUsername());
+        var learnMore = recommendationService.loadForParticipant(participant, language);
+        return DashboardDto.of(participant, program, practice, nextSession, allocation, midCycleStatus, finalStatus, learnMore);
     }
 
     private AssessmentStatus computeAssessmentStatus(
@@ -213,6 +218,7 @@ public class ParticipantProgramController {
                 .setText(suggestions.getFirst())
                 .setSource(WeeklyPractice.Source.AI)
                 .setCreatedAt(LocalDateTime.now()));
+        recommendationService.generateAsync(participant, language);
         return suggestions;
     }
 
@@ -481,7 +487,8 @@ public class ParticipantProgramController {
             int sessionsConsumed,
             int sessionsAllocated,
             AssessmentStatus midCycleStatus,
-            AssessmentStatus finalStatus
+            AssessmentStatus finalStatus,
+            LearnMoreDto learnMore
     ) {
         static DashboardDto of(
                 ProgramParticipant participant,
@@ -490,7 +497,8 @@ public class ParticipantProgramController {
                 ScheduledSession nextSession,
                 UserAllocation allocation,
                 AssessmentStatus midCycleStatus,
-                AssessmentStatus finalStatus) {
+                AssessmentStatus finalStatus,
+                LearnMoreDto learnMore) {
             return new DashboardDto(
                     program.getName(),
                     program.getGoal(),
@@ -503,7 +511,8 @@ public class ParticipantProgramController {
                     allocation != null ? Optional.ofNullable(allocation.getConsumedUnits()).orElse(0) : 0,
                     allocation != null ? Optional.ofNullable(allocation.getAllocatedUnits()).orElse(0) : 0,
                     midCycleStatus,
-                    finalStatus
+                    finalStatus,
+                    learnMore != null && !learnMore.isEmpty() ? learnMore : null
             );
         }
     }

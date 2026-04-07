@@ -1,0 +1,74 @@
+{
+  "fa.giving-feedback": {
+    "en": "Giving feedback",
+    "cs": "Poskytování zpětné vazby",
+    "fr": "Donner du feedback",
+    "de": "Feedback geben"
+  },
+  "fa.delegation": {
+    "en": "Delegation",
+    "cs": "Delegování",
+    "fr": "Délégation",
+    "de": "Delegieren"
+  },
+  "fa.strategic-thinking": {
+    "en": "Strategic thinking",
+    "cs": "Strategické myšlení",
+    "fr": "Pensée stratégique",
+    "de": "Strategisches Denken"
+  },
+  "fa.communication": {
+    "en": "Communication",
+    "cs": "Komunikace",
+    "fr": "Communication",
+    "de": "Kommunikation"
+  },
+  "fa.team-motivation": {
+    "en": "Team motivation",
+    "cs": "Motivace týmu",
+    "fr": "Motivation d'équipe",
+    "de": "Teammotivation"
+  },
+  "fa.time-management": {
+    "en": "Time management",
+    "cs": "Řízení času",
+    "fr": "Gestion du temps",
+    "de": "Zeitmanagement"
+  },
+  "fa.emotional-intelligence": {
+    "en": "Emotional intelligence",
+    "cs": "Emoční inteligence",
+    "fr": "Intelligence émotionnelle",
+    "de": "Emotionale Intelligenz"
+  },
+  "fa.self-awareness": {
+    "en": "Self-awareness",
+    "cs": "Sebeuvědomění",
+    "fr": "Conscience de soi",
+    "de": "Selbstwahrnehmung"
+  },
+  "fa.conflict-resolution": {
+    "en": "Conflict resolution",
+    "cs": "Řešení konfliktů",
+    "fr": "Résolution de conflits",
+    "de": "Konfliktlösung"
+  },
+  "fa.resilience": {
+    "en": "Resilience",
+    "cs": "Odolnost",
+    "fr": "Résilience",
+    "de": "Resilienz"
+  },
+  "fa.decision-making": {
+    "en": "Decision making",
+    "cs": "Rozhodování",
+    "fr": "Prise de décision",
+    "de": "Entscheidungsfindung"
+  },
+  "fa.accountability": {
+    "en": "Accountability",
+    "cs": "Odpovědnost",
+    "fr": "Responsabilité",
+    "de": "Eigenverantwortung"
+  }
+}

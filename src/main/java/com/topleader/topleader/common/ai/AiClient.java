@@ -241,6 +241,69 @@ public class AiClient {
         return res;
     }
 
+    public List<UserArticle> generateProgramArticles(
+            String username, String focusAreaEnglish, String personalGoal, String language) {
+        log.info("Generating program articles, user: [{}], focus: [{}], language: {}",
+                username, focusAreaEnglish, language);
+
+        var goal = Optional.ofNullable(personalGoal).filter(StringUtils::isNotBlank).orElse(StringUtils.EMPTY);
+        var query = (focusAreaEnglish + " " + goal + " article").trim();
+        log.info("[TAVILY] Searching program articles: {}", query);
+        var articleResults = searchArticles.apply(new TavilySearchRequest(query));
+
+        if (articleResults.isEmpty()) {
+            log.warn("No article results from Tavily for program participant [{}]", username);
+            return List.of();
+        }
+
+        var resultsText = articleResults.stream()
+                .map(r -> "- title: %s | url: %s | snippet: %s".formatted(r.title(), r.url(), r.content()))
+                .collect(java.util.stream.Collectors.joining("\n"));
+
+        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.PROGRAM_ARTICLE);
+        var userMessage = "Focus area: %s\nPersonal goal: %s\nPreferred language: %s\n\nSearch results:\n%s"
+                .formatted(focusAreaEnglish, goal, language, resultsText);
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
+                .user(userMessage)
+                .call()
+                .entity(new ParameterizedTypeReference<List<UserArticle>>() {}));
+        log.info("Program articles response: {} articles for user [{}]", res != null ? res.size() : 0, username);
+        return res;
+    }
+
+    public List<UserPreview> generateProgramPreviews(
+            String username, String focusAreaEnglish, String personalGoal) {
+        log.info("Generating program previews, user: [{}], focus: [{}]", username, focusAreaEnglish);
+
+        var goal = Optional.ofNullable(personalGoal).filter(StringUtils::isNotBlank).orElse(StringUtils.EMPTY);
+        var query = (focusAreaEnglish + " " + goal + " TED talk leadership development").trim();
+        log.info("[TAVILY] Searching program videos: {}", query);
+        var videoResults = searchVideos.apply(new TavilySearchRequest(query));
+
+        if (videoResults.isEmpty()) {
+            log.warn("No video results from Tavily for program participant [{}]", username);
+            return List.of();
+        }
+
+        var resultsText = videoResults.stream()
+                .map(r -> "- title: %s | url: %s | snippet: %s".formatted(r.title(), r.url(), r.content()))
+                .collect(java.util.stream.Collectors.joining("\n"));
+
+        var systemPrompt = aiPromptService.getPrompt(AiPrompt.PromptType.PROGRAM_VIDEO);
+        var userMessage = "Focus area: %s\nPersonal goal: %s\n\nSearch results:\n%s"
+                .formatted(focusAreaEnglish, goal, resultsText);
+
+        var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt()
+                .system(systemPrompt)
+                .user(userMessage)
+                .call()
+                .entity(new ParameterizedTypeReference<List<UserPreview>>() {}));
+        log.info("Program previews response: {} videos for user [{}]", res != null ? res.size() : 0, username);
+        return res;
+    }
+
     public String translateToEnglish(String text) {
         try {
             var result = chatClient.prompt()
