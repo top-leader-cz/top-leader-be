@@ -4,19 +4,21 @@ package com.topleader.topleader.session.coaching_package.dto;
 import com.topleader.topleader.session.coaching_package.CoachingPackage;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 
 public record CoachingPackageDto(
         Long id,
         Long companyId,
         CoachingPackage.PoolType poolType,
         int totalUnits,
-        LocalDateTime validFrom,
-        LocalDateTime validTo,
+        ZonedDateTime validFrom,
+        ZonedDateTime validTo,
         CoachingPackage.PackageStatus status,
         String contextRef,
-        LocalDateTime createdAt,
+        ZonedDateTime createdAt,
         String createdBy,
-        LocalDateTime updatedAt,
+        ZonedDateTime updatedAt,
         String updatedBy,
         CoachingPackageMetricsDto metrics
 ) {
@@ -27,15 +29,19 @@ public record CoachingPackageDto(
                 entity.getCompanyId(),
                 entity.getPoolType(),
                 entity.getTotalUnits(),
-                entity.getValidFrom(),
-                entity.getValidTo(),
+                toUtc(entity.getValidFrom()),
+                toUtc(entity.getValidTo()),
                 entity.getStatus(),
                 entity.getContextRef(),
-                entity.getCreatedAt(),
+                toUtc(entity.getCreatedAt()),
                 entity.getCreatedBy(),
-                entity.getUpdatedAt(),
+                toUtc(entity.getUpdatedAt()),
                 entity.getUpdatedBy(),
                 metrics
         );
+    }
+
+    private static ZonedDateTime toUtc(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(ZoneOffset.UTC);
     }
 }

@@ -21,7 +21,7 @@ import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.user.util.UserUtils;
+import com.topleader.topleader.common.util.LocaleUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -118,6 +118,7 @@ public class ProgramService {
                 .setCoachAssignmentModel(Optional.ofNullable(request.coachAssignmentModel()).orElse(Program.CoachAssignmentModel.PARTICIPANT_CHOOSES))
                 .setShortlistedCoaches(request.shortlistedCoaches())
                 .setMicroActionsEnabled(request.microActionsEnabled())
+                .setAllowFullAreaLibrary(request.allowFullAreaLibrary())
                 .setEnabledOptions(request.enabledOptions())
                 .setCoachLanguages(request.coachLanguages())
                 .setCoachCategories(request.coachCategories())
@@ -356,7 +357,7 @@ public class ProgramService {
                     .collect(Collectors.toSet());
             var creatorLocale = userDetailService.getUser(username)
                     .map(User::getLocale)
-                    .orElse(UserUtils.defaultLanguage());
+                    .orElse(LocaleUtils.defaultLanguage());
             createdUsernames.forEach(email -> createProgramUser(email, companyId, creatorLocale));
         }
 

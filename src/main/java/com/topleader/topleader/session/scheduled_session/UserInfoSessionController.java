@@ -4,6 +4,7 @@ import com.topleader.topleader.common.email.EmailTemplateService;
 import com.topleader.topleader.common.email.SessionEmailData;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.common.exception.NotFoundException;
+import com.topleader.topleader.common.util.LocaleUtils;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,7 +22,6 @@ import java.util.stream.Collectors;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.SESSION_CANCEL_TOO_LATE;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.SESSION_IN_PAST;
-import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 import static java.util.stream.Collectors.toMap;
 
 @RestController
@@ -48,7 +48,7 @@ public class UserInfoSessionController {
 
     @PostMapping("/private-session")
     public UpcomingSessionDto schedulePrivateSession(@RequestBody SchedulePrivateSessionRequest request, @AuthenticationPrincipal UserDetails user) {
-        var userZoneId = getUserTimeZoneId(userRepository.findByUsername(user.getUsername()));
+        var userZoneId = LocaleUtils.zoneIdOrUtc(userRepository.findByUsername(user.getUsername()).map(User::getTimeZone).orElse(null));
         var shiftedTime = request.time()
                 .atZone(userZoneId)
                 .withZoneSameInstant(ZoneOffset.UTC)

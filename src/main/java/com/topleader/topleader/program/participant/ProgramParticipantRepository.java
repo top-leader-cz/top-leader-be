@@ -25,6 +25,37 @@ public interface ProgramParticipantRepository extends ListCrudRepository<Program
             """)
     Optional<ProgramParticipant> findActiveByUsername(String username);
 
+    @Query("""
+            SELECT
+                pp.status                       AS participant_status,
+                p.id                            AS program_id,
+                p.name                          AS program_name,
+                p.goal                          AS program_goal,
+                p.duration_days                 AS duration_days,
+                p.sessions_per_participant      AS sessions_per_participant,
+                cp.valid_from                   AS valid_from,
+                cp.valid_to                     AS valid_to
+            FROM program_participant pp
+            JOIN program p ON p.id = pp.program_id
+            JOIN coaching_package cp ON cp.id = p.coaching_package_id
+            WHERE pp.username = :username
+              AND p.status IN ('CREATED', 'ACTIVE')
+            ORDER BY p.created_at DESC
+            LIMIT 1
+            """)
+    Optional<ActiveProgramStatusRow> findActiveStatusByUsername(String username);
+
+    record ActiveProgramStatusRow(
+            String participantStatus,
+            Long programId,
+            String programName,
+            String programGoal,
+            Integer durationDays,
+            Integer sessionsPerParticipant,
+            LocalDateTime validFrom,
+            LocalDateTime validTo
+    ) {}
+
     @Query("SELECT * FROM program_participant WHERE program_id = :programId AND username = :username")
     Optional<ProgramParticipant> findByProgramIdAndUsername(Long programId, String username);
 

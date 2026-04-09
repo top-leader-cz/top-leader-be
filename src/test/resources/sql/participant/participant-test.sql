@@ -5,14 +5,19 @@ VALUES ('participant1', 'pass', '["USER"]', 'AUTHORIZED', 'UTC', 'Jan', 'Novak',
        ('participant2', 'pass', '["USER"]', 'AUTHORIZED', 'UTC', 'Eva', 'Svoboda', 100);
 
 INSERT INTO coaching_package (id, company_id, pool_type, total_units, status, valid_from, valid_to, created_by, created_at)
-VALUES (100, 100, 'CORE', 20, 'ACTIVE', NOW(), NOW() + INTERVAL '90 days', 'hr_prog', NOW());
+VALUES (100, 100, 'CORE', 20, 'ACTIVE', '2026-03-15 00:00:00', '2026-06-13 00:00:00', 'hr_prog', NOW());
 
 INSERT INTO program (id, coaching_package_id, name, goal, status, duration_days, sessions_per_participant,
                      coach_assignment_model, focus_areas, created_at, created_by)
 VALUES (1, 100, 'Leadership 90d', 'Improve feedback culture', 'CREATED', 90, 5,
         'PARTICIPANT_CHOOSES', '["fa.giving-feedback", "fa.delegation"]', NOW(), 'hr_prog');
 
-INSERT INTO focus_area (key) VALUES ('fa.giving-feedback'), ('fa.delegation') ON CONFLICT DO NOTHING;
+INSERT INTO focus_area (key) VALUES
+    ('fa.giving-feedback'),
+    ('fa.delegation'),
+    ('fa.self-awareness'),
+    ('fa.strategic-thinking')
+ON CONFLICT DO NOTHING;
 
 INSERT INTO program_participant (id, program_id, username, status, current_cycle, created_by, created_at)
 VALUES (1, 1, 'participant1', 'INVITED', 1, 'hr_prog', NOW());
@@ -83,3 +88,23 @@ Program goal: {programGoal}
 
 IMPORTANT: Respond in {language}.
 Return ONLY a valid JSON array of 5 strings.');
+
+INSERT INTO ai_prompt (id, value) VALUES ('GOAL_SUGGESTIONS',
+'Generate 3 personal goal suggestions for focus area {focusArea} and program goal {programGoal}.
+IMPORTANT: Respond in {language}.
+Return ONLY a valid JSON array of 3 strings.');
+
+-- Program with full area library enabled (for S2-003 grouping tests)
+INSERT INTO users (username, password, authorities, status, time_zone, first_name, last_name, company_id)
+VALUES ('participant5', 'pass', '["USER"]', 'AUTHORIZED', 'UTC', 'Lucie', 'Library', 100);
+
+INSERT INTO coaching_package (id, company_id, pool_type, total_units, status, valid_from, valid_to, created_by, created_at)
+VALUES (102, 100, 'CORE', 10, 'ACTIVE', NOW(), NOW() + INTERVAL '90 days', 'hr_prog', NOW());
+
+INSERT INTO program (id, coaching_package_id, name, goal, status, duration_days, sessions_per_participant,
+                     coach_assignment_model, focus_areas, allow_full_area_library, created_at, created_by)
+VALUES (3, 102, 'Open library program', 'Any growth', 'CREATED', 90, 5,
+        'PARTICIPANT_CHOOSES', '["fa.giving-feedback"]', TRUE, NOW(), 'hr_prog');
+
+INSERT INTO program_participant (id, program_id, username, status, current_cycle, created_by, created_at)
+VALUES (5, 3, 'participant5', 'INVITED', 1, 'hr_prog', NOW());

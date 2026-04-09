@@ -28,6 +28,7 @@ public class AiPrompt {
         SUGGESTION,
         IMAGE_MATCH,
         WEEKLY_PRACTICE,
+        GOAL_SUGGESTIONS,
         PROGRAM_ARTICLE,
         PROGRAM_VIDEO,
     }

@@ -26,9 +26,11 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import com.topleader.topleader.common.util.LocaleUtils;
+import com.topleader.topleader.user.User;
+
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.FIELD_OUTSIDE_OF_FRAME;
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.MORE_THEN_24_EVENT;
-import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 
 
 /**
@@ -53,7 +55,7 @@ public class CoachAvailabilityController {
         @AuthenticationPrincipal UserDetails user,
         @Valid EventFilterDto filterDto
     ) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(user.getUsername()));
+        final var userZoneId = LocaleUtils.zoneIdOrUtc(userRepository.findByUsername(user.getUsername()).map(User::getTimeZone).orElse(null));
 
         final var from = filterDto.from().atZone(userZoneId).withZoneSameInstant(ZoneOffset.UTC);
         final var to = filterDto.to().atZone(userZoneId).withZoneSameInstant(ZoneOffset.UTC);
@@ -89,7 +91,7 @@ public class CoachAvailabilityController {
     @Secured("COACH")
     @GetMapping("/recurring")
     public List<ReoccurringEventDto> getRecurringCoachAvailability(@AuthenticationPrincipal UserDetails user) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(user.getUsername()));
+        final var userZoneId = LocaleUtils.zoneIdOrUtc(userRepository.findByUsername(user.getUsername()).map(User::getTimeZone).orElse(null));
 
         return coachAvailabilityService.getReoccurring(user.getUsername()).stream()
                 .map(e ->

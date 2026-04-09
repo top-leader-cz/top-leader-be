@@ -8,8 +8,8 @@ import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.common.ai.RecommendedGrowth;
 import com.topleader.topleader.user.session.feedback.SessionFeedback;
 import com.topleader.topleader.user.session.feedback.SessionFeedbackRepository;
+import com.topleader.topleader.common.util.LocaleUtils;
 import com.topleader.topleader.user.userinfo.UserInfoService;
-import com.topleader.topleader.user.util.UserUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
@@ -67,14 +67,14 @@ public class UserSessionController {
     public List<String> generateLongTermGoal(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
         var userInfo = userInfoService.find(user.getUsername());
         var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale(" ")).getLocale();
-        return aiClient.findLongTermGoal(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment());
+        return aiClient.findLongTermGoal(LocaleUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment());
     }
 
     @PostMapping("/generate-action-steps")
     public List<String> generateActionStep(@AuthenticationPrincipal UserDetails user, @RequestBody ActionSteps actionStepDto) {
         var userInfo = userInfoService.find(user.getUsername());
         var locale = userDetailService.getUser(user.getUsername()).orElse(new User().setLocale("en")).getLocale();
-        return aiClient.findActionsSteps(UserUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal());
+        return aiClient.findActionsSteps(LocaleUtils.localeToLanguage(locale), userInfo.getStrengths(), userInfo.getValues(), actionStepDto.areaOfDevelopment(), actionStepDto.longTermGoal());
     }
 
     @GetMapping("/generate-recommended-growth")

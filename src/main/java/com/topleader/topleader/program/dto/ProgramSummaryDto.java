@@ -3,15 +3,17 @@ package com.topleader.topleader.program.dto;
 import com.topleader.topleader.program.ProgramRepository;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
 public record ProgramSummaryDto(
         Long id,
         String name,
         String status,
-        LocalDateTime validFrom,
-        LocalDateTime validTo,
-        LocalDateTime milestoneDate,
+        ZonedDateTime validFrom,
+        ZonedDateTime validTo,
+        ZonedDateTime milestoneDate,
         Long daysUntilMilestone,
         int totalParticipants,
         int activeParticipants
@@ -21,9 +23,9 @@ public record ProgramSummaryDto(
                 row.id(),
                 row.name(),
                 row.status(),
-                row.validFrom(),
-                row.validTo(),
-                row.milestoneDate(),
+                toUtc(row.validFrom()),
+                toUtc(row.validTo()),
+                toUtc(row.milestoneDate()),
                 daysUntil(row.milestoneDate()),
                 row.totalParticipants(),
                 row.activeParticipants()
@@ -32,5 +34,9 @@ public record ProgramSummaryDto(
 
     private static Long daysUntil(LocalDateTime date) {
         return date != null ? ChronoUnit.DAYS.between(LocalDateTime.now(), date) : null;
+    }
+
+    private static ZonedDateTime toUtc(LocalDateTime ldt) {
+        return ldt == null ? null : ldt.atZone(ZoneOffset.UTC);
     }
 }

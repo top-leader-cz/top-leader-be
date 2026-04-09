@@ -5,7 +5,7 @@ import com.topleader.topleader.common.ai.AiClient;
 import com.topleader.topleader.user.UserRepository;
 import com.topleader.topleader.user.userinfo.UserInfo;
 import com.topleader.topleader.user.userinfo.UserInfoRepository;
-import com.topleader.topleader.user.util.UserUtils;
+import com.topleader.topleader.common.util.LocaleUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -41,9 +41,9 @@ public class UserInsightService {
         var userInsight = userInsightRepository.findByUsername(username).orElse(new UserInsight().setUsername(username));
         userInsight.setLeadershipPending(true).setAnimalSpiritPending(true);
         var savedUserInsight = userInsightRepository.save(userInsight);
-        var leaderShip = CompletableFuture.supplyAsync(() -> aiClient.findLeaderShipStyle(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
-        var animalSpirit = CompletableFuture.supplyAsync(() -> aiClient.findAnimalSpirit(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
-        var leaderPersona = CompletableFuture.supplyAsync(() -> aiClient.findLeaderPersona(UserUtils.localeToLanguage(user.getLocale()), strengths, values));
+        var leaderShip = CompletableFuture.supplyAsync(() -> aiClient.findLeaderShipStyle(LocaleUtils.localeToLanguage(user.getLocale()), strengths, values));
+        var animalSpirit = CompletableFuture.supplyAsync(() -> aiClient.findAnimalSpirit(LocaleUtils.localeToLanguage(user.getLocale()), strengths, values));
+        var leaderPersona = CompletableFuture.supplyAsync(() -> aiClient.findLeaderPersona(LocaleUtils.localeToLanguage(user.getLocale()), strengths, values));
 
         savedUserInsight.setLeadershipStyleAnalysis(leaderShip.join());
         savedUserInsight.setAnimalSpiritGuide(animalSpirit.join());
@@ -82,7 +82,7 @@ public class UserInsightService {
             var values = userInfo.getValues();
             var locale = user.getLocale();
             savedUserInsight.setUsername(username);
-//            savedUserInsight.setLeadershipTip(aiClient.findLeadershipTip(UserUtils.localeToLanguage(locale), strengths, values));
+//            savedUserInsight.setLeadershipTip(aiClient.findLeadershipTip(LocaleUtils.localeToLanguage(locale), strengths, values));
             savedUserInsight.setTipsGeneratedAt(LocalDateTime.now());
             savedUserInsight.setDailyTipsPending(false);
             userInsightRepository.save(savedUserInsight);

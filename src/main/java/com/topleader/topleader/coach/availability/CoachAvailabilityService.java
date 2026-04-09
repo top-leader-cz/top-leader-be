@@ -8,6 +8,8 @@ import com.topleader.topleader.common.calendar.domain.ReoccurringEventDto;
 import com.topleader.topleader.common.calendar.domain.ReoccurringEventTimeDto;
 import com.topleader.topleader.common.calendar.settings.AvailabilitySettingRepository;
 import com.topleader.topleader.common.calendar.settings.CoachAvailabilitySettings;
+import com.topleader.topleader.common.util.LocaleUtils;
+import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,7 +27,6 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import static com.topleader.topleader.common.calendar.domain.CalendarSyncInfo.SyncType.CALENDLY;
-import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 
 
 /**
@@ -167,7 +168,7 @@ public class CoachAvailabilityService {
             return;
         }
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(username));
+        final var userZoneId = LocaleUtils.zoneIdOrUtc(userRepository.findByUsername(username).map(User::getTimeZone).orElse(null));
 
         final var from = request.timeFrame().from()
             .atZone(userZoneId)
@@ -225,7 +226,7 @@ public class CoachAvailabilityService {
 
     @Transactional
     public void setRecurringAvailability(String username, List<ReoccurringEventDto> events) {
-        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(username));
+        final var userZoneId = LocaleUtils.zoneIdOrUtc(userRepository.findByUsername(username).map(User::getTimeZone).orElse(null));
 
         final var shiftedEvents = events.stream()
             .map(e -> {

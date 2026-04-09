@@ -24,6 +24,7 @@ public record SaveProgramRequest(
         Program.CoachAssignmentModel coachAssignmentModel,
         @NotNull Set<String> shortlistedCoaches,
         boolean microActionsEnabled,
+        boolean allowFullAreaLibrary,
         @NotNull Set<String> enabledOptions,
         @NotNull Set<String> coachLanguages,
         @NotNull Set<String> coachCategories
