@@ -14,6 +14,7 @@ import com.topleader.topleader.common.email.EmailTemplateService;
 import com.topleader.topleader.common.exception.ApiValidationException;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.common.util.LocaleUtils;
 import com.topleader.topleader.common.util.image.ImageUtil;
 import com.topleader.topleader.common.util.page.PageDto;
 import jakarta.validation.Valid;
@@ -47,7 +48,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import static com.topleader.topleader.common.exception.ErrorCodeConstants.*;
-import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 import static java.util.Objects.isNull;
 import static java.util.function.Predicate.not;
 import static org.springframework.util.StringUtils.hasText;
@@ -163,7 +163,7 @@ public class CoachListController {
         @AuthenticationPrincipal UserDetails loggedUser
         ) {
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(loggedUser.getUsername()));
+        final var userZoneId = LocaleUtils.zoneIdOrUtc(userRepository.findByUsername(loggedUser.getUsername()).map(User::getTimeZone).orElse(null));
 
         final var scheduledEvents = scheduledSessionService.listCoachesFutureSessions(username).stream()
                 .map(ScheduledSession::getTime)

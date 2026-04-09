@@ -5,6 +5,7 @@ import com.topleader.topleader.common.email.Templating;
 import com.topleader.topleader.common.notification.Notification;
 import com.topleader.topleader.common.notification.NotificationService;
 import com.topleader.topleader.common.notification.context.MessageNotificationContext;
+import com.topleader.topleader.common.util.LocaleUtils;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +26,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcOperations;
 import org.springframework.stereotype.Service;
 
-import static com.topleader.topleader.user.util.UserUtils.getUserTimeZoneId;
 import static java.util.function.Predicate.not;
 import static java.util.stream.Collectors.toMap;
 
@@ -86,7 +86,7 @@ public class MessageService {
                     .collect(toMap(Message::chatId, Function.identity()))
             ).orElse(Map.of());
 
-        final var userZoneId = getUserTimeZoneId(userRepository.findByUsername(username));
+        final var userZoneId = LocaleUtils.zoneIdOrUtc(userRepository.findByUsername(username).map(User::getTimeZone).orElse(null));
 
         final var userInfos = userRepository.findAllByUsernameIn(allChats.keySet()).stream()
             .collect(toMap(User::getUsername, UserInfoDto::from));

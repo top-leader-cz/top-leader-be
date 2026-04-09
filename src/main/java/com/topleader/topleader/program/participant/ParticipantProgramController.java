@@ -1,5 +1,7 @@
 package com.topleader.topleader.program.participant;
 
+import com.topleader.topleader.program.FocusArea;
+import com.topleader.topleader.program.FocusAreaRepository;
 import com.topleader.topleader.program.Program;
 import com.topleader.topleader.program.ProgramRepository;
 import com.topleader.topleader.program.recommendation.LearnMoreDto;
@@ -18,8 +20,8 @@ import com.topleader.topleader.session.scheduled_session.ScheduledSession;
 import com.topleader.topleader.session.scheduled_session.ScheduledSessionRepository;
 import com.topleader.topleader.session.user_allocation.UserAllocation;
 import com.topleader.topleader.session.user_allocation.UserAllocationRepository;
+import com.topleader.topleader.common.util.LocaleUtils;
 import com.topleader.topleader.user.UserRepository;
-import com.topleader.topleader.user.util.UserUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -43,6 +45,8 @@ import org.springframework.dao.DuplicateKeyException;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -72,6 +76,7 @@ public class ParticipantProgramController {
 
     private final ProgramParticipantRepository participantRepository;
     private final ProgramRepository programRepository;
+    private final FocusAreaRepository focusAreaRepository;
     private final AssessmentQuestionRepository assessmentQuestionRepository;
     private final AssessmentResponseRepository assessmentResponseRepository;
     private final WeeklyPracticeRepository weeklyPracticeRepository;
@@ -83,12 +88,8 @@ public class ParticipantProgramController {
 
     @GetMapping("/status")
     public ProgramStatusDto getStatus(@AuthenticationPrincipal UserDetails user) {
-        return participantRepository.findActiveByUsername(user.getUsername())
-                .map(p -> {
-                    var program = programRepository.findById(p.getProgramId())
-                            .orElseThrow(NotFoundException::new);
-                    return ProgramStatusDto.of(p, program);
-                })
+        return participantRepository.findActiveStatusByUsername(user.getUsername())
+                .map(ProgramStatusDto::of)
                 .orElse(ProgramStatusDto.none());
     }
 
@@ -143,12 +144,33 @@ public class ParticipantProgramController {
                 .orElseThrow(NotFoundException::new);
         var program = programRepository.findById(programId)
                 .orElseThrow(NotFoundException::new);
+        var libraryFocusAreas = program.isAllowFullAreaLibrary()
+                ? focusAreaRepository.findAll().stream()
+                        .map(FocusArea::getKey)
+                        .filter(key -> !program.getFocusAreas().contains(key))
+                        .sorted()
+                        .toList()
+                : null;
         return new EnrollmentInfoDto(
                 program.getGoal(),
                 program.getFocusAreas(),
+                libraryFocusAreas,
                 participant.getFocusArea(),
                 participant.getPersonalGoal()
         );
+    }
+
+    @GetMapping("/{programId}/goal-suggestions")
+    public List<String> getGoalSuggestions(
+            @PathVariable Long programId,
+            @RequestParam String focusArea,
+            @AuthenticationPrincipal UserDetails user) {
+        participantRepository.findByProgramIdAndUsername(programId, user.getUsername())
+                .orElseThrow(NotFoundException::new);
+        var program = programRepository.findById(programId).orElseThrow(NotFoundException::new);
+        requireValidFocusArea(program, focusArea);
+        var language = resolveLanguage(user.getUsername());
+        return aiClient.generateGoalSuggestions(focusArea, program.getGoal(), language);
     }
 
     @PostMapping("/{programId}/enroll")
@@ -357,23 +379,27 @@ public class ParticipantProgramController {
     }
 
     private void requireValidFocusArea(Program program, String focusArea) {
-        if (!program.getFocusAreas().contains(focusArea)) {
-            throw new ApiValidationException(PARTICIPANT_ENROLL_FOCUS_AREA_INVALID, "focusArea", focusArea, "Focus area is not available in this program");
+        if (program.getFocusAreas().contains(focusArea)) {
+            return;
         }
+        if (program.isAllowFullAreaLibrary() && focusAreaRepository.existsById(focusArea)) {
+            return;
+        }
+        throw new ApiValidationException(PARTICIPANT_ENROLL_FOCUS_AREA_INVALID, "focusArea", focusArea, "Focus area is not available in this program");
     }
 
     private String resolveLocale(String username) {
         return userRepository.findByUsername(username)
-                .map(u -> Optional.ofNullable(u.getLocale()).orElse(UserUtils.defaultLocale()))
-                .orElse(UserUtils.defaultLocale());
+                .map(u -> Optional.ofNullable(u.getLocale()).orElse(LocaleUtils.defaultLocale()))
+                .orElse(LocaleUtils.defaultLocale());
     }
 
     private String resolveLanguage(String username) {
-        return UserUtils.localeToLanguage(resolveLocale(username));
+        return LocaleUtils.localeToLanguage(resolveLocale(username));
     }
 
     private String resolveFallbackPractice(String username) {
-        return FALLBACK_PRACTICE.getOrDefault(resolveLocale(username), FALLBACK_PRACTICE.get(UserUtils.defaultLocale()));
+        return FALLBACK_PRACTICE.getOrDefault(resolveLocale(username), FALLBACK_PRACTICE.get(LocaleUtils.defaultLocale()));
     }
 
     private void saveAssessmentResponse(
@@ -530,6 +556,7 @@ public class ParticipantProgramController {
     public record EnrollmentInfoDto(
             String programGoal,
             Set<String> focusAreas,
+            List<String> libraryFocusAreas,
             String selectedFocusArea,
             String personalGoal
     ) {}
@@ -649,22 +676,30 @@ public class ParticipantProgramController {
             String programGoal,
             int durationDays,
             int sessionsPerParticipant,
-            ProgramParticipant.Status participantStatus
+            ProgramParticipant.Status participantStatus,
+            ZonedDateTime validFrom,
+            ZonedDateTime validTo
     ) {
         static ProgramStatusDto none() {
-            return new ProgramStatusDto(false, null, null, null, 0, 0, null);
+            return new ProgramStatusDto(false, null, null, null, 0, 0, null, null, null);
         }
 
-        static ProgramStatusDto of(ProgramParticipant p, Program program) {
+        static ProgramStatusDto of(ProgramParticipantRepository.ActiveProgramStatusRow row) {
             return new ProgramStatusDto(
                     true,
-                    program.getId(),
-                    program.getName(),
-                    program.getGoal(),
-                    Optional.ofNullable(program.getDurationDays()).orElse(0),
-                    Optional.ofNullable(program.getSessionsPerParticipant()).orElse(0),
-                    p.getStatus()
+                    row.programId(),
+                    row.programName(),
+                    row.programGoal(),
+                    Optional.ofNullable(row.durationDays()).orElse(0),
+                    Optional.ofNullable(row.sessionsPerParticipant()).orElse(0),
+                    ProgramParticipant.Status.valueOf(row.participantStatus()),
+                    toUtc(row.validFrom()),
+                    toUtc(row.validTo())
             );
+        }
+
+        private static ZonedDateTime toUtc(LocalDateTime ldt) {
+            return ldt == null ? null : ldt.atZone(ZoneOffset.UTC);
         }
     }
 }

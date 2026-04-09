@@ -43,7 +43,9 @@ class ParticipantProgramControllerIT extends IntegrationTest {
                     "programGoal": "Improve feedback culture",
                     "durationDays": 90,
                     "sessionsPerParticipant": 5,
-                    "participantStatus": "INVITED"
+                    "participantStatus": "INVITED",
+                    "validFrom": "2026-03-15T00:00:00Z",
+                    "validTo": "2026-06-13T00:00:00Z"
                 }
                 """);
     }
@@ -63,7 +65,9 @@ class ParticipantProgramControllerIT extends IntegrationTest {
                     "programGoal": null,
                     "durationDays": 0,
                     "sessionsPerParticipant": 0,
-                    "participantStatus": null
+                    "participantStatus": null,
+                    "validFrom": null,
+                    "validTo": null
                 }
                 """);
     }
@@ -81,6 +85,26 @@ class ParticipantProgramControllerIT extends IntegrationTest {
                 {
                     "programGoal": "Improve feedback culture",
                     "focusAreas": ["fa.giving-feedback", "fa.delegation"],
+                    "libraryFocusAreas": null,
+                    "selectedFocusArea": null,
+                    "personalGoal": null
+                }
+                """);
+    }
+
+    @Test
+    @WithMockUser(username = "participant5", authorities = "USER")
+    void getFocusAreas_returnsLibraryFocusAreas_whenAllowFullAreaLibrary() throws Exception {
+        var result = mvc.perform(get("/api/latest/participant/programs/3/focus-areas"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        // recommended = ["fa.giving-feedback"], library = all focus_area rows MINUS recommended, sorted
+        TestUtils.assertJsonEquals(result, """
+                {
+                    "programGoal": "Any growth",
+                    "focusAreas": ["fa.giving-feedback"],
+                    "libraryFocusAreas": ["fa.delegation", "fa.self-awareness", "fa.strategic-thinking"],
                     "selectedFocusArea": null,
                     "personalGoal": null
                 }
@@ -161,6 +185,36 @@ class ParticipantProgramControllerIT extends IntegrationTest {
         var participant = participantRepository.findById(1L).orElseThrow();
         assertThat(participant.getFocusArea()).isEqualTo("fa.delegation");
         assertThat(participant.getPersonalGoal()).isEqualTo("changed goal");
+    }
+
+    @Test
+    @WithMockUser(username = "participant5", authorities = "USER")
+    void enroll_success_withAreaFromLibrary_whenAllowFullAreaLibrary() throws Exception {
+        // fa.self-awareness is NOT in program 3's focusAreas but IS in the focus_area table
+        mvc.perform(post("/api/latest/participant/programs/3/enroll")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "focusArea": "fa.self-awareness", "personalGoal": "grow self-awareness" }
+                                """))
+                .andExpect(status().isOk());
+
+        var participant = participantRepository.findById(5L).orElseThrow();
+        assertThat(participant.getFocusArea()).isEqualTo("fa.self-awareness");
+        assertThat(participant.getStatus()).isEqualTo(ProgramParticipant.Status.ENROLLING);
+    }
+
+    @Test
+    @WithMockUser(username = "participant5", authorities = "USER")
+    void enroll_fails_withUnknownArea_evenWhenAllowFullAreaLibrary() throws Exception {
+        var result = mvc.perform(post("/api/latest/participant/programs/3/enroll")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                { "focusArea": "fa.does-not-exist", "personalGoal": "test" }
+                                """))
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(result).contains("participant.enroll.focus.area.invalid");
     }
 
     @Test
@@ -828,6 +882,69 @@ class ParticipantProgramControllerIT extends IntegrationTest {
 
         assertThat(result).contains("\"isFinalCycle\":false");
         assertThat(result).contains("\"mid\":3");
+    }
+
+    // ==================== GET /{programId}/goal-suggestions ====================
+
+    @Test
+    @WithMockUser(username = "participant1", authorities = "USER")
+    void getGoalSuggestions_returnsThreeSuggestions() throws Exception {
+        stubAiResponse("goal suggestions", """
+                ["Give weekly feedback to each direct report", "Ask for feedback after every 1:1", "Share one piece of constructive feedback in each team meeting"]""");
+
+        var result = mvc.perform(get("/api/latest/participant/programs/1/goal-suggestions")
+                        .param("focusArea", "fa.giving-feedback"))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        TestUtils.assertJsonEquals(result, """
+                [
+                    "Give weekly feedback to each direct report",
+                    "Ask for feedback after every 1:1",
+                    "Share one piece of constructive feedback in each team meeting"
+                ]
+                """);
+    }
+
+    @Test
+    @WithMockUser(username = "participant5", authorities = "USER")
+    void getGoalSuggestions_acceptsAreaFromLibrary_whenAllowFullAreaLibrary() throws Exception {
+        stubAiResponse("goal suggestions", """
+                ["Practice daily reflection", "Keep a leadership journal", "Ask for peer feedback weekly"]""");
+
+        mvc.perform(get("/api/latest/participant/programs/3/goal-suggestions")
+                        .param("focusArea", "fa.self-awareness"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(username = "participant1", authorities = "USER")
+    void getGoalSuggestions_fails_whenFocusAreaNotInProgram() throws Exception {
+        var result = mvc.perform(get("/api/latest/participant/programs/1/goal-suggestions")
+                        .param("focusArea", "fa.self-awareness"))
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(result).contains("participant.enroll.focus.area.invalid");
+    }
+
+    @Test
+    @WithMockUser(username = "participant1", authorities = "USER")
+    void getGoalSuggestions_fails_whenFocusAreaBlank() throws Exception {
+        var result = mvc.perform(get("/api/latest/participant/programs/1/goal-suggestions")
+                        .param("focusArea", ""))
+                .andExpect(status().isUnprocessableEntity())
+                .andReturn().getResponse().getContentAsString();
+
+        assertThat(result).contains("participant.enroll.focus.area.invalid");
+    }
+
+    @Test
+    @WithMockUser(username = "participant1", authorities = "USER")
+    void getGoalSuggestions_notFound_whenNotParticipant() throws Exception {
+        mvc.perform(get("/api/latest/participant/programs/999/goal-suggestions")
+                        .param("focusArea", "fa.giving-feedback"))
+                .andExpect(status().isNotFound());
     }
 
     // ==================== Helpers ====================

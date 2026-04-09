@@ -471,6 +471,24 @@ public class AiClient {
         }
     }
 
+    public List<String> generateGoalSuggestions(String focusArea, String programGoal, String language) {
+        log.info("Generating goal suggestions, focusArea: {}, language: {}", focusArea, language);
+        var prompt = aiPromptService.prompt(AiPrompt.PromptType.GOAL_SUGGESTIONS,
+                Map.of("focusArea", focusArea,
+                        "programGoal", Optional.ofNullable(programGoal).orElse(StringUtils.EMPTY),
+                        "language", language));
+        try {
+            var res = Failsafe.with(retryPolicy).get(() -> chatClient.prompt(prompt)
+                    .call()
+                    .entity(new ParameterizedTypeReference<List<String>>() {}));
+            log.info("Goal suggestions generated: {}", res);
+            return res != null ? res : List.of();
+        } catch (Exception e) {
+            log.warn("Failed to generate goal suggestions, returning empty list", e);
+            return List.of();
+        }
+    }
+
     public record CoachProfile(
             String username, String firstName, String lastName, String bio,
             String primaryRoles, String fields, String topics, int priority

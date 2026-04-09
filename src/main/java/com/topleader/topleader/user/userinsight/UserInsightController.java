@@ -1,7 +1,7 @@
 package com.topleader.topleader.user.userinsight;
 
 import com.topleader.topleader.common.ai.AiClient;
-import com.topleader.topleader.user.util.UserUtils;
+import com.topleader.topleader.common.util.LocaleUtils;
 import com.topleader.topleader.user.UserDetailService;
 import com.topleader.topleader.user.session.UserSessionService;
 import com.topleader.topleader.common.ai.UserArticle;
@@ -111,11 +111,11 @@ public class UserInsightController {
                 String suggestion;
                 if (useMcp) {
                     // MCP mode - AI autonomously fetches user profile and coach info
-                    suggestion = aiClient.generateSuggestionWithMcp(username, dashboardRequest.query, UserUtils.localeToLanguage(user.getLocale()));
+                    suggestion = aiClient.generateSuggestionWithMcp(username, dashboardRequest.query, LocaleUtils.localeToLanguage(user.getLocale()));
                 } else {
                     // Legacy mode - user profile passed explicitly
                     var strengths = userInfo.getStrengths().stream().limit(5).toList();
-                    suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, strengths, userInfo.getValues(), UserUtils.localeToLanguage(user.getLocale()));
+                    suggestion = aiClient.generateSuggestion(username, dashboardRequest.query, strengths, userInfo.getValues(), LocaleUtils.localeToLanguage(user.getLocale()));
                 }
                 var insight = userInsightService.getInsight(username);
                 insight.setSuggestion(suggestion);

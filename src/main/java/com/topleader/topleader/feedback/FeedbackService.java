@@ -18,6 +18,7 @@ import com.topleader.topleader.feedback.repository.QuestionRepository;
 import com.topleader.topleader.feedback.repository.RecipientRepository;
 import com.topleader.topleader.user.User;
 import com.topleader.topleader.user.UserRepository;
+import com.topleader.topleader.common.util.LocaleUtils;
 import com.topleader.topleader.common.util.common.TranslationUtils;
 import com.topleader.topleader.user.util.UserUtils;
 import com.topleader.topleader.common.util.common.CommonUtils;
@@ -211,7 +212,7 @@ public class FeedbackService {
 
         if (formDto.allowSummary(summaryLimit)) {
             var summary = CommonUtils.tryGetOrElse(
-                    () -> aiClient.generateSummary(UserUtils.localeToLanguage(user.getLocale()), questions),
+                    () -> aiClient.generateSummary(LocaleUtils.localeToLanguage(user.getLocale()), questions),
                     new FeedbackSummary(null, null),
                     "Failed to generate summary for form: [" + formId + "]");
             form.setSummary(summary);

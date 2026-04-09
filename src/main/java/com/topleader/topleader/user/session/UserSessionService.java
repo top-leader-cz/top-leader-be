@@ -21,7 +21,7 @@ import com.topleader.topleader.user.userinfo.UserInfoService;
 import com.topleader.topleader.user.userinsight.UserInsightService;
 import com.topleader.topleader.user.userinsight.article.Article;
 import com.topleader.topleader.user.userinsight.article.ArticleRepository;
-import com.topleader.topleader.user.util.UserUtils;
+import com.topleader.topleader.common.util.LocaleUtils;
 import com.topleader.topleader.common.util.image.ArticleImageService;
 import com.topleader.topleader.common.util.common.CommonUtils;
 import com.topleader.topleader.common.exception.NotFoundException;
@@ -155,7 +155,7 @@ public class UserSessionService {
                 .toList();
 
         userInsight.setPersonalGrowthTip(aiClient.findActionGoal(
-                UserUtils.localeToLanguage(user.getLocale()),
+                LocaleUtils.localeToLanguage(user.getLocale()),
                 userInfo.getTopStrengths(),
                 userInfo.getValues(),
                 SessionUtils.getDevelopments(userInfo.getAreaOfDevelopment()),
@@ -208,7 +208,7 @@ public class UserSessionService {
         var start = System.currentTimeMillis();
         var user = userDetailService.find(username);
         List<UserArticle> articles = CommonUtils.tryGetOrElse(
-                () -> aiClient.generateUserArticles(username, actionGoals, UserUtils.localeToLanguage(user.getLocale()), englishGoals),
+                () -> aiClient.generateUserArticles(username, actionGoals, LocaleUtils.localeToLanguage(user.getLocale()), englishGoals),
                 List.of(),
                 "Failed to generate user articles for user: [" + username + "]");
         log.info("[TIMING] AI generateUserArticles took {}ms for user [{}]", System.currentTimeMillis() - start, username);
@@ -341,7 +341,7 @@ public class UserSessionService {
             return null;
         }
         return CommonUtils.tryGetOrNull(
-                () -> aiClient.generateRecommendedGrowths(username, UserUtils.localeToLanguage(user.getLocale()), businessStrategy, position, aspiredCompetency),
+                () -> aiClient.generateRecommendedGrowths(username, LocaleUtils.localeToLanguage(user.getLocale()), businessStrategy, position, aspiredCompetency),
                 "Failed to generate recommended growths");
     }
 

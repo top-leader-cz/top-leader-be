@@ -21,4 +21,5 @@ COPY --from=builder /app/build/libs/top-leader.jar app.jar
 ENV PORT=8080
 EXPOSE 8080
 
+USER 1000
 ENTRYPOINT ["java", "-jar", "app.jar"]

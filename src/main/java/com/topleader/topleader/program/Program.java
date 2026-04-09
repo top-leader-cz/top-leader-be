@@ -44,6 +44,8 @@ public class Program {
 
     private boolean microActionsEnabled = true;
 
+    private boolean allowFullAreaLibrary = false;
+
     private Set<String> enabledOptions = Set.of();
 
     private Set<String> coachLanguages = Set.of();
