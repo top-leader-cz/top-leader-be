@@ -27,6 +27,8 @@ ENV PATH="$JAVA_HOME/bin:$PATH"
 ENV PORT=8080
 EXPOSE 8080
 
+USER 1000
+
 # Run with optimizations for Cloud Run
 ENTRYPOINT ["/opt/java/bin/java", \
     "-Dspring.aot.enabled=false", \
