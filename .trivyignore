@@ -1,0 +1,15 @@
+# Dockerfile.jre is a base-only image (no ENTRYPOINT) — USER is set by downstream Dockerfile.
+# Dockerfile, Dockerfile.local and Dockerfile.native all set USER explicitly, so this
+# global suppression in practice only hides the Dockerfile.jre finding.
+AVD-DS-0002
+
+# terraform/storage.tf: ai_images_public bucket is intentionally public.
+# AI-generated images are served directly over HTTP from GCS to the FE for speed
+# (no backend proxy in the hot path). Only applies to the ai_images bucket.
+AVD-GCP-0001
+
+# terraform/cloud_sql.tf: Cloud SQL keeps public IP (ipv4_enabled = true) on purpose
+# so that local development can connect via Cloud SQL Auth Proxy (`make db-proxy`).
+# Cloud Run still reaches the DB over private IP through the VPC connector — public IP
+# only exists for the proxy connection, which is authenticated via IAM and encrypted.
+AVD-GCP-0017

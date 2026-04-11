@@ -20,8 +20,12 @@ FROM debian:bookworm-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
 
+RUN groupadd --system --gid 1000 app && useradd --system --uid 1000 --gid app --no-create-home app
+
 WORKDIR /app
-COPY --from=builder /app/build/native/nativeCompile/top-leader .
+COPY --from=builder --chown=app:app /app/build/native/nativeCompile/top-leader .
+
+USER 1000
 
 ENV PORT=8080
 EXPOSE 8080

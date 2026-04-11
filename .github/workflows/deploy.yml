@@ -60,11 +60,26 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev,gcr.io
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         run: |
           IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
           SHORT_SHA=$(git rev-parse --short HEAD)
           docker build -t ${IMAGE_URL}:latest -t ${IMAGE_URL}:qa-${SHORT_SHA} .
+          echo "IMAGE_URL=${IMAGE_URL}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+
+      - name: Trivy scan image
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ${{ env.IMAGE_URL }}:qa-${{ env.SHORT_SHA }}
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: os,library
+
+      - name: Push Docker image
+        run: |
           docker push ${IMAGE_URL}:latest
           docker push ${IMAGE_URL}:qa-${SHORT_SHA}
 
@@ -79,13 +94,6 @@ jobs:
 
           gcloud run services replace src/main/cloudrun/service-qa.yaml \
             --region=${{ env.REGION }} \
-            --project=${{ env.PROJECT_ID }}
-
-          # Allow unauthenticated access
-          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --member="allUsers" \
-            --role="roles/run.invoker" \
             --project=${{ env.PROJECT_ID }}
 
       - name: Cleanup old revisions (keep last 2)
@@ -111,37 +119,6 @@ jobs:
                 --quiet || echo "Failed to delete $REVISION"
             done
           fi
-
-      - name: Cleanup old images (keep latest + 1 previous QA)
-        run: |
-          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          echo "Cleaning up old images..."
-
-          ALL_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --include-tags \
-            --sort-by=~createTime \
-            --format="csv[no-heading](version,tags)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null)
-
-          # 1. Delete old QA tagged images (keep 2 newest)
-          OLD_QA=$(echo "$ALL_IMAGES" | grep 'qa-' | tail -n +3 | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting old QA image: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$OLD_QA"
-
-          # 2. Delete all untagged images (orphaned platform manifests)
-          UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting untagged: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$UNTAGGED"
 
   deploy-qa-native:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/qa-native')
@@ -188,6 +165,16 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Trivy scan image
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}:native-${{ github.sha }}
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: os,library
+
       - name: Push native Docker image
         run: |
           IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
@@ -207,12 +194,6 @@ jobs:
 
           gcloud run services replace src/main/cloudrun/service-qa.yaml \
             --region=${{ env.REGION }} \
-            --project=${{ env.PROJECT_ID }}
-
-          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --member="allUsers" \
-            --role="roles/run.invoker" \
             --project=${{ env.PROJECT_ID }}
 
       - name: Cleanup old revisions (keep last 2)
@@ -237,36 +218,6 @@ jobs:
                 --quiet || echo "Failed to delete $REVISION"
             done
           fi
-
-      - name: Cleanup old native images (keep 2 newest)
-        run: |
-          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-
-          ALL_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --include-tags \
-            --sort-by=~createTime \
-            --format="csv[no-heading](version,tags)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null)
-
-          # Delete old native tagged images (keep 2 newest)
-          OLD_NATIVE=$(echo "$ALL_IMAGES" | grep 'native-' | tail -n +3 | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting old native image: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$OLD_NATIVE"
-
-          # Delete all untagged images (orphaned platform manifests)
-          UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting untagged: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$UNTAGGED"
 
   deploy-prod:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/release-v')
@@ -294,11 +245,26 @@ jobs:
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev,gcr.io
 
-      - name: Build and push Docker image
+      - name: Build Docker image
         run: |
           VERSION="${GITHUB_REF#refs/tags/release-v}"
           IMAGE_URL=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
           docker build -t ${IMAGE_URL}:${VERSION} .
+          echo "IMAGE_URL=${IMAGE_URL}" >> $GITHUB_ENV
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
+
+      - name: Trivy scan image
+        uses: aquasecurity/trivy-action@0.35.0
+        with:
+          image-ref: ${{ env.IMAGE_URL }}:${{ env.VERSION }}
+          format: table
+          severity: HIGH,CRITICAL
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: os,library
+
+      - name: Push Docker image
+        run: |
           docker push ${IMAGE_URL}:${VERSION}
 
           # Get the pushed image digest for deploy verification
@@ -313,13 +279,6 @@ jobs:
           # Deploy using service YAML
           gcloud run services replace src/main/cloudrun/service-prod.yaml \
             --region=${{ env.REGION }} \
-            --project=${{ env.PROJECT_ID }}
-
-          # Allow unauthenticated access
-          gcloud run services add-iam-policy-binding ${{ env.SERVICE_NAME }} \
-            --region=${{ env.REGION }} \
-            --member="allUsers" \
-            --role="roles/run.invoker" \
             --project=${{ env.PROJECT_ID }}
 
       - name: Verify deployment
@@ -359,37 +318,6 @@ jobs:
                 --quiet || echo "Failed to delete $REVISION"
             done
           fi
-
-      - name: Cleanup old images (keep last 3 versions)
-        run: |
-          IMAGE_PATH=${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/top-leader/${{ env.IMAGE_NAME }}
-          echo "Cleaning up old images..."
-
-          ALL_IMAGES=$(gcloud artifacts docker images list ${IMAGE_PATH} \
-            --include-tags \
-            --sort-by=~createTime \
-            --format="csv[no-heading](version,tags)" \
-            --project=${{ env.PROJECT_ID }} 2>/dev/null)
-
-          # 1. Delete old PROD versioned images (keep 3 newest)
-          OLD_VERSIONS=$(echo "$ALL_IMAGES" | grep -E '[0-9]+\.[0-9]+\.[0-9]+' | tail -n +4 | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting old version: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$OLD_VERSIONS"
-
-          # 2. Delete all untagged images (orphaned platform manifests)
-          UNTAGGED=$(echo "$ALL_IMAGES" | awk -F',' '$2==""' | cut -d',' -f1)
-          while IFS= read -r DIGEST; do
-            [ -z "$DIGEST" ] && continue
-            echo "Deleting untagged: ${DIGEST}"
-            gcloud artifacts docker images delete "${IMAGE_PATH}@${DIGEST}" \
-              --project=${{ env.PROJECT_ID }} \
-              --quiet --delete-tags || echo "Failed to delete ${DIGEST}"
-          done <<< "$UNTAGGED"
 
       - name: Create GitHub Release with changelog
         env:

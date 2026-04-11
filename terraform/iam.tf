@@ -69,13 +69,39 @@ resource "google_project_iam_member" "prod_cloudsql" {
 # Deploy Service Account (GitHub Actions)
 # -----------------------------------------------------------------------------
 
-# Grant Cloud Run Admin role to deploy service account for GitHub Actions deployments
-resource "google_project_iam_member" "deploy_cloudrun_admin" {
+# Grant Cloud Run Developer role to deploy service account for GitHub Actions deployments.
+# Narrower than run.admin — allows deploying revisions and managing services/revisions but
+# NOT setIamPolicy. Public access (allUsers → run.invoker) is managed by the
+# google_cloud_run_service_iam_member resources below, not by the CI workflow.
+resource "google_project_iam_member" "deploy_cloudrun_developer" {
   project = var.project_id
-  role    = "roles/run.admin"
+  role    = "roles/run.developer"
   member  = "serviceAccount:deploy-service@${var.project_id}.iam.gserviceaccount.com"
 
   depends_on = [google_project_service.run]
+}
+
+# -----------------------------------------------------------------------------
+# Public (unauthenticated) access to Cloud Run services
+# -----------------------------------------------------------------------------
+# Previously these bindings were re-asserted on every CI deploy via
+# `gcloud run services add-iam-policy-binding`. That required deploy SA to have
+# run.admin. Moved here so the deploy SA only needs run.developer.
+
+resource "google_cloud_run_service_iam_member" "qa_allow_unauth" {
+  location = var.region
+  project  = var.project_id
+  service  = "top-leader-qa"
+  role     = "roles/run.invoker"
+  member   = "allUsers"
+}
+
+resource "google_cloud_run_service_iam_member" "prod_allow_unauth" {
+  location = var.region
+  project  = var.project_id
+  service  = "top-leader-prod"
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }
 
 # Grant Service Account User role to deploy service account (needed to act as Cloud Run service account)
