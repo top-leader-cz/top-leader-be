@@ -15,6 +15,7 @@ GRADLE_HOME := $(HOME)/.sdkman/candidates/gradle/current
 .PHONY: info-qa revisions-qa rollback-qa redeploy-qa setup-cloud-run-qa jre-build jre-push
 .PHONY: info-prod revisions-prod rollback-prod redeploy-prod db-proxy db-seed db-clear db-reset db-proxy-sync db-sync-qa
 .PHONY: threaddump-qa threaddump-prod
+.PHONY: trivy trivy-fs trivy-image trivy-config trivy-secret
 
 # Login to Google Cloud and set project
 login:
@@ -130,6 +131,37 @@ jre-build:
 # Push custom JRE image to Artifact Registry
 jre-push: jre-build
 	docker push $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/topleader-jre:latest
+
+# --- Security scans (Trivy) ---
+
+# Default severity levels for Trivy scans (override: make trivy TRIVY_SEVERITY=CRITICAL)
+TRIVY_SEVERITY ?= HIGH,CRITICAL
+# Image to scan for trivy-image target (override: make trivy-image TRIVY_IMAGE=myimage:tag)
+TRIVY_IMAGE ?= $(REGION)-docker.pkg.dev/$(PROJECT_ID)/top-leader/topleader-jre:latest
+
+# Run all Trivy scans (filesystem + config + secrets). Non-blocking: exit 0 even on findings.
+trivy: trivy-fs trivy-config trivy-secret
+	@echo "✅ Trivy scans finished (report-only mode)"
+
+# Scan filesystem for vulnerable dependencies (Gradle, etc.)
+trivy-fs:
+	@echo "🔍 Trivy: scanning filesystem for vulnerabilities ($(TRIVY_SEVERITY))..."
+	trivy fs --scanners vuln --severity $(TRIVY_SEVERITY) --exit-code 0 -q .
+
+# Scan Dockerfiles and other IaC for misconfigurations
+trivy-config:
+	@echo "🔍 Trivy: scanning configs (Dockerfile, compose, k8s)..."
+	trivy config --severity $(TRIVY_SEVERITY) --exit-code 0 -q .
+
+# Scan repository for leaked secrets
+trivy-secret:
+	@echo "🔍 Trivy: scanning for secrets..."
+	trivy fs --scanners secret --exit-code 0 -q .
+
+# Scan a built container image (build it first via `make jre-build` or docker build)
+trivy-image:
+	@echo "🔍 Trivy: scanning image $(TRIVY_IMAGE) ($(TRIVY_SEVERITY))..."
+	trivy image --severity $(TRIVY_SEVERITY) --exit-code 0 -q $(TRIVY_IMAGE)
 
 # --- Actuator (via management port 8081) ---
 
